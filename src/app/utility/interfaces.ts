@@ -1,8 +1,11 @@
 import { UUID } from "crypto";
 import * as THREE from 'three';
 //Basket items are safe to go in the redux store
+
+export type UUIDType = `${string}-${string}-${string}-${string}-${string}`;
+
 export interface BasketItem {
-    id: UUID
+    id: UUIDType
     name: string
     material: string
     technique: string

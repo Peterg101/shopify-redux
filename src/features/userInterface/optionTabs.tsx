@@ -18,22 +18,7 @@ interface TabPanelProps {
     value: number;
   }
 
-// interface OptionTabsProps {
-//   hasStatePopulationErrors: boolean
-//   setModelColour: React.Dispatch<React.SetStateAction<string>>
-//   modelColour: string
-//   setPrintTechnique: React.Dispatch<React.SetStateAction<string>>
-//   printTechnique: string
-//   setPrintMaterial: React.Dispatch<React.SetStateAction<string>>
-//   printMaterial: string
-//   modelVolume: number
-//   modelDimensions: THREE.Vector3
-//   setMultiplierValue: React.Dispatch<React.SetStateAction<number>>
-//   multiplierValue: number
-//   maxScale: number
-//   minScale: number
-// }
-  
+
   function CustomTabPanel(props: TabPanelProps) {
     const { children, value, index, ...other } = props;
   
@@ -79,31 +64,13 @@ interface TabPanelProps {
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
-          <MaterialSelectDropdown 
-        //   hasStatePopulationErrors = {props.hasStatePopulationErrors} 
-        //   setPrintTechnique={props.setPrintTechnique} 
-        //   printTechnique={props.printTechnique} 
-        //   setPrintMaterial={props.setPrintMaterial} 
-        //   printMaterial={props.printMaterial}
-          />
+        <MaterialSelectDropdown/>
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
-        <ColourSelectDropdown 
-        // hasStatePopulationErrors={props.hasStatePopulationErrors} 
-        // setModelColour={props.setModelColour} 
-        // modelColour = {props.modelColour}
-        />
+        <ColourSelectDropdown/>
         </CustomTabPanel>
         <CustomTabPanel value={value} index={2}>
-        <SizingOptions 
-        //   modelVolume={props.modelVolume} 
-        //   modelDimensions = {props.modelDimensions} 
-        //   setMultiplierValue = {props.setMultiplierValue} 
-        //   multiplierValue = {props.multiplierValue} 
-        //   hasStatePopulationErrors = {props.hasStatePopulationErrors}
-        //   maxScale = {props.maxScale}
-        //   minScale={props.minScale}
-          />
+        <SizingOptions/>
         </CustomTabPanel>
         <CustomTabPanel value={value} index={3}>
          Settings

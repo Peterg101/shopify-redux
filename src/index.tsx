@@ -6,15 +6,20 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import './index.css';
 import { FileProvider } from './services/fileProvider';
+import { UploadedFilesProvider } from './services/uploadedFilesProvider';
 const container = document.getElementById('root')!;
 const root = createRoot(container);
 
 root.render(
   <React.StrictMode>
     <Provider store={store}>
+      
       <FileProvider>
+      <UploadedFilesProvider>
       <App />
+      </UploadedFilesProvider>
       </FileProvider>
+
     </Provider>
   </React.StrictMode>
 );
