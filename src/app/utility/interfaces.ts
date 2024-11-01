@@ -31,11 +31,12 @@ export interface DataState {
    printTechnique: string,
    printMaterial: string,
    modelVolume: number,
-   modelDimensions: THREE.Vector3 | null,
+   modelDimensions: VectorState,
    multiplierValue: number,
    maxScale: number,
    minScale: number,
-   fileNameBoxValue: string 
+   fileNameBoxValue: string,
+   fileDisplay: boolean
 }
 
 export interface FileAndItem {
@@ -47,4 +48,11 @@ export interface DrawerProps {
     open: boolean;
     drawerWidth: number;
   }
-  
+
+export interface VectorState {
+    position: {
+      x: number;
+      y: number;
+      z: number;
+    };
+  }

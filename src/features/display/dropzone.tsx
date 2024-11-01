@@ -4,13 +4,13 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useFile } from '../../services/fileProvider';
 import { createFileBlob, extractFileType } from '../../app/utility/utils';
 import { useDispatch } from 'react-redux';
-import { setFileNameBoxValue, setFileProperties, setSelectedFile, setSelectedFileType } from '../../services/dataSlice';
+import {setFileProperties} from '../../services/dataSlice';
 
 export const Dropzone = () => {
     const {actualFile, setActualFile} = useFile()
     const dispatch = useDispatch()
 
-    const handleProcessFile = (file: File): void => {
+    const handleProcessFile = useCallback((file: File): void => {
       
       const fileBlob = createFileBlob(file)
       const fileExtension = extractFileType(file)
@@ -21,12 +21,12 @@ export const Dropzone = () => {
           selectedFileType: fileExtension
         }))
       setActualFile(file)
-    }
+    }, [setActualFile, dispatch])
     const onDrop = useCallback((acceptedFiles: File[]) => {
         acceptedFiles.forEach((file: File) => {
         handleProcessFile(file)
         })
-    }, [] )
+    }, [handleProcessFile] )
 
     const {getRootProps, getInputProps} = useDropzone({onDrop})
     

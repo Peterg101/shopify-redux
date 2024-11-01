@@ -1,11 +1,15 @@
 import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
 import ClearIcon from '@mui/icons-material/Clear';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { resetDataState } from '../../services/dataSlice';
+import { RootState } from '../../app/store';
 
 
 export const ClearFile = () => {
+  const dataState = useSelector(
+    (state: RootState) => state.dataState
+)
     const dispatch = useDispatch()
     const handleClearFile = () => {
         console.log('clearing file')

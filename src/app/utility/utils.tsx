@@ -1,4 +1,4 @@
-import { BasketItem, FileAndItem, UploadedFile } from "./interfaces";
+import { BasketItem, DataState, FileAndItem, UploadedFile } from "./interfaces";
 import { UUID } from "crypto";
 import * as THREE from 'three';
 import { v4 as uuidv4 } from 'uuid';
@@ -110,4 +110,10 @@ export function calculateMinScaling(initialModelDimensions: THREE.Vector3, ): nu
 
 export function generateUuid(): string {
 return uuidv4()
+}
+
+export function getModelDimensions(dataState: DataState): THREE.Vector3{
+  const {x, y, z } = dataState.modelDimensions.position
+  const vector = new THREE.Vector3(x, y, z) 
+  return vector
 }

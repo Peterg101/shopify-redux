@@ -1,5 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { DataState } from "../app/utility/interfaces";
+import { DataState, VectorState } from "../app/utility/interfaces";
+import * as THREE from "three";
+
+const initialVectorState: VectorState = {
+    position: { x: 0, y: 0, z: 0 },
+}
 
 const initialState: DataState = {
     modelColour: 'white',
@@ -12,7 +17,8 @@ const initialState: DataState = {
     maxScale: 10,
     minScale: 0.1,
     fileNameBoxValue: '',
-    modelDimensions: null
+    modelDimensions: initialVectorState,
+    fileDisplay: false
 }
 
 export const dataSlice = createSlice({
@@ -60,7 +66,10 @@ export const dataSlice = createSlice({
             state.fileNameBoxValue = fileNameBoxValue
         },
         resetDataState: (state) => {
-            state = initialState
+            state.fileNameBoxValue = ''
+            state.selectedFile = ''
+            state.selectedFileType = ''
+            state.fileDisplay= false
         },
         setFileProperties: (
             state, 
@@ -78,6 +87,7 @@ export const dataSlice = createSlice({
             state.fileNameBoxValue = fileNameBoxValue
             state.selectedFile = selectedFile
             state.selectedFileType = selectedFileType
+            state.fileDisplay= true
         },
         setScales: (
             state,
@@ -89,7 +99,18 @@ export const dataSlice = createSlice({
             const {minScale, maxScale} = action.payload
             state.minScale = minScale
             state.maxScale = maxScale
-        }
+        },
+        setModelDimensions: (
+            state,
+            action: PayloadAction<{
+                modelDimensions: THREE.Vector3
+            }>
+        ) => {
+            const {modelDimensions} = action.payload
+            const serializedVector = {x: modelDimensions.x, y: modelDimensions.y, z: modelDimensions.z}
+            state.modelDimensions.position = serializedVector
+        },
+        
     }
 })
 
@@ -106,7 +127,8 @@ export const {
     setSelectedFileType,
     resetDataState,
     setFileProperties,
-    setScales
+    setScales,
+    setModelDimensions
  } = dataSlice.actions
 
 export default dataSlice.reducer
