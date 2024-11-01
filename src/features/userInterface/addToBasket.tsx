@@ -2,22 +2,24 @@ import { Button } from "@mui/material"
 import AddIcon from '@mui/icons-material/Add';
 import { generateUuid } from "../../app/utility/utils";
 import { BasketItem, UploadedFile } from "../../app/utility/interfaces";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { useFile } from '../../services/fileProvider';
+import { useUploadedFiles } from "../../services/uploadedFilesProvider";
+import { setBasketItems } from "../../services/userInterfaceSlice";
+import { resetDataState } from "../../services/dataSlice";
 
 export const AddToBasket = () => {
+  const dispatch = useDispatch()
   const dataState = useSelector(
     (state: RootState) => state.dataState
 )
-const {actualFile, setActualFile} = useFile()
+  const {actualFile, setActualFile} = useFile()
+  const {uploadedFiles, setUploadedFiles} = useUploadedFiles()
 
     const handleAddToBasket = () => {
       if (actualFile) {
-        console.log('Adding item to the basket')
         const itemUUID= generateUuid()
-        console.log(itemUUID)
-
         const basketItem: BasketItem = {
           id: itemUUID,
           name: dataState.fileNameBoxValue,
@@ -30,10 +32,11 @@ const {actualFile, setActualFile} = useFile()
           id: itemUUID,
           file: actualFile
         }
-        console.log(uploadedFile)
-        console.log(basketItem)
+        setUploadedFiles((prevFiles) => [...(prevFiles || []), uploadedFile]);
+        dispatch(setBasketItems({newBasketItem: basketItem}))
+        dispatch(resetDataState())
       }
-      
+
     }
     return(
         <Button

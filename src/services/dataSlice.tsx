@@ -65,12 +65,7 @@ export const dataSlice = createSlice({
             const {fileNameBoxValue} = action.payload
             state.fileNameBoxValue = fileNameBoxValue
         },
-        resetDataState: (state) => {
-            state.fileNameBoxValue = ''
-            state.selectedFile = ''
-            state.selectedFileType = ''
-            state.fileDisplay= false
-        },
+        resetDataState: () => initialState,
         setFileProperties: (
             state, 
             action: PayloadAction<{
