@@ -11,6 +11,8 @@ export interface BasketItem {
     technique: string
     sizing: number
     colour: string
+    selectedFile: string
+    selectedFileType: string
   }
 
 //Files are non serializable and so should be stored in the local state

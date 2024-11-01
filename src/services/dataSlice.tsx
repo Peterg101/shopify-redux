@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { DataState, VectorState } from "../app/utility/interfaces";
+import { BasketItem, DataState, VectorState } from "../app/utility/interfaces";
 import * as THREE from "three";
 
 const initialVectorState: VectorState = {
@@ -105,6 +105,22 @@ export const dataSlice = createSlice({
             const serializedVector = {x: modelDimensions.x, y: modelDimensions.y, z: modelDimensions.z}
             state.modelDimensions.position = serializedVector
         },
+        setUploadedFileEditProperties: (
+            state,
+            action: PayloadAction<{
+                basketItem: BasketItem
+            }>
+        ) => {
+            const {basketItem} = action.payload
+            state.fileNameBoxValue = basketItem.name
+            state.printMaterial = basketItem.material
+            state.maxScale = basketItem.sizing
+            state.printTechnique = basketItem.technique
+            state.modelColour = basketItem.colour
+            state.selectedFile= basketItem.selectedFile
+            state.selectedFileType=basketItem.selectedFileType
+            state.fileDisplay = true
+        },
         
     }
 })
@@ -123,7 +139,8 @@ export const {
     resetDataState,
     setFileProperties,
     setScales,
-    setModelDimensions
+    setModelDimensions,
+    setUploadedFileEditProperties
  } = dataSlice.actions
 
 export default dataSlice.reducer

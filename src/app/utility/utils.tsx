@@ -4,6 +4,23 @@ import * as THREE from 'three';
 import { v4 as uuidv4 } from 'uuid';
 
 
+export const removeItemByUUID = <T extends { id: UUID }>(
+  uuid: UUID, 
+  itemList: T[]
+): T[] => {
+  return itemList.filter(item => item.id !== uuid);
+};
+
+export const deleteFileAndBasketItemFromArray = (
+    uuid: UUID, 
+    uploadedFiles: UploadedFile[], 
+    basketItems: BasketItem[]
+  )=> {
+    const newUploadedFiles = removeItemByUUID(uuid, uploadedFiles)
+    const newBasketItems = removeItemByUUID(uuid, basketItems)
+    return {newUploadedFiles, newBasketItems}
+  }
+
 export const combineBasketItem = (
     uuid: UUID, 
     uploadedFiles: UploadedFile[], 

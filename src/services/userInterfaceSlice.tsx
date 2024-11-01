@@ -27,6 +27,10 @@ export const userInterfaceSlice = createSlice({
             const newBasketItems = state.basketItems.concat(newBasketItem)
             state.basketItems = newBasketItems
         },
+        setAllBasketItems: (state, action: PayloadAction<{newBasketItems: BasketItem[]}>) => {
+            const {newBasketItems} = action.payload
+            state.basketItems = newBasketItems
+        },
         clearBasketItems: (state) => {
             state.basketItems = []
         },
@@ -43,6 +47,7 @@ export const {
     setLeftDrawerOpen,
     setRightDrawerOpen,
     setBasketItems,
+    setAllBasketItems,
     clearBasketItems,
     deleteBasketItem
 } = userInterfaceSlice.actions

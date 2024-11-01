@@ -26,7 +26,9 @@ export const AddToBasket = () => {
           material: dataState.printMaterial,
           technique: dataState.printTechnique,
           sizing: dataState.multiplierValue,
-          colour: dataState.modelColour
+          colour: dataState.modelColour,
+          selectedFile: dataState.selectedFile,
+          selectedFileType: dataState.selectedFileType
       };
         const uploadedFile: UploadedFile = {
           id: itemUUID,
@@ -35,6 +37,7 @@ export const AddToBasket = () => {
         setUploadedFiles((prevFiles) => [...(prevFiles || []), uploadedFile]);
         dispatch(setBasketItems({newBasketItem: basketItem}))
         dispatch(resetDataState())
+        
       }
 
     }
