@@ -60,7 +60,7 @@ export function calculateThreeVolume(mesh: THREE.Mesh<any, any, any> , precision
   let volumen = 0;
   const vertices = mesh.geometry.attributes.position.array;
   let indices = mesh.geometry.index ? mesh.geometry.index.array : null;
-  function volumenTriangular(p1, p2, p3) {
+  function volumenTriangular(p1: any, p2: any, p3:any) {
     const v321 = p3.x * p2.y * p1.z;
     const v231 = p2.x * p3.y * p1.z;
     const v312 = p3.x * p1.y * p2.z;
@@ -81,7 +81,6 @@ export function calculateThreeVolume(mesh: THREE.Mesh<any, any, any> , precision
     volumen += volumenTriangular(a, b, c);
   }
   if(precision){
-    console.log((Math.abs(volumen)))
     return (Math.abs(volumen));
 
   }else{
@@ -89,7 +88,7 @@ export function calculateThreeVolume(mesh: THREE.Mesh<any, any, any> , precision
   }
 }
 
-export function calculateSize(mesh) {
+export function calculateSize(mesh: any) {
   const boundingBox = new THREE.Box3().setFromObject(mesh);
   const size = new THREE.Vector3();
   const boundingBoxSize = boundingBox.getSize(size);
@@ -133,4 +132,9 @@ export function getModelDimensions(dataState: DataState): THREE.Vector3{
   const {x, y, z } = dataState.modelDimensions.position
   const vector = new THREE.Vector3(x, y, z) 
   return vector
+}
+
+export function getMidPoint(minValue: number, maxValue: number): number {
+  const midPoint = (minValue + maxValue)/2
+  return midPoint
 }

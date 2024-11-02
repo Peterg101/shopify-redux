@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { BasketItem, DataState, VectorState } from "../app/utility/interfaces";
 import * as THREE from "three";
+import { getMidPoint } from "../app/utility/utils";
 
 const initialVectorState: VectorState = {
     position: { x: 0, y: 0, z: 0 },
@@ -94,6 +95,15 @@ export const dataSlice = createSlice({
             const {minScale, maxScale} = action.payload
             state.minScale = minScale
             state.maxScale = maxScale
+            if(state.multiplierValue < state.minScale){
+                state.multiplierValue = state.maxScale
+            }
+        },
+        setMultiplierMidpoint: (state) => {
+            const midpoint = getMidPoint(state.minScale, state.maxScale)
+            state.multiplierValue = midpoint
+            
+            
         },
         setModelDimensions: (
             state,
@@ -140,7 +150,8 @@ export const {
     setFileProperties,
     setScales,
     setModelDimensions,
-    setUploadedFileEditProperties
+    setUploadedFileEditProperties,
+    setMultiplierMidpoint
  } = dataSlice.actions
 
 export default dataSlice.reducer

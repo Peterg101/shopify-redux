@@ -1,20 +1,22 @@
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader'
 import * as THREE from "three";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState} from 'react';
 import { calculateSize, calculateThreeVolume, calculateMaxScaling, calculateMinScaling} from "../../app/utility/utils";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { setModelVolume, setScales } from '../../services/dataSlice';
 
+
 const STLScene = (
 ) => {
     const [stl, setStl] = useState<THREE.Mesh | null>(null);
     const [measuredStl, setMeasuredStl] = useState<THREE.Mesh | null>(null)
+    const [initialMultiplier, setInitialMultiplier] = useState<boolean>(false)
     const dispatch = useDispatch()
     const dataState = useSelector(
         (state: RootState) => state.dataState
     )
-  
+
     useEffect(() => {
 
         const loader = new STLLoader();
@@ -29,14 +31,12 @@ const STLScene = (
         });
     }, [dataState.selectedFile, dataState.modelColour, dataState.multiplierValue]);
 
-
     useEffect(() => {
         const measuredLoader = new STLLoader();
         measuredLoader.load(dataState.selectedFile, (geometry) => {
             // Create a Mesh from the loaded geometry
             const material = new THREE.MeshStandardMaterial({ color: dataState.modelColour, wireframeLinewidth: 2 });
             const otherLoadedStl = new THREE.Mesh(geometry, material);
-            // setStl(loadedStl); // Set the Mesh object
             setMeasuredStl(otherLoadedStl)
             const measuredSize = calculateSize(otherLoadedStl)
             const maximumScale = calculateMaxScaling(measuredSize)
@@ -45,7 +45,7 @@ const STLScene = (
         }, undefined, (error) => {
             console.error("Error loading STL file:", error);
         });
-    }, [dataState.selectedFile, dataState.modelColour, dataState.multiplierValue, dispatch]);
+    }, [dataState.selectedFile, dataState.modelColour, dataState.multiplierValue, initialMultiplier, dispatch]);
     
 useEffect(() => {
     if (stl && measuredStl) {
@@ -56,7 +56,6 @@ useEffect(() => {
             if (!mesh.material) {
                 mesh.material = new THREE.MeshStandardMaterial({ color: dataState.modelColour, wireframeLinewidth: 2 });
             }
-            
             measuredStl.geometry.scale(1*dataState.multiplierValue,1*dataState.multiplierValue,1*dataState.multiplierValue)
             const measuredVolume = calculateThreeVolume(measuredStl, true)
             dispatch(setModelVolume({modelVolume: measuredVolume}))    

@@ -10,32 +10,13 @@ const OBJScene = () => {
     const dispatch = useDispatch()
     const [obj, setObj] = useState<THREE.Mesh | null>(null);
     const [measuredObj, setMeasuredObj] = useState<THREE.Mesh | null>(null);
+    const [initialMultiplier, setInitialMultiplier] = useState<boolean>(false)
     const objRef = useRef<THREE.Mesh | null>(null);
     const dataState = useSelector(
         (state: RootState) => state.dataState
     )
 
-    useEffect(() => {
-    const objLoader = new OBJLoader();
-    objLoader.load(
-        dataState.selectedFile,
-        (object) => {
-            object.traverse((child) => {
-                if (child instanceof THREE.Mesh) {
-                    child.geometry.dispose()
-                    child.geometry.scale(dataState.multiplierValue, dataState.multiplierValue, dataState.multiplierValue)
-                    const measuredVolume = calculateThreeVolume(child, true)
-                    dispatch(setModelVolume({modelVolume: measuredVolume}))
-                    setMeasuredObj(child)
-                }
-            });
-        },
-        undefined,
-        (error) => {
-            console.error('Error loading OBJ file:', error);
-        }
-    ); },[dataState.selectedFile, dataState.multiplierValue, dataState.modelColour, dispatch])
-
+    
 
     useEffect(() => {
         const loader = new OBJLoader();
@@ -45,14 +26,8 @@ const OBJScene = () => {
                 console.log(loadedObj)
                 loadedObj.traverse((child) => {
                     if (child instanceof THREE.Mesh) {
-                        child.rotation.x = -Math.PI/2
-                        const measuredSize = calculateSize(child)
-                        const maximumScale = calculateMaxScaling(measuredSize)
-                        const minimumScale = calculateMinScaling(measuredSize)
-                        dispatch(setScales({minScale: minimumScale, maxScale: maximumScale }))
-                        child.material = new THREE.MeshStandardMaterial({ color: dataState.modelColour });
+                        child.geometry.dispose()
                         setObj(child);
-                        objRef.current = child;
                     }
                 });
             },
@@ -62,6 +37,44 @@ const OBJScene = () => {
             }
         );
     }, [dataState.selectedFile, dataState.modelColour, dispatch]);
+
+    useEffect(() => {
+        const measuredLoader = new OBJLoader();
+        measuredLoader.load(
+            dataState.selectedFile,
+            (object) => {
+                object.traverse((child) => {
+                    if (child instanceof THREE.Mesh) {
+                        child.geometry.dispose()
+                        setMeasuredObj(child)
+                        const measuredSize = calculateSize(child)
+                        const maximumScale = calculateMaxScaling(measuredSize)
+                        const minimumScale = calculateMinScaling(measuredSize)
+                        dispatch(setScales({minScale: minimumScale, maxScale: maximumScale }))
+                    }
+                });
+            },
+            undefined,
+            (error) => {
+                console.error('Error loading OBJ file:', error);
+            }
+        ); },[dataState.selectedFile, dataState.multiplierValue, dataState.modelColour, dispatch])
+    
+    
+        useEffect(() => {
+            if (obj && measuredObj) {
+                obj.rotation.x = -Math.PI / 2;
+                obj.scale.set(1*dataState.multiplierValue,1*dataState.multiplierValue,1*dataState.multiplierValue)
+                obj.traverse((child) => {
+                    const mesh = child as THREE.Mesh;
+                    mesh.material = new THREE.MeshStandardMaterial({ color: dataState.modelColour });
+                    
+                    measuredObj.geometry.scale(1*dataState.multiplierValue,1*dataState.multiplierValue,1*dataState.multiplierValue)
+                    const measuredVolume = calculateThreeVolume(measuredObj, true)
+                    dispatch(setModelVolume({modelVolume: measuredVolume}))    
+                });
+            } 
+        }, [obj, measuredObj, dataState.modelColour, dataState.multiplierValue, dispatch]);
 
     useEffect(() => {
         if (objRef.current) {
