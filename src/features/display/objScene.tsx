@@ -4,7 +4,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { calculateThreeVolume, calculateSize, calculateMaxScaling, calculateMinScaling } from "../../app/utility/utils";
-import { setModelVolume, setScales } from "../../services/dataSlice";
+import { setModelDimensions, setModelVolume, setScales } from "../../services/dataSlice";
 
 const OBJScene = () => {
     const dispatch = useDispatch()
@@ -23,7 +23,6 @@ const OBJScene = () => {
         loader.load(
             dataState.selectedFile,
             (loadedObj) => {
-                console.log(loadedObj)
                 loadedObj.traverse((child) => {
                     if (child instanceof THREE.Mesh) {
                         child.geometry.dispose()
@@ -71,7 +70,9 @@ const OBJScene = () => {
                     
                     measuredObj.geometry.scale(1*dataState.multiplierValue,1*dataState.multiplierValue,1*dataState.multiplierValue)
                     const measuredVolume = calculateThreeVolume(measuredObj, true)
-                    dispatch(setModelVolume({modelVolume: measuredVolume}))    
+                    dispatch(setModelVolume({modelVolume: measuredVolume}))
+                    const measuredSize = calculateSize(measuredObj)
+                    dispatch(setModelDimensions({modelDimensions: measuredSize}))     
                 });
             } 
         }, [obj, measuredObj, dataState.modelColour, dataState.multiplierValue, dispatch]);

@@ -4,7 +4,7 @@ import React, { useEffect, useState} from 'react';
 import { calculateSize, calculateThreeVolume, calculateMaxScaling, calculateMinScaling} from "../../app/utility/utils";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
-import { setModelVolume, setScales } from '../../services/dataSlice';
+import { setModelDimensions, setModelVolume, setScales } from '../../services/dataSlice';
 
 
 const STLScene = (
@@ -58,7 +58,9 @@ useEffect(() => {
             }
             measuredStl.geometry.scale(1*dataState.multiplierValue,1*dataState.multiplierValue,1*dataState.multiplierValue)
             const measuredVolume = calculateThreeVolume(measuredStl, true)
-            dispatch(setModelVolume({modelVolume: measuredVolume}))    
+            dispatch(setModelVolume({modelVolume: measuredVolume}))
+            const measuredSize = calculateSize(measuredStl)
+            dispatch(setModelDimensions({modelDimensions: measuredSize}))  
         });
     } 
 }, [stl, measuredStl, dataState.modelColour, dataState.multiplierValue, dispatch]);
