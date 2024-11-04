@@ -81,7 +81,7 @@ export function calculateThreeVolume(mesh: THREE.Mesh<any, any, any> , precision
     volumen += volumenTriangular(a, b, c);
   }
   if(precision){
-    return (Math.abs(volumen));
+    return (Math.abs(volumen/10));
 
   }else{
     return (Math.abs((volumen/1000)));

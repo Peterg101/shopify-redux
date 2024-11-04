@@ -87,7 +87,7 @@ const OBJScene = () => {
         if (objRef.current) {
             objRef.current.scale.set(dataState.multiplierValue, dataState.multiplierValue, dataState.multiplierValue);
         }
-    }, [dataState.multiplierValue]);
+    }, [dataState.multiplierValue]);  
     
 
         return (

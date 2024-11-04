@@ -17,10 +17,19 @@ export const userInterfaceSlice = createSlice({
         setLeftDrawerOpen: (state) => {
             const newLeftDrawerState = !state.leftDrawerOpen
             state.leftDrawerOpen = newLeftDrawerState
+            state.rightDrawerOpen = false
         },
         setRightDrawerOpen: (state) => {
             const newRightDrawerState = !state.rightDrawerOpen
             state.rightDrawerOpen = newRightDrawerState
+            state.leftDrawerOpen = false
+        },
+        setLeftDrawerClosed: (state) => {
+            state.leftDrawerOpen = false
+        },
+        setRightDrawerClosed: (state) => {
+            
+            state.rightDrawerOpen = false
         },
         setBasketItems: (state, action: PayloadAction<{newBasketItem: BasketItem}>) => {
             const {newBasketItem} = action.payload
@@ -46,6 +55,8 @@ export const userInterfaceSlice = createSlice({
 export const {
     setLeftDrawerOpen,
     setRightDrawerOpen,
+    setLeftDrawerClosed,
+    setRightDrawerClosed,
     setBasketItems,
     setAllBasketItems,
     clearBasketItems,

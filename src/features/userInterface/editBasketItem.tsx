@@ -8,7 +8,7 @@ import { useUploadedFiles } from '../../services/uploadedFilesProvider';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { setUploadedFileEditProperties } from '../../services/dataSlice';
-import { setAllBasketItems } from '../../services/userInterfaceSlice';
+import { setAllBasketItems, setLeftDrawerClosed, setRightDrawerClosed } from '../../services/userInterfaceSlice';
 
 const EditBasketItem: React.FC<{item: BasketItem}> = ({item}) => {
 const {actualFile, setActualFile} = useFile()
@@ -29,6 +29,8 @@ const handleEditBasketItem = (item: BasketItem) => {
     const {newUploadedFiles, newBasketItems} = deleteFileAndBasketItemFromArray(item.id, uploadedFiles, userInterfaceSlice.basketItems)
     setUploadedFiles(newUploadedFiles)
     dispatch(setAllBasketItems({newBasketItems: newBasketItems}))
+    dispatch(setRightDrawerClosed())
+    dispatch(setLeftDrawerClosed())
 }
   return (
     <Button
