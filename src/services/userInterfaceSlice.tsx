@@ -7,7 +7,11 @@ const initialState: UserInterfaceState = {
     leftDrawerOpen: false,
     rightDrawerOpen: false,
     basketItems: [],
-    drawerWidth: 400
+    drawerWidth: 400,
+    meshyLoading: false,
+    meshyLoadedPercentage: 0,
+    meshyPending: false,
+    meshyQueueItems: 0
 }
 
 export const userInterfaceSlice = createSlice({
@@ -47,11 +51,27 @@ export const userInterfaceSlice = createSlice({
             const {uuidToDelete} = action.payload
             const updatedList = state.basketItems.filter(item => item.id !== uuidToDelete);
             state.basketItems = updatedList
-        }
-        }
-    })
+        },
+        setMeshyLoading: (state, action: PayloadAction<{meshyLoading: boolean}>) => {
+            const {meshyLoading} = action.payload
+            state.meshyLoading = meshyLoading
+        },
+        setMeshyLoadedPercentage: (state, action: PayloadAction<{meshyLoadedPercentage: number}>) => {
+            const {meshyLoadedPercentage} = action.payload
+            state.meshyLoadedPercentage = meshyLoadedPercentage
+        },
+        setMeshyPending: (state, action: PayloadAction<{meshyPending: boolean}>) => {
+            const {meshyPending} = action.payload
+            state.meshyPending = meshyPending
+        },
+        setMeshyQueueItems: (state, action: PayloadAction<{meshyQueueItems: number}>) => {
+            const {meshyQueueItems} = action.payload
+            state.meshyQueueItems = meshyQueueItems
+        },
 
-
+    }
+}
+)
 export const {
     setLeftDrawerOpen,
     setRightDrawerOpen,
@@ -60,7 +80,11 @@ export const {
     setBasketItems,
     setAllBasketItems,
     clearBasketItems,
-    deleteBasketItem
+    deleteBasketItem,
+    setMeshyLoading,
+    setMeshyLoadedPercentage,
+    setMeshyPending,
+    setMeshyQueueItems
 } = userInterfaceSlice.actions
 
 export default userInterfaceSlice.reducer

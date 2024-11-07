@@ -21,12 +21,15 @@ export interface UploadedFile {
     file: File
 }
 
-
 export interface UserInterfaceState {
     leftDrawerOpen: boolean,
     rightDrawerOpen: boolean,
     basketItems: BasketItem[]
     drawerWidth: number
+    meshyLoading: boolean,
+    meshyLoadedPercentage: number,
+    meshyPending: boolean,
+    meshyQueueItems: number
 }
 
 export interface DataState {

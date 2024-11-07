@@ -7,6 +7,7 @@ import { useFile } from '../../services/fileProvider';
 import { useDispatch } from 'react-redux';
 import { setFileProperties } from '../../services/dataSlice';
 import { extractFileType } from '../../app/utility/utils';
+import { setMeshyLoadedPercentage, setMeshyLoading, setMeshyPending, setMeshyQueueItems } from '../../services/userInterfaceSlice';
 
 const AiTextPrompt = () => {
   const {actualFile, setActualFile} = useFile()
@@ -29,8 +30,16 @@ const AiTextPrompt = () => {
 
 
   const handleMeshyData = useCallback(async (data: MeshyTaskStatusResponse) => {
-    setMeshyData(data); // Update state for re-renders
-    meshyDataRef.current = data; // Update ref for synchronous access
+    setMeshyData(data); 
+    meshyDataRef.current = data; 
+    if (data.status !== 'IN_PROGRESS' && data.preceding_tasks) {
+      dispatch(setMeshyQueueItems({ meshyQueueItems: data.preceding_tasks }));
+    } else {
+      dispatch(setMeshyQueueItems({ meshyQueueItems: 0 }));
+      if (data.progress !== undefined) {
+        dispatch(setMeshyLoadedPercentage({ meshyLoadedPercentage: data.progress }));
+      }
+    }
     if (data.obj_file_blob) {
       // Handle file conversion and downloading logic
       const byteCharacters = atob(data.obj_file_blob);
@@ -64,6 +73,7 @@ const AiTextPrompt = () => {
 
   const handleSubmit = async () => {
     setDisabledField(true);
+    dispatch(setMeshyLoading({meshyLoading: true}))
     const ws = new WebSocket("ws://localhost:1234/ws");
 
     ws.onopen = () => {
@@ -87,11 +97,13 @@ const AiTextPrompt = () => {
     };
 
     ws.onclose = () => {
+
       setValue('');
       setDisabledField(false);
       if (textFieldRef.current) {
         textFieldRef.current.blur();
       }
+      dispatch(setMeshyLoading({meshyLoading: false}))
       console.log(meshyDataRef.current); // Use the ref for the latest meshyData
       if (meshyDataRef.current && meshyDataRef.current.obj_file_blob) {
         console.log("OBJ file is successfully processed and downloaded.");
