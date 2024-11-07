@@ -38,6 +38,7 @@ const AiTextPrompt = () => {
   //     console.error('Error downloading file:', error);
   //   }
   // };
+  
 
   const handleKeyPress = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Enter' && value) {
@@ -48,6 +49,11 @@ const AiTextPrompt = () => {
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setValue(event.target.value);
   };
+
+  const handleMeshyData = async (data: MeshyTaskStatusResponse) => {
+    console.log(data)
+    setMeshyData(data)
+  }
 
   const handleSubmit = async () => {
     setDisabledField(true);
@@ -66,12 +72,12 @@ const AiTextPrompt = () => {
       ws.send(JSON.stringify(payload));
     };
 
-    ws.onmessage = (event) => {
+    ws.onmessage = async (event) => {
       console.log("Received from server:", event.data);
       try {
         const parsedData = JSON.parse(event.data);
         console.log(parsedData);
-        setMeshyData(parsedData);
+        await handleMeshyData(parsedData);
       } catch (error) {
         console.error("Error parsing received data:", error);
       }
@@ -95,6 +101,7 @@ const AiTextPrompt = () => {
         const file = new File([blob], filename, { type: blob.type });
         setActualFile(file)
         const url = URL.createObjectURL(blob);
+        console.log(url)
         dispatch(setFileProperties({
           fileNameBoxValue: filename,
           selectedFile: url,
