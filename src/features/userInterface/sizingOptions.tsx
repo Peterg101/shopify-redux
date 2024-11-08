@@ -115,7 +115,7 @@ const SizingOptions = () => {
             onChange={handleInputChange}
             onBlur={handleBlur}
             inputProps={{
-              step: 0.01,
+              step: 1,
               min: dataState.minScale,
               max: dataState.maxScale,
               type: 'number',
