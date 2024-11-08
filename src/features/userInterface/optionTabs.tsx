@@ -11,6 +11,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import { ColourSelectDropdown } from './colourDropdown';
 import { MaterialSelectDropdown } from './materialsDropdown';
 import SizingOptions  from './sizingOptions';
+import { SettingsMenu } from './settingsMenu';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -73,7 +74,7 @@ interface TabPanelProps {
         <SizingOptions/>
         </CustomTabPanel>
         <CustomTabPanel value={value} index={3}>
-         Settings
+        <SettingsMenu/>
         </CustomTabPanel>
       </Box>
     );

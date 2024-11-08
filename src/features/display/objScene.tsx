@@ -16,8 +16,6 @@ const OBJScene = () => {
         (state: RootState) => state.dataState
     )
 
-    
-
     useEffect(() => {
         const loader = new OBJLoader();
         loader.load(
@@ -35,7 +33,7 @@ const OBJScene = () => {
                 console.error("Error loading OBJ file:", error);
             }
         );
-    }, [dataState.selectedFile, dataState.modelColour, dispatch]);
+    }, [dataState.selectedFile, dispatch]);
 
     useEffect(() => {
         const measuredLoader = new OBJLoader();
@@ -62,7 +60,9 @@ const OBJScene = () => {
     
         useEffect(() => {
             if (obj && measuredObj) {
-                obj.rotation.x = -Math.PI / 2;
+                obj.rotation.x = dataState.xFlip
+                obj.rotation.y = dataState.yFlip
+                obj.rotation.z = dataState.zFlip
                 obj.scale.set(1*dataState.multiplierValue,1*dataState.multiplierValue,1*dataState.multiplierValue)
                 obj.traverse((child) => {
                     const mesh = child as THREE.Mesh;
@@ -75,7 +75,7 @@ const OBJScene = () => {
                     dispatch(setModelDimensions({modelDimensions: measuredSize}))     
                 });
             } 
-        }, [obj, measuredObj, dataState.modelColour, dataState.multiplierValue, dispatch]);
+        }, [obj, measuredObj, dataState.modelColour, dataState.multiplierValue, dataState.xFlip, dataState.yFlip, dataState.zFlip, dispatch]);
 
     useEffect(() => {
         if (objRef.current) {

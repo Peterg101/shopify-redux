@@ -138,3 +138,7 @@ export function getMidPoint(minValue: number, maxValue: number): number {
   const midPoint = (minValue + maxValue)/2
   return midPoint
 }
+
+export function degreesToRadians(degrees: number): number {
+  return degrees * (Math.PI / 180);
+}

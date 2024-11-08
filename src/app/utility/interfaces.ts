@@ -45,6 +45,9 @@ export interface DataState {
    minScale: number,
    fileNameBoxValue: string,
    fileDisplay: boolean
+   xFlip: number,
+   yFlip: number,
+   zFlip: number
 }
 
 export interface FileAndItem {

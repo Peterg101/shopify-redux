@@ -19,7 +19,10 @@ const initialState: DataState = {
     minScale: 0.1,
     fileNameBoxValue: '',
     modelDimensions: initialVectorState,
-    fileDisplay: false
+    fileDisplay: false,
+    xFlip: 0,
+    yFlip: 0,
+    zFlip: 0
 }
 
 export const dataSlice = createSlice({
@@ -131,6 +134,25 @@ export const dataSlice = createSlice({
             state.selectedFileType=basketItem.selectedFileType
             state.fileDisplay = true
         },
+        setXFLip: (state, action: PayloadAction<{xFlip: number}>) => {
+            const {xFlip} = action.payload
+            console.log('flip x')
+            console.log(state.xFlip)
+            state.xFlip = xFlip
+         },
+         setYFLip: (state, action: PayloadAction<{yFlip: number}>) => {
+            const {yFlip} = action.payload
+            console.log('flip y')
+            console.log(state.yFlip)
+            state.yFlip = yFlip
+         },
+         setZFLip: (state, action: PayloadAction<{zFlip: number}>) => {
+            const {zFlip} = action.payload
+            console.log('flip z')
+            console.log(state.zFlip)
+            state.zFlip = zFlip
+         },
+
         
     }
 })
@@ -151,7 +173,10 @@ export const {
     setScales,
     setModelDimensions,
     setUploadedFileEditProperties,
-    setMultiplierMidpoint
+    setMultiplierMidpoint,
+    setXFLip,
+    setYFLip,
+    setZFLip
  } = dataSlice.actions
 
 export default dataSlice.reducer

@@ -29,7 +29,7 @@ const STLScene = (
         }, undefined, (error) => {
             console.error("Error loading STL file:", error);
         });
-    }, [dataState.selectedFile, dataState.modelColour, dataState.multiplierValue]);
+    }, [dataState.selectedFile, dataState.multiplierValue]);
 
     useEffect(() => {
         const measuredLoader = new STLLoader();
@@ -49,7 +49,9 @@ const STLScene = (
     
 useEffect(() => {
     if (stl && measuredStl) {
-        stl.rotation.x = -Math.PI / 2;
+        stl.rotation.x = dataState.xFlip
+        stl.rotation.y = dataState.yFlip
+        stl.rotation.z = dataState.zFlip
         stl.scale.set(1*dataState.multiplierValue,1*dataState.multiplierValue,1*dataState.multiplierValue)
         stl.traverse((child) => {
             const mesh = child as THREE.Mesh;
