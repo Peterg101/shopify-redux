@@ -136,20 +136,14 @@ export const dataSlice = createSlice({
         },
         setXFLip: (state, action: PayloadAction<{xFlip: number}>) => {
             const {xFlip} = action.payload
-            console.log('flip x')
-            console.log(state.xFlip)
             state.xFlip = xFlip
          },
          setYFLip: (state, action: PayloadAction<{yFlip: number}>) => {
             const {yFlip} = action.payload
-            console.log('flip y')
-            console.log(state.yFlip)
             state.yFlip = yFlip
          },
          setZFLip: (state, action: PayloadAction<{zFlip: number}>) => {
             const {zFlip} = action.payload
-            console.log('flip z')
-            console.log(state.zFlip)
             state.zFlip = zFlip
          },
 

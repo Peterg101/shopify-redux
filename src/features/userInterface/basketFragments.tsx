@@ -29,6 +29,7 @@ export const EmptyBasket = () => {
 
   export const CollapsibleButton: React.FC<BasketItem> = (item: BasketItem) => {
         return (
+          <div>
           <Accordion>
             <AccordionSummary
               expandIcon={<ExpandMore/>}
@@ -42,7 +43,7 @@ export const EmptyBasket = () => {
             </AccordionDetails>
             <AccordionDetails>
               <Typography>Sizing: {item.sizing}x</Typography>
-            </AccordionDetails>
+            </AccordionDetails>§
             <AccordionDetails>
               <Typography>Material: {item.material}</Typography>
             </AccordionDetails>
@@ -50,7 +51,7 @@ export const EmptyBasket = () => {
               <Typography>Colour: {item.colour}</Typography>
             </AccordionDetails>
             <AccordionDetails>
-              <Box display="flex" justifyContent="space-between" width="100%">
+              <Box sx = {{display:"flex", justifyContent:"space-between", width:"100%"}}>
                 <DeleteFromBasket
                   item={item}
                 />
@@ -60,6 +61,7 @@ export const EmptyBasket = () => {
               </Box>
             </AccordionDetails>
           </Accordion>
+          </div>
         );
       };
         
