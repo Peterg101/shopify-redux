@@ -43,7 +43,7 @@ export const EmptyBasket = () => {
             </AccordionDetails>
             <AccordionDetails>
               <Typography>Sizing: {item.sizing}x</Typography>
-            </AccordionDetails>§
+            </AccordionDetails>
             <AccordionDetails>
               <Typography>Material: {item.material}</Typography>
             </AccordionDetails>

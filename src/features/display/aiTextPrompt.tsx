@@ -32,10 +32,13 @@ const AiTextPrompt = () => {
   const handleMeshyData = useCallback(async (data: MeshyTaskStatusResponse) => {
     setMeshyData(data); 
     meshyDataRef.current = data; 
-    if (data.status !== 'IN_PROGRESS' && data.preceding_tasks) {
+    if (data.status === 'PENDING' && data.preceding_tasks) {
+      dispatch(setMeshyPending({meshyPending: true}))
       dispatch(setMeshyQueueItems({ meshyQueueItems: data.preceding_tasks }));
     } else {
+      dispatch(setMeshyPending({meshyPending: false}))
       dispatch(setMeshyQueueItems({ meshyQueueItems: 0 }));
+      dispatch(setMeshyLoading({meshyLoading: true}))
       if (data.progress !== undefined) {
         dispatch(setMeshyLoadedPercentage({ meshyLoadedPercentage: data.progress }));
       }
@@ -73,7 +76,7 @@ const AiTextPrompt = () => {
 
   const handleSubmit = async () => {
     setDisabledField(true);
-    dispatch(setMeshyLoading({meshyLoading: true}))
+    
     const ws = new WebSocket("ws://localhost:1234/ws");
 
     ws.onopen = () => {

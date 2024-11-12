@@ -55,6 +55,10 @@ export const userInterfaceSlice = createSlice({
         setMeshyLoading: (state, action: PayloadAction<{meshyLoading: boolean}>) => {
             const {meshyLoading} = action.payload
             state.meshyLoading = meshyLoading
+
+            if(meshyLoading === false){
+                state.meshyLoadedPercentage = 0
+            }
         },
         setMeshyLoadedPercentage: (state, action: PayloadAction<{meshyLoadedPercentage: number}>) => {
             const {meshyLoadedPercentage} = action.payload
@@ -63,6 +67,10 @@ export const userInterfaceSlice = createSlice({
         setMeshyPending: (state, action: PayloadAction<{meshyPending: boolean}>) => {
             const {meshyPending} = action.payload
             state.meshyPending = meshyPending
+
+            if(meshyPending === false){
+                state.meshyQueueItems = 0
+            }
         },
         setMeshyQueueItems: (state, action: PayloadAction<{meshyQueueItems: number}>) => {
             const {meshyQueueItems} = action.payload
