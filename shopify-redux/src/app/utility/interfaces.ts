@@ -29,7 +29,9 @@ export interface UserInterfaceState {
     meshyLoading: boolean,
     meshyLoadedPercentage: number,
     meshyPending: boolean,
-    meshyQueueItems: number
+    meshyQueueItems: number,
+    isLoggedIn: boolean
+
 }
 
 export interface DataState {

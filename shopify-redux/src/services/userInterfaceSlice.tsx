@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { UserInterfaceState, BasketItem, UploadedFile } from "../app/utility/interfaces";
 import { UUID } from "crypto";
-
+import { authApi } from "./authApi";
 
 const initialState: UserInterfaceState = {
     leftDrawerOpen: false,
@@ -11,7 +11,8 @@ const initialState: UserInterfaceState = {
     meshyLoading: false,
     meshyLoadedPercentage: 0,
     meshyPending: false,
-    meshyQueueItems: 0
+    meshyQueueItems: 0,
+    isLoggedIn: false
 }
 
 export const userInterfaceSlice = createSlice({
@@ -77,7 +78,24 @@ export const userInterfaceSlice = createSlice({
             state.meshyQueueItems = meshyQueueItems
         },
 
-    }
+    },
+    extraReducers: (builder) => {
+        builder
+          .addMatcher(
+            authApi.endpoints.getSession.matchFulfilled, 
+            (state, { payload }) => {
+              console.log('user logged in')
+              state.isLoggedIn = true; 
+            }
+          )
+          .addMatcher(
+            authApi.endpoints.getSession.matchRejected, 
+            (state, action) => {
+                console.log('user not logged in')
+                state.isLoggedIn = false; 
+              }
+          );
+      },
 }
 )
 export const {
