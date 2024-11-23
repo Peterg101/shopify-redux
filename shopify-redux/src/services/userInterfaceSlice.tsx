@@ -94,6 +94,13 @@ export const userInterfaceSlice = createSlice({
                 console.log('user not logged in')
                 state.isLoggedIn = false; 
               }
+          )
+          .addMatcher(
+            authApi.endpoints.logOut.matchFulfilled, 
+            (state, action) => {
+                console.log('user not logged in')
+                state.isLoggedIn = false; 
+              }
           );
       },
 }

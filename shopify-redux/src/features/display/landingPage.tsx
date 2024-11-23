@@ -36,7 +36,6 @@ export const LandingPage = () => {
 
     const handleLogOut = () =>{
         logOut()
-        console.log(logOutData)
     }
 
     return(
