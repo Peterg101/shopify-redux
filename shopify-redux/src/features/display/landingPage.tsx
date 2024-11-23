@@ -2,42 +2,41 @@ import { Box, Button } from "@mui/material"
 import UserInterface from "../userInterface/userInterface"
 import { MainOptions } from "./mainOptions"
 import { useState } from "react";
+import { useGetSessionQuery, useLogOutMutation } from "../../services/authApi";
 
 export const LandingPage = () => {
     const [actualFile, setActualFile] = useState<File | null>(null);
+    const {
+      data: sessionData,
+      error: sessionError,
+      isLoading: isSessionLoading,
+      refetch: refetchSession,
+    } = useGetSessionQuery();
     
+    const [
+      logOut, 
+      { 
+        data: logOutData, 
+        error: logOutError, 
+        isLoading: isLogOutLoading 
+      }
+    ] = useLogOutMutation();
+
     const handleLogin = () => {
-        // Redirect to FastAPI Google login endpoint
         window.location.href = "http://localhost:2468/auth/google";
       };
 
     const handleCallProtectedEndpoint = () => {
-        fetch("http://localhost:2468/get_session", {
-            method: "GET",
-            credentials: "include",  // Ensure cookies are sent
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              console.log(data); // Handle successful response
-            })
-            .catch((error) => {
-              console.error("Authentication failed", error);
-            });
+        refetchSession()
+        console.log(sessionData)
+        console.log(sessionError)
+        
 
     }
 
-    const logOut = () =>{
-        fetch("http://localhost:2468/logout", {
-            method: "GET",
-            credentials: "include",  // Ensure cookies are sent
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              console.log(data); // Handle successful response
-            })
-            .catch((error) => {
-              console.error("Authentication failed", error);
-            });
+    const handleLogOut = () =>{
+        logOut()
+        console.log(logOutData)
     }
 
     return(
@@ -46,7 +45,7 @@ export const LandingPage = () => {
             <MainOptions/>
             <Button onClick={handleLogin}>Call Google</Button>
             <Button onClick={handleCallProtectedEndpoint}>Call Protected Endpoint</Button>
-            <Button onClick={logOut}>Log Out</Button>
+            <Button onClick={handleLogOut}>Log Out</Button>
         </Box>
         
     )

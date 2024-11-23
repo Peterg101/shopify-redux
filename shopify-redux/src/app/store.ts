@@ -4,11 +4,13 @@ import {setupListeners} from "@reduxjs/toolkit/query"
 import { userInterfaceSlice } from "../services/userInterfaceSlice";
 import {dataSlice} from "../services/dataSlice";
 import { meshyApi } from "../services/meshyApi";
+import { authApi } from "../services/authApi";
 
 const rootReducer = combineSlices({
   [userInterfaceSlice.reducerPath]: userInterfaceSlice.reducer,
   [dataSlice.reducerPath]: dataSlice.reducer,
-  [meshyApi.reducerPath]: meshyApi.reducer
+  [meshyApi.reducerPath]: meshyApi.reducer,
+  [authApi.reducerPath]: authApi.reducer
 })
 
 export type RootState = ReturnType<typeof rootReducer>
@@ -17,7 +19,7 @@ export const makeStore = (preloadedState?: Partial<RootState>) => {
   const store = configureStore({
     reducer: rootReducer,
     middleware: getDefaultMiddleware => {
-      return getDefaultMiddleware().concat(meshyApi.middleware)
+      return getDefaultMiddleware().concat(meshyApi.middleware).concat(authApi.middleware)
     },
     preloadedState
   })
