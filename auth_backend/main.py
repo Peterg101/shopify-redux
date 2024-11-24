@@ -92,8 +92,6 @@ async def auth_callback(code: str, request: Request):
 
         session_data = SessionData()
         session_data.user_id = id_info["sub"]
-        # session_data.name = id_info["name"]
-        # session_data.email = id_info["email"]
         session_id = await create_session(redis_session, session_data)
         print("REDIS SESSION ID")
         print(session_id)
