@@ -15,12 +15,8 @@ const userInterfaceState = useSelector(
 )
   const theme = useTheme();
   const handleLogin = () => {
-    console.log('hi')
     window.location.href = "http://localhost:2468/auth/google";
   };
-
-
- 
   
   return (
     <React.Fragment>
