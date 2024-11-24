@@ -92,8 +92,8 @@ async def auth_callback(code: str, request: Request):
 
         session_data = SessionData()
         session_data.user_id = id_info["sub"]
-        session_data.name = id_info["name"]
-        session_data.email = id_info["email"]
+        # session_data.name = id_info["name"]
+        # session_data.email = id_info["email"]
         session_id = await create_session(redis_session, session_data)
         print("REDIS SESSION ID")
         print(session_id)
@@ -140,7 +140,7 @@ async def protected_endpoint(request: Request):
 
     try:
         print(f"User authenticated: {session_data}")
-        return {"message": "Protected content", "user_info": {session_data}}
+        return {"message": "User Authenticated"}
     except ValueError:
         raise HTTPException(status_code=401, detail="Invalid token or token verification failed")
 
