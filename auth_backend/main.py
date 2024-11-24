@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from jose import jwt
 import requests
 import uvicorn
-from models import Token, SessionData
+from models import Token, SessionData, UserInformation
 import httpx
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.responses import RedirectResponse
@@ -18,6 +18,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from redis import Redis
 from utils import create_session, get_session, delete_session
+from api_calls import check_user_exists
 
 app = FastAPI()
 app.add_middleware(
@@ -59,18 +60,18 @@ def auth_google():
 
 @app.get("/auth/google/callback")
 async def auth_callback(code: str, request: Request):
-    # redirect_uri = request.session.get("redirect_uri")
     redirect_uri = "http://localhost:2468/auth/google/callback"
     token_request_uri = "https://oauth2.googleapis.com/token"
+    
     data = {
         'code': code,
         'client_id': GOOGLE_CLIENT_ID,
         'client_secret': GOOGLE_CLIENT_SECRET,
         'redirect_uri': redirect_uri,
         'grant_type': 'authorization_code',
-
     }
 
+    # Step 1: Exchange code for token
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(token_request_uri, data=data)
@@ -79,22 +80,39 @@ async def auth_callback(code: str, request: Request):
         except httpx.HTTPStatusError as e:
             raise HTTPException(status_code=400, detail="Failed to retrieve token")
 
+    # Step 2: Get the ID token and verify it
     id_token_value = token_response.get('id_token')
-    print("ID TOKEN VALUE")
-    print(id_token_value)
     if not id_token_value:
         raise HTTPException(status_code=400, detail="Missing id_token in response.")
 
     try:
+        # Verify the ID token
         id_info = id_token.verify_oauth2_token(
             id_token_value, google_requests.Request(), GOOGLE_CLIENT_ID
         )
+        user_information = UserInformation()
+        user_information.user_id = id_info["sub"]
+        user_information.email = id_info["email"]
+        user_information.name = id_info["name"]
 
+        # # Step 3: Check if the user exists in the database
+        
+        # if not existing_user:
+        #     # Step 4: If the user doesn't exist, create a new user record
+        #     user_info = {
+        #         "user_id": user_id,
+        #         "email": user_email,
+        #         "name": user_name,
+        #     }
+        #     await create_user(user_info)
+
+        # Step 5: Create a session for the user
         session_data = SessionData()
+        # session_data.user_id = user_id
         session_data.user_id = id_info["sub"]
         session_id = await create_session(redis_session, session_data)
-        print("REDIS SESSION ID")
-        print(session_id)
+        existing_user = await check_user_exists(id_info["sub"], session_id)
+        print(existing_user)
         # Create the response with a session cookie
         response = RedirectResponse(url="http://localhost:3000/")
         response.set_cookie(
@@ -109,6 +127,8 @@ async def auth_callback(code: str, request: Request):
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid id_token: {str(e)}")
+
+
 
 
 @app.get("/logout")
