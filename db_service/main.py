@@ -1,12 +1,14 @@
-from fastapi import FastAPI, HTTPException, Depends, Cookie
+from fastapi import FastAPI, HTTPException, Depends, Cookie, Header
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from models import User, Task
 from db_setup import Base, engine, get_db
 from utils import check_session_token_active
+from sqlalchemy.exc import IntegrityError
 from classes import UserInformation
-
 import uvicorn
+from typing import Optional
+from jwt_auth import verify_jwt_token
 # Ensure tables are created
 Base.metadata.create_all(bind=engine)
 
@@ -46,14 +48,14 @@ def create_user(
 
 # Add a Task
 @app.post("/tasks")
-def add_task(
+async def add_task(
     user_id: int,
     task_name: str,
     status: str,
     db: Session = Depends(get_db),
     session_token: str = Cookie(default=None)
 ):
-    session_active = check_session_token_active(session_token)
+    session_active = await check_session_token_active(session_token)
 
     if not session_active:
         raise HTTPException(status_code=403, detail="Session token is invalid or doesn't exist")
@@ -75,49 +77,41 @@ def add_task(
     }
 
 
-# # Get User with Tasks
-# @app.get("/users/{user_id}")
-# async def get_user_with_tasks(
-#     user_information: UserInformation,
-#     db: Session = Depends(get_db),
-#     session_token: str = Cookie(default=None)
-# ):
-#     session_active = check_session_token_active(session_token)
-
-#     if not session_active:
-#         raise HTTPException(status_code=403, detail="Session token is invalid or doesn't exist")
-
-#     user = db.query(User).filter(User.id == user_information.user_id).first()
-#     if not user:
-#         raise HTTPException(status_code=404, detail="User not found")
-
-#     return {
-#         "id": user.id,
-#         "username": user.username,
-#         "email": user.email,
-#         "tasks": [{"id": t.id, "name": t.task_name, "status": t.status} for t in user.tasks],
-#     }
-
 # Get User 
 @app.get("/users/{user_id}")
-async def get_user_with_tasks(
+async def get_user(
     user_id: str,
     db: Session = Depends(get_db),
-    session_token: str = Cookie(default=None)  
+    authorization: str = Header(None)
 ):
-    # Step 1: Validate session token
-    session_active = check_session_token_active(session_token)
-    if not session_active:
-        raise HTTPException(status_code=403, detail="Session token is invalid or doesn't exist")
-
+    payload = verify_jwt_token(authorization)
+    print(payload)
+    print("SESSION ACTIVE")
     # Step 2: Query the database to get the user by user_id
     user = db.query(User).filter(User.id == user_id).first()
 
     # Step 3: If user not found, raise an exception
     if not user:
-        print("user not found")
-        raise HTTPException(status_code=404, detail="User not found")
+        try:
+            # You could also customize the username and email generation as needed
+            username = f"User_{user_id}"  # Default username
+            email = f"{user_id}@example.com"  # Default email format
 
+            user = User(
+                id=user_id,  # Ensure you're using a valid user_id
+                username=username,
+                email=email
+            )
+
+            db.add(user)
+            db.commit()
+            db.refresh(user)  # Refresh the user to get the latest data from the DB
+        except IntegrityError:
+            db.rollback()  # Rollback if an integrity error occurs (like duplicate username or email)
+            raise HTTPException(status_code=400, detail="User creation failed due to uniqueness constraint.")
+        except Exception as e:
+            db.rollback()  # Rollback on any other errors
+            raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
     # Optional: If you want to fetch tasks or other related data, you can do that here.
     # tasks = db.query(Task).filter(Task.user_id == user.id).all()
 

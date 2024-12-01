@@ -1,18 +1,17 @@
 import httpx
+from jwt_auth import generate_token
 
-async def check_user_exists(user_id: str, session_token: str):
+
+async def check_user_exists(user_id: str | None):
     url = f"http://localhost:8000/users/{user_id}"
-    
+    auth_token = generate_token()
+    print(auth_token)
     headers = {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {auth_token}",  # Add the auth token here
     }
-    
-    cookies = {
-        "fitd_session_data": session_token  # Include session token in cookies
-    }
-
     with httpx.Client() as client:
-        response = client.get(url, headers=headers, cookies=cookies)
+        response = client.get(url, headers=headers)
 
         if response.status_code == 200:
             # If the user was successfully found, return the response data

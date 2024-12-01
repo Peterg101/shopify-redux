@@ -96,7 +96,8 @@ async def auth_callback(code: str, request: Request):
         user_information.name = id_info["name"]
 
         # # Step 3: Check if the user exists in the database
-        
+        await check_user_exists(user_information.user_id)
+        # existing_user = await get_user_by_id(user_id)
         # if not existing_user:
         #     # Step 4: If the user doesn't exist, create a new user record
         #     user_info = {
@@ -111,8 +112,7 @@ async def auth_callback(code: str, request: Request):
         # session_data.user_id = user_id
         session_data.user_id = id_info["sub"]
         session_id = await create_session(redis_session, session_data)
-        existing_user = await check_user_exists(id_info["sub"], session_id)
-        print(existing_user)
+
         # Create the response with a session cookie
         response = RedirectResponse(url="http://localhost:3000/")
         response.set_cookie(

@@ -6,7 +6,6 @@ async def session_exists(session_id: str):
     headers = {
         "Cookie": f"{session_id}"
     }
-    print('running')
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers)
     return response.status_code == 200
