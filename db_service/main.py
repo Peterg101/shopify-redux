@@ -3,11 +3,10 @@ from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from models import User, Task
 from db_setup import Base, engine, get_db
-from utils import check_session_token_active
-from sqlalchemy.exc import IntegrityError
+from utils import check_session_token_active, check_user_existence, add_user_to_db
 from classes import UserInformation
 import uvicorn
-from typing import Optional
+from typing import Optional, Dict
 from jwt_auth import verify_jwt_token
 # Ensure tables are created
 Base.metadata.create_all(bind=engine)
@@ -22,27 +21,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Create a User
-@app.post("/users")
+
+@app.post("/users", response_model=Dict[str, str])
 def create_user(
-    username: str,
-    email: str,
+    user_information: UserInformation,
     db: Session = Depends(get_db),
-    session_token: str = Cookie(default=None)
+    authorization: str = Header(None)
 ):
-    session_active = check_session_token_active(session_token)
+    # Validate the JWT token
+    verify_jwt_token(authorization)
 
-    if not session_active:
-        raise HTTPException(status_code=403, detail="Session token is invalid or doesn't exist")
-    # Check for duplicate email
-    existing_user = db.query(User).filter(User.email == email).first()
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Email already exists")
+    # Check if the user already exists
+    check_user_existence(db, user_information.email)
 
-    user = User(username=username, email=email)
-    db.add(user)
-    db.commit()
-    db.refresh(user)
+    # Add the user to the database
+    user = add_user_to_db(db, user_information)
+
+    # Return the created user's data
     return {"id": user.id, "username": user.username, "email": user.email}
 
 
@@ -92,26 +87,9 @@ async def get_user(
 
     # Step 3: If user not found, raise an exception
     if not user:
-        try:
-            # You could also customize the username and email generation as needed
-            username = f"User_{user_id}"  # Default username
-            email = f"{user_id}@example.com"  # Default email format
+        print("user not found")
+        raise HTTPException(status_code=404, detail="User not found")
 
-            user = User(
-                id=user_id,  # Ensure you're using a valid user_id
-                username=username,
-                email=email
-            )
-
-            db.add(user)
-            db.commit()
-            db.refresh(user)  # Refresh the user to get the latest data from the DB
-        except IntegrityError:
-            db.rollback()  # Rollback if an integrity error occurs (like duplicate username or email)
-            raise HTTPException(status_code=400, detail="User creation failed due to uniqueness constraint.")
-        except Exception as e:
-            db.rollback()  # Rollback on any other errors
-            raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
     # Optional: If you want to fetch tasks or other related data, you can do that here.
     # tasks = db.query(Task).filter(Task.user_id == user.id).all()
 

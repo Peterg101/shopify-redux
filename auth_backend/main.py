@@ -18,7 +18,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from redis import Redis
 from utils import create_session, get_session, delete_session
-from api_calls import check_user_exists
+from api_calls import check_user_exists, create_user
 
 app = FastAPI()
 app.add_middleware(
@@ -93,20 +93,16 @@ async def auth_callback(code: str, request: Request):
         user_information = UserInformation()
         user_information.user_id = id_info["sub"]
         user_information.email = id_info["email"]
-        user_information.name = id_info["name"]
+        user_information.username = id_info["name"]
+
+        print(user_information.username)
 
         # # Step 3: Check if the user exists in the database
-        await check_user_exists(user_information.user_id)
-        # existing_user = await get_user_by_id(user_id)
-        # if not existing_user:
-        #     # Step 4: If the user doesn't exist, create a new user record
-        #     user_info = {
-        #         "user_id": user_id,
-        #         "email": user_email,
-        #         "name": user_name,
-        #     }
-        #     await create_user(user_info)
-
+        user_exists = await check_user_exists(user_information.user_id)
+        if not user_exists:
+            print("USER DOES NOT EXIST")
+            await create_user(user_information)
+        
         # Step 5: Create a session for the user
         session_data = SessionData()
         # session_data.user_id = user_id
