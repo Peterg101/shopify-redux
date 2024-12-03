@@ -3,8 +3,13 @@ from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from models import User, Task
 from db_setup import Base, engine, get_db
-from utils import check_session_token_active, check_user_existence, add_user_to_db
-from classes import UserInformation
+from utils import(
+    check_session_token_active,
+    check_user_existence,
+    add_user_to_db,
+    add_task_to_db
+) 
+from classes import UserInformation, TaskInformation
 import uvicorn
 from typing import Optional, Dict
 from jwt_auth import verify_jwt_token
@@ -44,32 +49,16 @@ def create_user(
 # Add a Task
 @app.post("/tasks")
 async def add_task(
-    user_id: int,
-    task_name: str,
-    status: str,
+    task_information: TaskInformation,
     db: Session = Depends(get_db),
-    session_token: str = Cookie(default=None)
+    authorization: str = Header(None)
 ):
-    session_active = await check_session_token_active(session_token)
+    verify_jwt_token(authorization)
 
-    if not session_active:
-        raise HTTPException(status_code=403, detail="Session token is invalid or doesn't exist")
-    # Check if user exists
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    check_user_existence(db, task_information.user_id)
 
-    task = Task(user_id=user_id, task_name=task_name, status=status)
-    db.add(task)
-    db.commit()
-    db.refresh(task)
-    return {
-        "id": task.id,
-        "user_id": task.user_id,
-        "task_name": task.task_name,
-        "status": task.status,
-        "created_at": task.created_at,
-    }
+    task = add_task_to_db(db, task_information)
+    return task.__dict__
 
 
 # Get User 

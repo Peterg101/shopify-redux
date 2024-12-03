@@ -17,9 +17,9 @@ class User(Base):
 
 class Task(Base):
     __tablename__ = "tasks"
-    id = Column(Integer, primary_key=True, index=True)
+    task_id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     task_name = Column(String)
-    status = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    status = Column(Integer)
+    created_at = Column(DateTime, default=datetime.now)
     owner = relationship("User", back_populates="tasks")
