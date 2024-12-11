@@ -3,6 +3,7 @@ from io import BytesIO
 from typing import List, Optional, Union
 from pydantic import BaseModel, ConfigDict, Field
 import base64
+from datetime import datetime
 
 @dataclass
 class MeshyPayload:
@@ -65,3 +66,9 @@ class MeshyTaskStatusResponse(BaseModel):
     )
 
 
+class TaskInformation(BaseModel):
+    task_id: Optional[str] = None
+    user_id: Optional[str] = None
+    task_name: Optional[str] = None
+    status: Optional[str] = None
+    created_at: Optional[datetime] = datetime.now()

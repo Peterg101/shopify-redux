@@ -1,10 +1,10 @@
 from io import BytesIO
 import httpx
 import requests
-
+from jwt_auth import generate_token
 from models import (MeshyPayload, MeshyRefinedPayload,
                     MeshyTaskGeneratedResponse, MeshyTaskStatus,
-                    MeshyTaskStatusResponse)
+                    MeshyTaskStatusResponse, TaskInformation)
 
 MESHY_API_KEY = "msy_RLiG6FNDJRdsNfSKCoFJ5E2Jhcs4r1l5Hmjp"
 
@@ -71,3 +71,24 @@ async def session_exists(session_id: str):
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers)
     return response.status_code == 200
+
+
+async def create_task(task_information: TaskInformation):
+    auth_token = generate_token()
+    url = "http://localhost:8000/tasks"  # Adjust with your actual FastAPI URL
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {auth_token}",  # Add the auth token here
+    }
+
+    # Send the POST request with user data and session token in cookies
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, json=task_information.dict(), headers=headers)
+
+        if response.status_code == 200:
+            # If successful, return the user data
+            return response.json()
+        else:
+            # Handle any errors
+            print(f"Error: {response.status_code} - {response.text}")
+            return None

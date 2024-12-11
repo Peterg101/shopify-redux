@@ -5,9 +5,9 @@ from dataclasses import asdict, is_dataclass
 from fastapi import WebSocket
 
 from api_calls import (generate_meshy_refine_task, generate_text_to_3d_task,
-                       get_meshy_task_status)
+                       get_meshy_task_status, create_task)
 from models import (MeshyRefinedPayload, MeshyTaskGeneratedResponse,
-                    MeshyTaskStatus, MeshyTaskStatusResponse)
+                    MeshyTaskStatus, MeshyTaskStatusResponse, TaskInformation)
 
 
 async def generate_task_and_check_for_response(
@@ -15,7 +15,7 @@ async def generate_task_and_check_for_response(
 ) -> MeshyTaskStatusResponse:
     task_generated = False
     generated_task = generate_text_to_3d_task(payload)
-
+    # await create_task(task_information)
     while task_generated is False:
         await asyncio.sleep(1)
         meshy_task_status = MeshyTaskStatus(task_id=generated_task.result)

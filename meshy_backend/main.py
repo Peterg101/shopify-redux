@@ -28,7 +28,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"])
 
-
 @app.post("/api/meshy_request")
 async def generate_meshy_task(payload: MeshyPayload):
     try:
@@ -37,6 +36,30 @@ async def generate_meshy_task(payload: MeshyPayload):
         return response
     except ValidationError:
         raise HTTPException(status_code=500, detail="This is bad")
+
+
+# example_task = MeshyTaskStatusResponse(
+#     id="12345",
+#     mode="test",
+#     name="Example Task",
+#     seed=42,
+#     art_style="Impressionism",
+#     texture_richness="High",
+#     prompt="A beautiful sunset over a mountain range.",
+#     negative_prompt="No clouds",
+#     status="completed",
+#     created_at=1638345600,
+#     progress=100,
+#     task_error='no error',
+#     started_at=1638345600,
+#     finished_at=1638350000,
+#     model_urls=ModelUrls(obj='https://assets.meshy.ai/f90372a1-a409-4203-8047-433769a318d4/tasks/0192fcfb-2df2-7544-9d37-f765faaa0659/output/model.obj?Expires=4884364800&Signature=deJ~2lgR3vflGefX7JpU0nxCWuIOkpPc3O64FFQ8x2wFVL90OwoK8VvfTpgA7b516AZOMm9qER1Drvxf6bhaY6a~ySPMfYFZmLwG0PtE~fp3YmJpE8zmgm13h7lypgRCH8gUGTbhacT6WK83uAp1fMhTzTTxL~F8k73KiFxT2xj9kGcUh9VQeD9vkRhmStUskQPrvszcEShtXwwqFNQ1bz-p1NImw0jgVHVeqX3MwsBY9v4j3zA7h6uApEjcRBfjDUbEkM~ihf~6h3S4zaCASINiIJP93eAkHEiz1jQQ-7Dy~OhChhxupreA0HuqsQxcJNiksbvFJSe0crjOw-KInA__&Key-Pair-Id=KL5I0C8H7HX83', glb= '', fbx= '', usdz='', mtl = ''),
+#     thumbnail_url="http://example.com/thumbnail.jpg",
+#     video_url="http://example.com/video.mp4",
+#     texture_urls=[],
+#     preceding_tasks=2,
+#     obj_file_blob=None
+# )
 
 connections: List[WebSocket] = []
 
