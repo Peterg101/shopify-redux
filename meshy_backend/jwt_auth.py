@@ -11,7 +11,7 @@ def generate_token():
     """
     Generate a JWT token for inter-service communication.
     """
-    expiration = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+    expiration = datetime.datetime.now() + datetime.timedelta(hours=1)
     payload = {
         "sub": "microservice-1",  # Service identity
         "exp": expiration,        # Expiration time
