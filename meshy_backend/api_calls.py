@@ -74,7 +74,7 @@ async def session_exists(session_id: str):
 
 
 async def create_task(task_information: TaskInformation):
-    auth_token = generate_token()
+    auth_token = generate_token("meshy_backend")
     url = "http://localhost:8000/tasks"  # Adjust with your actual FastAPI URL
     headers = {
         "Content-Type": "application/json",
