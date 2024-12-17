@@ -22,16 +22,22 @@ from models import (
 
 
 async def generate_task_and_check_for_response(
-    payload: MeshyPayload, websocket: WebSocket
+    payload: MeshyPayload, websocket: WebSocket, user_id: str
 ) -> MeshyTaskStatusResponse:
     task_generated = False
+    task_posted = False
     generated_task = generate_text_to_3d_task(payload)
-    # await create_task(task_information)
+    # await post_task_to_db(generated_task, user_id)
     while task_generated is False:
         await asyncio.sleep(1)
         meshy_task_status = MeshyTaskStatus(task_id=generated_task.result)
         print(meshy_task_status)
-        generated_task_status = get_meshy_task_status(meshy_task_status)
+        generated_task_status = await get_meshy_task_status(meshy_task_status)
+        if not task_posted:
+            print("POSTED THE TASK")
+            await post_task_to_db(generated_task_status, user_id)
+            task_posted = True
+
         percentage_complete = generated_task_status.progress
         await websocket.send_text(generated_task_status.json(indent=2))
         if percentage_complete == 100:
@@ -41,23 +47,23 @@ async def generate_task_and_check_for_response(
     return generated_task_status
 
 
-async def refine_task_and_check_for_response(
-    payload: MeshyRefinedPayload, websocket: WebSocket
-) -> MeshyTaskStatusResponse:
-    task_refined = False
-    refined_task = generate_meshy_refine_task(payload)
+# async def refine_task_and_check_for_response(
+#     payload: MeshyRefinedPayload, websocket: WebSocket
+# ) -> MeshyTaskStatusResponse:
+#     task_refined = False
+#     refined_task = generate_meshy_refine_task(payload)
 
-    while task_refined is False:
-        await asyncio.sleep(1)
-        meshy_task_status = MeshyTaskStatus(task_id=refined_task.result)
-        refined_task_status = get_meshy_task_status(meshy_task_status)
-        percentage_complete = refined_task_status.progress
-        await websocket.send_text(refined_task_status.json(indent=2))
-        if percentage_complete == 100:
-            task_refined = True
+#     while task_refined is False:
+#         await asyncio.sleep(1)
+#         meshy_task_status = MeshyTaskStatus(task_id=refined_task.result)
+#         refined_task_status = get_meshy_task_status(meshy_task_status)
+#         percentage_complete = refined_task_status.progress
+#         await websocket.send_text(refined_task_status.json(indent=2))
+#         if percentage_complete == 100:
+#             task_refined = True
 
-    await websocket.send_text(refined_task_status.json(indent=2))
-    return refined_task_status
+#     await websocket.send_text(refined_task_status.json(indent=2))
+#     return refined_task_status
 
 
 async def validate_session(websocket: WebSocket) -> Tuple[bool, Optional[str]]:
@@ -76,7 +82,6 @@ async def validate_session(websocket: WebSocket) -> Tuple[bool, Optional[str]]:
 
 
 async def process_client_messages(websocket: WebSocket, user_id: str):
-    # task_posted = False
     
     while True:
         # Receive and parse payload
@@ -87,18 +92,13 @@ async def process_client_messages(websocket: WebSocket, user_id: str):
         # Generate task and await a response
         response = await generate_task_and_check_for_response(
             payload,
-            websocket
+            websocket,
+            user_id
             )
-        
         if response:
             await send_task_response(websocket, response)
             break
         
-        # Post the task to the database only once
-        # if not task_posted:
-        #     await post_task_to_db(response, user_id)
-        #     task_posted = True
-
 
 async def send_task_response(websocket: WebSocket, response):
     obj_file_blob = get_obj_file_blob(response.model_urls.obj)
@@ -108,11 +108,15 @@ async def send_task_response(websocket: WebSocket, response):
     await websocket.send_text(response.json(indent=2))
 
 
-# async def post_task_to_db(response: MeshyTaskGeneratedResponse, user_id: str):
-#     print("Posting task to DB...")
-#     task_info = TaskInformation(user_id=user_id, task_id=response.id, task_name=response.prompt)
-#     await create_task(task_info)
-#     print("Task posted:", task_info)
+async def post_task_to_db(response: MeshyTaskStatusResponse, user_id: str):
+    print("Posting task to DB...")
+    task_info = TaskInformation(
+        user_id=user_id,
+        task_id=response.id,
+        task_name=response.prompt
+        )
+    await create_task(task_info)
+    print("Task posted:", task_info)
 
 
 async def clean_up_connection(websocket: WebSocket, connections):

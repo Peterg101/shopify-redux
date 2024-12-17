@@ -70,4 +70,4 @@ class TaskInformation(BaseModel):
     task_id: Optional[str] = None
     user_id: Optional[str] = None
     task_name: Optional[str] = None
-    created_at: Optional[datetime] = datetime.now()
+    created_at: Optional[str] = Field(default_factory=lambda: datetime.now().isoformat())

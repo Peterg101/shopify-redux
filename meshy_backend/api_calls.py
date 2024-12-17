@@ -26,7 +26,7 @@ def generate_text_to_3d_task(payload: MeshyPayload) -> MeshyTaskGeneratedRespons
         return None
 
 
-def get_meshy_task_status(meshy_task_args: MeshyTaskStatus) -> MeshyTaskStatusResponse:
+async def get_meshy_task_status(meshy_task_args: MeshyTaskStatus) -> MeshyTaskStatusResponse:
     headers = {"Authorization": f"Bearer {MESHY_API_KEY}"}
     response = requests.get(
         f"https://api.meshy.ai/v2/text-to-3d/{meshy_task_args.task_id}",
