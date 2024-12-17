@@ -154,7 +154,7 @@ async def protected_endpoint(request: Request):
 
     try:
         print(f"User authenticated: {session_data}")
-        return {"message": "User Authenticated"}
+        return session_data
     except ValueError:
         raise HTTPException(status_code=401, detail="Invalid token or token verification failed")
 

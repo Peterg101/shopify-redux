@@ -1,5 +1,6 @@
 from io import BytesIO
 import httpx
+import json
 import requests
 from jwt_auth import generate_token
 from models import (MeshyPayload, MeshyRefinedPayload,
@@ -70,7 +71,9 @@ async def session_exists(session_id: str):
     print('running')
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers)
-    return response.status_code == 200
+        print('RESPONSE********************************')
+        user_id = json.loads(response.text)
+    return response.status_code == 200, user_id
 
 
 async def create_task(task_information: TaskInformation):

@@ -14,6 +14,8 @@ async def create_session(redis_session: Redis, session_data: SessionData):
 async def get_session(redis_session: Redis, session_id: uuid.UUID) -> Optional[SessionData]:
     session_data = await redis_session.get(f"session:{session_id}")
     if session_data:
+        print("SESSION DATAAAA*******************************")
+        print(session_data)
         return session_data
     return None
 

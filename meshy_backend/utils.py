@@ -1,17 +1,28 @@
 import asyncio
 import json
 from dataclasses import asdict, is_dataclass
-
+import base64
 from fastapi import WebSocket
-
-from api_calls import (generate_meshy_refine_task, generate_text_to_3d_task,
-                       get_meshy_task_status, create_task)
-from models import (MeshyRefinedPayload, MeshyTaskGeneratedResponse,
-                    MeshyTaskStatus, MeshyTaskStatusResponse, TaskInformation)
+from typing import Tuple, Optional
+from api_calls import (
+    generate_meshy_refine_task,
+    generate_text_to_3d_task,                   
+    get_meshy_task_status,
+    create_task,
+    session_exists,
+    get_obj_file_blob
+    )
+from models import (
+    MeshyRefinedPayload,
+    MeshyTaskGeneratedResponse,
+    MeshyTaskStatus,
+    MeshyTaskStatusResponse,
+    TaskInformation,
+    MeshyPayload)
 
 
 async def generate_task_and_check_for_response(
-    payload: MeshyTaskGeneratedResponse, websocket: WebSocket
+    payload: MeshyPayload, websocket: WebSocket
 ) -> MeshyTaskStatusResponse:
     task_generated = False
     generated_task = generate_text_to_3d_task(payload)
@@ -47,3 +58,65 @@ async def refine_task_and_check_for_response(
 
     await websocket.send_text(refined_task_status.json(indent=2))
     return refined_task_status
+
+
+async def validate_session(websocket: WebSocket) -> Tuple[bool, Optional[str]]:
+    
+    cookie_header = websocket.headers.get("cookie")
+    
+    if not cookie_header:
+        return False, None  # Session invalid: No cookie
+
+    session_valid, user_id = await session_exists(cookie_header)
+    if not session_valid:
+        return False, None  # Session invalid: Expired or invalid
+    
+    print("User ID:", user_id)
+    return True, user_id  # Session valid
+
+
+async def process_client_messages(websocket: WebSocket, user_id: str):
+    # task_posted = False
+    
+    while True:
+        # Receive and parse payload
+        raw_data = await websocket.receive_text()
+        payload_dict = json.loads(raw_data)
+        payload = MeshyPayload(**payload_dict)
+        
+        # Generate task and await a response
+        response = await generate_task_and_check_for_response(
+            payload,
+            websocket
+            )
+        
+        if response:
+            await send_task_response(websocket, response)
+            break
+        
+        # Post the task to the database only once
+        # if not task_posted:
+        #     await post_task_to_db(response, user_id)
+        #     task_posted = True
+
+
+async def send_task_response(websocket: WebSocket, response):
+    obj_file_blob = get_obj_file_blob(response.model_urls.obj)
+    obj_file_base64 = base64.b64encode(obj_file_blob.getvalue()).decode('utf-8')
+    response.obj_file_blob = obj_file_base64
+
+    await websocket.send_text(response.json(indent=2))
+
+
+# async def post_task_to_db(response: MeshyTaskGeneratedResponse, user_id: str):
+#     print("Posting task to DB...")
+#     task_info = TaskInformation(user_id=user_id, task_id=response.id, task_name=response.prompt)
+#     await create_task(task_info)
+#     print("Task posted:", task_info)
+
+
+async def clean_up_connection(websocket: WebSocket, connections):
+    if websocket in connections:
+        connections.remove(websocket)
+    await websocket.close()
+    print("Connection closed.")

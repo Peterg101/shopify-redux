@@ -20,6 +20,5 @@ class Task(Base):
     task_id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     task_name = Column(String)
-    status = Column(Integer)
     created_at = Column(DateTime, default=datetime.now)
     owner = relationship("User", back_populates="tasks")

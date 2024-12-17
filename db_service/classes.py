@@ -13,5 +13,4 @@ class TaskInformation(BaseModel):
     task_id: Optional[str] = None
     user_id: Optional[str] = None
     task_name: Optional[str] = None
-    status: Optional[str] = None
     created_at: Optional[datetime] = datetime.now()
