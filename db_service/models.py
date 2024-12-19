@@ -17,8 +17,8 @@ class User(Base):
 
 class Task(Base):
     __tablename__ = "tasks"
-    task_id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    task_id = Column(String, primary_key=True, index=True)
+    user_id = Column(String, ForeignKey("users.id"))
     task_name = Column(String)
-    created_at = Column(DateTime, default=datetime.now)
+    created_at = Column(String, default=datetime.now().isoformat())
     owner = relationship("User", back_populates="tasks")

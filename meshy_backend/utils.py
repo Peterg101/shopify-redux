@@ -73,11 +73,16 @@ async def validate_session(websocket: WebSocket) -> Tuple[bool, Optional[str]]:
     if not cookie_header:
         return False, None  # Session invalid: No cookie
 
-    session_valid, user_id = await session_exists(cookie_header)
+    session_valid, user = await session_exists(cookie_header)
     if not session_valid:
         return False, None  # Session invalid: Expired or invalid
     
-    print("User ID:", user_id)
+    print("User ID:", user) 
+  
+    user_dict = json.loads(user) 
+    user_id = user_dict.get('user_id')
+    print('**********USER ID*************')
+    print(user_id)
     return True, user_id  # Session valid
 
 

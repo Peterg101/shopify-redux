@@ -37,10 +37,11 @@ def create_user(
     verify_jwt_token(authorization)
 
     # Check if the user already exists
-    check_user_existence(db, user_information.email)
+    user_exists = check_user_existence(db, user_information.email)
 
     # Add the user to the database
-    user = add_user_to_db(db, user_information)
+    if not user_exists:
+        user = add_user_to_db(db, user_information)
 
     # Return the created user's data
     return {"id": user.id, "username": user.username, "email": user.email}
@@ -53,12 +54,15 @@ async def add_task(
     db: Session = Depends(get_db),
     authorization: str = Header(None)
 ):
+    
     verify_jwt_token(authorization)
 
-    check_user_existence(db, task_information.user_id)
+    user_exists = check_user_existence(db, task_information.user_id)
 
-    task = add_task_to_db(db, task_information)
-    return task.__dict__
+    if user_exists:
+        task = add_task_to_db(db, task_information)
+        return task.__dict__
+    return ""
 
 
 # Get User 
