@@ -2,6 +2,7 @@ import asyncio
 import json
 from dataclasses import asdict, is_dataclass
 import base64
+from datetime import datetime
 from fastapi import WebSocket
 from typing import Tuple, Optional
 from api_calls import (
@@ -118,8 +119,8 @@ async def post_task_to_db(response: MeshyTaskStatusResponse, user_id: str):
     task_info = TaskInformation(
         user_id=user_id,
         task_id=response.id,
-        task_name=response.prompt
-        )
+        task_name=response.prompt,
+        created_at=datetime.now().isoformat())
     await create_task(task_info)
     print("Task posted:", task_info)
 
