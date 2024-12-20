@@ -67,6 +67,8 @@ export const userInterfaceSlice = createSlice({
         },
         setMeshyPending: (state, action: PayloadAction<{meshyPending: boolean}>) => {
             const {meshyPending} = action.payload
+            console.log('INSIDE MESHY PENDING')
+            console.log(meshyPending)
             state.meshyPending = meshyPending
 
             if(meshyPending === false){

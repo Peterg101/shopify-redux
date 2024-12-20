@@ -7,9 +7,17 @@ import { useFile } from '../../services/fileProvider';
 import { useDispatch } from 'react-redux';
 import { setFileProperties } from '../../services/dataSlice';
 import { extractFileType } from '../../app/utility/utils';
-import { setMeshyLoadedPercentage, setMeshyLoading, setMeshyPending, setMeshyQueueItems } from '../../services/userInterfaceSlice';
+import { setMeshyLoadedPercentage, setMeshyLoading, setMeshyPending, setMeshyQueueItems, userInterfaceSlice } from '../../services/userInterfaceSlice';
+import { useSelector } from 'react-redux';
+import { RootState } from "../../app/store";
+
+
+
 
 const AiTextPrompt = () => {
+  const userInterfaceState = useSelector(
+    (state: RootState) => state.userInterfaceState
+  )
   const {actualFile, setActualFile} = useFile()
   const dispatch = useDispatch()
   const [meshyData, setMeshyData] = useState<MeshyTaskStatusResponse | null>(null);
@@ -19,8 +27,10 @@ const AiTextPrompt = () => {
   const [value, setValue] = useState<string>('');
 
   const handleKeyPress = (event: KeyboardEvent<HTMLDivElement>) => {
+    console.log('BUTTON PRESSED')
     if (event.key === 'Enter' && value) {
       handleSubmit();
+      dispatch(setMeshyPending({meshyPending: true}))
     }
   };
 
@@ -76,7 +86,10 @@ const AiTextPrompt = () => {
 
   const handleSubmit = async () => {
     setDisabledField(true);
-    
+    console.log('SUBMIT')
+    console.log(userInterfaceState.meshyPending)
+    dispatch(setMeshyPending({meshyPending: true}))
+    console.log(userInterfaceState.meshyPending)
     const ws = new WebSocket("ws://localhost:1234/ws");
 
     ws.onopen = () => {

@@ -12,7 +12,7 @@ export const Dropzone = () => {
     
     return (
         <div>
-        {userInterfaceState.meshyLoading ? <MeshyLoading/> :<DropArea/>}
+        {(userInterfaceState.meshyPending || userInterfaceState.meshyLoading) ? <MeshyLoading/> :<DropArea/>}
         <Box sx={{marginTop: 5}}>
         <AiTextPrompt/>
         </Box>
