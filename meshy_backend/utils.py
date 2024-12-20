@@ -19,7 +19,9 @@ from models import (
     MeshyTaskStatus,
     MeshyTaskStatusResponse,
     TaskInformation,
-    MeshyPayload)
+    MeshyPayload,
+    ModelUrls
+    )
 
 
 async def generate_task_and_check_for_response(
@@ -96,11 +98,34 @@ async def process_client_messages(websocket: WebSocket, user_id: str):
         payload = MeshyPayload(**payload_dict)
         
         # Generate task and await a response
-        response = await generate_task_and_check_for_response(
-            payload,
-            websocket,
-            user_id
-            )
+        # response = await generate_task_and_check_for_response(
+        #     payload,
+        #     websocket,
+        #     user_id
+        #     )
+        print("********MOCK RESPONSE****************")
+        response = MeshyTaskStatusResponse(
+            id="12345",
+            mode="test",
+            name="Example Task",
+            seed=42,
+            art_style="Impressionism",
+            texture_richness="High",
+            prompt="A beautiful sunset over a mountain range.",
+            negative_prompt="No clouds",
+            status="completed",
+            created_at=1638345600,
+            progress=100,
+            task_error='no error',
+            started_at=1638345600,
+            finished_at=1638350000,
+            model_urls=ModelUrls(obj='https://assets.meshy.ai/f90372a1-a409-4203-8047-433769a318d4/tasks/0193e01e-9956-7527-9609-dd51de96467c/output/model.obj?Expires=4888166400&Signature=oeOz7v-nnzsIepAHCOeAcSNddp6h52CSGbIv5-h7u7O88-A17LHO4YDoihE5Azp0sR4k1~gVoz5F8fHIXUNyrXQh6x8KARL~dz02INikkNy4tWh9Znz2oo3scWMv8qA3jI7YOSlb0rN7AEfGfNqaSiQL1KNBhuLdqoSuZqrMPYM3Sfdjkc1EWYCnsBvo8GEGWIozUDs~on1yBn~am5UAB88B333yRE8OUvMgBnWhhmnQCXdEsvYxyQHa-bx2mRmQY-4hrW07gy-TT3loZctk47edX9CauIKOlw9Oq8YTuynPKIJTl~klIU4R8B0xnJti~XbQ0uPeoNE6hU-isHJXVQ__&Key-Pair-Id=KL5I0C8H7HX83', glb= '', fbx= '', usdz='', mtl = ''),
+            thumbnail_url="http://example.com/thumbnail.jpg",
+            video_url="http://example.com/video.mp4",
+            texture_urls=[],
+            preceding_tasks=2,
+            obj_file_blob=None
+        )
         if response:
             await send_task_response(websocket, response)
             break
