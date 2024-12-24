@@ -6,7 +6,6 @@ from models import UserInformation
 async def check_user_exists(user_id: str | None):
     url = f"http://localhost:8000/users/{user_id}"
     auth_token = generate_token("auth_backend")
-    print(auth_token)
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {auth_token}",  # Add the auth token here

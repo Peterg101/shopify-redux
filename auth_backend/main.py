@@ -160,7 +160,9 @@ async def protected_endpoint(request: Request):
     try:
         print(f"User authenticated: {session_data}")
         print(session_data.user_id)
-        return session_data
+        user_info = await check_user_exists(session_data.user_id)
+        print(user_info)
+        return user_info
     except ValueError:
         raise HTTPException(status_code=401, detail="Invalid token or token verification failed")
 

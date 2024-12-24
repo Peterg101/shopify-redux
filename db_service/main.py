@@ -77,7 +77,7 @@ async def get_user(
     print("SESSION ACTIVE")
     # Step 2: Query the database to get the user by user_id
     user = db.query(User).filter(User.id == user_id).first()
-
+    tasks = db.query(Task).filter(Task.user_id == user_id).all()
     # Step 3: If user not found, raise an exception
     if not user:
         print("user not found")
@@ -87,7 +87,7 @@ async def get_user(
     # tasks = db.query(Task).filter(Task.user_id == user.id).all()
 
     # Step 4: Return the user data (you can return the user with additional info like tasks if needed)
-    return {"user": user}  # If you fetched tasks, include that in the return value as well
+    return {"user": user, "tasks": tasks}  # If you fetched tasks, include that in the return value as well
 
 
 if __name__ == "__main__":
