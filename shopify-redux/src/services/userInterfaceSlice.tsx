@@ -12,7 +12,8 @@ const initialState: UserInterfaceState = {
     meshyLoadedPercentage: 0,
     meshyPending: false,
     meshyQueueItems: 0,
-    isLoggedIn: false
+    isLoggedIn: false,
+    userInformation: null
 }
 
 export const userInterfaceSlice = createSlice({
@@ -87,7 +88,10 @@ export const userInterfaceSlice = createSlice({
             authApi.endpoints.getSession.matchFulfilled, 
             (state, { payload }) => {
               console.log('user logged in')
-              state.isLoggedIn = true; 
+              console.log('PAYLOAD************')
+              console.log(payload)
+              state.isLoggedIn = true;
+              state.userInformation = payload 
             }
           )
           .addMatcher(

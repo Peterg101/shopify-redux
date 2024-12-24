@@ -31,6 +31,7 @@ export interface UserInterfaceState {
     meshyPending: boolean,
     meshyQueueItems: number,
     isLoggedIn: boolean
+    userInformation: UserAndTasks | null
 
 }
 
@@ -69,3 +70,22 @@ export interface VectorState {
       z: number;
     };
   }
+
+
+  export interface UserInformation {
+    user_id: string; 
+    username: string; 
+    email: string; 
+  }
+  
+  export interface TaskInformation {
+    task_id: string; 
+    user_id: string; 
+    task_name: string; 
+    created_at: string;
+  }
+
+export interface UserAndTasks{
+  user: UserInformation
+  tasks: TaskInformation[]
+}

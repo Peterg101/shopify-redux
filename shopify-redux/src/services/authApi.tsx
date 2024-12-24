@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { UUID } from "crypto";
+import { UserAndTasks } from '../app/utility/interfaces';
 
 
 export const authApi = createApi({
@@ -9,7 +10,7 @@ export const authApi = createApi({
     credentials: 'include',
   }),
   endpoints: (builder) => ({
-    getSession: builder.query<{ sessionData: any }, void>({
+    getSession: builder.query<UserAndTasks, void>({
       query: () => ({
         url: '/get_session',
         method: 'GET',
