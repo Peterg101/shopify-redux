@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 
@@ -14,3 +14,8 @@ class TaskInformation(BaseModel):
     user_id: Optional[str] = None
     task_name: Optional[str] = None
     created_at: Optional[str] = datetime.now().isoformat()
+
+
+class UserAndTasks(BaseModel):
+    user: UserInformation
+    tasks: List[TaskInformation]

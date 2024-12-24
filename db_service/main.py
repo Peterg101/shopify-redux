@@ -44,7 +44,7 @@ def create_user(
         user = add_user_to_db(db, user_information)
 
     # Return the created user's data
-    return {"id": user.id, "username": user.username, "email": user.email}
+    return {"user_id": user.user_id, "username": user.username, "email": user.email}
 
 
 # Add a Task
@@ -76,7 +76,7 @@ async def get_user(
     print(payload)
     print("SESSION ACTIVE")
     # Step 2: Query the database to get the user by user_id
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(User).filter(User.user_id == user_id).first()
     tasks = db.query(Task).filter(Task.user_id == user_id).all()
     # Step 3: If user not found, raise an exception
     if not user:

@@ -5,7 +5,7 @@ import requests
 from jwt_auth import generate_token
 from models import (MeshyPayload, MeshyRefinedPayload,
                     MeshyTaskGeneratedResponse, MeshyTaskStatus,
-                    MeshyTaskStatusResponse, TaskInformation)
+                    MeshyTaskStatusResponse, TaskInformation, UserAndTasks)
 
 MESHY_API_KEY = "msy_RLiG6FNDJRdsNfSKCoFJ5E2Jhcs4r1l5Hmjp"
 
@@ -72,8 +72,13 @@ async def session_exists(session_id: str):
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers)
         print('RESPONSE********************************')
-        user_id = json.loads(response.text)
-    return response.status_code == 200, user_id
+        user_information = json.loads(response.text)
+        print(user_information)
+        user_response = UserAndTasks(**user_information)
+        print('***************USER')
+        print(user_response)
+        
+    return response.status_code == 200, user_response
 
 
 async def create_task(task_information: TaskInformation):

@@ -71,3 +71,14 @@ class TaskInformation(BaseModel):
     user_id: Optional[str] = None
     task_name: Optional[str] = None
     created_at: Optional[str] = datetime.now().isoformat()
+
+
+class UserInformation(BaseModel):
+    user_id: Optional[str] = None
+    username: Optional[str] = None
+    email: Optional[str] = None
+
+
+class UserAndTasks(BaseModel):
+    user: UserInformation
+    tasks: List[TaskInformation]

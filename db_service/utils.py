@@ -34,13 +34,13 @@ def check_user_existence(db: Session, user_id: str | None) -> bool:
         return False
 
     # Query the database to check for existence
-    user_exists = db.query(User).filter(User.id == user_id).first() is not None
+    user_exists = db.query(User).filter(User.user_id == user_id).first() is not None
     return user_exists
 
 
 def add_user_to_db(db: Session, user_information: UserInformation) -> User:
     user = User(
-        id=user_information.user_id,
+        user_id=user_information.user_id,
         username=user_information.username,
         email=user_information.email
     )

@@ -17,6 +17,7 @@ import { EmptyBasket, Basket } from './basketFragments';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 import { setRightDrawerOpen, setLeftDrawerOpen } from '../../services/userInterfaceSlice';
+import { LeftDrawerList } from './leftDrawerFragments';
 
 const AppBar = styled(MuiAppBar)<MuiAppBarProps>(({ theme }) => ({
   zIndex: theme.zIndex.drawer + 1,
@@ -90,7 +91,7 @@ export default function UserInterface() {
         </Toolbar>
         <Divider />
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <Typography variant="h6" sx={{ padding: 2 }}>Left Drawer Content</Typography>
+          <LeftDrawerList/>
         </Box>
       </Drawer>
     </ThemeProvider>
