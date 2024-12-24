@@ -125,8 +125,6 @@ async def auth_callback(code: str, request: Request):
         raise HTTPException(status_code=400, detail=f"Invalid id_token: {str(e)}")
 
 
-
-
 @app.get("/logout")
 async def logout(request: Request):
     session_id = request.cookies.get("fitd_session_data")
@@ -134,9 +132,16 @@ async def logout(request: Request):
         raise HTTPException(status_code=401, detail="Not authenticated")
     try:
         session_data = await get_session(redis_session, session_id)
+        if not session_data:
+            raise HTTPException(status_code=401, detail="Session not found")
+
         await delete_session(redis_session, session_id)
         print(f"User logged out: {session_data}")  # Accessing name from session_data object
-        return {"message": "Logged out", "user_info": {session_data}}
+
+        return {
+            "message": "Logged out",
+            "user_info": {"user_id": session_data.user_id}
+        }
     except ValueError:
         # Token is invalid or verification failed
         raise HTTPException(status_code=401, detail="Invalid token or token verification failed")
@@ -154,6 +159,7 @@ async def protected_endpoint(request: Request):
 
     try:
         print(f"User authenticated: {session_data}")
+        print(session_data.user_id)
         return session_data
     except ValueError:
         raise HTTPException(status_code=401, detail="Invalid token or token verification failed")
