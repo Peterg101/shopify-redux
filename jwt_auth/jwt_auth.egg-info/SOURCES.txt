@@ -1,0 +1,12 @@
+README.md
+pyproject.toml
+setup.py
+jwt_auth/__init__.py
+jwt_auth/jwt_auth.py
+jwt_auth.egg-info/PKG-INFO
+jwt_auth.egg-info/SOURCES.txt
+jwt_auth.egg-info/dependency_links.txt
+jwt_auth.egg-info/requires.txt
+jwt_auth.egg-info/top_level.txt
+tests/__init__.py
+tests/test_jwt_auth.py
