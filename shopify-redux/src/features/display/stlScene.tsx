@@ -4,14 +4,14 @@ import React, { useEffect, useState} from 'react';
 import { calculateSize, calculateThreeVolume, calculateMaxScaling, calculateMinScaling} from "../../app/utility/utils";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
-import { setModelDimensions, setModelVolume, setScales } from '../../services/dataSlice';
+import { setModelDimensions, setModelVolume, setMultiplierValue, setScales } from '../../services/dataSlice';
 
 
 const STLScene = (
 ) => {
     const [stl, setStl] = useState<THREE.Mesh | null>(null);
     const [measuredStl, setMeasuredStl] = useState<THREE.Mesh | null>(null)
-    const [initialMultiplier, setInitialMultiplier] = useState<boolean>(false)
+    const [isMultiplierInitialized, setIsMultiplierInitialized] = useState<boolean>(false);
     const dispatch = useDispatch()
     const dataState = useSelector(
         (state: RootState) => state.dataState
@@ -41,11 +41,14 @@ const STLScene = (
             const measuredSize = calculateSize(otherLoadedStl)
             const maximumScale = calculateMaxScaling(measuredSize)
             const minimumScale = calculateMinScaling(measuredSize)
-            dispatch(setScales({minScale: minimumScale, maxScale: maximumScale }))
+            if (!isMultiplierInitialized) {
+                dispatch(setMultiplierValue({ multiplierValue: maximumScale }));
+                setIsMultiplierInitialized(true);
+            }
         }, undefined, (error) => {
             console.error("Error loading STL file:", error);
         });
-    }, [dataState.selectedFile, dataState.modelColour, dataState.multiplierValue, initialMultiplier, dispatch]);
+    }, [dataState.selectedFile, dataState.modelColour, dataState.multiplierValue, isMultiplierInitialized, dispatch]);
     
 useEffect(() => {
     if (stl && measuredStl) {

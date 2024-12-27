@@ -98,7 +98,6 @@ export const dataSlice = createSlice({
             const {minScale, maxScale} = action.payload
             state.minScale = minScale
             state.maxScale = maxScale
-            state.multiplierValue = maxScale
         },
         setMultiplierMidpoint: (state) => {
             const midpoint = getMidPoint(state.minScale, state.maxScale)

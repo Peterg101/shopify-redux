@@ -4,13 +4,13 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { calculateThreeVolume, calculateSize, calculateMaxScaling, calculateMinScaling } from "../../app/utility/utils";
-import { setModelDimensions, setModelVolume, setScales } from "../../services/dataSlice";
+import { setModelDimensions, setModelVolume, setMultiplierValue, setScales } from "../../services/dataSlice";
 
 const OBJScene = () => {
     const dispatch = useDispatch()
     const [obj, setObj] = useState<THREE.Mesh | null>(null);
     const [measuredObj, setMeasuredObj] = useState<THREE.Mesh | null>(null);
-    const [initialMultiplier, setInitialMultiplier] = useState<boolean>(false)
+    const [isMultiplierInitialized, setIsMultiplierInitialized] = useState<boolean>(false);
     const objRef = useRef<THREE.Mesh | null>(null);
     const dataState = useSelector(
         (state: RootState) => state.dataState
@@ -48,6 +48,7 @@ const OBJScene = () => {
                         const maximumScale = calculateMaxScaling(measuredSize)
                         const minimumScale = calculateMinScaling(measuredSize)
                         dispatch(setScales({minScale: minimumScale, maxScale: maximumScale }))
+                        
                     }
                 });
             },
@@ -55,7 +56,7 @@ const OBJScene = () => {
             (error) => {
                 console.error('Error loading OBJ file:', error);
             }
-        ); },[dataState.selectedFile, dataState.multiplierValue, dataState.modelColour, dispatch])
+        ); },[dataState.selectedFile, dataState.multiplierValue, dataState.modelColour, dispatch, isMultiplierInitialized])
     
     
         useEffect(() => {
