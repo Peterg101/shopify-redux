@@ -10,6 +10,7 @@ import { extractFileType } from '../../app/utility/utils';
 import { setMeshyLoadedPercentage, setMeshyLoading, setMeshyPending, setMeshyQueueItems, userInterfaceSlice } from '../../services/userInterfaceSlice';
 import { useSelector } from 'react-redux';
 import { RootState } from "../../app/store";
+import { authApi } from '../../services/authApi';
 
 
 
@@ -85,6 +86,7 @@ const AiTextPrompt = () => {
   }, [value]);
 
   const handleSubmit = async () => {
+
     setDisabledField(true);
     console.log('SUBMIT')
     console.log(userInterfaceState.meshyPending)
@@ -113,7 +115,9 @@ const AiTextPrompt = () => {
     };
 
     ws.onclose = () => {
-
+      console.log('CLOSING WEBSOCKET')
+      dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
+      console.log('TAGS INVALIDATED')
       setValue('');
       setDisabledField(false);
       if (textFieldRef.current) {

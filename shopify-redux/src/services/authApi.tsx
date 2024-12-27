@@ -9,12 +9,15 @@ export const authApi = createApi({
     baseUrl: 'http://localhost:2468',
     credentials: 'include',
   }),
+  tagTypes: ['sessionData'],
   endpoints: (builder) => ({
     getSession: builder.query<UserAndTasks, void>({
       query: () => ({
         url: '/get_session',
         method: 'GET',
+        
       }),
+      providesTags: ['sessionData'],
     }),
     logOut: builder.mutation<{ message: string }, void>({
       query: () => ({
