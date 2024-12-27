@@ -20,6 +20,8 @@ from models import (
     TaskInformation,
     MeshyPayload)
 
+from jwt_auth import generate_token
+import requests
 
 async def generate_task_and_check_for_response(
     payload: MeshyPayload, websocket: WebSocket, user_id: str
@@ -98,6 +100,7 @@ async def process_client_messages(websocket: WebSocket, user_id: str):
             )
         if response:
             await send_task_response(websocket, response)
+            await send_file_to_storage(response)
             break
         
 
@@ -127,3 +130,22 @@ async def clean_up_connection(websocket: WebSocket, connections):
         connections.remove(websocket)
     await websocket.close()
     print("Connection closed.")
+
+
+async def send_file_to_storage(
+        complete_meshy_response: MeshyTaskStatusResponse,
+        ):
+    print('sending meshy file')
+    server_url = "http://localhost:8000/file_upload"
+    auth_token = generate_token("meshy_backend")
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {auth_token}",  # Add the auth token here
+    }
+    response = requests.post(
+        server_url,
+        json=complete_meshy_response.dict(),
+        headers=headers
+        )
+    print("Response from server:", response.json())
+    

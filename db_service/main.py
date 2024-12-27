@@ -9,10 +9,16 @@ from utils import(
     add_user_to_db,
     add_task_to_db
 ) 
-from classes import UserInformation, TaskInformation
+from classes import UserInformation, TaskInformation, MeshyTaskStatusResponse
 import uvicorn
 from typing import Optional, Dict
 from jwt_auth import verify_jwt_token
+import base64
+from pathlib import Path
+
+UPLOAD_DIR = Path("./uploads")
+UPLOAD_DIR.mkdir(exist_ok=True)
+
 # Ensure tables are created
 Base.metadata.create_all(bind=engine)
 
@@ -89,6 +95,21 @@ async def get_user(
     # Step 4: Return the user data (you can return the user with additional info like tasks if needed)
     return {"user": user, "tasks": tasks}  # If you fetched tasks, include that in the return value as well
 
+
+@app.post("/file_upload")
+async def receive_meshy_task(response: MeshyTaskStatusResponse, payload: dict = Depends(verify_jwt_token)):
+    print("receiving meshy task")
+    if response.obj_file_blob:
+        # Decode the Base64 blob
+        file_data = base64.b64decode(response.obj_file_blob)
+        file_path = UPLOAD_DIR / f"{response.id}.obj"
+
+        # Save the decoded file
+        with open(file_path, "wb") as file:
+            file.write(file_data)
+
+        return {"message": "File saved successfully.", "file_name": str(file_path), "user": payload}
+    return {"message": "No OBJ file blob provided."}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=369)

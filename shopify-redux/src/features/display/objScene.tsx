@@ -48,7 +48,10 @@ const OBJScene = () => {
                         const maximumScale = calculateMaxScaling(measuredSize)
                         const minimumScale = calculateMinScaling(measuredSize)
                         dispatch(setScales({minScale: minimumScale, maxScale: maximumScale }))
-                        
+                        if (!isMultiplierInitialized) {
+                            dispatch(setMultiplierValue({ multiplierValue: maximumScale }));
+                            setIsMultiplierInitialized(true);
+                        }
                     }
                 });
             },
