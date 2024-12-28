@@ -112,6 +112,6 @@ async def receive_meshy_task(response: MeshyTaskStatusResponse, payload: dict = 
     return {"message": "No OBJ file blob provided."}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=369)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 
  
