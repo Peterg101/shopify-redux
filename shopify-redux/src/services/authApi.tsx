@@ -27,24 +27,22 @@ export const authApi = createApi({
     }),
     getFile: builder.query<FileResponse, string>({
       query: (fileId) => ({
-        url: `/file_storage/${fileId}`, // API endpoint
+        url: `/file_storage/${fileId}`,
         method: 'GET',
       }),
       async onQueryStarted(fileId, { dispatch, queryFulfilled }) {
         try {
           const { data: response } = await queryFulfilled;
-          // Extract and process Base64-encoded data
+    
+          // Decode Base64 to byte array
           const byteCharacters = atob(response.file_data);
           const byteNumbers = new Array(byteCharacters.length).fill(0).map((_, i) => byteCharacters.charCodeAt(i));
           const byteArray = new Uint8Array(byteNumbers);
     
-          // Create a Blob
-          const fileBlob = new Blob([byteArray]);
+          // Optional: Do something with the byte array
+          console.log("Byte Array:", byteArray);
     
-          // Use the Blob immediately (e.g., download or display)
-          console.log("File Blob ready", fileBlob);
-    
-          // Optional: Save or process the fileBlob here
+          // Byte array can be safely cached since it is serializable
         } catch (error) {
           console.error("Error retrieving file:", error);
         }

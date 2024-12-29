@@ -6,23 +6,28 @@ import { useLazyGetFileQuery } from "../../services/authApi";
 import React, { useEffect } from "react";
 
 export const LeftDrawerTask = (task: TaskInformation) => {
-    const [triggerGetFile, { isLoading, isError }] = useLazyGetFileQuery();
+    const [triggerGetFile, { data: fileData, isLoading, isError }] = useLazyGetFileQuery();
 
-    const handleGetFile = async (fileId: string) => {
-        try {
-            await triggerGetFile(fileId);
-        } catch (error) {
-            console.error("Error fetching file:", error);
-        }
+    const handleGetFile = (fileId: string) => {
+        triggerGetFile(fileId);
     };
 
+    useEffect(() => {
+        if (fileData) {
+            console.log("File data:", fileData);
+        }
+    }, [fileData]);
+
     return (
-        <div>
+        <div style={{ marginBottom: 20 }}>
             <Typography>Task Name: {task.task_name}</Typography>
             <Typography>Created At: {task.created_at}</Typography>
-            <Button onClick={() => handleGetFile(task.task_id)}>Fetch File</Button>
+            <Button onClick={() => handleGetFile(task.task_id)}>Edit</Button>
             {isLoading && <Typography>Loading...</Typography>}
-            {isError && <Typography color="error">Error loading file</Typography>}
+            {isError && <Typography color="error">Error loading file data</Typography>}
+            {fileData && (
+                <Typography>File Data Loaded</Typography>
+            )}
         </div>
     );
 };
