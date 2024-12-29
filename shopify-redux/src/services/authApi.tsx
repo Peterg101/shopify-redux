@@ -9,7 +9,7 @@ export const authApi = createApi({
     baseUrl: 'http://localhost:2468',
     credentials: 'include',
   }),
-  tagTypes: ['sessionData'],
+  tagTypes: ['sessionData', 'fileData'],
   endpoints: (builder) => ({
     getSession: builder.query<UserAndTasks, void>({
       query: () => ({
@@ -30,23 +30,27 @@ export const authApi = createApi({
         url: `/file_storage/${fileId}`,
         method: 'GET',
       }),
+      providesTags: ['fileData'],
+      keepUnusedDataFor: 0,
       async onQueryStarted(fileId, { dispatch, queryFulfilled }) {
         try {
-          const { data: response } = await queryFulfilled;
-    
-          // Decode Base64 to byte array
-          const byteCharacters = atob(response.file_data);
-          const byteNumbers = new Array(byteCharacters.length).fill(0).map((_, i) => byteCharacters.charCodeAt(i));
-          const byteArray = new Uint8Array(byteNumbers);
-    
-          // Optional: Do something with the byte array
-          console.log("Byte Array:", byteArray);
-    
-          // Byte array can be safely cached since it is serializable
+            // Invalidate previous cache if necessary
+            dispatch(authApi.util.invalidateTags([{ type: 'fileData', id: fileId }]));
+
+            const { data: response } = await queryFulfilled;
+
+            // Decode Base64 to byte array
+            const byteCharacters = atob(response.file_data);
+            const byteNumbers = Array.from(byteCharacters, char => char.charCodeAt(0));
+            let byteArray = new Uint8Array(byteNumbers); // Fresh instance
+
+            // Process the byte array
+            console.log("Fresh Byte Array:", byteArray);
+
         } catch (error) {
-          console.error("Error retrieving file:", error);
+            console.error("Error retrieving file:", error);
         }
-      },
+    },
     }),
   }),
 });

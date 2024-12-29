@@ -1,36 +1,86 @@
 import { Typography, Box, Button } from "@mui/material";
-import { TaskInformation } from "../../app/utility/interfaces";
-import { useSelector } from "react-redux";
+import { FileResponse, TaskInformation } from "../../app/utility/interfaces";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
-import { useLazyGetFileQuery } from "../../services/authApi";
-import React, { useEffect } from "react";
+import { authApi, useLazyGetFileQuery } from "../../services/authApi";
+import React, { useEffect, useState } from "react";
+import { useFile } from "../../services/fileProvider";
+import { resetDataState, setFileProperties } from "../../services/dataSlice";
+import { extractFileType } from "../../app/utility/utils";
+
 
 export const LeftDrawerTask = (task: TaskInformation) => {
-    const [triggerGetFile, { data: fileData, isLoading, isError }] = useLazyGetFileQuery();
+    const [triggerGetFile, { data: fileData, isLoading, isError}] = useLazyGetFileQuery();
+    const { actualFile, setActualFile } = useFile();
+    const [currentFilename, setCurrentFilename] = useState<string>('');
+    const dispatch = useDispatch();
 
-    const handleGetFile = (fileId: string) => {
-        triggerGetFile(fileId);
+    const fetchFile = async (fileId: string): Promise<FileResponse> => {
+        try {
+          const response = await fetch(`http://localhost:2468/file_storage/${fileId}`, {
+            method: 'GET',
+            credentials: 'include'
+          });
+      
+          if (!response.ok) {
+            throw new Error(`Failed to fetch file with ID ${fileId}: ${response.statusText}`);
+          }
+      
+          const data: FileResponse = await response.json();
+          return data;
+        } catch (error) {
+          console.error("Error fetching file:", error);
+          throw error;
+        }
+      };
+
+     const handleGetFile = async (fileId: string, filename: string) => {
+        console.log(filename);
+        console.log(fileId)
+        // Clear the cache locally before triggering the API call
+        // dispatch(authApi.util.invalidateTags([{ type: 'fileData' }]));
+
+
+        // Trigger the API call
+        setCurrentFilename(filename);
+        // triggerGetFile(fileId, false);
+        const data = await fetchFile(fileId)
+        console.log(data)
     };
 
     useEffect(() => {
+        let objectURL: string | null = null;
         if (fileData) {
             console.log("File data:", fileData);
+            const decodedData = atob(fileData.file_data);
+            const blob = new Blob([decodedData], { type: "application/octet-stream" });
+            const file = new File([blob], "downloaded_file.obj", { type: "application/octet-stream" });
+            objectURL = URL.createObjectURL(file);
+            setActualFile(file);
+            dispatch(setFileProperties({
+                selectedFile: objectURL,
+                selectedFileType: extractFileType(file),
+                fileNameBoxValue: currentFilename,
+            }));
         }
-    }, [fileData]);
+        return () => {
+            if (objectURL) URL.revokeObjectURL(objectURL);
+        };
+    }, [fileData, currentFilename, dispatch, setActualFile]);
 
     return (
         <div style={{ marginBottom: 20 }}>
             <Typography>Task Name: {task.task_name}</Typography>
             <Typography>Created At: {task.created_at}</Typography>
-            <Button onClick={() => handleGetFile(task.task_id)}>Edit</Button>
+            <Button onClick={() => handleGetFile(task.task_id, task.task_name)}>Edit</Button>
             {isLoading && <Typography>Loading...</Typography>}
             {isError && <Typography color="error">Error loading file data</Typography>}
-            {fileData && (
-                <Typography>File Data Loaded</Typography>
-            )}
+            {fileData && <Typography>File Data Loaded</Typography>}
         </div>
     );
 };
+
+
 
 export const LeftDrawerList = () =>{
     const userInterfaceState = useSelector(
