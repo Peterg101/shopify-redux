@@ -89,3 +89,8 @@ export interface UserAndTasks{
   user: UserInformation
   tasks: TaskInformation[]
 }
+
+export interface FileResponse {
+  file_id: string;
+  file_data: string; 
+}

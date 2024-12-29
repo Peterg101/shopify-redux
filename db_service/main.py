@@ -8,7 +8,8 @@ from utils import(
     check_user_existence,
     add_user_to_db,
     add_task_to_db
-) 
+)
+import os
 from classes import UserInformation, TaskInformation, MeshyTaskStatusResponse
 import uvicorn
 from typing import Optional, Dict
@@ -37,7 +38,7 @@ app.add_middleware(
 def create_user(
     user_information: UserInformation,
     db: Session = Depends(get_db),
-    authorization: str = Header(None)
+    authorization: str = Depends(verify_jwt_token)
 ):
     # Validate the JWT token
     verify_jwt_token(authorization)
@@ -58,9 +59,8 @@ def create_user(
 async def add_task(
     task_information: TaskInformation,
     db: Session = Depends(get_db),
-    authorization: str = Header(None)
+    authorization: str = Depends(verify_jwt_token)
 ):
-    
     verify_jwt_token(authorization)
 
     user_exists = check_user_existence(db, task_information.user_id)
@@ -76,11 +76,9 @@ async def add_task(
 async def get_user(
     user_id: str,
     db: Session = Depends(get_db),
-    authorization: str = Header(None)
+    authorization: str = Depends(verify_jwt_token)
 ):
-    payload = verify_jwt_token(authorization)
-    print(payload)
-    print("SESSION ACTIVE")
+    
     # Step 2: Query the database to get the user by user_id
     user = db.query(User).filter(User.user_id == user_id).first()
     tasks = db.query(Task).filter(Task.user_id == user_id).all()
@@ -110,6 +108,24 @@ async def receive_meshy_task(response: MeshyTaskStatusResponse, payload: dict = 
 
         return {"message": "File saved successfully.", "file_name": str(file_path), "user": payload}
     return {"message": "No OBJ file blob provided."}
+
+
+@app.get("/file_storage/{file_id}")
+async def get_file_from_storage(
+    file_id: str,
+    authorization: str = Depends(verify_jwt_token)
+):
+    print(file_id)
+    file_path = os.path.join("uploads", f"{file_id}.obj")
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    with open(file_path, "rb") as file:
+        file_data = file.read()
+        encoded_data = base64.b64encode(file_data).decode("utf-8")
+    
+    return {"file_id": file_id, "file_data": encoded_data}
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

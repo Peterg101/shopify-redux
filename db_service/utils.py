@@ -62,3 +62,4 @@ def add_task_to_db(db: Session, task_information: TaskInformation) -> Task:
     db.commit()
     db.refresh(task)
     return task
+

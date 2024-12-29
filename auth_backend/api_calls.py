@@ -41,3 +41,25 @@ async def create_user(user_information: UserInformation):
             # Handle any errors
             print(f"Error: {response.status_code} - {response.text}")
             return None
+
+
+async def get_file(file_id: str):
+    print('getting file')
+    auth_token = generate_token("auth_backend")
+    url = f"http://localhost:8000/file_storage/{file_id}"  # Adjust with your actual FastAPI URL
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {auth_token}",  # Add the auth token here
+    }
+
+    # Send the POST request with user data and session token in cookies
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
+
+        if response.status_code == 200:
+            # If successful, return the user data
+            return response.json()
+        else:
+            # Handle any errors
+            print(f"Error: {response.status_code} - {response.text}")
+            return None

@@ -18,7 +18,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from redis import Redis
 from utils import create_session, get_session, delete_session
-from api_calls import check_user_exists, create_user
+from api_calls import check_user_exists, create_user, get_file
 
 app = FastAPI()
 app.add_middleware(
@@ -165,6 +165,26 @@ async def protected_endpoint(request: Request):
         return user_info
     except ValueError:
         raise HTTPException(status_code=401, detail="Invalid token or token verification failed")
+
+
+@app.get("/file_storage/{file_id}")
+async def get_file_from_storage(request: Request, file_id: str):
+    session_id = request.cookies.get("fitd_session_data")
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    session_data = await get_session(redis_session, session_id)
+    if not session_data:
+        print('no session data')
+        raise HTTPException(status_code=401, detail="Session not found")
+    try:
+        file_response = await get_file(file_id)
+        print(file_response)
+
+        return file_response
+        
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Invalid token or token verification failed")
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=2468)
