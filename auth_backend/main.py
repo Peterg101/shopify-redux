@@ -167,24 +167,5 @@ async def protected_endpoint(request: Request):
         raise HTTPException(status_code=401, detail="Invalid token or token verification failed")
 
 
-@app.get("/file_storage/{file_id}")
-async def get_file_from_storage(request: Request, file_id: str):
-    session_id = request.cookies.get("fitd_session_data")
-    if not session_id:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    session_data = await get_session(redis_session, session_id)
-    if not session_data:
-        print('no session data')
-        raise HTTPException(status_code=401, detail="Session not found")
-    try:
-        file_response = await get_file(file_id)
-        print(file_response)
-
-        return file_response
-        
-    except ValueError:
-        raise HTTPException(status_code=401, detail="Invalid token or token verification failed")
-
-
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=2468)

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, Cookie, Header
+from fastapi import FastAPI, HTTPException, Depends, Cookie, Header, Request
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from models import User, Task
@@ -9,6 +9,7 @@ from utils import(
     add_user_to_db,
     add_task_to_db
 )
+from api_calls import session_exists
 import os
 from classes import UserInformation, TaskInformation, MeshyTaskStatusResponse
 import uvicorn
@@ -16,7 +17,7 @@ from typing import Optional, Dict
 from jwt_auth import verify_jwt_token
 import base64
 from pathlib import Path
-
+import re
 UPLOAD_DIR = Path("./uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
@@ -111,9 +112,18 @@ async def receive_meshy_task(response: MeshyTaskStatusResponse, payload: dict = 
 
 @app.get("/file_storage/{file_id}")
 async def get_file_from_storage(
+    request: Request,
     file_id: str,
-    authorization: str = Depends(verify_jwt_token)
+    # authorization: str = Depends(verify_jwt_token)
 ):
+    session_id = request.cookies.get("fitd_session_data")
+    print(session_id)
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    session_data = await session_exists(session_id)
+    if not session_data:
+        raise HTTPException(status_code=401, detail="No Session Found")
     print(file_id)
     file_path = os.path.join("uploads", f"{file_id}.obj")
     if not os.path.exists(file_path):

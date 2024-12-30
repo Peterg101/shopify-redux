@@ -2,7 +2,7 @@ import { FileInformation, FileResponse} from "../app/utility/interfaces"
 
 export const fetchFile = async (fileId: string): Promise<FileResponse> => {
     try {
-      const response = await fetch(`http://localhost:2468/file_storage/${fileId}`, {
+      const response = await fetch(`http://localhost:8000/file_storage/${fileId}`, {
         method: 'GET',
         credentials: 'include'
       });
@@ -31,7 +31,7 @@ export const extractFileInfo = (fileResponse: FileResponse, filename: string): F
         file: file,
         fileBlob: blob,
         fileUrl: fileURL,
-    };
+    };  
 
     return fileInfo
     
