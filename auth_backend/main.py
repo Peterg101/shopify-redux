@@ -17,8 +17,8 @@ from fastapi.security import OAuth2PasswordBearer
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from redis import Redis
-from utils import create_session, get_session, delete_session, cookie_verification
-from api_calls import check_user_exists, create_user, get_file
+from utils import create_session, delete_session, cookie_verification
+from api_calls import check_user_exists, create_user
 
 app = FastAPI()
 app.add_middleware(
