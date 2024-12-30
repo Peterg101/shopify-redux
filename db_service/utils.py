@@ -3,7 +3,7 @@ from api_calls import session_exists
 from sqlalchemy.orm import Session
 from models import User, Task
 from classes import UserInformation, TaskInformation
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from datetime import datetime
 
 
@@ -63,3 +63,13 @@ def add_task_to_db(db: Session, task_information: TaskInformation) -> Task:
     db.refresh(task)
     return task
 
+
+async def cookie_verification(request: Request):
+    session_id = request.cookies.get("fitd_session_data")
+    print(session_id)
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    session_data = await session_exists(session_id)
+    if not session_data:
+        raise HTTPException(status_code=401, detail="No Session Found")

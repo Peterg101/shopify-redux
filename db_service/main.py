@@ -7,7 +7,8 @@ from utils import(
     check_session_token_active,
     check_user_existence,
     add_user_to_db,
-    add_task_to_db
+    add_task_to_db,
+    cookie_verification
 )
 from api_calls import session_exists
 import os
@@ -114,16 +115,8 @@ async def receive_meshy_task(response: MeshyTaskStatusResponse, payload: dict = 
 async def get_file_from_storage(
     request: Request,
     file_id: str,
-    # authorization: str = Depends(verify_jwt_token)
+    _: None = Depends(cookie_verification)
 ):
-    session_id = request.cookies.get("fitd_session_data")
-    print(session_id)
-    if not session_id:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    
-    session_data = await session_exists(session_id)
-    if not session_data:
-        raise HTTPException(status_code=401, detail="No Session Found")
     print(file_id)
     file_path = os.path.join("uploads", f"{file_id}.obj")
     if not os.path.exists(file_path):
