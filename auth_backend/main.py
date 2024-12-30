@@ -17,7 +17,7 @@ from fastapi.security import OAuth2PasswordBearer
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from redis import Redis
-from utils import create_session, get_session, delete_session
+from utils import create_session, get_session, delete_session, cookie_verification
 from api_calls import check_user_exists, create_user, get_file
 
 app = FastAPI()
@@ -34,6 +34,9 @@ app.add_middleware(
 REDIS_HOST = "localhost"
 REDIS_PORT = 6379
 redis_session = aioredis.from_url(f"redis://{REDIS_HOST}:{REDIS_PORT}", decode_responses=True)
+
+async def get_redis_session() -> Redis:
+    return redis_session
 
 # Google OAuth2 configuration
 GOOGLE_CLIENT_ID = "854876909268-92r1ja775v91cciriu3blce5ulentf9f.apps.googleusercontent.com"
@@ -127,14 +130,9 @@ async def auth_callback(code: str, request: Request):
 
 @app.get("/logout")
 async def logout(request: Request):
-    session_id = request.cookies.get("fitd_session_data")
-    if not session_id:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    try:
-        session_data = await get_session(redis_session, session_id)
-        if not session_data:
-            raise HTTPException(status_code=401, detail="Session not found")
+    session_data, session_id = await cookie_verification(request, redis_session)
 
+    try:
         await delete_session(redis_session, session_id)
         print(f"User logged out: {session_data}")  # Accessing name from session_data object
 
@@ -149,13 +147,7 @@ async def logout(request: Request):
 
 @app.get("/get_session")
 async def protected_endpoint(request: Request):
-    session_id = request.cookies.get("fitd_session_data")
-    if not session_id:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    session_data = await get_session(redis_session, session_id)
-    if not session_data:
-        print('no session data')
-        raise HTTPException(status_code=401, detail="Session not found")
+    session_data, _ = await cookie_verification(request, redis_session)
 
     try:
         print(f"User authenticated: {session_data}")
