@@ -5,7 +5,7 @@ import { RootState } from "../../app/store";
 import React from "react";
 import { useFile } from "../../services/fileProvider";
 import { resetDataState, setFileProperties } from "../../services/dataSlice";
-import { extractFileInfo, fetchFile } from "../../services/getFileUtils";
+import { extractFileInfo, fetchFile } from "../../services/fetchFileUtils";
 import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
 
 export const LeftDrawerTask = (task: TaskInformation) => {
