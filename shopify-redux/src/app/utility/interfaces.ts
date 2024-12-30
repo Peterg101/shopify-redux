@@ -94,3 +94,9 @@ export interface FileResponse {
   file_id: string;
   file_data: string; 
 }
+
+export interface FileInformation{
+  file: File,
+  fileBlob: Blob,
+  fileUrl: string
+}

@@ -40,9 +40,7 @@ def create_user(
     db: Session = Depends(get_db),
     authorization: str = Depends(verify_jwt_token)
 ):
-    # Validate the JWT token
-    verify_jwt_token(authorization)
-
+    
     # Check if the user already exists
     user_exists = check_user_existence(db, user_information.email)
 
@@ -61,7 +59,8 @@ async def add_task(
     db: Session = Depends(get_db),
     authorization: str = Depends(verify_jwt_token)
 ):
-    verify_jwt_token(authorization)
+    print('hitting here')
+    # verify_jwt_token(authorization)
 
     user_exists = check_user_existence(db, task_information.user_id)
 
