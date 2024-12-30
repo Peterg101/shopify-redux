@@ -35,8 +35,6 @@ REDIS_HOST = "localhost"
 REDIS_PORT = 6379
 redis_session = aioredis.from_url(f"redis://{REDIS_HOST}:{REDIS_PORT}", decode_responses=True)
 
-async def get_redis_session() -> Redis:
-    return redis_session
 
 # Google OAuth2 configuration
 GOOGLE_CLIENT_ID = "854876909268-92r1ja775v91cciriu3blce5ulentf9f.apps.googleusercontent.com"
