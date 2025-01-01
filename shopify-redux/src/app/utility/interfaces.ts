@@ -31,7 +31,7 @@ export interface UserInterfaceState {
     meshyPending: boolean,
     meshyQueueItems: number,
     isLoggedIn: boolean
-    userInformation: UserAndTasks | null
+    userInformation: UserAndTasksAndBasket | null
 
 }
 
@@ -86,15 +86,20 @@ export interface TaskInformation {
 }
 
 export interface BasketInformation {
-  taskId: string; // Corresponds to "task_id" in the database
-  userId: string; // Corresponds to "user_id"
+  task_id: string; // Corresponds to "task_id" in the database
+  user_id: string; // Corresponds to "user_id"
   name: string;
   material: string;
   technique: string;
-  sizing: string;
+  sizing: number;
   colour: string;
-  selectedFile: string;
-  selectedFileType: string;
+  selected_file: string; // Changed to snake_case
+  quantity: number;
+  selected_file_type: string; // Changed to snake_case
+}
+
+export interface BasketInformationAndFile extends BasketInformation {
+  file_blob: string; // Matching FastAPI model
 }
 
 export interface UserAndTasksAndBasket{

@@ -20,11 +20,9 @@ from jwt_auth import verify_jwt_token
 import base64
 from pathlib import Path
 import re
+
 UPLOAD_DIR = Path("./uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
-
-BASKET_DIR = Path("./basket_items")
-BASKET_DIR.mkdir(exist_ok=True)
 
 # Ensure tables are created
 Base.metadata.create_all(bind=engine)
@@ -136,7 +134,7 @@ async def get_file_from_storage(
     return {"file_id": file_id, "file_data": encoded_data}
 
 
-@app.post("/file_storage/{file_id}")
+@app.post("/file_storage")
 async def post_basket_item_to_storage(
     request: Request,
     basket_item: BasketItemInformation,
@@ -144,6 +142,7 @@ async def post_basket_item_to_storage(
     _: None = Depends(cookie_verification)
 ):
     # Check if the user exists in the database
+    print('hit the route')
     user_exists = check_user_existence(db, basket_item.user_id)
     if not user_exists:
         raise HTTPException(status_code=404, detail="User not found")

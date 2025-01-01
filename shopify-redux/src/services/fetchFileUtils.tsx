@@ -1,4 +1,4 @@
-import { FileInformation, FileResponse} from "../app/utility/interfaces"
+import { FileInformation, FileResponse, BasketInformationAndFile} from "../app/utility/interfaces"
 
 export const fetchFile = async (fileId: string): Promise<FileResponse> => {
     try {
@@ -36,3 +36,24 @@ export const extractFileInfo = (fileResponse: FileResponse, filename: string): F
     return fileInfo
     
 }
+
+export const postFile = async (basketInformationAndFile: BasketInformationAndFile) => {
+  try {
+    const response = await fetch(`http://localhost:8000/file_storage`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(basketInformationAndFile),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to post file ${basketInformationAndFile.name}: ${response.statusText}`);
+    }
+
+  } catch (error) {
+    console.error("Error fetching file:", error);
+    throw error;
+  }
+};

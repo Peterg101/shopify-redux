@@ -59,14 +59,14 @@ class MeshyTaskStatusResponse(BaseModel):
 
 
 class BasketItemInformation(BaseModel):
-    task_id: str
-    user_id: str
+    task_id: str          # task_id corresponds to "task_id" in the database
+    user_id: str          # user_id corresponds to "user_id"
     name: str
     material: str
     technique: str
     sizing: int
     colour: str
-    selectedFile: str
-    quantity: str
-    selectedFileType: str
-    file_blob: str
+    selected_file: str    # Changed to snake_case in TypeScript, use snake_case in Python
+    quantity: int
+    selected_file_type: str  # Changed to snake_case in TypeScript, use snake_case in Python
+    file_blob: str        # This matches the `file_blob` in TypeScript

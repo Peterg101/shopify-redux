@@ -50,6 +50,7 @@ export const createFileBlob = (file: File): string => {
   return fileBlob
 }
 
+
 export const extractFileType = (file: File): string => {
   const fileName = file.name;
   const extension = fileName.split('.').pop()?.toLowerCase();

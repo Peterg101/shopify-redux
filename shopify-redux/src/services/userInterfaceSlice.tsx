@@ -87,11 +87,10 @@ export const userInterfaceSlice = createSlice({
           .addMatcher(
             authApi.endpoints.getSession.matchFulfilled, 
             (state, { payload }) => {
-              console.log('user logged in')
-              console.log('PAYLOAD************')
               console.log(payload)
               state.isLoggedIn = true;
-              state.userInformation = payload 
+              console.log(payload.user.user_id)
+              state.userInformation = payload
             }
           )
           .addMatcher(
