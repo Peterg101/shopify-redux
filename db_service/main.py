@@ -1,18 +1,19 @@
 from fastapi import FastAPI, HTTPException, Depends, Cookie, Header, Request
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
-from models import User, Task
+from models import User, Task, BasketItem
 from db_setup import Base, engine, get_db
 from utils import(
     check_session_token_active,
     check_user_existence,
     add_user_to_db,
     add_task_to_db,
-    cookie_verification
+    cookie_verification,
+    decode_file
 )
 from api_calls import session_exists
 import os
-from classes import UserInformation, TaskInformation, MeshyTaskStatusResponse
+from classes import UserInformation, TaskInformation, MeshyTaskStatusResponse, BasketItemInformation
 import uvicorn
 from typing import Optional, Dict
 from jwt_auth import verify_jwt_token
@@ -21,6 +22,9 @@ from pathlib import Path
 import re
 UPLOAD_DIR = Path("./uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
+
+BASKET_DIR = Path("./basket_items")
+BASKET_DIR.mkdir(exist_ok=True)
 
 # Ensure tables are created
 Base.metadata.create_all(bind=engine)
@@ -83,6 +87,9 @@ async def get_user(
     # Step 2: Query the database to get the user by user_id
     user = db.query(User).filter(User.user_id == user_id).first()
     tasks = db.query(Task).filter(Task.user_id == user_id).all()
+    basket_items = db.query(BasketItem).filter(BasketItem.user_id == user_id).all()
+    print('basket items')
+    print(basket_items)
     # Step 3: If user not found, raise an exception
     if not user:
         print("user not found")
@@ -92,7 +99,7 @@ async def get_user(
     # tasks = db.query(Task).filter(Task.user_id == user.id).all()
 
     # Step 4: Return the user data (you can return the user with additional info like tasks if needed)
-    return {"user": user, "tasks": tasks}  # If you fetched tasks, include that in the return value as well
+    return {"user": user, "tasks": tasks, "basket_items": basket_items}  # If you fetched tasks, include that in the return value as well
 
 
 @app.post("/file_upload")
@@ -127,6 +134,35 @@ async def get_file_from_storage(
         encoded_data = base64.b64encode(file_data).decode("utf-8")
     
     return {"file_id": file_id, "file_data": encoded_data}
+
+
+@app.post("/file_storage/{file_id}")
+async def post_basket_item_to_storage(
+    request: Request,
+    basket_item: BasketItemInformation,
+    db: Session = Depends(get_db),
+    _: None = Depends(cookie_verification)
+):
+    # Check if the user exists in the database
+    user_exists = check_user_existence(db, basket_item.user_id)
+    if not user_exists:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    print("Receiving file from frontend")
+    
+    # Validate the file_blob presence
+    if not basket_item.file_blob:
+        raise HTTPException(status_code=400, detail="File blob not provided")
+    
+    # Decode the file and save to the specified directory
+    try:
+        decode_file(basket_item.file_blob, basket_item.task_id, UPLOAD_DIR)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"File decoding failed: {str(e)}")
+    
+    return {"message": "File successfully saved"}
+
+
 
 
 if __name__ == "__main__":

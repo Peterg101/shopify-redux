@@ -56,3 +56,17 @@ class MeshyTaskStatusResponse(BaseModel):
         arbitrary_types_allowed=True,
         protected_namespaces=(),  # Disables the warning about `model_`
     )
+
+
+class BasketItemInformation(BaseModel):
+    task_id: str
+    user_id: str
+    name: str
+    material: str
+    technique: str
+    sizing: int
+    colour: str
+    selectedFile: str
+    quantity: str
+    selectedFileType: str
+    file_blob: str

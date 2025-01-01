@@ -4,3 +4,4 @@
 .DS_Store
 *.pyc
 db_service/uploads
+db_service/basket_items

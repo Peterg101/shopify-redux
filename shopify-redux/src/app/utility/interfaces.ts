@@ -72,22 +72,35 @@ export interface VectorState {
   }
 
 
-  export interface UserInformation {
-    user_id: string; 
-    username: string; 
-    email: string; 
-  }
-  
-  export interface TaskInformation {
-    task_id: string; 
-    user_id: string; 
-    task_name: string; 
-    created_at: string;
-  }
+export interface UserInformation {
+  user_id: string; 
+  username: string; 
+  email: string; 
+}
 
-export interface UserAndTasks{
+export interface TaskInformation {
+  task_id: string; 
+  user_id: string; 
+  task_name: string; 
+  created_at: string;
+}
+
+export interface BasketInformation {
+  taskId: string; // Corresponds to "task_id" in the database
+  userId: string; // Corresponds to "user_id"
+  name: string;
+  material: string;
+  technique: string;
+  sizing: string;
+  colour: string;
+  selectedFile: string;
+  selectedFileType: string;
+}
+
+export interface UserAndTasksAndBasket{
   user: UserInformation
   tasks: TaskInformation[]
+  basket_items: BasketInformation[]
 }
 
 export interface FileResponse {

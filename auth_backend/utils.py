@@ -2,7 +2,7 @@ import uuid
 from typing import Optional, Union, Tuple
 from models import SessionData
 from redis import Redis
-from fastapi import HTTPException, Request,
+from fastapi import HTTPException, Request
 import json
 from uuid import UUID
 
