@@ -58,7 +58,7 @@ export default function UserInterface() {
             FITD
           </Typography>
           <IconButton edge="end" color="inherit" aria-label="open right drawer" onClick={toggleRightDrawer} sx={{ marginLeft: 'auto' }}>
-            <Badge badgeContent={userInterfaceState.basketItems.length} color="secondary">
+            <Badge badgeContent={userInterfaceState.userInformation?.basket_items.length} color="secondary">
               {userInterfaceState.rightDrawerOpen ? <ChevronRight /> : <ShoppingBasket />}
             </Badge>
           </IconButton>
@@ -73,7 +73,7 @@ export default function UserInterface() {
         <Divider />
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
           <List component="nav" sx={{ flexGrow: 1 }}>
-            {userInterfaceState.basketItems.length === 0 ? <EmptyBasket/> : <Basket/>}
+            {userInterfaceState.userInformation?.basket_items.length === 0 ? <EmptyBasket/> : <Basket/>}
             <Divider sx={{ my: 1 }} />
           </List>
           <Box sx={{ marginTop: 'auto', padding: 2 }}>

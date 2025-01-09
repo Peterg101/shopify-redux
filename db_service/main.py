@@ -5,6 +5,7 @@ from models import User, Task, BasketItem
 from db_setup import Base, engine, get_db
 from utils import(
     check_session_token_active,
+    add_or_update_basket_item_in_db,
     check_user_existence,
     add_user_to_db,
     add_task_to_db,
@@ -156,9 +157,10 @@ async def post_basket_item_to_storage(
     # Decode the file and save to the specified directory
     try:
         decode_file(basket_item.file_blob, basket_item.task_id, UPLOAD_DIR)
+        add_or_update_basket_item_in_db(db, basket_item)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File decoding failed: {str(e)}")
-    
+    print('everything big success')
     return {"message": "File successfully saved"}
 
 

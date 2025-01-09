@@ -68,8 +68,8 @@ def add_or_update_basket_item_in_db(db: Session, basket_item_info: BasketItemInf
                 existing_item.technique != basket_item_info.technique,
                 existing_item.sizing != basket_item_info.sizing,
                 existing_item.colour != basket_item_info.colour,
-                existing_item.selectedFile != basket_item_info.selectedFile,
-                existing_item.selectedFileType != basket_item_info.selectedFileType,
+                existing_item.selectedFile != basket_item_info.selected_file,
+                existing_item.selectedFileType != basket_item_info.selected_file_type,
             ]
         )
 
@@ -81,8 +81,8 @@ def add_or_update_basket_item_in_db(db: Session, basket_item_info: BasketItemInf
             existing_item.technique = basket_item_info.technique
             existing_item.sizing = basket_item_info.sizing
             existing_item.colour = basket_item_info.colour
-            existing_item.selectedFile = basket_item_info.selectedFile
-            existing_item.selectedFileType = basket_item_info.selectedFileType
+            existing_item.selectedFile = basket_item_info.selected_file
+            existing_item.selectedFileType = basket_item_info.selected_file_type
 
             db.commit()
             db.refresh(existing_item)
@@ -98,8 +98,8 @@ def add_or_update_basket_item_in_db(db: Session, basket_item_info: BasketItemInf
         technique=basket_item_info.technique,
         sizing=basket_item_info.sizing,
         colour=basket_item_info.colour,
-        selectedFile=basket_item_info.selectedFile,
-        selectedFileType=basket_item_info.selectedFileType,
+        selectedFile=basket_item_info.selected_file,
+        selectedFileType=basket_item_info.selected_file_type,
     )
 
     db.add(new_item)
@@ -125,7 +125,9 @@ def decode_file(file_blob: str, file_name: str, upload_dir: Path):
     file_path = upload_dir / f"{file_name}.obj"
     file_exists = check_file_exists(file_path)
     if not file_exists:
+        print(file_blob)
         file_data = base64.b64decode(file_blob)
+        print(file_data)
         with open(file_path, "wb") as file:
             file.write(file_data)
 

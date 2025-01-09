@@ -143,3 +143,21 @@ export function getMidPoint(minValue: number, maxValue: number): number {
 export function degreesToRadians(degrees: number): number {
   return degrees * (Math.PI / 180);
 }
+
+export async function convertFileToBase64WithoutFileReader(file: File): Promise<string> {
+  return file.arrayBuffer() // Read the file as an ArrayBuffer
+      .then((buffer) => {
+          const byteArray = new Uint8Array(buffer); // Convert ArrayBuffer to a Uint8Array
+          const binaryString = Array.from(byteArray)
+              .map(byte => String.fromCharCode(byte)) // Convert each byte to a character
+              .join('');
+          return btoa(binaryString); // Encode the binary string as Base64
+      });
+}
+
+export function createBase64Blob(base64String: string, mimeType: string): Blob {
+  const byteCharacters = atob(base64String); // Decode Base64
+  const byteNumbers = Array.from(byteCharacters, char => char.charCodeAt(0)); // Convert to bytes
+  const byteArray = new Uint8Array(byteNumbers);
+  return new Blob([byteArray], { type: mimeType });
+}

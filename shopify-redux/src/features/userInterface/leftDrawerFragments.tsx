@@ -19,7 +19,9 @@ export const LeftDrawerTask = (task: TaskInformation) => {
         dispatch(resetDataState())
         dispatch(setLeftDrawerClosed())
         const data = await fetchFile(fileId)
+        console.log(data)
         const fileInfo = extractFileInfo(data, filename)
+        console.log(fileInfo)
         setActualFile(fileInfo.file);
             dispatch(setFileProperties({
                 selectedFile: fileInfo.fileUrl,

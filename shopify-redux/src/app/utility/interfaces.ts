@@ -99,7 +99,7 @@ export interface BasketInformation {
 }
 
 export interface BasketInformationAndFile extends BasketInformation {
-  file_blob: string; // Matching FastAPI model
+  file_blob: string// Matching FastAPI model
 }
 
 export interface UserAndTasksAndBasket{

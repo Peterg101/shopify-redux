@@ -80,7 +80,6 @@ async def validate_session(websocket: WebSocket) -> Tuple[bool, Optional[str]]:
     if not session_valid:
         return False, None  # Session invalid: Expired or invalid
     
-    print("User ID:", user_information.user.user_id)
     return True, user_information.user.user_id  # Session valid
 
 
@@ -113,29 +112,24 @@ async def send_task_response(websocket: WebSocket, response):
 
 
 async def post_task_to_db(response: MeshyTaskStatusResponse, user_id: str):
-    print("Posting task to DB...")
     print(user_id)
-    print('THAT WAS the user id ************')
     task_info = TaskInformation(
         user_id=user_id,
         task_id=response.id,
         task_name=response.prompt
         )
     await create_task(task_info)
-    print("Task posted:", task_info)
 
 
 async def clean_up_connection(websocket: WebSocket, connections):
     if websocket in connections:
         connections.remove(websocket)
     await websocket.close()
-    print("Connection closed.")
 
 
 async def send_file_to_storage(
         complete_meshy_response: MeshyTaskStatusResponse,
         ):
-    print('sending meshy file')
     server_url = "http://localhost:8000/file_upload"
     auth_token = generate_token("meshy_backend")
     headers = {

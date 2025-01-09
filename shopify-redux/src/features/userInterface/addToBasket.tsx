@@ -1,6 +1,6 @@
 import { Button } from "@mui/material"
 import AddIcon from '@mui/icons-material/Add';
-import { createFileBlob, generateUuid } from "../../app/utility/utils";
+import { convertFileToBase64WithoutFileReader, createBase64Blob, createFileBlob, generateUuid } from "../../app/utility/utils";
 import { BasketItem, UploadedFile, BasketInformationAndFile } from "../../app/utility/interfaces";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
@@ -9,6 +9,7 @@ import { useUploadedFiles } from "../../services/uploadedFilesProvider";
 import { setBasketItems } from "../../services/userInterfaceSlice";
 import { resetDataState } from "../../services/dataSlice";
 import { postFile } from "../../services/fetchFileUtils";
+import { authApi } from "../../services/authApi";
 
 export const AddToBasket = () => {
   const dispatch = useDispatch()
@@ -26,9 +27,7 @@ const userState = useSelector(
       const itemUUID= generateUuid()
       console.log(userState.userInformation?.user.user_id)
       if (actualFile) {
-        const fileBlob = createFileBlob(actualFile)
-        const b64 = btoa(fileBlob)
-        console.log('this is where ')
+        const base64String = await convertFileToBase64WithoutFileReader(actualFile)
         const basketInformationAndFile: BasketInformationAndFile = {
           user_id: userState.userInformation?.user.user_id,
           task_id: itemUUID,
@@ -40,29 +39,11 @@ const userState = useSelector(
           selected_file: dataState.selectedFile,
           selected_file_type: dataState.selectedFileType,
           quantity: 1,
-          file_blob: b64
+          file_blob: base64String
         }
-        console.log(basketInformationAndFile)
         await postFile(basketInformationAndFile)
-        
-      //   const basketItem: BasketItem = {
-      //     id: itemUUID,
-      //     name: dataState.fileNameBoxValue,
-      //     material: dataState.printMaterial,
-      //     technique: dataState.printTechnique,
-      //     sizing: dataState.multiplierValue,
-      //     colour: dataState.modelColour,
-      //     selectedFile: dataState.selectedFile,
-      //     selectedFileType: dataState.selectedFileType
-      // };
-      //   const uploadedFile: UploadedFile = {
-      //     id: itemUUID,
-      //     file: actualFile
-      //   }
-      //   setUploadedFiles((prevFiles) => [...(prevFiles || []), uploadedFile]);
-      //   dispatch(setBasketItems({newBasketItem: basketItem}))
-      //   dispatch(resetDataState())
-        
+        dispatch(resetDataState())
+        dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));        
       }
 
     }
@@ -72,8 +53,6 @@ const userState = useSelector(
         role={undefined}
         variant="contained"
         tabIndex={-1}
-        
-        // startIcon={}
         onClick={handleAddToBasket}
         // disabled = {!statePopulationErrors}
         sx={{
