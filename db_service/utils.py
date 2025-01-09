@@ -10,17 +10,14 @@ import base64
 
 
 async def check_session_token_active(session_token: Union[str, None]) -> bool:
-    print('checking session token')
     if not session_token:
         return False
-    print('active session')
     active_session = await session_exists(session_token)
     return active_session
 
 
 def check_user_existence(db: Session, user_id: str | None) -> bool:
     if not user_id:  # Handle invalid input
-        print("NO USER ID PROVIDED")
         return False
 
     # Query the database to check for existence
@@ -111,7 +108,6 @@ def add_or_update_basket_item_in_db(db: Session, basket_item_info: BasketItemInf
 
 async def cookie_verification(request: Request):
     session_id = request.cookies.get("fitd_session_data")
-    print(session_id)
     if not session_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
     
@@ -125,9 +121,7 @@ def decode_file(file_blob: str, file_name: str, upload_dir: Path):
     file_path = upload_dir / f"{file_name}.obj"
     file_exists = check_file_exists(file_path)
     if not file_exists:
-        print(file_blob)
         file_data = base64.b64decode(file_blob)
-        print(file_data)
         with open(file_path, "wb") as file:
             file.write(file_data)
 
