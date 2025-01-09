@@ -76,9 +76,9 @@ export const EmptyBasket = () => {
             </AccordionDetails>
             <AccordionDetails>
               <Box sx = {{display:"flex", justifyContent:"space-between", width:"100%"}}>
-                {/* <DeleteFromBasket
+                <DeleteFromBasket
                   item={item}
-                /> */}
+                />
                 <EditBasketItem
                   item={item}
                 />

@@ -3,22 +3,23 @@ import {  deleteFileAndBasketItemFromArray } from '../../app/utility/utils';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { setAllBasketItems } from '../../services/userInterfaceSlice';
-import { BasketItem } from '../../app/utility/interfaces';
+import { BasketInformation, BasketItem } from '../../app/utility/interfaces';
 import { useUploadedFiles } from '../../services/uploadedFilesProvider';
-
+import { deleteBasketItem } from '../../services/fetchFileUtils';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { authApi } from '../../services/authApi';
 
-const DeleteFromBasket: React.FC<{item: BasketItem}> = ({item}) => {
+const DeleteFromBasket: React.FC<{item: BasketInformation}> = ({item}) => {
 const dispatch = useDispatch()
 const {uploadedFiles, setUploadedFiles} = useUploadedFiles()
 const userInterfaceSlice = useSelector(
   (state: RootState) => state.userInterfaceState
 )
 
-const handleDeleteBasketItem = (item:BasketItem) => {
-  const {newUploadedFiles, newBasketItems} = deleteFileAndBasketItemFromArray(item.id, uploadedFiles, userInterfaceSlice.basketItems)
-  setUploadedFiles(newUploadedFiles)
-  dispatch(setAllBasketItems({newBasketItems: newBasketItems}))
+const handleDeleteBasketItem = async (item:BasketInformation) => {
+  console.log(item.task_id)
+  await deleteBasketItem(item.task_id)
+  dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));   
 }
   return (
     <Button

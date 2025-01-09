@@ -57,3 +57,28 @@ export const postFile = async (basketInformationAndFile: BasketInformationAndFil
     throw error;
   }
 };
+
+
+export const deleteBasketItem = async (fileId: string): Promise<void> => {
+  
+  try {
+      const response = await fetch(`http://localhost:8000/file_storage/${fileId}`, {
+          method: "DELETE",
+          credentials: "include", // Include cookies in the request
+          headers: {
+              "Content-Type": "application/json",
+          },
+      });
+
+      if (!response.ok) {
+          const errorDetails = await response.json();
+          console.error("Failed to delete basket item:", errorDetails);
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      console.log(`Successfully deleted file with ID: ${fileId}`);
+  } catch (error) {
+      console.error("Error deleting basket item:", error);
+      throw error; // Propagate the error
+  }
+}

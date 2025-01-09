@@ -164,6 +164,48 @@ async def post_basket_item_to_storage(
     return {"message": "File successfully saved"}
 
 
+@app.delete("/file_storage/{file_id}")
+async def delete_basket_item(
+    request: Request,
+    file_id: str,
+    db: Session = Depends(get_db),
+    _: None = Depends(cookie_verification)  # Assuming cookie_verification is implemented
+):
+    try:
+        # Query the database for the item to delete
+        basket_item = db.query(BasketItem).filter(BasketItem.task_id == file_id).first()
+
+        # If the item doesn't exist, raise a 404 error
+        if not basket_item:
+            raise HTTPException(status_code=404, detail=f"Item with ID {file_id} not found.")
+
+        # Possible file extensions
+        extensions = ["str", "obj"]
+
+        # Attempt to delete the file for each extension
+        file_deleted = False
+        for ext in extensions:
+            file_path = os.path.join(UPLOAD_DIR, f"{file_id}.{ext}")
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                file_deleted = True
+                print(f"Deleted file: {file_path}")
+        
+        if not file_deleted:
+            raise HTTPException(status_code=404, detail=f"File {file_id} with extensions {extensions} not found in upload directory.")
+
+        # Delete the item from the database
+        db.delete(basket_item)
+        db.commit()
+
+        return {"message": f"Item with ID {file_id} and associated file(s) deleted successfully."}
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions
+    except Exception as e:
+        db.rollback()  # Rollback in case of an error
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
+
 
 
 if __name__ == "__main__":
