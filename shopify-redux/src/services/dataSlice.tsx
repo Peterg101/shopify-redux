@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { BasketItem, DataState, VectorState } from "../app/utility/interfaces";
+import { BasketInformation, BasketItem, DataState, FileInformation, VectorState } from "../app/utility/interfaces";
 import * as THREE from "three";
 import { getMidPoint } from "../app/utility/utils";
 
@@ -8,6 +8,7 @@ const initialVectorState: VectorState = {
 }
 
 const initialState: DataState = {
+    taskId:'',
     modelColour: 'white',
     selectedFile: '',
     selectedFileType: '',
@@ -118,16 +119,18 @@ export const dataSlice = createSlice({
         setUploadedFileEditProperties: (
             state,
             action: PayloadAction<{
-                basketItem: BasketItem
+                basketItem: BasketInformation,
+                fileInformation: FileInformation
             }>
         ) => {
-            const {basketItem} = action.payload
+            const {basketItem, fileInformation} = action.payload
+            state.taskId = basketItem.task_id
             state.fileNameBoxValue = basketItem.name
             state.printMaterial = basketItem.material
             state.printTechnique = basketItem.technique
             state.multiplierValue = basketItem.sizing
             state.modelColour = basketItem.colour
-            state.selectedFile= basketItem.selectedFile
+            state.selectedFile= fileInformation.fileUrl
             state.selectedFileType=basketItem.selectedFileType
             state.fileDisplay = true
         },

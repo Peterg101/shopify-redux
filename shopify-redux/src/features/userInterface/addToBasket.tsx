@@ -25,12 +25,11 @@ const userState = useSelector(
 
     const handleAddToBasket = async () => {
       const itemUUID= generateUuid()
-      console.log(userState.userInformation?.user.user_id)
       if (actualFile) {
         const base64String = await convertFileToBase64WithoutFileReader(actualFile)
         const basketInformationAndFile: BasketInformationAndFile = {
           user_id: userState.userInformation?.user.user_id,
-          task_id: itemUUID,
+          task_id: dataState.taskId ? dataState.taskId : itemUUID,
           name: dataState.fileNameBoxValue,
           material: dataState.printMaterial,
           technique: dataState.printTechnique,

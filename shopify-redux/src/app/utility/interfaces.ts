@@ -36,6 +36,7 @@ export interface UserInterfaceState {
 }
 
 export interface DataState {
+   taskId: string,
    modelColour: string,
    selectedFile: string,
    selectedFileType: string,
@@ -95,7 +96,7 @@ export interface BasketInformation {
   colour: string;
   selected_file: string; // Changed to snake_case
   quantity: number;
-  selected_file_type: string; // Changed to snake_case
+  selectedFileType: string; // Changed to snake_case
 }
 
 export interface BasketInformationAndFile extends BasketInformation {

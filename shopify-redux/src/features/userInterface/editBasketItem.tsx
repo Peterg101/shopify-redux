@@ -12,10 +12,6 @@ import { setAllBasketItems, setLeftDrawerClosed, setRightDrawerClosed } from '..
 import { resetDataState, setFileProperties } from "../../services/dataSlice";
 import { extractFileInfo, fetchFile } from "../../services/fetchFileUtils";
 
-
-
-
-
 const EditBasketItem: React.FC<{item: BasketInformation}> = ({item}) => {
 const {actualFile, setActualFile} = useFile()
 const dispatch = useDispatch()
@@ -25,42 +21,25 @@ const userInterfaceSlice = useSelector(
 )
 
 
-// const handleEditBasketItem = (item: BasketInformation) => {
-//     console.log(item.task_id)
-//     console.log(item.sizing)
-//     const combinedBasketItem = combineBasketItem(item.id, uploadedFiles, userInterfaceSlice.basketItems )
-//     setActualFile(combinedBasketItem.uploadedFile.file)
-//     dispatch(setUploadedFileEditProperties({basketItem: combinedBasketItem.basketItem}))
-//     console.log(combinedBasketItem)
-//     const {newUploadedFiles, newBasketItems} = deleteFileAndBasketItemFromArray(item.id, uploadedFiles, userInterfaceSlice.basketItems)
-//     setUploadedFiles(newUploadedFiles)
-//     dispatch(setAllBasketItems({newBasketItems: newBasketItems}))
-//     dispatch(setRightDrawerClosed())
-//     dispatch(setLeftDrawerClosed())
-// }
-
-const handleGetFile = async (fileId: string, filename: string) => {
-  console.log(filename);
-  console.log(fileId)
+const handleEditBasketItem = async (item: BasketInformation) => {
   setActualFile(null)
   dispatch(resetDataState())
   dispatch(setRightDrawerClosed())
-  const data = await fetchFile(fileId)
+  const data = await fetchFile(item.task_id)
+  console.log(item.selectedFileType)
   console.log(data)
-  const fileInfo = extractFileInfo(data, filename)
+  const fileInfo = extractFileInfo(data, item.name)
   console.log(fileInfo)
   setActualFile(fileInfo.file);
-      dispatch(setFileProperties({
-          selectedFile: fileInfo.fileUrl,
-          selectedFileType: 'obj',
-          fileNameBoxValue: filename,
-      }));
+  dispatch(setUploadedFileEditProperties({
+    basketItem: item,
+    fileInformation:fileInfo
+  }))
   
 };
   return (
     <Button
-      // onClick={() => handleEditBasketItem(item)}
-      onClick={()=> handleGetFile(item.task_id, item.name)}
+      onClick={() => handleEditBasketItem(item)}
     >
       <ModeEditIcon/>
     </Button>
