@@ -1,6 +1,7 @@
 from typing import Union, Dict
 from api_calls import session_exists
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import NoResultFound
 from models import User, Task, BasketItem
 from classes import UserInformation, TaskInformation, BasketItemInformation
 from fastapi import HTTPException, Request
@@ -49,6 +50,21 @@ def add_task_to_db(db: Session, task_information: TaskInformation) -> Task:
     db.commit()
     db.refresh(task)
     return task
+
+
+def mark_meshy_task_complete(db: Session, task_id: str):
+    # Retrieve the task record with the provided task_id
+    task = db.query(Task).filter(Task.task_id == task_id).first()
+    
+    if not task:
+        raise NoResultFound(f"Task with task_id {task_id} not found")
+    
+    # Update the 'complete' field to True
+    task.complete = True
+    
+    # Commit the transaction to save the change to the database
+    db.commit()
+    db.refresh(task)
 
 
 def add_or_update_basket_item_in_db(db: Session, basket_item_info: BasketItemInformation) -> BasketItem:

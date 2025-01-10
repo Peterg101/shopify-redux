@@ -31,7 +31,7 @@ export interface UserInterfaceState {
     meshyPending: boolean,
     meshyQueueItems: number,
     isLoggedIn: boolean
-    userInformation: UserAndTasksAndBasket | null
+    userInformation: UserAndTasksAndBasketAndIncomplete | null
 
 }
 
@@ -103,10 +103,12 @@ export interface BasketInformationAndFile extends BasketInformation {
   file_blob: string// Matching FastAPI model
 }
 
-export interface UserAndTasksAndBasket{
+export interface UserAndTasksAndBasketAndIncomplete{
   user: UserInformation
   tasks: TaskInformation[]
-  basket_items: BasketInformation[]
+  basket_items: BasketInformation[],
+  incomplete_tasks: TaskInformation[]
+
 }
 
 export interface FileResponse {

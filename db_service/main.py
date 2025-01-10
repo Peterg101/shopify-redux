@@ -10,7 +10,8 @@ from utils import(
     add_user_to_db,
     add_task_to_db,
     cookie_verification,
-    decode_file
+    decode_file,
+    mark_meshy_task_complete
 )
 from api_calls import session_exists
 import os
@@ -87,6 +88,7 @@ async def get_user(
     user = db.query(User).filter(User.user_id == user_id).first()
     tasks = db.query(Task).filter(Task.user_id == user_id).all()
     basket_items = db.query(BasketItem).filter(BasketItem.user_id == user_id).all()
+    incomplete_tasks = db.query(Task).filter(Task.user_id == user_id, Task.complete == False).all()
     print('basket items')
     print(basket_items)
     # Step 3: If user not found, raise an exception
@@ -98,11 +100,11 @@ async def get_user(
     # tasks = db.query(Task).filter(Task.user_id == user.id).all()
 
     # Step 4: Return the user data (you can return the user with additional info like tasks if needed)
-    return {"user": user, "tasks": tasks, "basket_items": basket_items}  # If you fetched tasks, include that in the return value as well
+    return {"user": user, "tasks": tasks, "basket_items": basket_items, "incomplete_tasks": incomplete_tasks}  # If you fetched tasks, include that in the return value as well
 
 
 @app.post("/file_upload")
-async def receive_meshy_task(response: MeshyTaskStatusResponse, payload: dict = Depends(verify_jwt_token)):
+async def receive_meshy_task(response: MeshyTaskStatusResponse, payload: dict = Depends(verify_jwt_token), db: Session = Depends(get_db)):
     print("receiving meshy task")
     if response.obj_file_blob:
         # Decode the Base64 blob
@@ -112,7 +114,7 @@ async def receive_meshy_task(response: MeshyTaskStatusResponse, payload: dict = 
         # Save the decoded file
         with open(file_path, "wb") as file:
             file.write(file_data)
-
+        mark_meshy_task_complete(db, response.id)
         return {"message": "File saved successfully.", "file_name": str(file_path), "user": payload}
     return {"message": "No OBJ file blob provided."}
 

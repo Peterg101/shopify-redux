@@ -11,7 +11,7 @@ export const authApi = createApi({
   }),
   tagTypes: ['sessionData', 'fileData'],
   endpoints: (builder) => ({
-    getSession: builder.query<UserAndTasksAndBasket, void>({
+    getSession: builder.query<UserAndTasksAndBasketAndIncomplete, void>({
       query: () => ({
         url: '/get_session',
         method: 'GET',

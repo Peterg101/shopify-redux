@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 from sqlalchemy.orm import relationship, Mapped, mapped_column
@@ -21,6 +21,7 @@ class Task(Base):
     task_id = Column(String, primary_key=True, index=True)
     user_id = Column(String, ForeignKey("users.user_id"))
     task_name = Column(String)
+    complete = Column(Boolean, default=False)
     created_at = Column(String, default=datetime.now().isoformat())
     owner = relationship("User", back_populates="tasks")
 
