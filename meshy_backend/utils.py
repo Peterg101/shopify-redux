@@ -2,14 +2,15 @@ import asyncio
 import json
 from dataclasses import asdict, is_dataclass
 import base64
-from fastapi import WebSocket
+from fastapi import WebSocket, Request, HTTPException
 from typing import Tuple, Optional
 from api_calls import (
     generate_meshy_refine_task,
     generate_text_to_3d_task,                   
     get_meshy_task_status,
     create_task,
-    session_exists,
+    websocket_session_exists,
+    http_session_exists,
     get_obj_file_blob
     )
 from models import (
@@ -75,7 +76,7 @@ async def validate_session(websocket: WebSocket) -> Tuple[bool, Optional[str]]:
     if not cookie_header:
         return False, None  # Session invalid: No cookie
 
-    session_valid, user_information = await session_exists(cookie_header)
+    session_valid, user_information = await websocket_session_exists(cookie_header)
 
     if not session_valid:
         return False, None  # Session invalid: Expired or invalid
@@ -143,3 +144,13 @@ async def send_file_to_storage(
         )
     print("Response from server:", response.json())
     
+
+async def cookie_verification(request: Request):
+    session_id = request.cookies.get("fitd_session_data")
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    # session_data = await session_exists_2(session_id)
+    session_data = await http_session_exists(session_id)
+    if not session_data:
+        raise HTTPException(status_code=401, detail="No Session Found")

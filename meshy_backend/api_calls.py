@@ -63,7 +63,7 @@ def get_obj_file_blob(url: str) -> BytesIO:
     return blob
 
 
-async def session_exists(session_id: str):
+async def websocket_session_exists(session_id: str):
     url = "http://localhost:2468/get_session"
     headers = {
         "Cookie": f"{session_id}"
@@ -79,6 +79,20 @@ async def session_exists(session_id: str):
         print(user_response)
         
     return response.status_code == 200, user_response
+
+
+async def http_session_exists(session_id: str) -> bool:
+    cookies = {"fitd_session_data": session_id}
+    url = "http://localhost:2468/get_session"
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url, cookies=cookies)
+            return response.status_code == 200
+        except httpx.HTTPError as e:
+            print(f"HTTP error occurred: {e}")
+            return False
+
 
 
 async def create_task(task_information: TaskInformation):
