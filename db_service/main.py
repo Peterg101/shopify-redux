@@ -67,7 +67,7 @@ async def add_task(
 ):
     print('hitting here')
     # verify_jwt_token(authorization)
-
+    print(task_information.user_id)
     user_exists = check_user_existence(db, task_information.user_id)
 
     if user_exists:
@@ -106,6 +106,7 @@ async def get_user(
 @app.post("/file_upload")
 async def receive_meshy_task(response: MeshyTaskStatusResponse, payload: dict = Depends(verify_jwt_token), db: Session = Depends(get_db)):
     print("receiving meshy task")
+    print(response.obj_file_blob)
     if response.obj_file_blob:
         # Decode the Base64 blob
         file_data = base64.b64decode(response.obj_file_blob)

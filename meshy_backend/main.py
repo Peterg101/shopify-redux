@@ -2,6 +2,7 @@ import uvicorn
 import json
 import base64
 import asyncio
+import aioredis
 from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, BackgroundTasks, Depends
 from typing import List
@@ -12,8 +13,10 @@ from models import (
     MeshyPayload,
     MeshyTaskStatusResponse,
     ModelUrls,
-    TaskInformation
+    TaskInformation,
+    TaskRequest
 )
+from redis import Redis
 
 from api_calls import (
     generate_text_to_3d_task,
@@ -23,7 +26,8 @@ from api_calls import (
     )
 
 from utils import (
-    generate_task_and_check_for_response, 
+    generate_task_and_check_for_response,
+    generate_task_and_check_for_response_decoupled_ws, 
     validate_session, 
     process_client_messages, 
     clean_up_connection,
@@ -38,6 +42,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"])
 
+# Redis Configuration
+REDIS_HOST = "localhost"
+REDIS_PORT = 6379
+
+
+async def get_redis():
+    redis = await aioredis.from_url(f"redis://{REDIS_HOST}:{REDIS_PORT}", decode_responses=True)
+    return redis
+
 
 @app.post("/api/meshy_request")
 async def generate_meshy_task(payload: MeshyPayload):
@@ -50,57 +63,74 @@ async def generate_meshy_task(payload: MeshyPayload):
 
 task_progress = {}
 
-# Define the schema for the request body
-class TaskRequest(BaseModel):
-    task_id: str
 
 
 @app.post("/start_task/")
 async def start_task(
     request: TaskRequest, 
     background_tasks: BackgroundTasks,
+    redis: aioredis.Redis = Depends(get_redis),
     _: None = Depends(cookie_verification)
-
-    ):
+):
     # Add the task to the background
-    background_tasks.add_task(long_running_task, request.task_id)
+    # background_tasks.add_task(long_running_task, request, redis)
+    background_tasks.add_task(
+        generate_task_and_check_for_response_decoupled_ws,
+        request,
+        redis
+    )
     task_progress[request.task_id] = 0  # Initialize task progress
     return {"message": "Task started!", "task_id": request.task_id}
 
 
 @app.websocket("/ws/{task_id}")
-async def websocket_endpoint(websocket: WebSocket, task_id: str):
+async def websocket_endpoint(websocket: WebSocket, task_id: str, redis: aioredis.Redis = Depends(get_redis)):
     await websocket.accept()
 
-    # Stream progress updates to the client
+    # # Authenticate session outside the try block
+    # session_valid, user_id = await validate_session(websocket)
+    # if not session_valid:
+    #     await websocket.close(code=1008, reason="Invalid session")
+    #     return
+
     try:
-        while task_progress.get(task_id, None) is not None:
-            progress = task_progress[task_id]
-            print(f"Progress {progress}")
-            await websocket.send_text(f"Progress: {progress}%")
-            if progress >= 100:
-                await websocket.send_text("Task Completed!")
-                break
-            await asyncio.sleep(1)  # Throttle updates to avoid spamming
+        # Subscribe to the task's progress channel
+        pubsub = redis.pubsub()
+        await pubsub.subscribe(f"task_progress:{task_id}")
+
+        async for message in pubsub.listen():
+            if message["type"] == "message":
+                progress = message["data"]
+                print('REDIS MESSAGE')
+                print(progress)
+                # Send progress update to the client
+                await websocket.send_text(progress)
+
+                if progress == "Task Completed":
+                    break
+
+    except WebSocketDisconnect:
+        print(f"WebSocket disconnected for task {task_id}")
     except Exception as e:
         print(f"WebSocket Error: {e}")
     finally:
+        # Cleanup: close the Redis pubsub and WebSocket connection
+        await pubsub.unsubscribe(f"task_progress:{task_id}")
+        await pubsub.close()
         await websocket.close()
-        print('Task complete and websocket closed')
+        print(f"WebSocket connection for task {task_id} closed.")
 
 
-async def long_running_task(task_id: str):
-    print('INSIDE')
-    for i in range(1, 101):  # Simulate 20 steps
-        print(i)
-        await asyncio.sleep(2)  # Simulate work
+async def long_running_task(request: TaskRequest, redis: aioredis.Redis):
+    """Simulates a long-running task and publishes progress updates."""
+    for i in range(21):
+        await asyncio.sleep(1)  # Simulate task progress
+        print(request.meshy_payload.prompt)
+        progress = f"Progress: {i * 5}%"
+        await redis.publish(f"task_progress:{request.task_id}", progress)
 
-        task_progress[task_id] = i * 5  # Update progress (5% per step)
-
-    # Mark task as completed
-    task_progress[task_id] = 100
-    await asyncio.sleep(1)  # Allow WebSocket clients to pick up the final update
-    del task_progress[task_id]  # Clean up the progress dictionary
+        if i == 20:
+            await redis.publish(f"task_progress:{request.task_id}", "Task Completed")
 
 
 connections: List[WebSocket] = []

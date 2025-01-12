@@ -6,7 +6,7 @@ import { useGetSessionQuery, useLogOutMutation } from "../../services/authApi";
 import { useSelector } from 'react-redux';
 import { RootState } from "../../app/store";
 import LoginDialog from "./loginDialogue";
-
+import { MeshyPayload } from "../../services/meshyApi";
 export const LandingPage = () => {
 
 
@@ -32,7 +32,7 @@ export const LandingPage = () => {
 
         ws.onmessage = (event) => {
           console.log('Message from server:', event.data);
-
+          ws.send('thanks for the message')
           // Handle progress updates and task completion
           if (event.data.includes('Progress:')) {
             const progressMatch = event.data.match(/Progress: (\d+)%/);
@@ -56,9 +56,13 @@ export const LandingPage = () => {
           console.log('WebSocket connection closed.');
         };
 
+
         // Cleanup on component unmount
         return () => {
-          ws.close();
+          if (ws){
+            ws.close(1000, 'Component unmounted');
+          }
+          
         };
       }
       else{
@@ -102,6 +106,12 @@ export const LandingPage = () => {
 
     const startTask = async () => {
       console.log('clicked 2');
+      const payload: MeshyPayload = {
+        mode: 'preview',
+        prompt: 'a bronco',
+        art_style: 'realistic',
+        negative_prompt: 'low quality, low resolution, low poly, ugly',
+      };
     
       const taskId = "12345"; // Replace with your dynamic task ID if needed
       const response = await fetch('http://localhost:1234/start_task/', {
@@ -111,7 +121,7 @@ export const LandingPage = () => {
           'Content-Type': 'application/json', // Specify that you're sending JSON data
     
         },
-        body: JSON.stringify({ task_id: taskId }), // Send task_id in the request body
+        body: JSON.stringify({ task_id: taskId, user_id: userInterfaceState.userInformation?.user.user_id, meshy_payload: payload }), // Send task_id in the request body
       });
     
       const data = await response.json();

@@ -18,11 +18,14 @@ async def check_session_token_active(session_token: Union[str, None]) -> bool:
 
 
 def check_user_existence(db: Session, user_id: str | None) -> bool:
+    print(user_id)
     if not user_id:  # Handle invalid input
         return False
 
     # Query the database to check for existence
     user_exists = db.query(User).filter(User.user_id == user_id).first() is not None
+    print(user_exists)
+    print('USERRRRRRRRR')
     return user_exists
 
 

@@ -82,3 +82,9 @@ class UserInformation(BaseModel):
 class UserAndTasks(BaseModel):
     user: UserInformation
     tasks: List[TaskInformation]
+
+
+class TaskRequest(BaseModel):
+    task_id: str
+    user_id: str
+    meshy_payload: MeshyPayload
