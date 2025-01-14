@@ -61,8 +61,6 @@ async def generate_meshy_task(payload: MeshyPayload):
     except ValidationError:
         raise HTTPException(status_code=500, detail="This is bad")
 
-task_progress = {}
-
 
 
 @app.post("/start_task/")
@@ -79,7 +77,6 @@ async def start_task(
         request,
         redis
     )
-    task_progress[request.task_id] = 0  # Initialize task progress
     return {"message": "Task started!", "task_id": request.task_id}
 
 

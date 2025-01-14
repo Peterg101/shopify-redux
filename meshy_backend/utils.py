@@ -62,7 +62,7 @@ async def generate_task_and_check_for_response_decoupled_ws(
     while task_generated is False:
         await asyncio.sleep(1)
         meshy_task_status = MeshyTaskStatus(task_id=generated_task.result)
-        print(meshy_task_status)
+        print(meshy_task_status.task_id)
         generated_task_status = await get_meshy_task_status(meshy_task_status)
         if not task_posted:
             print("POSTED THE TASK")
@@ -70,7 +70,8 @@ async def generate_task_and_check_for_response_decoupled_ws(
             task_posted = True
 
         percentage_complete = generated_task_status.progress
-        progress = f"Progress: {percentage_complete}%"
+        progress = f"Progress: {percentage_complete}%, MeshyTaskId: {meshy_task_status.task_id}"
+        print(generated_task.result)
         await redis.publish(f"task_progress:{request.task_id}", progress)
         if percentage_complete == 100:
             task_generated = True

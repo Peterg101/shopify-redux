@@ -1,5 +1,5 @@
 import { FileInformation, FileResponse, BasketInformationAndFile} from "../app/utility/interfaces"
-
+import { MeshyPayload } from "../services/meshyApi";
 export const fetchFile = async (fileId: string): Promise<FileResponse> => {
     try {
       const response = await fetch(`http://localhost:8000/file_storage/${fileId}`, {
@@ -82,3 +82,26 @@ export const deleteBasketItem = async (fileId: string): Promise<void> => {
       throw error; // Propagate the error
   }
 }
+
+export const startTask = async (prompt: string, userId: string, portId: string) => {
+  console.log('clicked 2');
+  const payload: MeshyPayload = {
+    mode: 'preview',
+    prompt: prompt,
+    art_style: 'realistic',
+    negative_prompt: 'low quality, low resolution, low poly, ugly',
+  };
+
+  const response = await fetch('http://localhost:1234/start_task/', {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json', // Specify that you're sending JSON data
+
+    },
+    body: JSON.stringify({ task_id: portId, user_id: userId, meshy_payload: payload }),
+  });
+
+  const data = await response.json();
+  console.log(data.message); // This will be "Task started!"
+};

@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
-import React, { useState, ChangeEvent, KeyboardEvent, useRef, useCallback } from 'react';
+import React, { useState, ChangeEvent, KeyboardEvent, useRef, useCallback, useEffect } from 'react';
 import { generateUUID } from 'three/src/math/MathUtils';
 import { MeshyTaskStatusResponse, MeshyPayload } from '../../services/meshyApi';
 import { useFile } from '../../services/fileProvider';
@@ -11,6 +11,8 @@ import { setMeshyLoadedPercentage, setMeshyLoading, setMeshyPending, setMeshyQue
 import { useSelector } from 'react-redux';
 import { RootState } from "../../app/store";
 import { authApi } from '../../services/authApi';
+import { createWebsocketConnection } from '../../services/meshyWebsocket';
+import { startTask } from '../../services/fetchFileUtils';
 
 
 
@@ -85,57 +87,64 @@ const AiTextPrompt = () => {
     }
   }, [value]);
 
+
   const handleSubmit = async () => {
+    if(userInterfaceState.userInformation){
 
-    setDisabledField(true);
-    console.log('SUBMIT')
-    console.log(userInterfaceState.meshyPending)
-    dispatch(setMeshyPending({meshyPending: true}))
-    console.log(userInterfaceState.meshyPending)
-    const ws = new WebSocket("ws://localhost:1234/ws");
+      setDisabledField(true);
+      console.log('SUBMIT')
+      console.log(userInterfaceState.meshyPending)
+      dispatch(setMeshyPending({meshyPending: true}))
+      console.log(userInterfaceState.meshyPending)
+      createWebsocketConnection("12345", dispatch)
+      startTask(value, userInterfaceState.userInformation?.user.user_id,"12345")
 
-    ws.onopen = () => {
-      const payload: MeshyPayload = {
-        mode: 'preview',
-        prompt: value,
-        art_style: 'realistic',
-        negative_prompt: 'low quality, low resolution, low poly, ugly',
-      };
-      ws.send(JSON.stringify(payload));
-    };
+    }
+    
+    // const ws = new WebSocket("ws://localhost:1234/ws");
 
-    ws.onmessage = async (event) => {
-      console.log("Received from server:", event.data);
-      try {
-        const parsedData = JSON.parse(event.data);
-        await handleMeshyData(parsedData);
-      } catch (error) {
-        console.error("Error parsing received data:", error);
-      }
-    };
+    // ws.onopen = () => {
+    //   const payload: MeshyPayload = {
+    //     mode: 'preview',
+    //     prompt: value,
+    //     art_style: 'realistic',
+    //     negative_prompt: 'low quality, low resolution, low poly, ugly',
+    //   };
+    //   ws.send(JSON.stringify(payload));
+    // };
 
-    ws.onclose = () => {
-      console.log('CLOSING WEBSOCKET')
-      dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
-      console.log('TAGS INVALIDATED')
-      setValue('');
-      setDisabledField(false);
-      if (textFieldRef.current) {
-        textFieldRef.current.blur();
-      }
-      dispatch(setMeshyLoading({meshyLoading: false}))
-      console.log(meshyDataRef.current); // Use the ref for the latest meshyData
-      if (meshyDataRef.current && meshyDataRef.current.obj_file_blob) {
-        console.log("OBJ file is successfully processed and downloaded.");
-      } else {
-        console.warn("OBJ URL Blob not found in task data.");
-      }
-    };
+    // ws.onmessage = async (event) => {
+    //   console.log("Received from server:", event.data);
+    //   try {
+    //     const parsedData = JSON.parse(event.data);
+    //     await handleMeshyData(parsedData);
+    //   } catch (error) {
+    //     console.error("Error parsing received data:", error);
+    //   }
+    // };
 
-    ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
-      setDisabledField(false);
-    };
+    // ws.onclose = () => {
+    //   console.log('CLOSING WEBSOCKET')
+    //   dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
+    //   console.log('TAGS INVALIDATED')
+    //   setValue('');
+    //   setDisabledField(false);
+    //   if (textFieldRef.current) {
+    //     textFieldRef.current.blur();
+    //   }
+    //   dispatch(setMeshyLoading({meshyLoading: false}))
+    //   console.log(meshyDataRef.current); // Use the ref for the latest meshyData
+    //   if (meshyDataRef.current && meshyDataRef.current.obj_file_blob) {
+    //     console.log("OBJ file is successfully processed and downloaded.");
+    //   } else {
+    //     console.warn("OBJ URL Blob not found in task data.");
+    //   }
+    // };
+
+    // ws.onerror = (error) => {
+    //   console.error("WebSocket error:", error);
+    //   setDisabledField(false);
+    // };
   };
 
   return (

@@ -7,6 +7,9 @@ import { useSelector } from 'react-redux';
 import { RootState } from "../../app/store";
 import LoginDialog from "./loginDialogue";
 import { MeshyPayload } from "../../services/meshyApi";
+import { createWebsocketConnection } from "../../services/meshyWebsocket";
+import { useDispatch} from "react-redux";
+import { AppDispatch } from "../../app/store";
 export const LandingPage = () => {
 
 
@@ -16,64 +19,14 @@ export const LandingPage = () => {
     const userInterfaceState = useSelector(
       (state: RootState) => state.userInterfaceState
     )
-
+    const dispatch = useDispatch()
     useEffect(() => {
       if (userInterfaceState.userInformation?.incomplete_tasks) {
         const taskId = userInterfaceState.userInformation.incomplete_tasks[0].task_id
         console.log(taskId)
 
-
-
-        const ws = new WebSocket(`ws://localhost:1234/ws/${taskId}`);
-
-        ws.onopen = () => {
-          console.log('WebSocket connection opened.');
-        };
-
-        ws.onmessage = (event) => {
-          console.log('Message from server:', event.data);
-          ws.send('thanks for the message')
-          // Handle progress updates and task completion
-          if (event.data.includes('Progress:')) {
-            const progressMatch = event.data.match(/Progress: (\d+)%/);
-            if (progressMatch) {
-              setProgress(parseInt(progressMatch[1], 10));
-            }
-          } else if (event.data.includes('Task Completed!')) {
-            setMessages((prev) => [...prev, 'Task Completed!']);
-            localStorage.removeItem('task_id');
-            console.log('Task completed. Removed task ID from storage.');
-          } else {
-            setMessages((prev) => [...prev, event.data]);
-          }
-        };
-
-        ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
-        };
-
-        ws.onclose = () => {
-          console.log('WebSocket connection closed.');
-        };
-
-
-        // Cleanup on component unmount
-        return () => {
-          if (ws){
-            ws.close(1000, 'Component unmounted');
-          }
-          
-        };
+        createWebsocketConnection(taskId, dispatch, setActualFile )
       }
-      else{
-        console.warn('NOTHING THERE')
-      }
-
-      
-
-
-
-
     }), [userInterfaceState.userInformation?.incomplete_tasks]
 
     const {
@@ -104,29 +57,6 @@ export const LandingPage = () => {
 
     }
 
-    const startTask = async () => {
-      console.log('clicked 2');
-      const payload: MeshyPayload = {
-        mode: 'preview',
-        prompt: 'a bronco',
-        art_style: 'realistic',
-        negative_prompt: 'low quality, low resolution, low poly, ugly',
-      };
-    
-      const taskId = "12345"; // Replace with your dynamic task ID if needed
-      const response = await fetch('http://localhost:1234/start_task/', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json', // Specify that you're sending JSON data
-    
-        },
-        body: JSON.stringify({ task_id: taskId, user_id: userInterfaceState.userInformation?.user.user_id, meshy_payload: payload }), // Send task_id in the request body
-      });
-    
-      const data = await response.json();
-      console.log(data.message); // This will be "Task started!"
-    };
     
 
     const handleLogOut = () =>{
@@ -136,12 +66,14 @@ export const LandingPage = () => {
     return(
         <Box sx = {{marginTop: 10}}>
             <UserInterface/>
+            
             <MainOptions/>
             <LoginDialog/>
             <Button onClick={handleLogin}>Call Google</Button>
             <Button onClick={handleCallProtectedEndpoint}>Call Protected Endpoint</Button>
-            <Button onClick={startTask}>Start Task</Button>
             <Button onClick={handleLogOut}>Log Out</Button>
+            <h1>HERE</h1>
+            {userInterfaceState.meshyLoadedPercentage}
         </Box>
         
     )

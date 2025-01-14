@@ -1,52 +1,83 @@
-import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react';
+import { AppDispatch } from "../app/store";
+import { authApi } from "./authApi";
+import { MeshyTaskStatusResponse } from "./meshyApi";
+import { setMeshyLoadedPercentage, setMeshyLoading, setMeshyPending, setMeshyQueueItems } from "./userInterfaceSlice";
+import { extractFileInfo, fetchFile } from "./fetchFileUtils";
+import { setFileProperties } from "./dataSlice";
 
-export const websocketApi = createApi({
-  reducerPath: 'websocketApi',
-  baseQuery: fakeBaseQuery(),
-  endpoints: (builder) => ({
-    connectToWebSocket: builder.query({
-      queryFn: () => ({ data: null }),  // No HTTP request, so just return a placeholder.
-      async onCacheEntryAdded(
-        arg,
-        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
-      ) {
-        // Open a WebSocket connection
-        const ws = new WebSocket("ws://localhost:1234/ws");
+export const createWebsocketConnection = (
+  taskId: string,
+  dispatch: AppDispatch,
+  setActualFile: React.Dispatch<React.SetStateAction<File | null>>
+): WebSocket => {
+  const ws = new WebSocket(`ws://localhost:1234/ws/${taskId}`);
 
-        try {
-          await cacheDataLoaded;
+  ws.onopen = () => {
+    console.log("WebSocket connection opened.");
+  };
 
-          // Handle incoming WebSocket messages
-          ws.onmessage = (event) => {
-            const message = event.data;
-            console.log(message)
-            // Update the cache data with the received WebSocket message
-            // updateCachedData((draft) => {
-            //   if (!draft.messages) draft.messages = [];
-            //     draft.messages.push(message);
-            // });
-          };
+  ws.onmessage = async (event) => {
+    console.log('DATAAAAAAAAA')
+    console.log("Message from server:", event.data);
+    // const parsedData = JSON.parse(event.data)
+    // console.log('PAAAAAAARSED DATA')
+    // console.log(parsedData)
+    // await handleMeshyData(parsedData, dispatch)
+    if (event.data.includes("Progress:")) {
+      const progressMatch = event.data.match(/Progress: (\d+)%/);
+      const progressInt = parseInt(progressMatch[1], 10)
+      const meshyTaskIdMatch = event.data.match(/MeshyTaskId:\s*(.+)/)
+      const meshyTaskId = meshyTaskIdMatch[1]
+      if (meshyTaskIdMatch){
+        console.log(meshyTaskIdMatch[1])
+      }
+      if (progressMatch && progressInt) {
+        console.log('PROGRESS MAAAAAAAAATCH')
+        dispatch(setMeshyLoadedPercentage({meshyLoadedPercentage: progressInt}));
+        dispatch(setMeshyPending({meshyPending: false}))
+        dispatch(setMeshyQueueItems({ meshyQueueItems: 0 }));
+        dispatch(setMeshyLoading({meshyLoading: true}))
+        if(progressInt == 100){
+          const fileData = await fetchFile(meshyTaskId)
+          const fileInfo = extractFileInfo(fileData, 'filenaynay')
+          setActualFile(fileInfo.file)
+          dispatch(setFileProperties({
+            selectedFile: fileInfo.fileUrl,
+            selectedFileType: 'obj',
+            fileNameBoxValue: 'filenaynay',
+        }));
+    
 
-          // Handle WebSocket errors if needed
-          ws.onerror = (error) => {
-            console.error("WebSocket error:", error);
-          };
-
-          // Optionally, send a message to the server
-          ws.onopen = () => {
-            ws.send("Hello Server!");
-          };
-
-          // Wait until the cache entry is removed to close the WebSocket
-          await cacheEntryRemoved;
-          ws.close();
-        } catch {
-          ws.close();
+          dispatch(setMeshyLoading({meshyLoading: false}))
         }
-      },
-    }),
-  }),
-});
+      }
+    }
+  };
 
-// Export the hook for use in components
-export const { useConnectToWebSocketQuery } = websocketApi;
+  ws.onerror = (error) => {
+    console.error("WebSocket error:", error);
+  };
+
+  ws.onclose = (event) => {
+    console.log(`WebSocket connection closed: ${event.code}, ${event.reason}`);
+    dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
+    dispatch(setMeshyLoading({meshyLoading: false}))
+  };
+
+  return ws;
+};
+
+
+export const handleMeshyData = async (data: MeshyTaskStatusResponse, dispatch: AppDispatch) => {
+  if(data.status === 'PENDING' && data.preceding_tasks){
+    dispatch(setMeshyPending({meshyPending: true}))
+    dispatch(setMeshyQueueItems({ meshyQueueItems: data.preceding_tasks }));
+  } else {
+    dispatch(setMeshyPending({meshyPending: false}))
+    dispatch(setMeshyQueueItems({ meshyQueueItems: 0 }));
+    dispatch(setMeshyLoading({meshyLoading: true}))
+    if (data.progress !== undefined) {
+      dispatch(setMeshyLoadedPercentage({ meshyLoadedPercentage: data.progress }));
+    }
+  }
+}
