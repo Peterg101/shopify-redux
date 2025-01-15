@@ -96,7 +96,7 @@ const AiTextPrompt = () => {
       console.log(userInterfaceState.meshyPending)
       dispatch(setMeshyPending({meshyPending: true}))
       console.log(userInterfaceState.meshyPending)
-      createWebsocketConnection("12345", dispatch)
+      createWebsocketConnection("12345", dispatch, setActualFile)
       startTask(value, userInterfaceState.userInformation?.user.user_id,"12345")
 
     }

@@ -47,7 +47,7 @@ export const createWebsocketConnection = (
             fileNameBoxValue: 'filenaynay',
         }));
     
-
+          ws.close()
           dispatch(setMeshyLoading({meshyLoading: false}))
         }
       }
@@ -55,10 +55,13 @@ export const createWebsocketConnection = (
   };
 
   ws.onerror = (error) => {
+
+    ws.close()
     console.error("WebSocket error:", error);
   };
 
   ws.onclose = (event) => {
+    ws.close()
     console.log(`WebSocket connection closed: ${event.code}, ${event.reason}`);
     dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
     dispatch(setMeshyLoading({meshyLoading: false}))
