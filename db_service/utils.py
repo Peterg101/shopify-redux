@@ -53,6 +53,7 @@ def add_task_to_db(db: Session, task_information: TaskInformation) -> Task:
     db.refresh(task)
     return task
 
+
 def add_port_to_db(db: Session, task_id: str, port_id: str) -> Task:
     
     portIdObject = PortID(
@@ -63,8 +64,6 @@ def add_port_to_db(db: Session, task_id: str, port_id: str) -> Task:
     db.commit()
     db.refresh(portIdObject)
     return portIdObject
-
-
 
 
 def mark_meshy_task_complete(db: Session, task_id: str):

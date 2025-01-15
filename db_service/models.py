@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 
@@ -27,6 +28,10 @@ class Task(Base):
 
     # Optional one-to-one relationship to PortID
     port = relationship("PortID", back_populates="task", uselist=False)
+
+    @hybrid_property
+    def port_id(self):
+        return self.port.port_id if self.port else None
 
 
 class BasketItem(Base):

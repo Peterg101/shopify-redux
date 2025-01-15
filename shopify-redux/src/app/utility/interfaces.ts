@@ -87,7 +87,12 @@ export interface TaskInformation {
 }
 
 export interface TaskInformationAndPortId extends TaskInformation {
-  port_id: string
+  port: portIdInfo
+}
+
+export interface portIdInfo {
+  port_id: string,
+  task_id: string 
 }
 
 export interface BasketInformation {

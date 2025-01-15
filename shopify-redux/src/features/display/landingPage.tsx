@@ -21,13 +21,14 @@ export const LandingPage = () => {
     )
     const dispatch = useDispatch()
     useEffect(() => {
-      if (userInterfaceState.userInformation?.incomplete_task) {
-        const taskId =userInterfaceState.userInformation?.incomplete_task.task_id
-        console.log(taskId)
+      console.log('IN THE HOOK')
+      if (userInterfaceState.userInformation?.incomplete_task?.port) {
+        const portId=userInterfaceState.userInformation?.incomplete_task.port.port_id
+        console.log(portId)
 
-        createWebsocketConnection(taskId, dispatch, setActualFile )
+        createWebsocketConnection(portId, dispatch, setActualFile )
       }
-    }), [userInterfaceState.userInformation?.incomplete_task]
+    }), [userInterfaceState.userInformation]
 
     const {
       data: sessionData,
