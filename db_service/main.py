@@ -12,7 +12,8 @@ from utils import(
     add_task_to_db,
     cookie_verification,
     decode_file,
-    mark_meshy_task_complete
+    mark_meshy_task_complete,
+    delete_port_id
 )
 from api_calls import session_exists
 import os
@@ -131,6 +132,7 @@ async def receive_meshy_task(response: MeshyTaskStatusResponse, payload: dict = 
         with open(file_path, "wb") as file:
             file.write(file_data)
         mark_meshy_task_complete(db, response.id)
+        delete_port_id(db, response.id)
         return {"message": "File saved successfully.", "file_name": str(file_path), "user": payload}
     return {"message": "No OBJ file blob provided."}
 

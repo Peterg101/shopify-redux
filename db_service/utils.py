@@ -81,6 +81,13 @@ def mark_meshy_task_complete(db: Session, task_id: str):
     db.refresh(task)
 
 
+def delete_port_id(db: Session, task_id:str ):
+    port = db.query(PortID).filter(PortID.task_id == task_id).first()
+    if port:
+        db.delete(port)
+        db.commit()
+
+
 def add_or_update_basket_item_in_db(db: Session, basket_item_info: BasketItemInformation) -> BasketItem:
     # Check if the item already exists in the database
     existing_item = db.query(BasketItem).filter(BasketItem.task_id == basket_item_info.task_id).first()
