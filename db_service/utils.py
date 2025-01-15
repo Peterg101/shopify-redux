@@ -2,7 +2,7 @@ from typing import Union, Dict
 from api_calls import session_exists
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound
-from models import User, Task, BasketItem
+from models import User, Task, BasketItem, PortID
 from classes import UserInformation, TaskInformation, BasketItemInformation
 from fastapi import HTTPException, Request
 from datetime import datetime
@@ -47,12 +47,24 @@ def add_task_to_db(db: Session, task_information: TaskInformation) -> Task:
         task_id=task_information.task_id,
         user_id=task_information.user_id,
         task_name=task_information.task_name,
-        created_at=task_information.created_at
     )
     db.add(task)
     db.commit()
     db.refresh(task)
     return task
+
+def add_port_to_db(db: Session, task_id: str, port_id: str) -> Task:
+    
+    portIdObject = PortID(
+        task_id=task_id,
+        port_id=port_id
+    )
+    db.add(portIdObject)
+    db.commit()
+    db.refresh(portIdObject)
+    return portIdObject
+
+
 
 
 def mark_meshy_task_complete(db: Session, task_id: str):

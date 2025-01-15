@@ -65,7 +65,7 @@ async def generate_meshy_task(payload: MeshyPayload):
 
 @app.post("/start_task/")
 async def start_task(
-    request: TaskRequest, 
+    request: TaskRequest,
     background_tasks: BackgroundTasks,
     redis: aioredis.Redis = Depends(get_redis),
     _: None = Depends(cookie_verification)
@@ -77,11 +77,11 @@ async def start_task(
         request,
         redis
     )
-    return {"message": "Task started!", "task_id": request.task_id}
+    return {"message": "Task started!", "task_id": request.port_id}
 
 
-@app.websocket("/ws/{task_id}")
-async def websocket_endpoint(websocket: WebSocket, task_id: str, redis: aioredis.Redis = Depends(get_redis)):
+@app.websocket("/ws/{port_id}")
+async def websocket_endpoint(websocket: WebSocket, port_id: str, redis: aioredis.Redis = Depends(get_redis)):
     await websocket.accept()
 
     # # Authenticate session outside the try block
@@ -93,7 +93,7 @@ async def websocket_endpoint(websocket: WebSocket, task_id: str, redis: aioredis
     try:
         # Subscribe to the task's progress channel
         pubsub = redis.pubsub()
-        await pubsub.subscribe(f"task_progress:{task_id}")
+        await pubsub.subscribe(f"task_progress:{port_id}")
 
         async for message in pubsub.listen():
             if message["type"] == "message":
@@ -107,15 +107,15 @@ async def websocket_endpoint(websocket: WebSocket, task_id: str, redis: aioredis
                     break
 
     except WebSocketDisconnect:
-        print(f"WebSocket disconnected for task {task_id}")
+        print(f"WebSocket disconnected for task {port_id}")
     except Exception as e:
         print(f"WebSocket Error: {e}")
     finally:
         # Cleanup: close the Redis pubsub and WebSocket connection
-        await pubsub.unsubscribe(f"task_progress:{task_id}")
+        await pubsub.unsubscribe(f"task_progress:{port_id}")
         await pubsub.close()
         await websocket.close()
-        print(f"WebSocket connection for task {task_id} closed.")
+        print(f"WebSocket connection for task {port_id} closed.")
 
 
 async def long_running_task(request: TaskRequest, redis: aioredis.Redis):
@@ -124,10 +124,10 @@ async def long_running_task(request: TaskRequest, redis: aioredis.Redis):
         await asyncio.sleep(1)  # Simulate task progress
         print(request.meshy_payload.prompt)
         progress = f"Progress: {i * 5}%"
-        await redis.publish(f"task_progress:{request.task_id}", progress)
+        await redis.publish(f"task_progress:{request.port_id}", progress)
 
         if i == 20:
-            await redis.publish(f"task_progress:{request.task_id}", "Task Completed")
+            await redis.publish(f"task_progress:{request.port_id}", "Task Completed")
 
 
 connections: List[WebSocket] = []

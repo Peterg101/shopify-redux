@@ -99,7 +99,7 @@ export const startTask = async (prompt: string, userId: string, portId: string) 
       'Content-Type': 'application/json', // Specify that you're sending JSON data
 
     },
-    body: JSON.stringify({ task_id: portId, user_id: userId, meshy_payload: payload }),
+    body: JSON.stringify({ port_id: portId, user_id: userId, meshy_payload: payload }),
   });
 
   const data = await response.json();

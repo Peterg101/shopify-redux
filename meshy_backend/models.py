@@ -70,6 +70,7 @@ class TaskInformation(BaseModel):
     task_id: Optional[str] = None
     user_id: Optional[str] = None
     task_name: Optional[str] = None
+    port_id: Optional[str] = None
     created_at: Optional[str] = datetime.now().isoformat()
 
 
@@ -85,6 +86,6 @@ class UserAndTasks(BaseModel):
 
 
 class TaskRequest(BaseModel):
-    task_id: str
+    port_id: str
     user_id: str
     meshy_payload: MeshyPayload

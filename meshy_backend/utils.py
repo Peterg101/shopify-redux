@@ -66,13 +66,13 @@ async def generate_task_and_check_for_response_decoupled_ws(
         generated_task_status = await get_meshy_task_status(meshy_task_status)
         if not task_posted:
             print("POSTED THE TASK")
-            await post_task_to_db(generated_task_status, request.user_id)
+            await post_task_to_db(generated_task_status, request.user_id, request.port_id)
             task_posted = True
 
         percentage_complete = generated_task_status.progress
         progress = f"Progress: {percentage_complete}%, MeshyTaskId: {meshy_task_status.task_id}"
         print(generated_task.result)
-        await redis.publish(f"task_progress:{request.task_id}", progress)
+        await redis.publish(f"task_progress:{request.port_id}", progress)
         if percentage_complete == 100:
             task_generated = True
             print('TASK GENERATED')
@@ -161,14 +161,16 @@ async def add_file_response(response: MeshyTaskStatusResponse) -> MeshyTaskStatu
     return response
 
 
-async def post_task_to_db(response: MeshyTaskStatusResponse, user_id: str):
+async def post_task_to_db(response: MeshyTaskStatusResponse, user_id: str, port_id: str):
     print(user_id)
     print("************")
     print('POSTING HERE')
+    print(port_id)
     task_info = TaskInformation(
         user_id=user_id,
         task_id=response.id,
-        task_name=response.prompt
+        task_name=response.prompt,
+        port_id=port_id
         )
     await create_task(task_info)
 

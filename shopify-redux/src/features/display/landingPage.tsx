@@ -21,19 +21,19 @@ export const LandingPage = () => {
     )
     const dispatch = useDispatch()
     useEffect(() => {
-      if (userInterfaceState.userInformation?.incomplete_tasks) {
-        const taskId = userInterfaceState.userInformation.incomplete_tasks[0].task_id
+      if (userInterfaceState.userInformation?.incomplete_task) {
+        const taskId =userInterfaceState.userInformation?.incomplete_task.task_id
         console.log(taskId)
 
         createWebsocketConnection(taskId, dispatch, setActualFile )
       }
-    }), [userInterfaceState.userInformation?.incomplete_tasks]
+    }), [userInterfaceState.userInformation?.incomplete_task]
 
     const {
       data: sessionData,
       error: sessionError,
       isLoading: isSessionLoading,
-      refetch: refetchSession,
+      refetch: refetchSession, 
     } = useGetSessionQuery();
     
     const [

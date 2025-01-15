@@ -13,6 +13,7 @@ class TaskInformation(BaseModel):
     task_id: Optional[str] = None
     user_id: Optional[str] = None
     task_name: Optional[str] = None
+    port_id: Optional[str] = None
     created_at: Optional[str] = datetime.now().isoformat()
 
 

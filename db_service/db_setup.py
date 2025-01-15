@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from models import Base
 
 # Database URL
-DATABASE_URL = "sqlite:///./test_meshy_bool.db"  # Replace with your actual database URL
+DATABASE_URL = "sqlite:///./test_meshy_bool_port.db"  # Replace with your actual database URL
 
 # SQLAlchemy Engine and Session
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})  # Remove `check_same_thread` for other DBs

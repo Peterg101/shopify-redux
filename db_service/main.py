@@ -1,11 +1,12 @@
 from fastapi import FastAPI, HTTPException, Depends, Cookie, Header, Request
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from fastapi.middleware.cors import CORSMiddleware
-from models import User, Task, BasketItem
+from models import User, Task, BasketItem, PortID
 from db_setup import Base, engine, get_db
 from utils import(
     check_session_token_active,
     add_or_update_basket_item_in_db,
+    add_port_to_db,
     check_user_existence,
     add_user_to_db,
     add_task_to_db,
@@ -67,12 +68,14 @@ async def add_task(
 ):
     print('hitting here')
     # verify_jwt_token(authorization)
-    print(task_information.user_id)
+    print(task_information.task_id)
+    print('PORT ID*************')
+    print(task_information.port_id)
     user_exists = check_user_existence(db, task_information.user_id)
 
-    if user_exists:
-        task = add_task_to_db(db, task_information)
-        return task.__dict__
+    if user_exists and task_information.port_id and task_information.task_id:
+        add_task_to_db(db, task_information)
+        add_port_to_db(db, task_information.task_id, task_information.port_id)
     return ""
 
 
@@ -88,7 +91,14 @@ async def get_user(
     user = db.query(User).filter(User.user_id == user_id).first()
     tasks = db.query(Task).filter(Task.user_id == user_id).all()
     basket_items = db.query(BasketItem).filter(BasketItem.user_id == user_id).all()
-    incomplete_tasks = db.query(Task).filter(Task.user_id == user_id, Task.complete == False).all()
+    incomplete_task = (
+        db.query(Task)
+        .filter(Task.user_id == user_id, Task.complete == False)
+        .options(joinedload(Task.port))  # Preload the PortID relationship
+        .first()
+    )
+    print('*****************************')
+    print(incomplete_task)
     print('basket items')
     print(basket_items)
     # Step 3: If user not found, raise an exception
@@ -100,7 +110,12 @@ async def get_user(
     # tasks = db.query(Task).filter(Task.user_id == user.id).all()
 
     # Step 4: Return the user data (you can return the user with additional info like tasks if needed)
-    return {"user": user, "tasks": tasks, "basket_items": basket_items, "incomplete_tasks": incomplete_tasks}  # If you fetched tasks, include that in the return value as well
+    return {
+        "user": user,
+        "tasks": tasks,
+        "basket_items": basket_items,
+        "incomplete_task": incomplete_task
+        }  # If you fetched tasks, include that in the return value as well
 
 
 @app.post("/file_upload")

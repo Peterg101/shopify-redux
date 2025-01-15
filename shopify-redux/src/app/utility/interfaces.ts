@@ -86,6 +86,10 @@ export interface TaskInformation {
   created_at: string;
 }
 
+export interface TaskInformationAndPortId extends TaskInformation {
+  port_id: string
+}
+
 export interface BasketInformation {
   task_id: string; // Corresponds to "task_id" in the database
   user_id: string; // Corresponds to "user_id"
@@ -107,8 +111,7 @@ export interface UserAndTasksAndBasketAndIncomplete{
   user: UserInformation
   tasks: TaskInformation[]
   basket_items: BasketInformation[],
-  incomplete_tasks: TaskInformation[]
-
+  incomplete_task: TaskInformationAndPortId
 }
 
 export interface FileResponse {

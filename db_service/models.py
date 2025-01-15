@@ -25,6 +25,9 @@ class Task(Base):
     created_at = Column(String, default=datetime.now().isoformat())
     owner = relationship("User", back_populates="tasks")
 
+    # Optional one-to-one relationship to PortID
+    port = relationship("PortID", back_populates="task", uselist=False)
+
 
 class BasketItem(Base):
     __tablename__ = "basket_items"
@@ -37,3 +40,12 @@ class BasketItem(Base):
     colour: Mapped[str] = mapped_column()
     selectedFile: Mapped[str] = mapped_column()
     selectedFileType: Mapped[str] = mapped_column()
+
+
+class PortID(Base):
+    __tablename__ = "port_id"
+    task_id: Mapped[str] = mapped_column(ForeignKey("tasks.task_id"), primary_key=True)  # Foreign key to Task
+    port_id: Mapped[str] = mapped_column()
+
+    # Back reference to Task
+    task = relationship("Task", back_populates="port")
