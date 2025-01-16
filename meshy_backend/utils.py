@@ -70,7 +70,7 @@ async def generate_task_and_check_for_response_decoupled_ws(
             task_posted = True
 
         percentage_complete = generated_task_status.progress
-        progress = f"Progress: {percentage_complete}%, MeshyTaskId: {meshy_task_status.task_id}"
+        progress = f"{percentage_complete},{meshy_task_status.task_id},{generated_task_status.prompt}"
         print(generated_task.result)
         await redis.publish(f"task_progress:{request.port_id}", progress)
         if percentage_complete == 100:

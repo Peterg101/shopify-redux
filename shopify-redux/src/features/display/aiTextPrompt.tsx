@@ -44,8 +44,11 @@ const AiTextPrompt = () => {
       const portId = generateUUID()
       setDisabledField(true);
       dispatch(setMeshyPending({meshyPending: true}))
+      console.log('starting task')
+      await startTask(value, userInterfaceState.userInformation?.user.user_id, portId)
+      dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
       createWebsocketConnection(portId, dispatch, setActualFile)
-      startTask(value, userInterfaceState.userInformation?.user.user_id, portId)
+      
 
     }
   };

@@ -6,11 +6,11 @@ import { extractFileInfo, fetchFile } from "./fetchFileUtils";
 import { setFileProperties } from "./dataSlice";
 
 export const createWebsocketConnection = (
-  taskId: string,
+  portId: string,
   dispatch: AppDispatch,
   setActualFile: React.Dispatch<React.SetStateAction<File | null>>
 ): WebSocket => {
-  const ws = new WebSocket(`ws://localhost:1234/ws/${taskId}`);
+  const ws = new WebSocket(`ws://localhost:1234/ws/${portId}`);
 
   ws.onopen = () => {
     console.log("WebSocket connection opened.");
@@ -19,32 +19,25 @@ export const createWebsocketConnection = (
   ws.onmessage = async (event) => {
     console.log('DATAAAAAAAAA')
     console.log("Message from server:", event.data);
-    // const parsedData = JSON.parse(event.data)
-    // console.log('PAAAAAAARSED DATA')
-    // console.log(parsedData)
-    // await handleMeshyData(parsedData, dispatch)
-    if (event.data.includes("Progress:")) {
-      const progressMatch = event.data.match(/Progress: (\d+)%/);
-      const progressInt = parseInt(progressMatch[1], 10)
-      const meshyTaskIdMatch = event.data.match(/MeshyTaskId:\s*(.+)/)
-      const meshyTaskId = meshyTaskIdMatch[1]
-      if (meshyTaskIdMatch){
-        console.log(meshyTaskIdMatch[1])
-      }
-      if (progressMatch && progressInt) {
-        console.log('PROGRESS MAAAAAAAAATCH')
-        dispatch(setMeshyLoadedPercentage({meshyLoadedPercentage: progressInt}));
+    if (event.data) {
+      const parts = event.data.split(",");
+      console.log(parts)
+      if (parts.length === 3) {
+        const percentageComplete = parseInt(parts[0], 10); // Convert to a number
+        const taskId = parts[1];                          // Task ID as a string
+        const fileName = parts[2];  
+        dispatch(setMeshyLoadedPercentage({meshyLoadedPercentage: percentageComplete}));
         dispatch(setMeshyPending({meshyPending: false}))
         dispatch(setMeshyQueueItems({ meshyQueueItems: 0 }));
         dispatch(setMeshyLoading({meshyLoading: true}))
-        if(progressInt == 100){
-          const fileData = await fetchFile(meshyTaskId)
-          const fileInfo = extractFileInfo(fileData, 'filenaynay')
+        if(percentageComplete == 100){
+          const fileData = await fetchFile(taskId)
+          const fileInfo = extractFileInfo(fileData, fileName)
           setActualFile(fileInfo.file)
           dispatch(setFileProperties({
             selectedFile: fileInfo.fileUrl,
             selectedFileType: 'obj',
-            fileNameBoxValue: 'filenaynay',
+            fileNameBoxValue: fileName,
         }));
     
           ws.close()
