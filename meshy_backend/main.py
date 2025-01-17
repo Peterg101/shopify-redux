@@ -98,11 +98,8 @@ async def websocket_endpoint(websocket: WebSocket, port_id: str, redis: aioredis
         async for message in pubsub.listen():
             if message["type"] == "message":
                 progress = message["data"]
-                print('REDIS MESSAGE')
-                print(progress)
                 # Send progress update to the client
                 await websocket.send_text(progress)
-
                 if progress == "Task Completed":
                     break
 
@@ -122,7 +119,6 @@ async def long_running_task(request: TaskRequest, redis: aioredis.Redis):
     """Simulates a long-running task and publishes progress updates."""
     for i in range(21):
         await asyncio.sleep(1)  # Simulate task progress
-        print(request.meshy_payload.prompt)
         progress = f"Progress: {i * 5}%"
         await redis.publish(f"task_progress:{request.port_id}", progress)
 

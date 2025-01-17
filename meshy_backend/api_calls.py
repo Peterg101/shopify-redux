@@ -12,7 +12,6 @@ MESHY_API_KEY = "msy_RLiG6FNDJRdsNfSKCoFJ5E2Jhcs4r1l5Hmjp"
 
 def generate_text_to_3d_task(payload: MeshyPayload) -> MeshyTaskGeneratedResponse:
     headers = {"Authorization": f"Bearer {MESHY_API_KEY}"}
-    print(payload)
     try:
         response = requests.post(
             "https://api.meshy.ai/v2/text-to-3d", headers=headers, json=payload.__dict__
@@ -33,7 +32,6 @@ async def get_meshy_task_status(meshy_task_args: MeshyTaskStatus) -> MeshyTaskSt
         headers=headers,
     )
     response.raise_for_status()
-    print(response.json())
 
     result = MeshyTaskStatusResponse(**response.json())
     return result
@@ -50,7 +48,6 @@ def generate_meshy_refine_task(
         json=payload.__dict__,
     )
     response.raise_for_status()
-    print(response.json())
 
     result = MeshyTaskGeneratedResponse(**response.json())
     return result
@@ -68,15 +65,10 @@ async def websocket_session_exists(session_id: str):
     headers = {
         "Cookie": f"{session_id}"
     }
-    print('running')
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers)
-        print('RESPONSE********************************')
         user_information = json.loads(response.text)
-        print(user_information)
         user_response = UserAndTasks(**user_information)
-        print('***************USER')
-        print(user_response)
         
     return response.status_code == 200, user_response
 

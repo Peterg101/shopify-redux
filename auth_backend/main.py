@@ -96,12 +96,10 @@ async def auth_callback(code: str, request: Request):
         user_information.email = id_info["email"]
         user_information.username = id_info["name"]
 
-        print(user_information.username)
 
         # # Step 3: Check if the user exists in the database
         user_exists = await check_user_exists(user_information.user_id)
         if not user_exists:
-            print("USER DOES NOT EXIST")
             await create_user(user_information)
         
         # Step 5: Create a session for the user
@@ -132,7 +130,6 @@ async def logout(request: Request):
 
     try:
         await delete_session(redis_session, session_id)
-        print(f"User logged out: {session_data}")  # Accessing name from session_data object
 
         return {
             "message": "Logged out",
@@ -148,10 +145,7 @@ async def protected_endpoint(request: Request):
     session_data, _ = await cookie_verification(request, redis_session)
 
     try:
-        print(f"User authenticated: {session_data}")
-        print(session_data.user_id)
         user_info = await check_user_exists(session_data.user_id)
-        print(user_info)
         return user_info
     except ValueError:
         raise HTTPException(status_code=401, detail="Invalid token or token verification failed")

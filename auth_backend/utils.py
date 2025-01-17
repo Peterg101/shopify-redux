@@ -36,7 +36,6 @@ async def delete_session(redis: Redis, session_id: str):
 
 async def cookie_verification(request: Request, redis_session: Redis) -> Tuple[SessionData, str]:
     session_id = request.cookies.get("fitd_session_data")
-    print(session_id)
     if not session_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
     

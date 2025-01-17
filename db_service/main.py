@@ -67,11 +67,6 @@ async def add_task(
     db: Session = Depends(get_db),
     authorization: str = Depends(verify_jwt_token)
 ):
-    print('hitting here')
-    # verify_jwt_token(authorization)
-    print(task_information.task_id)
-    print('PORT ID*************')
-    print(task_information.port_id)
     user_exists = check_user_existence(db, task_information.user_id)
 
     if user_exists and task_information.port_id and task_information.task_id:
@@ -98,10 +93,6 @@ async def get_user(
         .options(joinedload(Task.port))  # Preload the PortID relationship
         .first()
     )
-    print('*****************************')
-    print(incomplete_task)
-    print('basket items')
-    print(basket_items)
     # Step 3: If user not found, raise an exception
     if not user:
         print("user not found")
@@ -121,8 +112,6 @@ async def get_user(
 
 @app.post("/file_upload")
 async def receive_meshy_task(response: MeshyTaskStatusResponse, payload: dict = Depends(verify_jwt_token), db: Session = Depends(get_db)):
-    print("receiving meshy task")
-    print(response.obj_file_blob)
     if response.obj_file_blob:
         # Decode the Base64 blob
         file_data = base64.b64decode(response.obj_file_blob)
@@ -143,7 +132,6 @@ async def get_file_from_storage(
     file_id: str,
     _: None = Depends(cookie_verification)
 ):
-    print(file_id)
     file_path = os.path.join("uploads", f"{file_id}.obj")
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
@@ -163,13 +151,9 @@ async def post_basket_item_to_storage(
     _: None = Depends(cookie_verification)
 ):
     # Check if the user exists in the database
-    print('hit the route')
     user_exists = check_user_existence(db, basket_item.user_id)
     if not user_exists:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    print("Receiving file from frontend")
-    
+        raise HTTPException(status_code=404, detail="User not found")    
     # Validate the file_blob presence
     if not basket_item.file_blob:
         raise HTTPException(status_code=400, detail="File blob not provided")
@@ -180,7 +164,6 @@ async def post_basket_item_to_storage(
         add_or_update_basket_item_in_db(db, basket_item)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File decoding failed: {str(e)}")
-    print('everything big success')
     return {"message": "File successfully saved"}
 
 
