@@ -12,7 +12,6 @@ export const ClearFile = () => {
 )
     const dispatch = useDispatch()
     const handleClearFile = () => {
-        console.log('clearing file')
         dispatch(resetDataState())
     }
     

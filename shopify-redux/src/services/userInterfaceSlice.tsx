@@ -68,8 +68,6 @@ export const userInterfaceSlice = createSlice({
         },
         setMeshyPending: (state, action: PayloadAction<{meshyPending: boolean}>) => {
             const {meshyPending} = action.payload
-            console.log('INSIDE MESHY PENDING')
-            console.log(meshyPending)
             state.meshyPending = meshyPending
 
             if(meshyPending === false){
@@ -87,23 +85,19 @@ export const userInterfaceSlice = createSlice({
           .addMatcher(
             authApi.endpoints.getSession.matchFulfilled, 
             (state, { payload }) => {
-              console.log(payload)
               state.isLoggedIn = true;
-              console.log(payload.user.user_id)
               state.userInformation = payload
             }
           )
           .addMatcher(
             authApi.endpoints.getSession.matchRejected, 
             (state, action) => {
-                console.log('user not logged in')
                 state.isLoggedIn = false; 
               }
           )
           .addMatcher(
             authApi.endpoints.logOut.matchFulfilled, 
             (state, action) => {
-                console.log('user not logged in')
                 state.isLoggedIn = false; 
               }
           );

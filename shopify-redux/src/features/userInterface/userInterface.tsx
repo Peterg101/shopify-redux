@@ -9,7 +9,6 @@ import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import {ShoppingBasket, ChevronLeft, ChevronRight, Menu} from '@mui/icons-material';
-import SubmitFile from './submitFile';
 import Badge from '@mui/material/Badge';
 import List from '@mui/material/List';
 import { UploadedFile } from '../../app/utility/interfaces';
@@ -77,9 +76,6 @@ export default function UserInterface() {
             <Divider sx={{ my: 1 }} />
           </List>
           <Box sx={{ marginTop: 'auto', padding: 2 }}>
-            <SubmitFile
-              uploadedFiles = {uploadedFiles}
-            />
           </Box>
         </Box>
       </Drawer>

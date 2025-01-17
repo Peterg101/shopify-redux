@@ -12,16 +12,9 @@ export const createWebsocketConnection = (
 ): WebSocket => {
   const ws = new WebSocket(`ws://localhost:1234/ws/${portId}`);
 
-  ws.onopen = () => {
-    console.log("WebSocket connection opened.");
-  };
-
   ws.onmessage = async (event) => {
-    console.log('DATAAAAAAAAA')
-    console.log("Message from server:", event.data);
     if (event.data) {
       const parts = event.data.split(",");
-      console.log(parts)
       if (parts.length === 3) {
         const percentageComplete = parseInt(parts[0], 10); // Convert to a number
         const taskId = parts[1];                          // Task ID as a string
@@ -55,7 +48,6 @@ export const createWebsocketConnection = (
 
   ws.onclose = (event) => {
     ws.close()
-    console.log(`WebSocket connection closed: ${event.code}, ${event.reason}`);
     dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
     dispatch(setMeshyLoading({meshyLoading: false}))
   };

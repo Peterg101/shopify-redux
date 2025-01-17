@@ -13,15 +13,11 @@ export const LeftDrawerTask = (task: TaskInformation) => {
     const dispatch = useDispatch();
 
      const handleGetFile = async (fileId: string, filename: string) => {
-        console.log(filename);
-        console.log(fileId)
         setActualFile(null)
         dispatch(resetDataState())
         dispatch(setLeftDrawerClosed())
         const data = await fetchFile(fileId)
-        console.log(data)
         const fileInfo = extractFileInfo(data, filename)
-        console.log(fileInfo)
         setActualFile(fileInfo.file);
             dispatch(setFileProperties({
                 selectedFile: fileInfo.fileUrl,

@@ -17,7 +17,6 @@ const userInterfaceSlice = useSelector(
 )
 
 const handleDeleteBasketItem = async (item:BasketInformation) => {
-  console.log(item.task_id)
   await deleteBasketItem(item.task_id)
   dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));   
 }

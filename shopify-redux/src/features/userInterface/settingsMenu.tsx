@@ -22,7 +22,6 @@ export const SettingsMenu = () => {
     const handleYChange = (event: Event, newValue: number|  number[]) => {
         if (typeof newValue === 'number') {
             const radians = degreesToRadians(newValue)
-            console.log(radians)
             dispatch(setYFLip({yFlip: radians}))
             setYValue(newValue)
         }
@@ -31,7 +30,6 @@ export const SettingsMenu = () => {
     const handleZChange = (event: Event, newValue: number|  number[]) => {
         if (typeof newValue === 'number') {
             const radians = degreesToRadians(newValue)
-            console.log(radians)
             dispatch(setZFLip({zFlip: radians}))
             setZValue(newValue)
         }

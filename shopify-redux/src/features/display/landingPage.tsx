@@ -21,11 +21,8 @@ export const LandingPage = () => {
     )
     const dispatch = useDispatch()
     useEffect(() => {
-      console.log('IN THE HOOK')
       if (userInterfaceState.userInformation?.incomplete_task?.port) {
         const portId=userInterfaceState.userInformation?.incomplete_task.port.port_id
-        console.log(portId)
-
         createWebsocketConnection(portId, dispatch, setActualFile )
       }
     }), [userInterfaceState.userInformation]
@@ -52,10 +49,6 @@ export const LandingPage = () => {
 
     const handleCallProtectedEndpoint = () => {
         refetchSession()
-        console.log(sessionData)
-        console.log(sessionError)
-        
-
     }
 
     

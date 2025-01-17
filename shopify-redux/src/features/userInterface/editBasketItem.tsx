@@ -26,10 +26,7 @@ const handleEditBasketItem = async (item: BasketInformation) => {
   dispatch(resetDataState())
   dispatch(setRightDrawerClosed())
   const data = await fetchFile(item.task_id)
-  console.log(item.selectedFileType)
-  console.log(data)
   const fileInfo = extractFileInfo(data, item.name)
-  console.log(fileInfo)
   setActualFile(fileInfo.file);
   dispatch(setUploadedFileEditProperties({
     basketItem: item,

@@ -76,7 +76,6 @@ export const deleteBasketItem = async (fileId: string): Promise<void> => {
           throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
 
-      console.log(`Successfully deleted file with ID: ${fileId}`);
   } catch (error) {
       console.error("Error deleting basket item:", error);
       throw error; // Propagate the error
@@ -84,7 +83,6 @@ export const deleteBasketItem = async (fileId: string): Promise<void> => {
 }
 
 export const startTask = async (prompt: string, userId: string, portId: string) => {
-  console.log('clicked 2');
   const payload: MeshyPayload = {
     mode: 'preview',
     prompt: prompt,
@@ -103,5 +101,4 @@ export const startTask = async (prompt: string, userId: string, portId: string) 
   });
 
   const data = await response.json();
-  console.log(data.message); // This will be "Task started!"
 };

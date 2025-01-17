@@ -28,7 +28,6 @@ const AiTextPrompt = () => {
   const [value, setValue] = useState<string>('');
 
   const handleKeyPress = (event: KeyboardEvent<HTMLDivElement>) => {
-    console.log('BUTTON PRESSED')
     if (event.key === 'Enter' && value) {
       handleSubmit();
       dispatch(setMeshyPending({meshyPending: true}))
@@ -44,7 +43,6 @@ const AiTextPrompt = () => {
       const portId = generateUUID()
       setDisabledField(true);
       dispatch(setMeshyPending({meshyPending: true}))
-      console.log('starting task')
       await startTask(value, userInterfaceState.userInformation?.user.user_id, portId)
       dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
       createWebsocketConnection(portId, dispatch, setActualFile)

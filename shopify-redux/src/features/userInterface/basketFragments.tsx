@@ -26,8 +26,6 @@ export const EmptyBasket = () => {
     )
 
     const handleGetFile = async (fileId: string, filename: string) => {
-      console.log(filename);
-      console.log(fileId)
       setActualFile(null)
       dispatch(resetDataState())
       dispatch(setLeftDrawerClosed())
@@ -41,7 +39,6 @@ export const EmptyBasket = () => {
           }));
       
   };
-    console.log(userInterfaceState.userInformation?.basket_items)
     return(
     <React.Fragment>
       {userInterfaceState.userInformation?.basket_items.map((item) => (
