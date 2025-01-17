@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { UUID } from "crypto";
-import { UserAndTasksAndBasket, FileResponse } from '../app/utility/interfaces';
+import { UserAndTasksAndBasketAndIncomplete, FileResponse } from '../app/utility/interfaces';
 
 
 export const authApi = createApi({

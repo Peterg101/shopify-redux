@@ -36,7 +36,7 @@ const userState = useSelector(
           sizing: dataState.multiplierValue,
           colour: dataState.modelColour,
           selected_file: dataState.selectedFile,
-          selected_file_type: dataState.selectedFileType,
+          selectedFileType: dataState.selectedFileType,
           quantity: 1,
           file_blob: base64String
         }
