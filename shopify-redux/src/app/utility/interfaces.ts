@@ -26,6 +26,7 @@ export interface UserInterfaceState {
     rightDrawerOpen: boolean,
     basketItems: BasketItem[]
     drawerWidth: number
+    selectedComponent: string,
     meshyLoading: boolean,
     meshyLoadedPercentage: number,
     meshyPending: boolean,
@@ -128,4 +129,9 @@ export interface FileInformation{
   file: File,
   fileBlob: Blob,
   fileUrl: string
+}
+
+export interface SidebarItem {
+  text: string,
+  icon: JSX.Element
 }

@@ -8,6 +8,7 @@ const initialState: UserInterfaceState = {
     rightDrawerOpen: false,
     basketItems: [],
     drawerWidth: 400,
+    selectedComponent: '',
     meshyLoading: false,
     meshyLoadedPercentage: 0,
     meshyPending: false,

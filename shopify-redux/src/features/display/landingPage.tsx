@@ -10,6 +10,7 @@ import { MeshyPayload } from "../../services/meshyApi";
 import { createWebsocketConnection } from "../../services/meshyWebsocket";
 import { useDispatch} from "react-redux";
 import { AppDispatch } from "../../app/store";
+import { UpdatedUserInterface } from "../userInterface/updatedUserInterface";
 export const LandingPage = () => {
 
 
@@ -22,10 +23,10 @@ export const LandingPage = () => {
     const dispatch = useDispatch()
     useEffect(() => {
       if (userInterfaceState.userInformation?.incomplete_task?.port) {
-        const portId=userInterfaceState.userInformation?.incomplete_task.port.port_id
-        createWebsocketConnection(portId, dispatch, setActualFile )
+        const portId = userInterfaceState.userInformation?.incomplete_task.port.port_id;
+        createWebsocketConnection(portId, dispatch, setActualFile);
       }
-    }), [userInterfaceState.userInformation]
+    }, [userInterfaceState.userInformation]);
 
     const {
       data: sessionData,
@@ -59,8 +60,8 @@ export const LandingPage = () => {
 
     return(
         <Box sx = {{marginTop: 10}}>
-            <UserInterface/>
-            
+            {/* <UserInterface/> */}
+            <UpdatedUserInterface/>
             <MainOptions/>
             <LoginDialog/>
             <Button onClick={handleLogin}>Call Google</Button>
