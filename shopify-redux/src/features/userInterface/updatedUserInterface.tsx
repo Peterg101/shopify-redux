@@ -30,6 +30,7 @@ import ShoppingBasketIcon from '@mui/icons-material/ShoppingBasket';
 import { setLeftDrawerClosed, setLeftDrawerOpen, setSelectedComponent } from "../../services/userInterfaceSlice"
 import { Basket, EmptyBasket } from "./basketFragments"
 import { LeftDrawerList } from "./leftDrawerFragments"
+import { ProfilePage } from "./profilePage"
 
 export const UpdatedUserInterface = () => {
   const userInterfaceState = useSelector(
@@ -83,7 +84,7 @@ export const UpdatedUserInterface = () => {
   const renderResultsOptionsComponent = () => {
     switch (userInterfaceState.selectedComponent) {
       case "Profile":
-        return <h1>Profile</h1>
+        return <ProfilePage/>
       case "Gen AI History":
         return (
           <LeftDrawerList/>

@@ -64,11 +64,6 @@ export const LandingPage = () => {
             <UpdatedUserInterface/>
             <MainOptions/>
             <LoginDialog/>
-            <Button onClick={handleLogin}>Call Google</Button>
-            <Button onClick={handleCallProtectedEndpoint}>Call Protected Endpoint</Button>
-            <Button onClick={handleLogOut}>Log Out</Button>
-            <h1>HERE</h1>
-            {userInterfaceState.meshyLoadedPercentage}
         </Box>
         
     )
