@@ -106,7 +106,7 @@ export interface BasketInformation {
   colour: string;
   selected_file: string; // Changed to snake_case
   quantity: number;
-  selectedFileType: string; // Changed to snake_case
+  selected_file_type: string; // Changed to snake_case
 }
 
 export interface BasketInformationAndFile extends BasketInformation {

@@ -28,10 +28,11 @@ const handleEditBasketItem = async (item: BasketInformation) => {
   const data = await fetchFile(item.task_id)
   const fileInfo = extractFileInfo(data, item.name)
   setActualFile(fileInfo.file);
-  dispatch(setUploadedFileEditProperties({
-    basketItem: item,
-    fileInformation:fileInfo
-  }))
+  dispatch(setFileProperties({
+    selectedFile: fileInfo.fileUrl,
+    selectedFileType: 'obj',
+    fileNameBoxValue: item.name,
+}))
   
 };
   return (

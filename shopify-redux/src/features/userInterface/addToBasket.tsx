@@ -24,6 +24,7 @@ const userState = useSelector(
   const {uploadedFiles, setUploadedFiles} = useUploadedFiles()
 
     const handleAddToBasket = async () => {
+      console.log('hitting here')
       const itemUUID= generateUuid()
       if (actualFile) {
         const base64String = await convertFileToBase64WithoutFileReader(actualFile)
@@ -36,10 +37,11 @@ const userState = useSelector(
           sizing: dataState.multiplierValue,
           colour: dataState.modelColour,
           selected_file: dataState.selectedFile,
-          selectedFileType: dataState.selectedFileType,
+          selected_file_type: dataState.selectedFileType,
           quantity: 1,
           file_blob: base64String
         }
+        console.log(basketInformationAndFile)
         await postFile(basketInformationAndFile)
         dispatch(resetDataState())
         dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));        

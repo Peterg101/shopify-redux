@@ -131,7 +131,7 @@ export const dataSlice = createSlice({
             state.multiplierValue = basketItem.sizing
             state.modelColour = basketItem.colour
             state.selectedFile= fileInformation.fileUrl
-            state.selectedFileType=basketItem.selectedFileType
+            state.selectedFileType=basketItem.selected_file_type
             state.fileDisplay = true
         },
         setXFLip: (state, action: PayloadAction<{xFlip: number}>) => {
