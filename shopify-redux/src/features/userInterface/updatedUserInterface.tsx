@@ -5,7 +5,7 @@ import ListItemIcon from "@mui/material/ListItemIcon"
 import IconButton from "@mui/material/IconButton"
 import { useTheme } from "@mui/material/styles"
 import { AppBar, Drawer, DrawerHeader } from './uiComponents'
-import { Box, Toolbar, Typography } from "@mui/material"
+import { Box, Divider, List, Toolbar, Typography } from "@mui/material"
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import ChevronRightIcon from "@mui/icons-material/ChevronRight"
 import { SidebarItem } from "../../app/utility/interfaces"
@@ -28,6 +28,8 @@ import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ShoppingBasketIcon from '@mui/icons-material/ShoppingBasket';
 import { setLeftDrawerClosed, setLeftDrawerOpen, setSelectedComponent } from "../../services/userInterfaceSlice"
+import { Basket, EmptyBasket } from "./basketFragments"
+import { LeftDrawerList } from "./leftDrawerFragments"
 
 export const UpdatedUserInterface = () => {
   const userInterfaceState = useSelector(
@@ -84,11 +86,18 @@ export const UpdatedUserInterface = () => {
         return <h1>Profile</h1>
       case "Gen AI History":
         return (
-          <h1>Gen AI History</h1>
+          <LeftDrawerList/>
         )
       case "Basket":
         return (
-            <h1>Basket</h1>
+            <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <List component="nav" sx={{ flexGrow: 1 }}>
+            {userInterfaceState.userInformation?.basket_items.length === 0 ? <EmptyBasket/> : <Basket/>}
+            <Divider sx={{ my: 1 }} />
+          </List>
+          <Box sx={{ marginTop: 'auto', padding: 2 }}>
+          </Box>
+        </Box>
         ) 
     }
   }

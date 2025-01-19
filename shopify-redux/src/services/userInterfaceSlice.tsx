@@ -79,6 +79,10 @@ export const userInterfaceSlice = createSlice({
             const {meshyQueueItems} = action.payload
             state.meshyQueueItems = meshyQueueItems
         },
+        setSelectedComponent: (state, action: PayloadAction<{selectedComponent: string}>) => {
+            const {selectedComponent} = action.payload
+            state.selectedComponent = selectedComponent
+        }
 
     },
     extraReducers: (builder) => {
@@ -117,7 +121,8 @@ export const {
     setMeshyLoading,
     setMeshyLoadedPercentage,
     setMeshyPending,
-    setMeshyQueueItems
+    setMeshyQueueItems,
+    setSelectedComponent
 } = userInterfaceSlice.actions
 
 export default userInterfaceSlice.reducer
