@@ -87,8 +87,10 @@ def delete_port_id(db: Session, task_id:str ):
 
 def add_or_update_basket_item_in_db(db: Session, basket_item_info: BasketItemInformation) -> BasketItem:
     # Check if the item already exists in the database
+    print('hitting here')
+    print(basket_item_info.task_id)
     existing_item = db.query(BasketItem).filter(BasketItem.task_id == basket_item_info.task_id).first()
-
+    print(existing_item)
     if existing_item:
         # Check if any fields have changed
         has_changed = any(

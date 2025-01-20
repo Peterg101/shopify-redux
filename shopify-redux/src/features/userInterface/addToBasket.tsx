@@ -23,31 +23,56 @@ const userState = useSelector(
   const {actualFile, setActualFile} = useFile()
   const {uploadedFiles, setUploadedFiles} = useUploadedFiles()
 
-    const handleAddToBasket = async () => {
-      console.log('hitting here')
-      const itemUUID= generateUuid()
-      if (actualFile) {
-        const base64String = await convertFileToBase64WithoutFileReader(actualFile)
-        const basketInformationAndFile: BasketInformationAndFile = {
-          user_id: userState.userInformation?.user.user_id,
-          task_id: dataState.taskId ? dataState.taskId : itemUUID,
-          name: dataState.fileNameBoxValue,
-          material: dataState.printMaterial,
-          technique: dataState.printTechnique,
-          sizing: dataState.multiplierValue,
-          colour: dataState.modelColour,
-          selected_file: dataState.selectedFile,
-          selected_file_type: dataState.selectedFileType,
-          quantity: 1,
-          file_blob: base64String
-        }
-        console.log(basketInformationAndFile)
-        await postFile(basketInformationAndFile)
-        dispatch(resetDataState())
-        dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));        
+  const handleAddToBasket = async () => {
+    console.log(dataState.taskId)
+    const itemUUID= generateUuid()
+    if (actualFile) {
+      const base64String = await convertFileToBase64WithoutFileReader(actualFile)
+      const basketInformationAndFile: BasketInformationAndFile = {
+        user_id: userState.userInformation?.user.user_id,
+        task_id: dataState.taskId ? dataState.taskId : itemUUID,
+        name: dataState.fileNameBoxValue,
+        material: dataState.printMaterial,
+        technique: dataState.printTechnique,
+        sizing: dataState.multiplierValue,
+        colour: dataState.modelColour,
+        selected_file: dataState.selectedFile,
+        selected_file_type: dataState.selectedFileType,
+        quantity: 1,
+        file_blob: base64String
       }
-
+      await postFile(basketInformationAndFile)
+      dispatch(resetDataState())
+      dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));        
     }
+
+  }
+
+    // const handleAddToBasket = async () => {
+    //   console.log('hitting here')
+    //   const itemUUID= generateUuid()
+    //   if (actualFile) {
+    //     const base64String = await convertFileToBase64WithoutFileReader(actualFile)
+    //     const basketInformationAndFile: BasketInformationAndFile = {
+    //       user_id: userState.userInformation?.user.user_id,
+    //       task_id: dataState.taskId ? dataState.taskId : itemUUID,
+    //       name: dataState.fileNameBoxValue,
+    //       material: dataState.printMaterial,
+    //       technique: dataState.printTechnique,
+    //       sizing: dataState.multiplierValue,
+    //       colour: dataState.modelColour,
+    //       selected_file: dataState.selectedFile,
+    //       selected_file_type: dataState.selectedFileType,
+    //       quantity: 1,
+    //       file_blob: base64String
+    //     }
+    //     console.log(basketInformationAndFile)
+    //     await postFile(basketInformationAndFile)
+    //     dispatch(resetDataState())
+    //     dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));        
+    //   }
+
+    // }
     return(
         <Button
         component="label"
