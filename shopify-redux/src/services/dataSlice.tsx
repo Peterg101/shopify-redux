@@ -21,6 +21,7 @@ const initialState: DataState = {
     fileNameBoxValue: '',
     modelDimensions: initialVectorState,
     fileDisplay: false,
+    fromMeshyOrHistory: false,
     xFlip: 0,
     yFlip: 0,
     zFlip: 0
@@ -56,6 +57,7 @@ export const dataSlice = createSlice({
         },
         setMultiplierValue: (state, action: PayloadAction<{multiplierValue: number}>) => {
             const {multiplierValue} = action.payload
+            console.log(multiplierValue)
             state.multiplierValue = multiplierValue
         },
         setMaxScale: (state, action: PayloadAction<{maxScale: number}>) => {
@@ -124,6 +126,9 @@ export const dataSlice = createSlice({
             }>
         ) => {
             const {basketItem, fileInformation} = action.payload
+            console.log(basketItem)
+            console.log(basketItem.selected_file_type)
+            console.log(basketItem.sizing)
             state.taskId = basketItem.task_id
             state.fileNameBoxValue = basketItem.name
             state.printMaterial = basketItem.material
@@ -131,7 +136,7 @@ export const dataSlice = createSlice({
             state.multiplierValue = basketItem.sizing
             state.modelColour = basketItem.colour
             state.selectedFile= fileInformation.fileUrl
-            state.selectedFileType=basketItem.selected_file_type
+            state.selectedFileType=basketItem.selectedFileType
             state.fileDisplay = true
         },
         setXFLip: (state, action: PayloadAction<{xFlip: number}>) => {
@@ -146,6 +151,10 @@ export const dataSlice = createSlice({
             const {zFlip} = action.payload
             state.zFlip = zFlip
          },
+         setFromMeshyOrHistory: (state, action: PayloadAction<{fromMeshyOrHistory: boolean}>) => {
+            const {fromMeshyOrHistory} = action.payload
+            state.fromMeshyOrHistory = fromMeshyOrHistory
+         }
 
         
     }
@@ -170,7 +179,8 @@ export const {
     setMultiplierMidpoint,
     setXFLip,
     setYFLip,
-    setZFLip
+    setZFLip,
+    setFromMeshyOrHistory
  } = dataSlice.actions
 
 export default dataSlice.reducer

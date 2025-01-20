@@ -49,7 +49,8 @@ export interface DataState {
    maxScale: number,
    minScale: number,
    fileNameBoxValue: string,
-   fileDisplay: boolean
+   fileDisplay: boolean,
+   fromMeshyOrHistory: boolean,
    xFlip: number,
    yFlip: number,
    zFlip: number

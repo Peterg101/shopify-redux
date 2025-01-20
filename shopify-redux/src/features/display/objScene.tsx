@@ -4,7 +4,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { calculateThreeVolume, calculateSize, calculateMaxScaling, calculateMinScaling } from "../../app/utility/utils";
-import { setModelDimensions, setModelVolume, setMultiplierValue, setScales } from "../../services/dataSlice";
+import { setFromMeshyOrHistory, setModelDimensions, setModelVolume, setMultiplierValue, setScales } from "../../services/dataSlice";
 
 const OBJScene = () => {
     const dispatch = useDispatch()
@@ -44,13 +44,16 @@ const OBJScene = () => {
                     if (child instanceof THREE.Mesh) {
                         child.geometry.dispose()
                         setMeasuredObj(child)
+                        console.log(dataState.multiplierValue)
                         const measuredSize = calculateSize(child)
                         const maximumScale = calculateMaxScaling(measuredSize)
                         const minimumScale = calculateMinScaling(measuredSize)
                         dispatch(setScales({minScale: minimumScale, maxScale: maximumScale }))
-                        if (!isMultiplierInitialized) {
+                        if (dataState.fromMeshyOrHistory) {
+                            console.log('MULTIO(P')
+                            console.log(isMultiplierInitialized)
                             dispatch(setMultiplierValue({ multiplierValue: maximumScale }));
-                            setIsMultiplierInitialized(true);
+                            dispatch(setFromMeshyOrHistory({fromMeshyOrHistory: false}))
                         }
                     }
                 });

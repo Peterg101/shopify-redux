@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import React from "react";
 import { useFile } from "../../services/fileProvider";
-import { resetDataState, setFileProperties } from "../../services/dataSlice";
+import { resetDataState, setFileProperties, setFromMeshyOrHistory } from "../../services/dataSlice";
 import { extractFileInfo, fetchFile } from "../../services/fetchFileUtils";
 import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
 
@@ -19,6 +19,7 @@ export const LeftDrawerTask = (task: TaskInformation) => {
         const data = await fetchFile(fileId)
         const fileInfo = extractFileInfo(data, filename)
         setActualFile(fileInfo.file);
+            dispatch(setFromMeshyOrHistory({fromMeshyOrHistory: true}))
             dispatch(setFileProperties({
                 selectedFile: fileInfo.fileUrl,
                 selectedFileType: 'obj',

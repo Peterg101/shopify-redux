@@ -3,7 +3,7 @@ import { authApi } from "./authApi";
 import { MeshyTaskStatusResponse } from "./meshyApi";
 import { setMeshyLoadedPercentage, setMeshyLoading, setMeshyPending, setMeshyQueueItems } from "./userInterfaceSlice";
 import { extractFileInfo, fetchFile } from "./fetchFileUtils";
-import { setFileProperties } from "./dataSlice";
+import { setFileProperties, setFromMeshyOrHistory } from "./dataSlice";
 
 export const createWebsocketConnection = (
   portId: string,
@@ -27,11 +27,13 @@ export const createWebsocketConnection = (
           const fileData = await fetchFile(taskId)
           const fileInfo = extractFileInfo(fileData, fileName)
           setActualFile(fileInfo.file)
+          dispatch(setFromMeshyOrHistory({fromMeshyOrHistory: true}))
           dispatch(setFileProperties({
             selectedFile: fileInfo.fileUrl,
             selectedFileType: 'obj',
             fileNameBoxValue: fileName,
         }));
+
     
           ws.close()
           dispatch(setMeshyLoading({meshyLoading: false}))

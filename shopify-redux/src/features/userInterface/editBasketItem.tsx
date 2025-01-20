@@ -21,20 +21,38 @@ const userInterfaceSlice = useSelector(
 )
 
 
+// const handleEditBasketItem = async (item: BasketInformation) => {
+//   setActualFile(null)
+//   dispatch(resetDataState())
+//   dispatch(setRightDrawerClosed())
+//   const data = await fetchFile(item.task_id)
+//   const fileInfo = extractFileInfo(data, item.name)
+//   setActualFile(fileInfo.file);
+//   dispatch(setFileProperties({
+//     selectedFile: fileInfo.fileUrl,
+//     selectedFileType: 'obj',
+//     fileNameBoxValue: item.name,
+// }))
+
+
 const handleEditBasketItem = async (item: BasketInformation) => {
   setActualFile(null)
   dispatch(resetDataState())
   dispatch(setRightDrawerClosed())
   const data = await fetchFile(item.task_id)
+  console.log(item.selectedFileType)
+  console.log(data)
   const fileInfo = extractFileInfo(data, item.name)
+  console.log(fileInfo)
   setActualFile(fileInfo.file);
-  dispatch(setFileProperties({
-    selectedFile: fileInfo.fileUrl,
-    selectedFileType: 'obj',
-    fileNameBoxValue: item.name,
-}))
+  dispatch(setUploadedFileEditProperties({
+    basketItem: item,
+    fileInformation:fileInfo
+  }))
   
-};
+}
+  
+
   return (
     <Button
       onClick={() => handleEditBasketItem(item)}
