@@ -4,7 +4,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useFile } from '../../services/fileProvider';
 import { createFileBlob, extractFileType } from '../../app/utility/utils';
 import { useDispatch } from 'react-redux';
-import {setFileProperties} from '../../services/dataSlice';
+import {setFileProperties, setFromMeshyOrHistory} from '../../services/dataSlice';
 import { setLeftDrawerClosed, setRightDrawerClosed } from '../../services/userInterfaceSlice';
 import AiTextPrompt from './aiTextPrompt';
 import { Box, CircularProgress } from '@mui/material';
@@ -29,13 +29,13 @@ export const DropArea = () => {
       dispatch(setFileProperties(
         {
           fileNameBoxValue: file.name, 
-          selectedFile: fileBlob, 
+          selectedFile: fileBlob,
           selectedFileType: fileExtension
         }))
       setActualFile(file)
     }, [setActualFile, dispatch])
     const onDrop = useCallback((acceptedFiles: File[]) => {
-        
+        dispatch(setFromMeshyOrHistory({fromMeshyOrHistory: true}))
         acceptedFiles.forEach((file: File) => {
         handleProcessFile(file)
         })
