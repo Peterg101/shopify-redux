@@ -4,7 +4,7 @@ import React, { useEffect, useState} from 'react';
 import { calculateSize, calculateThreeVolume, calculateMaxScaling, calculateMinScaling} from "../../app/utility/utils";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
-import { setModelDimensions, setModelVolume, setMultiplierValue, setScales } from '../../services/dataSlice';
+import { setFromMeshyOrHistory, setModelDimensions, setModelVolume, setMultiplierValue, setScales } from '../../services/dataSlice';
 
 
 const STLScene = (
@@ -41,9 +41,10 @@ const STLScene = (
             const measuredSize = calculateSize(otherLoadedStl)
             const maximumScale = calculateMaxScaling(measuredSize)
             const minimumScale = calculateMinScaling(measuredSize)
-            if (!isMultiplierInitialized) {
+            dispatch(setScales({minScale: minimumScale, maxScale: maximumScale }))
+            if (dataState.fromMeshyOrHistory) {
                 dispatch(setMultiplierValue({ multiplierValue: maximumScale }));
-                setIsMultiplierInitialized(true);
+                dispatch(setFromMeshyOrHistory({fromMeshyOrHistory: false}))
             }
         }, undefined, (error) => {
             console.error("Error loading STL file:", error);

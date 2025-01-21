@@ -50,8 +50,6 @@ const OBJScene = () => {
                         const minimumScale = calculateMinScaling(measuredSize)
                         dispatch(setScales({minScale: minimumScale, maxScale: maximumScale }))
                         if (dataState.fromMeshyOrHistory) {
-                            console.log('MULTIO(P')
-                            console.log(isMultiplierInitialized)
                             dispatch(setMultiplierValue({ multiplierValue: maximumScale }));
                             dispatch(setFromMeshyOrHistory({fromMeshyOrHistory: false}))
                         }
