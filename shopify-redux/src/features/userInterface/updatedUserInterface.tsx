@@ -24,6 +24,7 @@ import TuneIcon from "@mui/icons-material/Tune"
 //   setSelectedComponent,
 // } from "../../services/userInterfaceSlice"
 // import { FilterComponent } from "./filterComponent"
+import Badge from '@mui/material/Badge';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ShoppingBasketIcon from '@mui/icons-material/ShoppingBasket';
@@ -64,19 +65,36 @@ export const UpdatedUserInterface = () => {
     {
       text: "Gen AI History",
       icon: (
+      <Badge 
+      badgeContent={userInterfaceState.userInformation?.tasks.length} 
+      color="secondary"
+      anchorOrigin={{
+        vertical: 'top', // 'top' or 'bottom'
+        horizontal: 'left', // 'left' or 'right'
+      }}
+      >
         <AutoAwesomeIcon
           sx={{ fontSize: 40, marginTop: 1 }}
           data-testid="ai-icon"
         />
+        </Badge>
       ),
     },
     {
         text: "Basket",
         icon: (
-          <ShoppingBasketIcon
+          <Badge badgeContent={userInterfaceState.userInformation?.basket_items.length} 
+          color="secondary" 
+          anchorOrigin={{
+            vertical: 'top', // 'top' or 'bottom'
+            horizontal: 'left', // 'left' or 'right'
+          }}>
+            <ShoppingBasketIcon
             sx={{ fontSize: 40, marginTop: 1 }}
             data-testid="basket-icon"
           />
+          </Badge>
+          
         ),
       },
   ]
