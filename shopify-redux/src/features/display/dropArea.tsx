@@ -52,8 +52,6 @@ export const DropArea = () => {
           <h3 style={{marginTop: 50, textAlign: 'center'}}><em>Click</em> or <em>drag</em> an image or 3D model file here, or enter a prompt below.</h3>
           
         </Box> 
-  
-       
         </Box>
     )
 }
