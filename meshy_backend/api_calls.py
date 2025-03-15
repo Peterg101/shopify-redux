@@ -5,7 +5,7 @@ import requests
 from jwt_auth import generate_token
 from models import (MeshyPayload, MeshyRefinedPayload,
                     MeshyTaskGeneratedResponse, MeshyTaskStatus,
-                    MeshyTaskStatusResponse, TaskInformation, UserAndTasks)
+                    MeshyTaskStatusResponse, TaskInformation, UserAndTasks, MeshyImageTo3DPayload, ImageTo3DMeshyTaskStatusResponse)
 
 MESHY_API_KEY = "msy_RLiG6FNDJRdsNfSKCoFJ5E2Jhcs4r1l5Hmjp"
 
@@ -25,6 +25,24 @@ def generate_text_to_3d_task(payload: MeshyPayload) -> MeshyTaskGeneratedRespons
         return None
 
 
+def generate_image_to_3d_task(payload: MeshyImageTo3DPayload) -> MeshyTaskGeneratedResponse:
+    headers = {"Authorization": f"Bearer {MESHY_API_KEY}"}
+    try:
+        response = requests.post(
+            "https://api.meshy.ai/openapi/v1/image-to-3d",
+            headers=headers,
+            json=payload.__dict__,
+        )
+        response.raise_for_status()
+        result = MeshyTaskGeneratedResponse(**response.json())
+        return result
+
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {e}")
+        return None
+
+
+
 async def get_meshy_task_status(meshy_task_args: MeshyTaskStatus) -> MeshyTaskStatusResponse:
     headers = {"Authorization": f"Bearer {MESHY_API_KEY}"}
     response = requests.get(
@@ -34,6 +52,18 @@ async def get_meshy_task_status(meshy_task_args: MeshyTaskStatus) -> MeshyTaskSt
     response.raise_for_status()
 
     result = MeshyTaskStatusResponse(**response.json())
+    return result
+
+
+async def get_image_to_3d_task_status(meshy_task_args: MeshyTaskStatus) -> ImageTo3DMeshyTaskStatusResponse:
+    headers = {"Authorization": f"Bearer {MESHY_API_KEY}"}
+    response = requests.get(
+        f"https://api.meshy.ai/openapi/v1/image-to-3d/{task_id}",
+        headers=headers,
+    )
+    response.raise_for_status()
+
+    result = ImageTo3DMeshyTaskStatusResponse(**response.json())
     return result
 
 

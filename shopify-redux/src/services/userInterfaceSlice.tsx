@@ -122,7 +122,7 @@ export const {
     setMeshyLoadedPercentage,
     setMeshyPending,
     setMeshyQueueItems,
-    setSelectedComponent
+    setSelectedComponent,
 } = userInterfaceSlice.actions
 
 export default userInterfaceSlice.reducer

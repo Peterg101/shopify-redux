@@ -7,7 +7,7 @@ import { useFile } from '../../services/fileProvider';
 import { useUploadedFiles } from '../../services/uploadedFilesProvider';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
-import { setUploadedFileEditProperties } from '../../services/dataSlice';
+import { setSelectedFile, setUploadedFileEditProperties } from '../../services/dataSlice';
 import { setAllBasketItems, setLeftDrawerClosed, setRightDrawerClosed } from '../../services/userInterfaceSlice';
 import { resetDataState, setFileProperties } from "../../services/dataSlice";
 import { extractFileInfo, fetchFile } from "../../services/fetchFileUtils";
@@ -40,11 +40,12 @@ const handleEditBasketItem = async (item: BasketInformation) => {
   dispatch(resetDataState())
   dispatch(setRightDrawerClosed())
   const data = await fetchFile(item.task_id)
-  console.log(item.selectedFileType)
+  console.log(item.selected_file_type)
   console.log(data)
   const fileInfo = extractFileInfo(data, item.name)
   console.log(fileInfo)
   setActualFile(fileInfo.file);
+  dispatch(setSelectedFile({selectedFile: fileInfo.fileUrl}))
   dispatch(setUploadedFileEditProperties({
     basketItem: item,
     fileInformation:fileInfo

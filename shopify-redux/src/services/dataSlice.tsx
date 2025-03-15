@@ -154,7 +154,11 @@ export const dataSlice = createSlice({
          setFromMeshyOrHistory: (state, action: PayloadAction<{fromMeshyOrHistory: boolean}>) => {
             const {fromMeshyOrHistory} = action.payload
             state.fromMeshyOrHistory = fromMeshyOrHistory
+         },
+         setClearFileDisplay: (state) => {
+            state.fileDisplay = false
          }
+
 
         
     }
@@ -180,7 +184,8 @@ export const {
     setXFLip,
     setYFLip,
     setZFLip,
-    setFromMeshyOrHistory
+    setFromMeshyOrHistory,
+    setClearFileDisplay
  } = dataSlice.actions
 
 export default dataSlice.reducer

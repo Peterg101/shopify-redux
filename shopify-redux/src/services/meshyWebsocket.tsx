@@ -33,8 +33,6 @@ export const createWebsocketConnection = (
             selectedFileType: 'obj',
             fileNameBoxValue: fileName,
         }));
-
-    
           ws.close()
           dispatch(setMeshyLoading({meshyLoading: false}))
         }

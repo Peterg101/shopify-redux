@@ -25,6 +25,7 @@ export const DropArea = () => {
         dispatch(setRightDrawerClosed())
         dispatch(setLeftDrawerClosed())
       const fileBlob = createFileBlob(file)
+      console.log(fileBlob)
       const fileExtension = extractFileType(file)
       console.log(fileExtension)
       dispatch(setFileProperties(

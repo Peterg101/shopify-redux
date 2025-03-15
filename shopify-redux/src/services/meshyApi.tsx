@@ -13,6 +13,14 @@ export interface MeshyPayload {
     art_style: string;
     negative_prompt: string;
   }
+
+
+export interface MeshyImageTo3DPayload {
+  image_url: string,
+  enable_pbr: boolean,
+  should_remesh: boolean,
+  should_texture: boolean
+}
   
 export interface MeshyTaskGeneratedResponse {
 result: string; 

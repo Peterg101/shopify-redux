@@ -10,18 +10,24 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { useDispatch } from 'react-redux';
 import { useRef, useState } from "react";
 import { Box, Button } from "@mui/material";
-import { resetDataState, setSelectedFile, setSelectedFileType } from "../../services/dataSlice";
-import { setMeshyLoading, setMeshyPending } from "../../services/userInterfaceSlice";
-
+import { resetDataState, setClearFileDisplay, setSelectedFile, setSelectedFileType } from "../../services/dataSlice";
+import { setMeshyLoadedPercentage, setMeshyLoading, setMeshyPending, setMeshyQueueItems } from "../../services/userInterfaceSlice";
+import { startImageTo3DTask } from "../../services/fetchFileUtils";
+import { generateUuid } from "../../app/utility/utils";
+import { generateUUID } from "three/src/math/MathUtils";
+import { authApi } from '../../services/authApi';
 
 export const JpgViewer = () => {
     const dataState = useSelector(
         (state: RootState) => state.dataState
     )
+    const userInterfaceState = useSelector(
+      (state: RootState) => state.userInterfaceState
+    )
     const dispatch = useDispatch()
     const [image, setImage] = useState(dataState.selectedFile);
+
     const [cropData, setCropData] = useState("");
-    console.log(cropData)
     const [cropper, setCropper] = useState<any>();
     const onChange = (e: any) => {
       e.preventDefault();
@@ -44,17 +50,23 @@ export const JpgViewer = () => {
       }
     };
 
-    const generate3DModelFromImage = () => {
+    const generate3DModelFromImage = async () => {
       console.log("Generating 3D Model")
+      console.log(image)
       setCropData("")
-      // dispatch(resetDataState())
+      console.log(dataState.selectedFile)
+      const portId = generateUUID()
+      await startImageTo3DTask(image, userInterfaceState.userInformation?.user.user_id, portId)
       setImage("")
-      dispatch(setSelectedFile({selectedFile: ""}))
-      dispatch(setSelectedFileType({selectedFileType: ""}))
-      dispatch(setMeshyPending({meshyPending: true}))
-      dispatch(setMeshyLoading({meshyLoading: true}))
+      dispatch(setClearFileDisplay())
+      // dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
+      // dispatch(setMeshyPending({meshyPending: true}))
 
-      
+      // dispatch(setMeshyLoadedPercentage({meshyLoadedPercentage: 1}));
+      //   dispatch(setMeshyPending({meshyPending: false}))
+      //   dispatch(setMeshyQueueItems({ meshyQueueItems: 0 }));
+      //   dispatch(setMeshyLoading({meshyLoading: true}))
+      //   di
     };
   
   

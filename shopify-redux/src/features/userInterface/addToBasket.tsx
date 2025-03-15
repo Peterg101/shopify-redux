@@ -10,6 +10,7 @@ import { setBasketItems } from "../../services/userInterfaceSlice";
 import { resetDataState } from "../../services/dataSlice";
 import { postFile } from "../../services/fetchFileUtils";
 import { authApi } from "../../services/authApi";
+import { CatchingPokemonSharp } from "@mui/icons-material";
 
 export const AddToBasket = () => {
   const dispatch = useDispatch()
@@ -25,6 +26,7 @@ const userState = useSelector(
 
   const handleAddToBasket = async () => {
     console.log(dataState.taskId)
+    console.log("adding to basket")
     const itemUUID= generateUuid()
     if (actualFile) {
       console.log('here')

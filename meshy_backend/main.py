@@ -14,7 +14,8 @@ from models import (
     MeshyTaskStatusResponse,
     ModelUrls,
     TaskInformation,
-    TaskRequest
+    TaskRequest,
+    ImageTo3DTaskRequest
 )
 from redis import Redis
 
@@ -27,6 +28,7 @@ from api_calls import (
 
 from utils import (
     generate_task_and_check_for_response,
+    generate_image_to_3d_task_and_check_for_response_decoupled_ws,
     generate_task_and_check_for_response_decoupled_ws, 
     validate_session, 
     process_client_messages, 
@@ -71,7 +73,6 @@ async def start_task(
     _: None = Depends(cookie_verification)
 ):
     # Add the task to the background
-    # background_tasks.add_task(long_running_task, request, redis)
     background_tasks.add_task(
         generate_task_and_check_for_response_decoupled_ws,
         request,
@@ -80,12 +81,33 @@ async def start_task(
     return {"message": "Task started!", "task_id": request.port_id}
 
 
+@app.post("/start_image_to_3d_task/")
+async def start_image_to_3d_task(
+    request: ImageTo3DTaskRequest,
+    background_tasks: BackgroundTasks,
+    redis: aioredis.Redis = Depends(get_redis),
+    _: None = Depends(cookie_verification)
+):
+    
+    print("Hitting the 3d image route")
+    # Add the task to the background
+    print(request.meshy_image_to_3d_payload.image_url)
+
+    background_tasks.add_task(
+        generate_image_to_3d_task_and_check_for_response_decoupled_ws,
+        request,
+        redis
+    )
+    print("background task successfully added")
+    # return {"message": "Task started!", "task_id": request.port_id}
+
+
 @app.websocket("/ws/{port_id}")
 async def websocket_endpoint(websocket: WebSocket, port_id: str, redis: aioredis.Redis = Depends(get_redis)):
     await websocket.accept()
 
     # # Authenticate session outside the try block
-    # session_valid, user_id = await validate_session(websocket)
+    # session_valid, user_id = await validate_session(websocket)0
     # if not session_valid:
     #     await websocket.close(code=1008, reason="Invalid session")
     #     return

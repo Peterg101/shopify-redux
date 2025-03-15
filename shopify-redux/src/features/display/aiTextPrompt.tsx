@@ -46,8 +46,6 @@ const AiTextPrompt = () => {
       await startTask(value, userInterfaceState.userInformation?.user.user_id, portId)
       dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
       createWebsocketConnection(portId, dispatch, setActualFile)
-      
-
     }
   };
 

@@ -1,5 +1,5 @@
 import { FileInformation, FileResponse, BasketInformationAndFile} from "../app/utility/interfaces"
-import { MeshyPayload } from "../services/meshyApi";
+import { MeshyPayload, MeshyImageTo3DPayload } from "../services/meshyApi";
 export const fetchFile = async (fileId: string): Promise<FileResponse> => {
     try {
       const response = await fetch(`http://localhost:8000/file_storage/${fileId}`, {
@@ -98,6 +98,29 @@ export const startTask = async (prompt: string, userId: string, portId: string) 
 
     },
     body: JSON.stringify({ port_id: portId, user_id: userId, meshy_payload: payload }),
+  });
+
+  const data = await response.json();
+};
+
+export const startImageTo3DTask = async (image_url: string, userId: string, portId: string) => {
+  console.log(image_url)
+  
+  const payload: MeshyImageTo3DPayload = {
+    image_url: image_url,
+    enable_pbr: true,
+    should_remesh: true,
+    should_texture: true
+  };
+
+  const response = await fetch('http://localhost:1234/start_image_to_3d_task/', {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json', // Specify that you're sending JSON data
+
+    },
+    body: JSON.stringify({ port_id: portId, user_id: userId, meshy_image_to_3d_payload: payload }),
   });
 
   const data = await response.json();

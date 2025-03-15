@@ -1,9 +1,10 @@
 from dataclasses import dataclass, field
 from io import BytesIO
 from typing import List, Optional, Union
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 import base64
 from datetime import datetime
+
 
 @dataclass
 class MeshyPayload:
@@ -11,6 +12,14 @@ class MeshyPayload:
     prompt: str
     art_style: str
     negative_prompt: str
+
+
+@dataclass
+class MeshyImageTo3DPayload:
+    image_url: str
+    enable_pbr: bool
+    should_remesh: bool
+    should_texture: bool
 
 
 @dataclass
@@ -67,7 +76,7 @@ class MeshyTaskStatusResponse(BaseModel):
 
 
 class TaskInformation(BaseModel):
-    task_id: Optional[str] = None
+    task_id: Optional[str] = None 
     user_id: Optional[str] = None
     task_name: Optional[str] = None
     port_id: Optional[str] = None
@@ -89,3 +98,42 @@ class TaskRequest(BaseModel):
     port_id: str
     user_id: str
     meshy_payload: MeshyPayload
+
+
+class ImageTo3DTaskRequest(BaseModel):
+    port_id: str
+    user_id: str
+    meshy_image_to_3d_payload: MeshyImageTo3DPayload
+
+
+class Image3DModelUrls(BaseModel):
+    glb: Optional[HttpUrl]
+    fbx: Optional[HttpUrl]
+    obj: Optional[HttpUrl]
+    usdz: Optional[HttpUrl]
+
+
+class TextureUrls(BaseModel):
+    base_color: Optional[HttpUrl]
+    metallic: Optional[HttpUrl]
+    normal: Optional[HttpUrl]
+    roughness: Optional[HttpUrl]
+
+
+class TaskError(BaseModel):
+    message: str
+
+
+class ImageTo3DMeshyTaskStatusResponse(BaseModel):
+    id: str
+    model_urls: Optional[Image3DModelUrls]
+    thumbnail_url: Optional[HttpUrl]
+    progress: int
+    started_at: int
+    created_at: int
+    expires_at: int
+    finished_at: int
+    status: str
+    texture_urls: List[TextureUrls]
+    preceding_tasks: int
+    task_error: Optional[TaskError]

@@ -2,11 +2,14 @@ import asyncio
 import json
 from dataclasses import asdict, is_dataclass
 import base64
+import aiohttp
 from fastapi import WebSocket, Request, HTTPException
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Union
 from api_calls import (
     generate_meshy_refine_task,
-    generate_text_to_3d_task,                   
+    generate_text_to_3d_task,
+    get_image_to_3d_task_status,
+    generate_image_to_3d_task,                   
     get_meshy_task_status,
     create_task,
     websocket_session_exists,
@@ -16,15 +19,18 @@ from api_calls import (
 from models import (
     MeshyRefinedPayload,
     MeshyTaskGeneratedResponse,
+    ImageTo3DMeshyTaskStatusResponse,
     MeshyTaskStatus,
     MeshyTaskStatusResponse,
     TaskInformation,
     MeshyPayload,
+    ImageTo3DTaskRequest,
     TaskRequest)
 from redis import Redis
 from jwt_auth import generate_token
 import aioredis
 import requests
+
 
 async def generate_task_and_check_for_response(
     payload: MeshyPayload, websocket: WebSocket, user_id: str
@@ -80,6 +86,39 @@ async def generate_task_and_check_for_response_decoupled_ws(
     return generated_task_status
 
 
+async def generate_image_to_3d_task_and_check_for_response_decoupled_ws(
+    request: ImageTo3DTaskRequest,
+    redis: aioredis.Redis
+) -> ImageTo3DMeshyTaskStatusResponse:
+    
+    task_generated = False
+    task_posted = False
+    generated_task = generate_image_to_3d_task(
+        request.meshy_image_to_3d_payload
+        )
+    print(generated_task)
+    while task_generated is False:
+        await asyncio.sleep(1)
+        meshy_task_status = MeshyTaskStatus(task_id=generated_task.result)
+        generated_task_status = await get_image_to_3d_task_status(
+            meshy_task_status
+            )
+        if not task_posted:
+            # await post_task_to_db(generated_task_status, request.user_id, request.port_id)
+            task_posted = True
+
+        percentage_complete = generated_task_status.progress
+        progress = f"{percentage_complete},{meshy_task_status.task_id}"
+        await redis.publish(f"task_progress:{request.port_id}", progress)
+        if percentage_complete == 100:
+            task_generated = True
+            complete_response = await add_file_response(generated_task_status)
+            # await send_file_to_storage(complete_response)
+
+    # await websocket.send_text(generated_task_status.json(indent=2))
+    # await send_file_to_storage(generated_task_status)
+    return generated_task_status
+
 
 async def validate_session(websocket: WebSocket) -> Tuple[bool, Optional[str]]:
     
@@ -123,7 +162,8 @@ async def send_task_response(websocket: WebSocket, response):
 
     await websocket.send_text(response.json(indent=2))
 
-async def add_file_response(response: MeshyTaskStatusResponse) -> MeshyTaskStatusResponse:
+
+async def add_file_response(response: Union[MeshyTaskStatusResponse, ImageTo3DMeshyTaskStatusResponse]) -> Union[MeshyTaskStatusResponse, ImageTo3DMeshyTaskStatusResponse]:
     """
     Process a MeshyTaskStatusResponse object to include a base64-encoded .obj file blob.
 
@@ -150,6 +190,8 @@ async def add_file_response(response: MeshyTaskStatusResponse) -> MeshyTaskStatu
         # Optionally, you can add a fallback or additional logic here
 
     return response
+
+
 
 
 async def post_task_to_db(response: MeshyTaskStatusResponse, user_id: str, port_id: str):
@@ -194,6 +236,21 @@ async def cookie_verification(request: Request):
     session_data = await http_session_exists(session_id)
     if not session_data:
         raise HTTPException(status_code=401, detail="No Session Found")
-    
 
+
+async def download_blob(blob_url: str) -> bytes:
+    """
+    Downloads a file from a blob URL and returns the file content as bytes.
+
+    Args:
+        blob_url (str): The blob URL to download.
+
+    Returns:
+        bytes: The downloaded file content.
+    """
+    async with aiohttp.ClientSession() as session:
+        async with session.get(blob_url) as response:
+            if response.status != 200:
+                raise Exception(f"Failed to fetch blob: {response.status}")
+            return await response.read()
     

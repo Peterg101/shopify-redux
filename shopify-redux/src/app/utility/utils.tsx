@@ -145,14 +145,17 @@ export function degreesToRadians(degrees: number): number {
 }
 
 export async function convertFileToBase64WithoutFileReader(file: File): Promise<string> {
-  return file.arrayBuffer() // Read the file as an ArrayBuffer
-      .then((buffer) => {
-          const byteArray = new Uint8Array(buffer); // Convert ArrayBuffer to a Uint8Array
-          const binaryString = Array.from(byteArray)
-              .map(byte => String.fromCharCode(byte)) // Convert each byte to a character
-              .join('');
-          return btoa(binaryString); // Encode the binary string as Base64
-      });
+  const buffer = await file.arrayBuffer();
+  const uint8Array = new Uint8Array(buffer);
+
+  // Encode Uint8Array to Base64 without relying on `btoa()`
+  const base64String = await new Promise<string>((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(new Blob([uint8Array]));
+    reader.onloadend = () => resolve(reader.result!.split(',')[1]); // Extract Base64 part
+  });
+
+  return base64String;
 }
 
 export function createBase64Blob(base64String: string, mimeType: string): Blob {
