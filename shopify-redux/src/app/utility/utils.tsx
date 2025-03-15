@@ -164,3 +164,18 @@ export function createBase64Blob(base64String: string, mimeType: string): Blob {
   const byteArray = new Uint8Array(byteNumbers);
   return new Blob([byteArray], { type: mimeType });
 }
+
+export async function convertFileToDataURI(file: File): Promise<string> {
+  const buffer = await file.arrayBuffer();
+  const binary = new Uint8Array(buffer);
+  
+  let binaryString = "";
+  for (let i = 0; i < binary.length; i++) {
+    binaryString += String.fromCharCode(binary[i]);
+  }
+
+  const base64String = btoa(binaryString); // Encode to Base64
+
+  // Construct Data URI
+  return `data:${file.type};base64,${base64String}`;
+}

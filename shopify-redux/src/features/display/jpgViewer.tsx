@@ -15,6 +15,7 @@ import { setMeshyLoadedPercentage, setMeshyLoading, setMeshyPending, setMeshyQue
 import { startImageTo3DTask } from "../../services/fetchFileUtils";
 import { generateUuid } from "../../app/utility/utils";
 import { generateUUID } from "three/src/math/MathUtils";
+import { useFile } from '../../services/fileProvider';
 import { authApi } from '../../services/authApi';
 
 export const JpgViewer = () => {
@@ -25,6 +26,7 @@ export const JpgViewer = () => {
       (state: RootState) => state.userInterfaceState
     )
     const dispatch = useDispatch()
+    const {actualFile, setActualFile} = useFile()
     const [image, setImage] = useState(dataState.selectedFile);
 
     const [cropData, setCropData] = useState("");
@@ -56,7 +58,7 @@ export const JpgViewer = () => {
       setCropData("")
       console.log(dataState.selectedFile)
       const portId = generateUUID()
-      await startImageTo3DTask(image, userInterfaceState.userInformation?.user.user_id, portId)
+      await startImageTo3DTask(actualFile, userInterfaceState.userInformation?.user.user_id, portId)
       setImage("")
       dispatch(setClearFileDisplay())
       // dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));

@@ -1,4 +1,5 @@
 import { FileInformation, FileResponse, BasketInformationAndFile} from "../app/utility/interfaces"
+import { convertFileToBase64WithoutFileReader, convertFileToDataURI } from "../app/utility/utils";
 import { MeshyPayload, MeshyImageTo3DPayload } from "../services/meshyApi";
 export const fetchFile = async (fileId: string): Promise<FileResponse> => {
     try {
@@ -103,12 +104,11 @@ export const startTask = async (prompt: string, userId: string, portId: string) 
   const data = await response.json();
 };
 
-export const startImageTo3DTask = async (image_url: string, userId: string, portId: string) => {
-  console.log(image_url)
-  
+export const startImageTo3DTask = async (image_file: File, userId: string, portId: string) => {
+  const image_bytes = await convertFileToDataURI(image_file)
   const payload: MeshyImageTo3DPayload = {
-    image_url: image_url,
-    enable_pbr: true,
+    image_url: image_bytes,
+    enable_pbr: true, 
     should_remesh: true,
     should_texture: true
   };

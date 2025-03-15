@@ -42,7 +42,6 @@ def generate_image_to_3d_task(payload: MeshyImageTo3DPayload) -> MeshyTaskGenera
         return None
 
 
-
 async def get_meshy_task_status(meshy_task_args: MeshyTaskStatus) -> MeshyTaskStatusResponse:
     headers = {"Authorization": f"Bearer {MESHY_API_KEY}"}
     response = requests.get(
@@ -58,7 +57,7 @@ async def get_meshy_task_status(meshy_task_args: MeshyTaskStatus) -> MeshyTaskSt
 async def get_image_to_3d_task_status(meshy_task_args: MeshyTaskStatus) -> ImageTo3DMeshyTaskStatusResponse:
     headers = {"Authorization": f"Bearer {MESHY_API_KEY}"}
     response = requests.get(
-        f"https://api.meshy.ai/openapi/v1/image-to-3d/{task_id}",
+        f"https://api.meshy.ai/openapi/v1/image-to-3d/{meshy_task_args.task_id}",
         headers=headers,
     )
     response.raise_for_status()

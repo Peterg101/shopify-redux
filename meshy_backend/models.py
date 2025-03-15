@@ -107,10 +107,10 @@ class ImageTo3DTaskRequest(BaseModel):
 
 
 class Image3DModelUrls(BaseModel):
-    glb: Optional[HttpUrl]
-    fbx: Optional[HttpUrl]
-    obj: Optional[HttpUrl]
-    usdz: Optional[HttpUrl]
+    glb: Optional[HttpUrl] = Field(default=None)
+    fbx: Optional[HttpUrl] = Field(default=None)
+    obj: Optional[HttpUrl] = Field(default=None)
+    usdz: Optional[HttpUrl] = Field(default=None)
 
 
 class TextureUrls(BaseModel):
@@ -126,14 +126,14 @@ class TaskError(BaseModel):
 
 class ImageTo3DMeshyTaskStatusResponse(BaseModel):
     id: str
-    model_urls: Optional[Image3DModelUrls]
-    thumbnail_url: Optional[HttpUrl]
+    model_urls: Optional[Image3DModelUrls] = None
+    thumbnail_url: Optional[HttpUrl] = None
     progress: int
     started_at: int
     created_at: int
     expires_at: int
     finished_at: int
     status: str
-    texture_urls: List[TextureUrls]
-    preceding_tasks: int
-    task_error: Optional[TaskError]
+    texture_urls: List[TextureUrls] = []
+    preceding_tasks: Optional[int] = None
+    task_error: Optional[TaskError] = None
