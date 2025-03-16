@@ -5,7 +5,6 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 
-
 Base = declarative_base()
 
 
@@ -49,7 +48,9 @@ class BasketItem(Base):
 
 class PortID(Base):
     __tablename__ = "port_id"
-    task_id: Mapped[str] = mapped_column(ForeignKey("tasks.task_id"), primary_key=True)  # Foreign key to Task
+    task_id: Mapped[str] = mapped_column(
+        ForeignKey("tasks.task_id"), primary_key=True
+    )  # Foreign key to Task
     port_id: Mapped[str] = mapped_column()
 
     # Back reference to Task

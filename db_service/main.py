@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session, joinedload
 from fastapi.middleware.cors import CORSMiddleware
 from models import User, Task, BasketItem, PortID
 from db_setup import Base, engine, get_db
-from utils import(
+from utils import (
     check_session_token_active,
     add_or_update_basket_item_in_db,
     add_port_to_db,
@@ -13,11 +13,16 @@ from utils import(
     cookie_verification,
     decode_file,
     mark_meshy_task_complete,
-    delete_port_id
+    delete_port_id,
 )
 from api_calls import session_exists
 import os
-from classes import UserInformation, TaskInformation, MeshyTaskStatusResponse, BasketItemInformation
+from classes import (
+    UserInformation,
+    TaskInformation,
+    MeshyTaskStatusResponse,
+    BasketItemInformation,
+)
 import uvicorn
 from typing import Optional, Dict
 from jwt_auth import verify_jwt_token
@@ -46,9 +51,9 @@ app.add_middleware(
 def create_user(
     user_information: UserInformation,
     db: Session = Depends(get_db),
-    authorization: str = Depends(verify_jwt_token)
+    authorization: str = Depends(verify_jwt_token),
 ):
-    
+
     # Check if the user already exists
     user_exists = check_user_existence(db, user_information.email)
 
@@ -65,7 +70,7 @@ def create_user(
 async def add_task(
     task_information: TaskInformation,
     db: Session = Depends(get_db),
-    authorization: str = Depends(verify_jwt_token)
+    authorization: str = Depends(verify_jwt_token),
 ):
     user_exists = check_user_existence(db, task_information.user_id)
 
@@ -75,14 +80,14 @@ async def add_task(
     return ""
 
 
-# Get User 
+# Get User
 @app.get("/users/{user_id}")
 async def get_user(
     user_id: str,
     db: Session = Depends(get_db),
-    authorization: str = Depends(verify_jwt_token)
+    authorization: str = Depends(verify_jwt_token),
 ):
-    
+
     # Step 2: Query the database to get the user by user_id
     user = db.query(User).filter(User.user_id == user_id).first()
     tasks = db.query(Task).filter(Task.user_id == user_id).all()
@@ -106,12 +111,16 @@ async def get_user(
         "user": user,
         "tasks": tasks,
         "basket_items": basket_items,
-        "incomplete_task": incomplete_task
-        }  # If you fetched tasks, include that in the return value as well
+        "incomplete_task": incomplete_task,
+    }  # If you fetched tasks, include that in the return value as well
 
 
 @app.post("/file_upload")
-async def receive_meshy_task(response: MeshyTaskStatusResponse, payload: dict = Depends(verify_jwt_token), db: Session = Depends(get_db)):
+async def receive_meshy_task(
+    response: MeshyTaskStatusResponse,
+    payload: dict = Depends(verify_jwt_token),
+    db: Session = Depends(get_db),
+):
     if response.obj_file_blob:
         # Decode the Base64 blob
         file_data = base64.b64decode(response.obj_file_blob)
@@ -122,24 +131,26 @@ async def receive_meshy_task(response: MeshyTaskStatusResponse, payload: dict = 
             file.write(file_data)
         mark_meshy_task_complete(db, response.id)
         delete_port_id(db, response.id)
-        return {"message": "File saved successfully.", "file_name": str(file_path), "user": payload}
+        return {
+            "message": "File saved successfully.",
+            "file_name": str(file_path),
+            "user": payload,
+        }
     return {"message": "No OBJ file blob provided."}
 
 
 @app.get("/file_storage/{file_id}")
 async def get_file_from_storage(
-    request: Request,
-    file_id: str,
-    _: None = Depends(cookie_verification)
+    request: Request, file_id: str, _: None = Depends(cookie_verification)
 ):
     file_path = os.path.join("uploads", f"{file_id}.obj")
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
-    
+
     with open(file_path, "rb") as file:
         file_data = file.read()
         encoded_data = base64.b64encode(file_data).decode("utf-8")
-    
+
     return {"file_id": file_id, "file_data": encoded_data}
 
 
@@ -148,16 +159,16 @@ async def post_basket_item_to_storage(
     request: Request,
     basket_item: BasketItemInformation,
     db: Session = Depends(get_db),
-    _: None = Depends(cookie_verification)
+    _: None = Depends(cookie_verification),
 ):
     # Check if the user exists in the database
     user_exists = check_user_existence(db, basket_item.user_id)
     if not user_exists:
-        raise HTTPException(status_code=404, detail="User not found")    
+        raise HTTPException(status_code=404, detail="User not found")
     # Validate the file_blob presence
     if not basket_item.file_blob:
         raise HTTPException(status_code=400, detail="File blob not provided")
-    
+
     # Decode the file and save to the specified directory
     try:
         decode_file(basket_item.file_blob, basket_item.task_id, UPLOAD_DIR)
@@ -172,7 +183,9 @@ async def delete_basket_item(
     request: Request,
     file_id: str,
     db: Session = Depends(get_db),
-    _: None = Depends(cookie_verification)  # Assuming cookie_verification is implemented
+    _: None = Depends(
+        cookie_verification
+    ),  # Assuming cookie_verification is implemented
 ):
     try:
         # Query the database for the item to delete
@@ -180,7 +193,9 @@ async def delete_basket_item(
 
         # If the item doesn't exist, raise a 404 error
         if not basket_item:
-            raise HTTPException(status_code=404, detail=f"Item with ID {file_id} not found.")
+            raise HTTPException(
+                status_code=404, detail=f"Item with ID {file_id} not found."
+            )
 
         # Possible file extensions
         extensions = ["str", "obj"]
@@ -193,15 +208,20 @@ async def delete_basket_item(
                 os.remove(file_path)
                 file_deleted = True
                 print(f"Deleted file: {file_path}")
-        
+
         if not file_deleted:
-            raise HTTPException(status_code=404, detail=f"File {file_id} with extensions {extensions} not found in upload directory.")
+            raise HTTPException(
+                status_code=404,
+                detail=f"File {file_id} with extensions {extensions} not found in upload directory.",
+            )
 
         # Delete the item from the database
         db.delete(basket_item)
         db.commit()
 
-        return {"message": f"Item with ID {file_id} and associated file(s) deleted successfully."}
+        return {
+            "message": f"Item with ID {file_id} and associated file(s) deleted successfully."
+        }
     except HTTPException:
         raise  # Re-raise HTTP exceptions
     except Exception as e:
@@ -209,9 +229,5 @@ async def delete_basket_item(
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 
-
-
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
-
- 

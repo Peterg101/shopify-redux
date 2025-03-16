@@ -8,18 +8,17 @@ SECRET_KEY = "your-secret-key"
 ALGORITHM = "HS256"
 MICROSERVICE_ID = "test-microservice"
 
+
 # Parameterized test for generate_token
 @pytest.mark.parametrize(
     "microservice_id, expiration_duration, expected_sub",
     [
         ("service-1", datetime.timedelta(hours=1), "service-1"),
         ("service-2", datetime.timedelta(minutes=30), "service-2"),
-    ]
+    ],
 )
 def test_generate_token(microservice_id, expiration_duration, expected_sub):
-    token = generate_token(
-        microservice_id=microservice_id
-    )
+    token = generate_token(microservice_id=microservice_id)
 
     # Decode token to verify its content
     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -40,7 +39,8 @@ def test_generate_token(microservice_id, expiration_duration, expected_sub):
         (  # Valid token
             {
                 "sub": MICROSERVICE_ID,
-                "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1),
+                "exp": datetime.datetime.now(datetime.timezone.utc)
+                + datetime.timedelta(hours=1),
                 "iat": datetime.datetime.now(datetime.timezone.utc),
             },
             "Bearer ",
@@ -49,8 +49,10 @@ def test_generate_token(microservice_id, expiration_duration, expected_sub):
         (  # Expired token
             {
                 "sub": MICROSERVICE_ID,
-                "exp": datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=1),
-                "iat": datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=2),
+                "exp": datetime.datetime.now(datetime.timezone.utc)
+                - datetime.timedelta(hours=1),
+                "iat": datetime.datetime.now(datetime.timezone.utc)
+                - datetime.timedelta(hours=2),
             },
             "Bearer ",
             401,
@@ -58,7 +60,8 @@ def test_generate_token(microservice_id, expiration_duration, expected_sub):
         (  # Invalid prefix
             {
                 "sub": MICROSERVICE_ID,
-                "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1),
+                "exp": datetime.datetime.now(datetime.timezone.utc)
+                + datetime.timedelta(hours=1),
                 "iat": datetime.datetime.now(datetime.timezone.utc),
             },
             "Token ",
@@ -69,7 +72,7 @@ def test_generate_token(microservice_id, expiration_duration, expected_sub):
             "Bearer ",
             403,
         ),
-    ]
+    ],
 )
 def test_verify_jwt_token(token_data, header_prefix, expected_status):
     if token_data:

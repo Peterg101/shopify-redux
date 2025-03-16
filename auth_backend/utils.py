@@ -32,15 +32,17 @@ async def delete_session(redis: Redis, session_id: str):
     result = await redis.delete(f"session:{session_id}")
     if result == 0:
         raise HTTPException(status_code=404, detail="Session not found")
-    
 
-async def cookie_verification(request: Request, redis_session: Redis) -> Tuple[SessionData, str]:
+
+async def cookie_verification(
+    request: Request, redis_session: Redis
+) -> Tuple[SessionData, str]:
     session_id = request.cookies.get("fitd_session_data")
     if not session_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    
+
     session_data = await get_session(redis_session, session_id)
     if not session_data:
         raise HTTPException(status_code=401, detail="No Session Found")
-    
+
     return session_data, session_id

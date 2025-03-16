@@ -11,11 +11,11 @@ def generate_token(microservice_id: str):
     Generate a JWT token for inter-service communication.
     """
     now = datetime.datetime.now(datetime.timezone.utc)  # Current UTC time
-    expiration = now + datetime.timedelta(hours=1)      # Expiration in 1 hour
+    expiration = now + datetime.timedelta(hours=1)  # Expiration in 1 hour
     payload = {
         "sub": microservice_id,  # Service identity
-        "exp": expiration,        # Expiration time
-        "iat": now,               # Issued at time
+        "exp": expiration,  # Expiration time
+        "iat": now,  # Issued at time
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     return token
@@ -26,7 +26,9 @@ def verify_jwt_token(authorization: str = Header(None)):
     Verify the JWT token from the Authorization header.
     """
     if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=403, detail="Invalid or missing Authorization header")
+        raise HTTPException(
+            status_code=403, detail="Invalid or missing Authorization header"
+        )
 
     # Extract the JWT from the header
     token = authorization.split("Bearer ")[1]

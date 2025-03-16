@@ -1,39 +1,30 @@
 import uvicorn
-import json
-import base64
-import asyncio
 import aioredis
-from pydantic import BaseModel
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, BackgroundTasks, Depends
-from typing import List
+from fastapi import (
+    FastAPI,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+    BackgroundTasks,
+    Depends,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
 from models import (
     MeshyTaskGeneratedResponse,
     MeshyPayload,
-    MeshyTaskStatusResponse,
-    ModelUrls,
-    TaskInformation,
     TaskRequest,
-    ImageTo3DTaskRequest
+    ImageTo3DTaskRequest,
 )
-from redis import Redis
 
 from api_calls import (
     generate_text_to_3d_task,
-    get_obj_file_blob,
-    websocket_session_exists,
-    create_task
-    )
+)
 
 from utils import (
-    generate_task_and_check_for_response,
     generate_image_to_3d_task_and_check_for_response_decoupled_ws,
-    generate_task_and_check_for_response_decoupled_ws, 
-    validate_session, 
-    process_client_messages, 
-    clean_up_connection,
-    cookie_verification
+    generate_task_and_check_for_response_decoupled_ws,
+    cookie_verification,
 )
 
 app = FastAPI()
@@ -42,7 +33,8 @@ app.add_middleware(
     allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"])
+    allow_headers=["*"],
+)
 
 # Redis Configuration
 REDIS_HOST = "localhost"
@@ -50,7 +42,9 @@ REDIS_PORT = 6379
 
 
 async def get_redis():
-    redis = await aioredis.from_url(f"redis://{REDIS_HOST}:{REDIS_PORT}", decode_responses=True)
+    redis = await aioredis.from_url(
+        f"redis://{REDIS_HOST}:{REDIS_PORT}", decode_responses=True
+    )
     return redis
 
 
@@ -64,19 +58,16 @@ async def generate_meshy_task(payload: MeshyPayload):
         raise HTTPException(status_code=500, detail="This is bad")
 
 
-
 @app.post("/start_task/")
 async def start_task(
     request: TaskRequest,
     background_tasks: BackgroundTasks,
     redis: aioredis.Redis = Depends(get_redis),
-    _: None = Depends(cookie_verification)
+    _: None = Depends(cookie_verification),
 ):
     # Add the task to the background
     background_tasks.add_task(
-        generate_task_and_check_for_response_decoupled_ws,
-        request,
-        redis
+        generate_task_and_check_for_response_decoupled_ws, request, redis
     )
     return {"message": "Task started!", "task_id": request.port_id}
 
@@ -86,24 +77,20 @@ async def start_image_to_3d_task(
     request: ImageTo3DTaskRequest,
     background_tasks: BackgroundTasks,
     redis: aioredis.Redis = Depends(get_redis),
-    _: None = Depends(cookie_verification)
+    _: None = Depends(cookie_verification),
 ):
-    
-    print("Hitting the 3d image route")
     # Add the task to the background
-    print(request.meshy_image_to_3d_payload.image_url)
-
     background_tasks.add_task(
-        generate_image_to_3d_task_and_check_for_response_decoupled_ws,
-        request,
-        redis
+        generate_image_to_3d_task_and_check_for_response_decoupled_ws, request, redis
     )
     print("background task successfully added")
     # return {"message": "Task started!", "task_id": request.port_id}
 
 
 @app.websocket("/ws/{port_id}")
-async def websocket_endpoint(websocket: WebSocket, port_id: str, redis: aioredis.Redis = Depends(get_redis)):
+async def websocket_endpoint(
+    websocket: WebSocket, port_id: str, redis: aioredis.Redis = Depends(get_redis)
+):
     await websocket.accept()
 
     # # Authenticate session outside the try block
@@ -137,41 +124,5 @@ async def websocket_endpoint(websocket: WebSocket, port_id: str, redis: aioredis
         print(f"WebSocket connection for task {port_id} closed.")
 
 
-async def long_running_task(request: TaskRequest, redis: aioredis.Redis):
-    """Simulates a long-running task and publishes progress updates."""
-    for i in range(21):
-        await asyncio.sleep(1)  # Simulate task progress
-        progress = f"Progress: {i * 5}%"
-        await redis.publish(f"task_progress:{request.port_id}", progress)
-
-        if i == 20:
-            await redis.publish(f"task_progress:{request.port_id}", "Task Completed")
-
-
-connections: List[WebSocket] = []
-
-
-@app.websocket("/ws")
-async def meshy_websocket(websocket: WebSocket):
-    await websocket.accept()
-    connections.append(websocket)
-    
-    try:
-        # Validate session and get user ID
-        session_valid, user_id = await validate_session(websocket)
-        if not session_valid:
-            await websocket.close(code=1008, reason="Invalid session")
-            return
-        
-        # Process incoming messages
-        await process_client_messages(websocket, user_id)
-    
-    except WebSocketDisconnect:
-        print("Client disconnected.")
-    except Exception as e:
-        print(f"WebSocket error: {e}")
-    finally:
-        # Ensure proper cleanup
-        await clean_up_connection(websocket, connections)
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=1234)

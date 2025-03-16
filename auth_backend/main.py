@@ -33,11 +33,15 @@ app.add_middleware(
 # Redis Configuration
 REDIS_HOST = "localhost"
 REDIS_PORT = 6379
-redis_session = aioredis.from_url(f"redis://{REDIS_HOST}:{REDIS_PORT}", decode_responses=True)
+redis_session = aioredis.from_url(
+    f"redis://{REDIS_HOST}:{REDIS_PORT}", decode_responses=True
+)
 
 
 # Google OAuth2 configuration
-GOOGLE_CLIENT_ID = "854876909268-92r1ja775v91cciriu3blce5ulentf9f.apps.googleusercontent.com"
+GOOGLE_CLIENT_ID = (
+    "854876909268-92r1ja775v91cciriu3blce5ulentf9f.apps.googleusercontent.com"
+)
 GOOGLE_CLIENT_SECRET = "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"
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
@@ -63,13 +67,13 @@ def auth_google():
 async def auth_callback(code: str, request: Request):
     redirect_uri = "http://localhost:2468/auth/google/callback"
     token_request_uri = "https://oauth2.googleapis.com/token"
-    
+
     data = {
-        'code': code,
-        'client_id': GOOGLE_CLIENT_ID,
-        'client_secret': GOOGLE_CLIENT_SECRET,
-        'redirect_uri': redirect_uri,
-        'grant_type': 'authorization_code',
+        "code": code,
+        "client_id": GOOGLE_CLIENT_ID,
+        "client_secret": GOOGLE_CLIENT_SECRET,
+        "redirect_uri": redirect_uri,
+        "grant_type": "authorization_code",
     }
 
     # Step 1: Exchange code for token
@@ -82,7 +86,7 @@ async def auth_callback(code: str, request: Request):
             raise HTTPException(status_code=400, detail="Failed to retrieve token")
 
     # Step 2: Get the ID token and verify it
-    id_token_value = token_response.get('id_token')
+    id_token_value = token_response.get("id_token")
     if not id_token_value:
         raise HTTPException(status_code=400, detail="Missing id_token in response.")
 
@@ -96,12 +100,11 @@ async def auth_callback(code: str, request: Request):
         user_information.email = id_info["email"]
         user_information.username = id_info["name"]
 
-
         # # Step 3: Check if the user exists in the database
         user_exists = await check_user_exists(user_information.user_id)
         if not user_exists:
             await create_user(user_information)
-        
+
         # Step 5: Create a session for the user
         session_data = SessionData()
         # session_data.user_id = user_id
@@ -115,8 +118,8 @@ async def auth_callback(code: str, request: Request):
             str(session_id),
             max_age=3600,  # Session duration in seconds
             httponly=True,  # Prevent JavaScript from accessing the cookie
-            secure=True,   # Set to True for HTTPS environments
-            samesite="Lax"  # Prevents CSRF attacks by restricting cross-site requests
+            secure=True,  # Set to True for HTTPS environments
+            samesite="Lax",  # Prevents CSRF attacks by restricting cross-site requests
         )
         return response
 
@@ -131,13 +134,12 @@ async def logout(request: Request):
     try:
         await delete_session(redis_session, session_id)
 
-        return {
-            "message": "Logged out",
-            "user_info": {"user_id": session_data.user_id}
-        }
+        return {"message": "Logged out", "user_info": {"user_id": session_data.user_id}}
     except ValueError:
         # Token is invalid or verification failed
-        raise HTTPException(status_code=401, detail="Invalid token or token verification failed")
+        raise HTTPException(
+            status_code=401, detail="Invalid token or token verification failed"
+        )
 
 
 @app.get("/get_session")
@@ -148,7 +150,9 @@ async def protected_endpoint(request: Request):
         user_info = await check_user_exists(session_data.user_id)
         return user_info
     except ValueError:
-        raise HTTPException(status_code=401, detail="Invalid token or token verification failed")
+        raise HTTPException(
+            status_code=401, detail="Invalid token or token verification failed"
+        )
 
 
 if __name__ == "__main__":

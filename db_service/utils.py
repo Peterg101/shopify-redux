@@ -30,7 +30,7 @@ def add_user_to_db(db: Session, user_information: UserInformation) -> User:
     user = User(
         user_id=user_information.user_id,
         username=user_information.username,
-        email=user_information.email
+        email=user_information.email,
     )
     db.add(user)
     db.commit()
@@ -39,7 +39,7 @@ def add_user_to_db(db: Session, user_information: UserInformation) -> User:
 
 
 def add_task_to_db(db: Session, task_information: TaskInformation) -> Task:
-    
+
     task = Task(
         task_id=task_information.task_id,
         user_id=task_information.user_id,
@@ -52,11 +52,8 @@ def add_task_to_db(db: Session, task_information: TaskInformation) -> Task:
 
 
 def add_port_to_db(db: Session, task_id: str, port_id: str) -> Task:
-    
-    portIdObject = PortID(
-        task_id=task_id,
-        port_id=port_id
-    )
+
+    portIdObject = PortID(task_id=task_id, port_id=port_id)
     db.add(portIdObject)
     db.commit()
     db.refresh(portIdObject)
@@ -66,30 +63,36 @@ def add_port_to_db(db: Session, task_id: str, port_id: str) -> Task:
 def mark_meshy_task_complete(db: Session, task_id: str):
     # Retrieve the task record with the provided task_id
     task = db.query(Task).filter(Task.task_id == task_id).first()
-    
+
     if not task:
         raise NoResultFound(f"Task with task_id {task_id} not found")
-    
+
     # Update the 'complete' field to True
     task.complete = True
-    
+
     # Commit the transaction to save the change to the database
     db.commit()
     db.refresh(task)
 
 
-def delete_port_id(db: Session, task_id:str ):
+def delete_port_id(db: Session, task_id: str):
     port = db.query(PortID).filter(PortID.task_id == task_id).first()
     if port:
         db.delete(port)
         db.commit()
 
 
-def add_or_update_basket_item_in_db(db: Session, basket_item_info: BasketItemInformation) -> BasketItem:
+def add_or_update_basket_item_in_db(
+    db: Session, basket_item_info: BasketItemInformation
+) -> BasketItem:
     # Check if the item already exists in the database
-    print('hitting here')
+    print("hitting here")
     print(basket_item_info.task_id)
-    existing_item = db.query(BasketItem).filter(BasketItem.task_id == basket_item_info.task_id).first()
+    existing_item = (
+        db.query(BasketItem)
+        .filter(BasketItem.task_id == basket_item_info.task_id)
+        .first()
+    )
     print(existing_item)
     if existing_item:
         # Check if any fields have changed
@@ -146,14 +149,14 @@ async def cookie_verification(request: Request):
     session_id = request.cookies.get("fitd_session_data")
     if not session_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    
+
     session_data = await session_exists(session_id)
     if not session_data:
         raise HTTPException(status_code=401, detail="No Session Found")
 
 
 def decode_file(file_blob: str, file_name: str, upload_dir: Path):
-    
+
     file_path = upload_dir / f"{file_name}.obj"
     file_exists = check_file_exists(file_path)
     if not file_exists:

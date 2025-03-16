@@ -3,9 +3,17 @@ import httpx
 import json
 import requests
 from jwt_auth import generate_token
-from models import (MeshyPayload, MeshyRefinedPayload,
-                    MeshyTaskGeneratedResponse, MeshyTaskStatus,
-                    MeshyTaskStatusResponse, TaskInformation, UserAndTasks, MeshyImageTo3DPayload, ImageTo3DMeshyTaskStatusResponse)
+from models import (
+    MeshyPayload,
+    MeshyRefinedPayload,
+    MeshyTaskGeneratedResponse,
+    MeshyTaskStatus,
+    MeshyTaskStatusResponse,
+    TaskInformation,
+    UserAndTasks,
+    MeshyImageTo3DPayload,
+    ImageTo3DMeshyTaskStatusResponse,
+)
 
 MESHY_API_KEY = "msy_RLiG6FNDJRdsNfSKCoFJ5E2Jhcs4r1l5Hmjp"
 
@@ -25,7 +33,9 @@ def generate_text_to_3d_task(payload: MeshyPayload) -> MeshyTaskGeneratedRespons
         return None
 
 
-def generate_image_to_3d_task(payload: MeshyImageTo3DPayload) -> MeshyTaskGeneratedResponse:
+def generate_image_to_3d_task(
+    payload: MeshyImageTo3DPayload,
+) -> MeshyTaskGeneratedResponse:
     headers = {"Authorization": f"Bearer {MESHY_API_KEY}"}
     try:
         response = requests.post(
@@ -42,7 +52,9 @@ def generate_image_to_3d_task(payload: MeshyImageTo3DPayload) -> MeshyTaskGenera
         return None
 
 
-async def get_meshy_task_status(meshy_task_args: MeshyTaskStatus) -> MeshyTaskStatusResponse:
+async def get_meshy_task_status(
+    meshy_task_args: MeshyTaskStatus,
+) -> MeshyTaskStatusResponse:
     headers = {"Authorization": f"Bearer {MESHY_API_KEY}"}
     response = requests.get(
         f"https://api.meshy.ai/v2/text-to-3d/{meshy_task_args.task_id}",
@@ -54,7 +66,9 @@ async def get_meshy_task_status(meshy_task_args: MeshyTaskStatus) -> MeshyTaskSt
     return result
 
 
-async def get_image_to_3d_task_status(meshy_task_args: MeshyTaskStatus) -> ImageTo3DMeshyTaskStatusResponse:
+async def get_image_to_3d_task_status(
+    meshy_task_args: MeshyTaskStatus,
+) -> ImageTo3DMeshyTaskStatusResponse:
     headers = {"Authorization": f"Bearer {MESHY_API_KEY}"}
     response = requests.get(
         f"https://api.meshy.ai/openapi/v1/image-to-3d/{meshy_task_args.task_id}",
@@ -91,21 +105,19 @@ def get_obj_file_blob(url: str) -> BytesIO:
 
 async def websocket_session_exists(session_id: str):
     url = "http://localhost:2468/get_session"
-    headers = {
-        "Cookie": f"{session_id}"
-    }
+    headers = {"Cookie": f"{session_id}"}
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers)
         user_information = json.loads(response.text)
         user_response = UserAndTasks(**user_information)
-        
+
     return response.status_code == 200, user_response
 
 
 async def http_session_exists(session_id: str) -> bool:
     cookies = {"fitd_session_data": session_id}
     url = "http://localhost:2468/get_session"
-    
+
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(url, cookies=cookies)
@@ -113,7 +125,6 @@ async def http_session_exists(session_id: str) -> bool:
         except httpx.HTTPError as e:
             print(f"HTTP error occurred: {e}")
             return False
-
 
 
 async def create_task(task_information: TaskInformation):

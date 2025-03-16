@@ -41,6 +41,3 @@ async def create_user(user_information: UserInformation):
             # Handle any errors
             print(f"Error: {response.status_code} - {response.text}")
             return None
-
-
-

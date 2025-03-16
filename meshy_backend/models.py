@@ -1,8 +1,6 @@
-from dataclasses import dataclass, field
-from io import BytesIO
+from dataclasses import dataclass
 from typing import List, Optional, Union
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl
-import base64
 from datetime import datetime
 
 
@@ -76,7 +74,7 @@ class MeshyTaskStatusResponse(BaseModel):
 
 
 class TaskInformation(BaseModel):
-    task_id: Optional[str] = None 
+    task_id: Optional[str] = None
     user_id: Optional[str] = None
     task_name: Optional[str] = None
     port_id: Optional[str] = None
