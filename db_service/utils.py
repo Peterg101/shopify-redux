@@ -105,7 +105,7 @@ def add_or_update_basket_item_in_db(
                 existing_item.sizing != basket_item_info.sizing,
                 existing_item.colour != basket_item_info.colour,
                 existing_item.selectedFile != basket_item_info.selected_file,
-                existing_item.selectedFileType != basket_item_info.selected_file_type,
+                existing_item.selectedFileType != basket_item_info.selectedFileType,
             ]
         )
 
@@ -118,7 +118,7 @@ def add_or_update_basket_item_in_db(
             existing_item.sizing = basket_item_info.sizing
             existing_item.colour = basket_item_info.colour
             existing_item.selectedFile = basket_item_info.selected_file
-            existing_item.selectedFileType = basket_item_info.selected_file_type
+            existing_item.selectedFileType = basket_item_info.selectedFileType
 
             db.commit()
             db.refresh(existing_item)
@@ -135,7 +135,7 @@ def add_or_update_basket_item_in_db(
         sizing=basket_item_info.sizing,
         colour=basket_item_info.colour,
         selectedFile=basket_item_info.selected_file,
-        selectedFileType=basket_item_info.selected_file_type,
+        selectedFileType=basket_item_info.selectedFileType,
     )
 
     db.add(new_item)

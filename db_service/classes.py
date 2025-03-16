@@ -69,7 +69,7 @@ class BasketItemInformation(BaseModel):
     colour: str
     selected_file: str  # Changed to snake_case in TypeScript, use snake_case in Python
     quantity: int
-    selected_file_type: (
+    selectedFileType: (
         str  # Changed to snake_case in TypeScript, use snake_case in Python
     )
     file_blob: str  # This matches the `file_blob` in TypeScript

@@ -127,7 +127,7 @@ export const dataSlice = createSlice({
         ) => {
             const {basketItem, fileInformation} = action.payload
             console.log(basketItem)
-            console.log(basketItem.selected_file_type)
+            console.log(basketItem.selectedFileType)
             console.log(basketItem.sizing)
             state.taskId = basketItem.task_id
             state.fileNameBoxValue = basketItem.name
