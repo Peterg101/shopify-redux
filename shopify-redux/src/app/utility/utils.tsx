@@ -148,14 +148,20 @@ export async function convertFileToBase64WithoutFileReader(file: File): Promise<
   const buffer = await file.arrayBuffer();
   const uint8Array = new Uint8Array(buffer);
 
-  // Encode Uint8Array to Base64 without relying on `btoa()`
-  const base64String = await new Promise<string>((resolve) => {
+  return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(new Blob([uint8Array]));
-    reader.onloadend = () => resolve(reader.result!.split(',')[1]); // Extract Base64 part
-  });
 
-  return base64String;
+    reader.onloadend = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result.split(',')[1]); // Extract Base64 part
+      } else {
+        reject(new Error("Failed to convert file to Base64"));
+      }
+    };
+
+    reader.onerror = () => reject(new Error("FileReader encountered an error"));
+  });
 }
 
 export function createBase64Blob(base64String: string, mimeType: string): Blob {

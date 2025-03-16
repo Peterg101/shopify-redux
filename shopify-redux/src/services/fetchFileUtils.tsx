@@ -1,5 +1,5 @@
 import { FileInformation, FileResponse, BasketInformationAndFile} from "../app/utility/interfaces"
-import { convertFileToBase64WithoutFileReader, convertFileToDataURI } from "../app/utility/utils";
+import {convertFileToDataURI } from "../app/utility/utils";
 import { MeshyPayload, MeshyImageTo3DPayload } from "../services/meshyApi";
 export const fetchFile = async (fileId: string): Promise<FileResponse> => {
     try {
