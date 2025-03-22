@@ -14,7 +14,8 @@ const initialState: UserInterfaceState = {
     meshyPending: false,
     meshyQueueItems: 0,
     isLoggedIn: false,
-    userInformation: null
+    userInformation: null,
+    displayObjectConfig: true
 }
 
 export const userInterfaceSlice = createSlice({
@@ -82,6 +83,10 @@ export const userInterfaceSlice = createSlice({
         setSelectedComponent: (state, action: PayloadAction<{selectedComponent: string}>) => {
             const {selectedComponent} = action.payload
             state.selectedComponent = selectedComponent
+        },
+        setDisplayObjectConfig: (state, action: PayloadAction<{displayObjectConfig: boolean}>) => {
+            const {displayObjectConfig} = action.payload
+            state.displayObjectConfig = displayObjectConfig
         }
 
     },
@@ -123,6 +128,7 @@ export const {
     setMeshyPending,
     setMeshyQueueItems,
     setSelectedComponent,
+    setDisplayObjectConfig
 } = userInterfaceSlice.actions
 
 export default userInterfaceSlice.reducer

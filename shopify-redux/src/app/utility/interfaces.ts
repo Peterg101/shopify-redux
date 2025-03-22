@@ -31,8 +31,9 @@ export interface UserInterfaceState {
     meshyLoadedPercentage: number,
     meshyPending: boolean,
     meshyQueueItems: number,
-    isLoggedIn: boolean
-    userInformation: UserAndTasksAndBasketAndIncomplete | null
+    isLoggedIn: boolean,
+    userInformation: UserAndTasksAndBasketAndIncomplete | null,
+    displayObjectConfig: boolean
 
 }
 

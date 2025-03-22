@@ -2,6 +2,7 @@ import { useSelector } from "react-redux"
 import { Dropzone } from "./dropzone"
 import { RootState } from "../../app/store";
 import { JpgObjStlViewer } from "./jpgObjStlViewer";
+import { Box } from "@mui/material";
 
 export const FileViewer = () => {
     const dataState = useSelector(
@@ -11,7 +12,8 @@ export const FileViewer = () => {
     return(
         <>
         {
-        dataState.fileDisplay ? <JpgObjStlViewer/>:<Dropzone/>}
+        dataState.fileDisplay ? <JpgObjStlViewer/>:<Dropzone/>
+        }
         </>
         
     )
