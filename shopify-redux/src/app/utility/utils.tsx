@@ -185,3 +185,15 @@ export async function convertFileToDataURI(file: File): Promise<string> {
   // Construct Data URI
   return `data:${file.type};base64,${base64String}`;
 }
+
+export function calculate3DPrintCost(volume: number, materialType: "PLA" | "ABS" | "Resin" | "Nylon", markup: number = 1.2) {
+  const materialCosts = { PLA: 0.05, ABS: 0.07, Resin: 0.12, Nylon: 0.10 };
+  const postProcessing = { PLA: 5, ABS: 8, Resin: 10, Nylon: 7 };
+
+  const MC = materialCosts[materialType];
+  const PPC = postProcessing[materialType];
+
+  const baseCost = (volume * MC) + PPC;
+  return baseCost * markup;
+}
+

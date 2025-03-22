@@ -4,6 +4,7 @@ import { ToolBar } from "./toolBar";
 import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { styled, Theme, CSSObject, useTheme } from "@mui/material/styles"
+import { FloatingCostSummary } from "./floatingCostSummary";
 
 
 
@@ -40,6 +41,7 @@ export const MainOptions = () => {
               {dataState.fileDisplay && <ToolBar/>}
               <FileViewer />
             </Paper>
+            <FloatingCostSummary/>
           </Grid>
         </Grid>
       </Container>

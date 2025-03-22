@@ -15,7 +15,6 @@ const initialState: UserInterfaceState = {
     meshyQueueItems: 0,
     isLoggedIn: false,
     userInformation: null,
-    displayObjectConfig: true
 }
 
 export const userInterfaceSlice = createSlice({
@@ -84,10 +83,7 @@ export const userInterfaceSlice = createSlice({
             const {selectedComponent} = action.payload
             state.selectedComponent = selectedComponent
         },
-        setDisplayObjectConfig: (state, action: PayloadAction<{displayObjectConfig: boolean}>) => {
-            const {displayObjectConfig} = action.payload
-            state.displayObjectConfig = displayObjectConfig
-        }
+        
 
     },
     extraReducers: (builder) => {
@@ -128,7 +124,6 @@ export const {
     setMeshyPending,
     setMeshyQueueItems,
     setSelectedComponent,
-    setDisplayObjectConfig
 } = userInterfaceSlice.actions
 
 export default userInterfaceSlice.reducer

@@ -1,0 +1,21 @@
+{
+    "techniques": [
+      "Resin",
+      "FDM"
+    ],
+    "materials": {
+      "FDM": [
+        "PLA Basic",
+        "PLA Matte",
+        "PLA Silk",
+        "PLA CF",
+        "PETG",
+        "PETG+",
+        "PETG CF"
+      ],
+      "Resin": [
+        "Resinny Resin",
+        "Even Ressinier Resin"
+      ]
+    }
+  }

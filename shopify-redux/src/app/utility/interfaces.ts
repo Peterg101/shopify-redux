@@ -32,8 +32,8 @@ export interface UserInterfaceState {
     meshyPending: boolean,
     meshyQueueItems: number,
     isLoggedIn: boolean,
-    userInformation: UserAndTasksAndBasketAndIncomplete | null,
-    displayObjectConfig: boolean
+    userInformation: UserAndTasksAndBasketAndIncomplete | null
+    
 
 }
 
@@ -54,7 +54,8 @@ export interface DataState {
    fromMeshyOrHistory: boolean,
    xFlip: number,
    yFlip: number,
-   zFlip: number
+   zFlip: number,
+   displayObjectConfig: boolean
 }
 
 export interface FileAndItem {
@@ -136,4 +137,11 @@ export interface FileInformation{
 export interface SidebarItem {
   text: string,
   icon: JSX.Element
+}
+
+export interface PricingConfig {
+  techniques: string[]; 
+  materials: {
+    [key: string]: string[];
+  };
 }

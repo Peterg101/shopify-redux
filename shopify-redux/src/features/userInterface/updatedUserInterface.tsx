@@ -9,24 +9,15 @@ import { Box, Divider, List, Toolbar, Typography } from "@mui/material"
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import ChevronRightIcon from "@mui/icons-material/ChevronRight"
 import { SidebarItem } from "../../app/utility/interfaces"
-// import { SidebarItem } from "../results/resultsInterfaces"
 import HistoryIcon from "@mui/icons-material/History"
-// import { SearchHistory } from "../form/searchHistory"
-// import { UserInterfaceProps } from "./displayInterfaces"
 import { useDispatch, useSelector } from "react-redux"
 import { RootState } from "../../app/store"
 import ManageSearchIcon from "@mui/icons-material/ManageSearch"
 import TuneIcon from "@mui/icons-material/Tune"
-// import { InputTable } from "../form/inputsTable"
-// import { useAppDispatch } from "../../app/hooks"
-// import {
-//   setDrawerOpen,
-//   setSelectedComponent,
-// } from "../../services/userInterfaceSlice"
-// import { FilterComponent } from "./filterComponent"
 import Badge from '@mui/material/Badge';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import Fluorescent from '@mui/icons-material/Fluorescent';
 import ShoppingBasketIcon from '@mui/icons-material/ShoppingBasket';
 import { setLeftDrawerClosed, setLeftDrawerOpen, setSelectedComponent } from "../../services/userInterfaceSlice"
 import { Basket, EmptyBasket } from "./basketFragments"
@@ -37,9 +28,14 @@ export const UpdatedUserInterface = () => {
   const userInterfaceState = useSelector(
     (state: RootState) => state.userInterfaceState,
   )
+
+  const dataState = useSelector(
+    (state: RootState) => state.dataState,
+  )
   const dispatch = useDispatch()
 
   const theme = useTheme()
+
 
   const openDrawer = (index: string) => {
     dispatch(setLeftDrawerOpen())
@@ -94,6 +90,17 @@ export const UpdatedUserInterface = () => {
             data-testid="basket-icon"
           />
           </Badge>
+          
+        ),
+      },
+      dataState.displayObjectConfig && {
+        text: "Current Configuration",
+        icon: (
+  
+            <Fluorescent
+            sx={{ fontSize: 40, marginTop: 1 }}
+            data-testid="config-icon"
+          />
           
         ),
       },

@@ -24,7 +24,8 @@ const initialState: DataState = {
     fromMeshyOrHistory: false,
     xFlip: 0,
     yFlip: 0,
-    zFlip: 0
+    zFlip: 0,
+    displayObjectConfig: false
 }
 
 export const dataSlice = createSlice({
@@ -90,6 +91,7 @@ export const dataSlice = createSlice({
             state.selectedFile = selectedFile
             state.selectedFileType = selectedFileType
             state.fileDisplay= true
+            state.displayObjectConfig = true
         },
         setScales: (
             state,
@@ -157,7 +159,11 @@ export const dataSlice = createSlice({
          },
          setClearFileDisplay: (state) => {
             state.fileDisplay = false
-         }
+         },
+         setDisplayObjectConfig: (state, action: PayloadAction<{displayObjectConfig: boolean}>) => {
+            const {displayObjectConfig} = action.payload
+            state.displayObjectConfig = displayObjectConfig
+        }
 
 
         
@@ -185,7 +191,9 @@ export const {
     setYFLip,
     setZFLip,
     setFromMeshyOrHistory,
-    setClearFileDisplay
+    setClearFileDisplay,
+    setDisplayObjectConfig
+
  } = dataSlice.actions
 
 export default dataSlice.reducer

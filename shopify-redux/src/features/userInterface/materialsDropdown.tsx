@@ -8,32 +8,18 @@ import { Grid } from '@mui/material';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { setPrintMaterial, setPrintTechnique } from '../../services/dataSlice';
-
+import { PricingConfig } from '../../app/utility/interfaces';
+import pricingConfig from "./../../config/pricingConfig.json"
 export const MaterialSelectDropdown = ()=> {
 
 const dispatch = useDispatch()
 const dataState = useSelector(
     (state: RootState) => state.dataState
 )
-  const Techniques = [
-    'Resin',
-    'FDM',
-    ];
 
-  const FDMMaterials = [
-    'PLA Basic',
-    'PLA Matte',
-    'PLA Silk',
-    'PLA CF',
-    'PETG',
-    'PETG+',
-    'PETG CF'
-  ]
+const config: PricingConfig = pricingConfig;
+const { techniques, materials } = config;
 
-  const ResinMaterials = [
-    'Resinny Resin', 
-    'Even Ressinier Resin'
-  ]
 
   const handlePrintTechniqueChange = (event: SelectChangeEvent) => {
     dispatch(setPrintTechnique({printTechnique: event.target.value}))
@@ -57,7 +43,7 @@ const dataState = useSelector(
               onChange={handlePrintTechniqueChange}
             //   disabled={!hasStatePopulationErrors}
             >
-              {Techniques.map((technique) => (
+              {techniques.map((technique) => (
                 <MenuItem key={technique} value={technique}>
                   {technique}
                 </MenuItem>
@@ -76,7 +62,7 @@ const dataState = useSelector(
               onChange={handlePrintMaterialChange}
             //   disabled={!hasStatePopulationErrors}
             >
-              {FDMMaterials.map((material) => (
+              {materials.FDM.map((material) => (
                 <MenuItem key={material} value={material}>
                   {material}
                 </MenuItem>
@@ -89,7 +75,7 @@ const dataState = useSelector(
               onChange={handlePrintMaterialChange}
             //   disabled={!hasStatePopulationErrors}
             >
-              {ResinMaterials.map((material) => (
+              {materials.Resin.map((material) => (
                 <MenuItem key={material} value={material}>
                   {material}
                 </MenuItem>
