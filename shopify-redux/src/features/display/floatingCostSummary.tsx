@@ -1,46 +1,54 @@
-import React, { useState } from "react";
-import { Box, Typography, IconButton } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
+import React from "react";
+import { Box, Typography, Divider } from "@mui/material";
 import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 
 export const FloatingCostSummary = () => {
-  const { displayObjectConfig, selectedFile} = useSelector(
-    (state: RootState) => state.dataState
-  );
+  const dataState = useSelector((state: RootState) => state.dataState);
 
-  const [expanded, setExpanded] = useState(true);
-
-  if (!displayObjectConfig || !selectedFile) return null; // Only show when active
+  if (!dataState.displayObjectConfig || !dataState.selectedFile) return null; // Only show when active
 
   return (
     <Box
       sx={{
-        position: "fixed",
-        top: 170,
-        right: 30,
         backgroundColor: "white",
-        borderRadius: 2,
-        boxShadow: 3,
         p: 2,
-        width: expanded ? 300 : 300,
-        transition: "width 0.3s ease-in-out",
+        width: "100%", // Full width of the sidebar
+        height: "100%", // Full height to occupy the entire sidebar
+        display: "flex",
+        flexDirection: "column",
+        gap: 2,
       }}
     >
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Typography variant="h6">Cost Summary</Typography>
-        <IconButton onClick={() => setExpanded(!expanded)} size="small">
-          {expanded ? <CloseIcon /> : "💰"}
-        </IconButton>
+      {/* Title */}
+
+
+      <Divider />
+
+      {/* Cost Breakdown */}
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+        <Typography variant="body2">
+          <strong>Material:</strong> {dataState.printMaterial}
+        </Typography>
+        <Typography variant="body2">
+          <strong>Cost per cm³:</strong> £{dataState.materialCost}
+        </Typography>
+        <Typography variant="body2">
+          <strong>Sizing:</strong> {dataState.multiplierValue}x
+        </Typography>
+        <Typography variant="body2">
+          <strong>Volume:</strong> {(dataState.modelVolume / 100).toFixed(1)} cm³
+        </Typography>
       </Box>
 
-      {expanded && (
-        <Box>
-          <Typography variant="body2">Material: 100 </Typography>
-          <Typography variant="body2">Sizing: 100</Typography>
-          <Typography variant="body2">Total Cost: </Typography>
-        </Box>
-      )}
+      <Divider />
+
+      {/* Total Cost Highlighted */}
+      <Box sx={{ textAlign: "center", mt: "auto" }}>
+        <Typography variant="h6" sx={{ fontWeight: "bold", color: "primary.main" }}>
+          Total: £{dataState.totalCost}
+        </Typography>
+      </Box>
     </Box>
   );
 };

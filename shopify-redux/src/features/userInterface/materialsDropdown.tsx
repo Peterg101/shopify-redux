@@ -18,7 +18,7 @@ const dataState = useSelector(
 )
 
 const config: PricingConfig = pricingConfig;
-const { techniques, materials } = config;
+  const { techniques, materials } = config;
 
 
   const handlePrintTechniqueChange = (event: SelectChangeEvent) => {
@@ -41,7 +41,6 @@ const { techniques, materials } = config;
               value={dataState.printTechnique}
               label="Print Technique"
               onChange={handlePrintTechniqueChange}
-            //   disabled={!hasStatePopulationErrors}
             >
               {techniques.map((technique) => (
                 <MenuItem key={technique} value={technique}>
@@ -54,39 +53,23 @@ const { techniques, materials } = config;
         <Grid item xs={6}>
           <FormControl fullWidth>
             <InputLabel id="print-material-label">Print Material</InputLabel>
-            {dataState.printTechnique === 'FDM' ? <Select
+            <Select
               labelId="print-material-label"
               id="print-material-select"
               value={dataState.printMaterial}
               label="Print Material"
               onChange={handlePrintMaterialChange}
-            //   disabled={!hasStatePopulationErrors}
             >
-              {materials.FDM.map((material) => (
-                <MenuItem key={material} value={material}>
-                  {material}
+              {materials[dataState.printTechnique]?.map((material) => (
+                <MenuItem key={material.name} value={material.name}>
+                  {material.name}
                 </MenuItem>
               ))}
-            </Select> : <Select
-              labelId="print-material-label"
-              id="print-material-select"
-              value={dataState.printMaterial}
-              label="Print Material"
-              onChange={handlePrintMaterialChange}
-            //   disabled={!hasStatePopulationErrors}
-            >
-              {materials.Resin.map((material) => (
-                <MenuItem key={material} value={material}>
-                  {material}
-                </MenuItem>
-              ))}
-            </Select>}
-            
-            
+            </Select>
           </FormControl>
         </Grid>
       </Grid>
     </Box>
   );
-}
+};
 

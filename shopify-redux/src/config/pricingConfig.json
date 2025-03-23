@@ -1,21 +1,21 @@
 {
-    "techniques": [
-      "Resin",
-      "FDM"
+  "techniques": [
+    "Resin",
+    "FDM"
+  ],
+  "materials": {
+    "FDM": [
+      { "name": "PLA Basic", "price": 5.0 },
+      { "name": "PLA Matte", "price": 7.0 },
+      { "name": "PLA Silk", "price": 8.0 },
+      { "name": "PLA CF", "price": 10.0 },
+      { "name": "PETG", "price": 6.0 },
+      { "name": "PETG+", "price": 7.5 },
+      { "name": "PETG CF", "price": 12.0 }
     ],
-    "materials": {
-      "FDM": [
-        "PLA Basic",
-        "PLA Matte",
-        "PLA Silk",
-        "PLA CF",
-        "PETG",
-        "PETG+",
-        "PETG CF"
-      ],
-      "Resin": [
-        "Resinny Resin",
-        "Even Ressinier Resin"
-      ]
-    }
+    "Resin": [
+      { "name": "Resinny Resin", "price": 15.0 },
+      { "name": "Even Ressinier Resin", "price": 20.0 }
+    ]
   }
+}

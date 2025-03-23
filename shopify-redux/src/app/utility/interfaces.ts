@@ -55,7 +55,9 @@ export interface DataState {
    xFlip: number,
    yFlip: number,
    zFlip: number,
-   displayObjectConfig: boolean
+   displayObjectConfig: boolean,
+   materialCost: number,
+   totalCost: number
 }
 
 export interface FileAndItem {
@@ -139,9 +141,15 @@ export interface SidebarItem {
   icon: JSX.Element
 }
 
+export interface Material {
+  name: string;
+  price: number;
+}
+
 export interface PricingConfig {
-  techniques: string[]; 
+  techniques: string[];
   materials: {
-    [key: string]: string[];
+    FDM: Material[];
+    Resin: Material[];
   };
 }

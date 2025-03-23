@@ -25,7 +25,9 @@ const initialState: DataState = {
     xFlip: 0,
     yFlip: 0,
     zFlip: 0,
-    displayObjectConfig: false
+    displayObjectConfig: false,
+    materialCost: 0,
+    totalCost: 0
 }
 
 export const dataSlice = createSlice({
