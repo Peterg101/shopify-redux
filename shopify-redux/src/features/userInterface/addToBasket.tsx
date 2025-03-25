@@ -1,16 +1,14 @@
 import { Button } from "@mui/material"
-import AddIcon from '@mui/icons-material/Add';
+import ShoppingBasketIcon from '@mui/icons-material/ShoppingBasket';
 import { convertFileToBase64WithoutFileReader, createBase64Blob, createFileBlob, generateUuid } from "../../app/utility/utils";
 import { BasketItem, UploadedFile, BasketInformationAndFile } from "../../app/utility/interfaces";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { useFile } from '../../services/fileProvider';
 import { useUploadedFiles } from "../../services/uploadedFilesProvider";
-import { setBasketItems } from "../../services/userInterfaceSlice";
 import { resetDataState } from "../../services/dataSlice";
 import { postFile } from "../../services/fetchFileUtils";
 import { authApi } from "../../services/authApi";
-import { CatchingPokemonSharp } from "@mui/icons-material";
 
 export const AddToBasket = () => {
   const dispatch = useDispatch()
@@ -66,7 +64,7 @@ const userState = useSelector(
             backgroundColor: 'theme-color', // Change the background color on hover
           }}}
       >
-        <AddIcon sx ={{color: 'black'}} />
+        <ShoppingBasketIcon sx ={{color: 'black'}} />
       </Button>  
     )
 }

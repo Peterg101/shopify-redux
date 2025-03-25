@@ -142,6 +142,7 @@ export const dataSlice = createSlice({
             state.selectedFile= fileInformation.fileUrl
             state.selectedFileType=basketItem.selectedFileType
             state.fileDisplay = true
+            state.displayObjectConfig = true
         },
         setXFLip: (state, action: PayloadAction<{xFlip: number}>) => {
             const {xFlip} = action.payload

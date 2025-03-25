@@ -27,6 +27,7 @@ export const Basket = () => {
   const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
 
   const handleGetFile = async (fileId: string, filename: string) => {
+    console.log('this is teh function')
     setActualFile(null);
     dispatch(resetDataState());
     dispatch(setLeftDrawerClosed());
