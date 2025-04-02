@@ -88,6 +88,8 @@ def add_or_update_basket_item_in_db(
     # Check if the item already exists in the database
     print("hitting here")
     print(basket_item_info.task_id)
+    print(basket_item_info.material)
+    print("peter")
     existing_item = (
         db.query(BasketItem)
         .filter(BasketItem.task_id == basket_item_info.task_id)
@@ -140,7 +142,7 @@ def add_or_update_basket_item_in_db(
         selectedFileType=basket_item_info.selectedFileType,
         price=basket_item_info.price
     )
-
+    print(new_item)
     db.add(new_item)
     db.commit()
     db.refresh(new_item)

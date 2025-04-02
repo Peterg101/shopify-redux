@@ -208,3 +208,9 @@ export function recalculateTotalCost(params: { modelVolume: number; materialCost
       ? modelVolume * materialCost * multiplierValue
       : 0;
 }
+
+export function validateData (data: Record<string, any>, schema: Record<string, (value: any) => boolean>): string[] {
+  return Object.entries(schema)
+      .filter(([key, isValid]) => !isValid(data[key]))
+      .map(([key]) => key);
+};

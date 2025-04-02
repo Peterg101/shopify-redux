@@ -5,7 +5,7 @@ from models import Base
 
 # Database URL
 DATABASE_URL = (
-    "sqlite:///./test_meshy_bool_port.db"  # Replace with your actual database URL
+    "sqlite:///./test_meshy_numeric.db"  # Replace with your actual database URL
 )
 
 # SQLAlchemy Engine and Session
