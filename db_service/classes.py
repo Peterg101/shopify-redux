@@ -65,12 +65,12 @@ class BasketItemInformation(BaseModel):
     name: str
     material: str
     technique: str
-    sizing: int
+    sizing: float
     colour: str
     selected_file: str  # Changed to snake_case in TypeScript, use snake_case in Python
     quantity: int
     selectedFileType: (
         str  # Changed to snake_case in TypeScript, use snake_case in Python
     )
-    price: int
+    price: float
     file_blob: str  # This matches the `file_blob` in TypeScript

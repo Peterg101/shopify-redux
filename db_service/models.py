@@ -40,11 +40,11 @@ class BasketItem(Base):
     name: Mapped[str] = mapped_column()
     material: Mapped[str] = mapped_column()
     technique: Mapped[str] = mapped_column()
-    sizing: Mapped[int] = mapped_column()
+    sizing: Mapped[float] = mapped_column()
     colour: Mapped[str] = mapped_column()
     selectedFile: Mapped[str] = mapped_column()
     selectedFileType: Mapped[str] = mapped_column()
-    price: Mapped[int] = mapped_column()
+    price: Mapped[float] = mapped_column()
 
 
 class PortID(Base):
