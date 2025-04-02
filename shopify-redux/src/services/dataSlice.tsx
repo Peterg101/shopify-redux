@@ -50,9 +50,10 @@ export const dataSlice = createSlice({
             const {printTechnique} = action.payload
             state.printTechnique = printTechnique
         },
-        setPrintMaterial: (state, action: PayloadAction<{printMaterial: string}>) => {
-            const {printMaterial} = action.payload
+        setPrintMaterial: (state, action: PayloadAction<{printMaterial: string, materialCost: number}>) => {
+            const {printMaterial, materialCost} = action.payload
             state.printMaterial = printMaterial
+            state.materialCost = materialCost
         },
         setModelVolume: (state, action: PayloadAction<{modelVolume: number}>) => {
             const {modelVolume} = action.payload
@@ -166,6 +167,10 @@ export const dataSlice = createSlice({
          setDisplayObjectConfig: (state, action: PayloadAction<{displayObjectConfig: boolean}>) => {
             const {displayObjectConfig} = action.payload
             state.displayObjectConfig = displayObjectConfig
+        },
+        setTotalCost: (state, action: PayloadAction<{totalCost: number}>) => {
+            const {totalCost} = action.payload
+            state.totalCost = totalCost
         }
 
 
@@ -195,7 +200,8 @@ export const {
     setZFLip,
     setFromMeshyOrHistory,
     setClearFileDisplay,
-    setDisplayObjectConfig
+    setDisplayObjectConfig,
+    setTotalCost
 
  } = dataSlice.actions
 

@@ -72,4 +72,5 @@ class BasketItemInformation(BaseModel):
     selectedFileType: (
         str  # Changed to snake_case in TypeScript, use snake_case in Python
     )
+    price: int
     file_blob: str  # This matches the `file_blob` in TypeScript

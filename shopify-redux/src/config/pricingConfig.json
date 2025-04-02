@@ -5,17 +5,17 @@
   ],
   "materials": {
     "FDM": [
-      { "name": "PLA Basic", "price": 5.0 },
-      { "name": "PLA Matte", "price": 7.0 },
-      { "name": "PLA Silk", "price": 8.0 },
-      { "name": "PLA CF", "price": 10.0 },
-      { "name": "PETG", "price": 6.0 },
-      { "name": "PETG+", "price": 7.5 },
-      { "name": "PETG CF", "price": 12.0 }
+      { "name": "PLA Basic", "price": 0.00005 },
+      { "name": "PLA Matte", "price": 0.00007 },
+      { "name": "PLA Silk", "price": 0.00008 },
+      { "name": "PLA CF", "price": 0.0001 },
+      { "name": "PETG", "price": 0.00006 },
+      { "name": "PETG+", "price": 0.000075 },
+      { "name": "PETG CF", "price": 0.000012 }
     ],
     "Resin": [
-      { "name": "Resinny Resin", "price": 15.0 },
-      { "name": "Even Ressinier Resin", "price": 20.0 }
+      { "name": "Resinny Resin", "price": 0.000015 },
+      { "name": "Even Ressinier Resin", "price": 0.0002 }
     ]
   }
 }

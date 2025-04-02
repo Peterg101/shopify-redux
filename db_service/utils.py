@@ -106,6 +106,7 @@ def add_or_update_basket_item_in_db(
                 existing_item.colour != basket_item_info.colour,
                 existing_item.selectedFile != basket_item_info.selected_file,
                 existing_item.selectedFileType != basket_item_info.selectedFileType,
+                
             ]
         )
 

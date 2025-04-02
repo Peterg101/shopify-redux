@@ -10,6 +10,7 @@ import { RootState } from "../../app/store";
 import { setPrintMaterial, setPrintTechnique } from '../../services/dataSlice';
 import { PricingConfig } from '../../app/utility/interfaces';
 import pricingConfig from "./../../config/pricingConfig.json"
+import { getPrice } from '../../app/utility/utils';
 export const MaterialSelectDropdown = ()=> {
 
 const dispatch = useDispatch()
@@ -20,13 +21,14 @@ const dataState = useSelector(
 const config: PricingConfig = pricingConfig;
   const { techniques, materials } = config;
 
-
   const handlePrintTechniqueChange = (event: SelectChangeEvent) => {
     dispatch(setPrintTechnique({printTechnique: event.target.value}))
   };
 
   const handlePrintMaterialChange = (event: SelectChangeEvent)=>{
-    dispatch(setPrintMaterial({printMaterial: event.target.value}))
+    const printMaterial = event.target.value
+    const materialCost = getPrice(printMaterial, config)
+    dispatch(setPrintMaterial({printMaterial: printMaterial, materialCost: materialCost}))
   }
 
   return (

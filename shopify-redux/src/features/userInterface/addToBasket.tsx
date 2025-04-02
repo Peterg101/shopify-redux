@@ -40,7 +40,8 @@ const userState = useSelector(
         selected_file: dataState.selectedFile,
         selectedFileType: dataState.selectedFileType,
         quantity: 1,
-        file_blob: base64String
+        file_blob: base64String,
+        price: 100
       }
       await postFile(basketInformationAndFile)
       dispatch(resetDataState())

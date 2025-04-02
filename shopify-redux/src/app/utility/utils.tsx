@@ -1,4 +1,4 @@
-import { BasketItem, DataState, FileAndItem, UploadedFile, UUIDType } from "./interfaces";
+import { BasketItem, DataState, FileAndItem, PricingConfig, UploadedFile, UUIDType } from "./interfaces";
 import { UUID } from "crypto";
 import * as THREE from 'three';
 import { v4 as uuidv4 } from 'uuid';
@@ -186,14 +186,25 @@ export async function convertFileToDataURI(file: File): Promise<string> {
   return `data:${file.type};base64,${base64String}`;
 }
 
-export function calculate3DPrintCost(volume: number, materialType: "PLA" | "ABS" | "Resin" | "Nylon", markup: number = 1.2) {
-  const materialCosts = { PLA: 0.05, ABS: 0.07, Resin: 0.12, Nylon: 0.10 };
+export function calculate3DPrintCost(volume: number, materialCost: number, markup: number = 1.2) {
+  
   const postProcessing = { PLA: 5, ABS: 8, Resin: 10, Nylon: 7 };
-
-  const MC = materialCosts[materialType];
-  const PPC = postProcessing[materialType];
-
-  const baseCost = (volume * MC) + PPC;
+  const baseCost = (volume * materialCost) + markup;
   return baseCost * markup;
 }
 
+export function getPrice (materialName: string, data:PricingConfig ): number | null {
+  for (const technique in data.materials) {
+    const material = data.materials[technique].find(m => m.name === materialName);
+    if (material) return material.price;
+  }
+  return null; 
+};
+
+export function recalculateTotalCost(params: { modelVolume: number; materialCost: number; multiplierValue: number }): number {
+  const { modelVolume, materialCost, multiplierValue } = params;
+
+  return [modelVolume, materialCost, multiplierValue].every(value => value > 0)
+      ? modelVolume * materialCost * multiplierValue
+      : 0;
+}

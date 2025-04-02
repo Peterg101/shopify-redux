@@ -161,6 +161,7 @@ async def post_basket_item_to_storage(
     db: Session = Depends(get_db),
     _: None = Depends(cookie_verification),
 ):
+    
     # Check if the user exists in the database
     user_exists = check_user_existence(db, basket_item.user_id)
     if not user_exists:

@@ -112,6 +112,7 @@ export interface BasketInformation {
   selected_file: string; // Changed to snake_case
   quantity: number;
   selectedFileType: string; // Changed to snake_case
+  price: number
 }
 
 export interface BasketInformationAndFile extends BasketInformation {
