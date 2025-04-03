@@ -58,7 +58,6 @@ export const MainOptions = () => {
         </Grid>
       </Container>
       
-      {/* Snackbar for Cost Summary Notification */}
       <Snackbar
         open={openToast}
         anchorOrigin={{ vertical: "top", horizontal: "right" }} // Positioned at bottom-right
