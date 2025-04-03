@@ -58,6 +58,7 @@ export interface DataState {
    displayObjectConfig: boolean,
    materialCost: number,
    totalCost: number
+   
 }
 
 export interface FileAndItem {

@@ -1,7 +1,7 @@
 import React from "react";
 import {BasketInformation } from "../../app/utility/interfaces";
 import { Accordion, AccordionDetails, AccordionSummary, Typography, Box, Card, Divider } from "@mui/material";
-import { ExpandMore, ShoppingBasket, ColorLens, Inventory2, FormatSize } from "@mui/icons-material";
+import { ExpandMore, ShoppingBasket, ColorLens, Inventory2, FormatSize, Construction } from "@mui/icons-material";
 import DeleteFromBasket from "./deleteFromBasket";
 import EditBasketItem from "./editBasketItem";
 import { useDispatch, useSelector } from "react-redux";
@@ -49,10 +49,11 @@ const BasketItemCard: React.FC<BasketInformation> = (item) => {
         </AccordionSummary>
         <AccordionDetails>
           <Divider sx={{ mb: 1 }} />
-          <DetailRow icon={<Inventory2 />} label="Technique" value={item.technique} />
+          <DetailRow icon={<Construction />} label="Technique" value={item.technique} />
           <DetailRow icon={<FormatSize />} label="Sizing" value={`${item.sizing}x`} />
           <DetailRow icon={<Inventory2 />} label="Material" value={item.material} />
           <DetailRow icon={<ColorLens />} label="Colour" value={item.colour} />
+          <DetailRow icon={<ShoppingBasket />} label="Quantity" value={String(item.quantity)} />
         </AccordionDetails>
         <AccordionDetails>
           <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", mt: 1 }}>

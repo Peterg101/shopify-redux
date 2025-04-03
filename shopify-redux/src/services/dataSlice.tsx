@@ -30,7 +30,7 @@ const initialState: DataState = {
     zFlip: 0,
     displayObjectConfig: false,
     materialCost: 0,
-    totalCost: 0
+    totalCost: 0,
 }
 
 export const dataSlice = createSlice({
