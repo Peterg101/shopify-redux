@@ -1,15 +1,13 @@
 import React from "react";
-import { BasketItem, BasketInformation } from "../../app/utility/interfaces";
-import { Accordion, AccordionDetails, AccordionSummary, Button, Typography, Box, Card, CardContent, Divider } from "@mui/material";
+import {BasketInformation } from "../../app/utility/interfaces";
+import { Accordion, AccordionDetails, AccordionSummary, Typography, Box, Card, Divider } from "@mui/material";
 import { ExpandMore, ShoppingBasket, ColorLens, Inventory2, FormatSize } from "@mui/icons-material";
 import DeleteFromBasket from "./deleteFromBasket";
 import EditBasketItem from "./editBasketItem";
-import { extractFileInfo, fetchFile } from "../../services/fetchFileUtils";
-import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { useFile } from "../../services/fileProvider";
-import { resetDataState, setFileProperties } from "../../services/dataSlice";
+
 
 export const EmptyBasket = () => {
   return (
@@ -25,7 +23,7 @@ export const Basket = () => {
   const { actualFile, setActualFile } = useFile();
   const dispatch = useDispatch();
   const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
-  
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2, p: 2 }}>
       {userInterfaceState.userInformation?.basket_items.length === 0 ? (
