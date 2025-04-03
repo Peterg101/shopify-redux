@@ -9,6 +9,7 @@ import { useUploadedFiles } from "../../services/uploadedFilesProvider";
 import { resetDataState } from "../../services/dataSlice";
 import { postFile } from "../../services/fetchFileUtils";
 import { authApi } from "../../services/authApi";
+import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
 
 export const AddToBasket = () => {
   const dispatch = useDispatch()
@@ -43,9 +44,14 @@ const userState = useSelector(
         file_blob: base64String,
         price: dataState.totalCost
       }
+
+      console.log(basketInformationAndFile.material)
+
+      console.log(basketInformationAndFile.technique)
       await postFile(basketInformationAndFile)
       dispatch(resetDataState())
       dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));        
+      dispatch(setLeftDrawerClosed())
     }
 
   }

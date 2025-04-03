@@ -2,11 +2,14 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { BasketInformation, BasketItem, DataState, FileInformation, VectorState } from "../app/utility/interfaces";
 import * as THREE from "three";
 import { getMidPoint } from "../app/utility/utils";
+import { PricingConfig } from '../app/utility/interfaces';
+import pricingConfig from "./../config/pricingConfig.json"
+import { getPrice } from '../app/utility/utils';
 
 const initialVectorState: VectorState = {
     position: { x: 0, y: 0, z: 0 },
 }
-
+const config: PricingConfig = pricingConfig;
 const initialState: DataState = {
     taskId:'',
     modelColour: 'white',
@@ -144,6 +147,7 @@ export const dataSlice = createSlice({
             state.selectedFileType=basketItem.selectedFileType
             state.fileDisplay = true
             state.displayObjectConfig = true
+            state.materialCost = getPrice(basketItem.material, config)
         },
         setXFLip: (state, action: PayloadAction<{xFlip: number}>) => {
             const {xFlip} = action.payload

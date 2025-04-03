@@ -25,24 +25,7 @@ export const Basket = () => {
   const { actualFile, setActualFile } = useFile();
   const dispatch = useDispatch();
   const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
-
-  const handleGetFile = async (fileId: string, filename: string) => {
-    console.log('this is teh function')
-    setActualFile(null);
-    dispatch(resetDataState());
-    dispatch(setLeftDrawerClosed());
-    const data = await fetchFile(fileId);
-    const fileInfo = extractFileInfo(data, filename);
-    setActualFile(fileInfo.file);
-    dispatch(
-      setFileProperties({
-        selectedFile: fileInfo.fileUrl,
-        selectedFileType: "obj",
-        fileNameBoxValue: filename,
-      })
-    );
-  };
-
+  
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2, p: 2 }}>
       {userInterfaceState.userInformation?.basket_items.length === 0 ? (
