@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { BasketInformation, BasketItem, DataState, FileInformation, VectorState } from "../app/utility/interfaces";
+import { BasketInformation, DataState, FileInformation, VectorState } from "../app/utility/interfaces";
 import * as THREE from "three";
 import { getMidPoint } from "../app/utility/utils";
 import { PricingConfig } from '../app/utility/interfaces';
@@ -175,6 +175,7 @@ export const dataSlice = createSlice({
         setTotalCost: (state, action: PayloadAction<{totalCost: number}>) => {
             const {totalCost} = action.payload
             state.totalCost = totalCost
+            console.log(state.totalCost)
         }
 
 

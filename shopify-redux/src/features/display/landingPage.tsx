@@ -11,9 +11,10 @@ import { createWebsocketConnection } from "../../services/meshyWebsocket";
 import { useDispatch} from "react-redux";
 import { AppDispatch } from "../../app/store";
 import { UpdatedUserInterface } from "../userInterface/updatedUserInterface";
+import { useSyncTotalCost } from "../../hooks/useSyncTotalCost";
 export const LandingPage = () => {
 
-
+    useSyncTotalCost()
     const [actualFile, setActualFile] = useState<File | null>(null);
     const [messages, setMessages] = useState<string[]>([]);
     const [progress, setProgress] = useState<number | null>(null);

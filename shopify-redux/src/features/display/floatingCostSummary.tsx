@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
 import { Box, Typography, Divider } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
@@ -7,32 +7,26 @@ import { setTotalCost } from "../../services/dataSlice";
 
 export const FloatingCostSummary = () => {
   const dispatch = useDispatch();
-  const { displayObjectConfig, selectedFile, printMaterial, materialCost, multiplierValue, modelVolume, totalCost } = 
-    useSelector((state: RootState) => state.dataState);
 
-  // Use useMemo to avoid unnecessary recalculations
-  const computedTotalCost = useMemo(() => recalculateTotalCost({ modelVolume, materialCost, multiplierValue }), [
-    modelVolume,
+  const {
+    displayObjectConfig,
+    selectedFile,
+    printMaterial,
     materialCost,
     multiplierValue,
-  ]);
+    modelVolume,
+    totalCost,
+  } = useSelector((state: RootState) => state.dataState);
 
-  // Only dispatch if the computed value has changed
-  useEffect(() => {
-    if (computedTotalCost !== totalCost) {
-      dispatch(setTotalCost({ totalCost: computedTotalCost }));
-    }
-  }, [computedTotalCost, totalCost, dispatch]);
-
-  if (!displayObjectConfig || !selectedFile) return null; // Only show when active
+  if (!displayObjectConfig || !selectedFile) return null;
 
   return (
     <Box
       sx={{
         backgroundColor: "white",
         p: 2,
-        width: "100%", // Full width of the sidebar
-        height: "100%", // Full height to occupy the entire sidebar
+        width: "100%",
+        height: "100%",
         display: "flex",
         flexDirection: "column",
         gap: 2,
@@ -58,7 +52,7 @@ export const FloatingCostSummary = () => {
 
       <Divider />
 
-      {/* Total Cost Highlighted */}
+      {/* Total Cost */}
       <Box sx={{ textAlign: "center", mt: "auto" }}>
         <Typography variant="h6" sx={{ fontWeight: "bold", color: "primary.main" }}>
           Total: £{totalCost.toFixed(2)}

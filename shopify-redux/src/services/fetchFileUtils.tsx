@@ -48,7 +48,7 @@ export const postFile = async (basketInformationAndFile: BasketInformationAndFil
       },
       body: JSON.stringify(basketInformationAndFile),
     });
-
+    console.log(basketInformationAndFile.price)
     if (!response.ok) {
       throw new Error(`Failed to post file ${basketInformationAndFile.name}: ${response.statusText}`);
     }

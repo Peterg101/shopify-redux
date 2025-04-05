@@ -190,7 +190,9 @@ async def delete_basket_item(
 ):
     try:
         # Query the database for the item to delete
-        basket_item = db.query(BasketItem).filter(BasketItem.task_id == file_id).first()
+        basket_item = db.query(BasketItem).filter(
+            BasketItem.task_id == file_id
+            ).first()
 
         # If the item doesn't exist, raise a 404 error
         if not basket_item:

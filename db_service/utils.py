@@ -86,10 +86,7 @@ def add_or_update_basket_item_in_db(
     db: Session, basket_item_info: BasketItemInformation
 ) -> BasketItem:
     # Check if the item already exists in the database
-    print("hitting here")
-    print(basket_item_info.task_id)
-    print(basket_item_info.material)
-    print("peter")
+    print(basket_item_info.price)
     existing_item = (
         db.query(BasketItem)
         .filter(BasketItem.task_id == basket_item_info.task_id)
@@ -108,8 +105,8 @@ def add_or_update_basket_item_in_db(
                 existing_item.colour != basket_item_info.colour,
                 existing_item.selectedFile != basket_item_info.selected_file,
                 existing_item.selectedFileType != basket_item_info.selectedFileType,
-                existing_item.price != basket_item_info.price
-                
+                existing_item.price != basket_item_info.price,
+                existing_item.quantity != basket_item_info.quantity
             ]
         )
 
@@ -124,6 +121,7 @@ def add_or_update_basket_item_in_db(
             existing_item.selectedFile = basket_item_info.selected_file
             existing_item.selectedFileType = basket_item_info.selectedFileType
             existing_item.price = basket_item_info.price
+            existing_item.quantity = basket_item_info.quantity
             db.commit()
             db.refresh(existing_item)
 
@@ -140,7 +138,8 @@ def add_or_update_basket_item_in_db(
         colour=basket_item_info.colour,
         selectedFile=basket_item_info.selected_file,
         selectedFileType=basket_item_info.selectedFileType,
-        price=basket_item_info.price
+        price=basket_item_info.price,
+        quantity=basket_item_info.quantity
     )
     print(new_item)
     db.add(new_item)

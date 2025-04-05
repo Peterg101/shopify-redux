@@ -10,6 +10,7 @@ import { postFile } from "../../services/fetchFileUtils";
 import { authApi } from "../../services/authApi";
 import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
 import { useState } from "react";
+import { useSyncTotalCost } from "../../hooks/useSyncTotalCost";
 
 export const AddToBasket = () => {
   const dispatch = useDispatch()
@@ -19,7 +20,7 @@ export const AddToBasket = () => {
   const userState = useSelector(
     (state: RootState) => state.userInterfaceState
   )
-
+  const syncCost = useSyncTotalCost
   const {actualFile} = useFile()
 
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
@@ -42,6 +43,8 @@ const handleAddToBasket = async () => {
     const itemUUID = generateUuid();
     if (actualFile) {
       const base64String = await convertFileToBase64WithoutFileReader(actualFile);
+      console.log(dataState.totalCost)
+      
       const basketInformationAndFile: BasketInformationAndFile = {
         user_id: userState.userInformation?.user.user_id,
         task_id: dataState.taskId ? dataState.taskId : itemUUID,
@@ -52,11 +55,11 @@ const handleAddToBasket = async () => {
         colour: dataState.modelColour,
         selected_file: dataState.selectedFile,
         selectedFileType: dataState.selectedFileType,
-        quantity: 1,
+        quantity: 137,
         file_blob: base64String,
         price: dataState.totalCost,
       };
-
+      console.log(dataState.totalCost)
       await postFile(basketInformationAndFile);
       dispatch(resetDataState());
       dispatch(authApi.util.invalidateTags([{ type: "sessionData" }]));
