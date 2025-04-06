@@ -22,6 +22,7 @@ from classes import (
     TaskInformation,
     MeshyTaskStatusResponse,
     BasketItemInformation,
+    BasketQuantityUpdate
 )
 import uvicorn
 from typing import Optional, Dict
@@ -137,6 +138,26 @@ async def receive_meshy_task(
             "user": payload,
         }
     return {"message": "No OBJ file blob provided."}
+
+
+@app.post("/basket_item_quantity")
+async def update_basket_quantity(
+    update_data: BasketQuantityUpdate,
+    payload: dict = Depends(verify_jwt_token),
+    db: Session = Depends(get_db),
+):
+    basket_item = db.query(BasketItem).filter(
+        BasketItem.task_id == update_data.task_id,
+    ).first()
+
+    if not basket_item:
+        raise HTTPException(status_code=404, detail="Basket item not found")
+
+    basket_item.quantity = update_data.quantity
+    db.commit()
+    db.refresh(basket_item)
+
+    return basket_item
 
 
 @app.get("/file_storage/{file_id}")

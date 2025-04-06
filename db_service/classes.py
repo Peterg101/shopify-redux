@@ -74,3 +74,8 @@ class BasketItemInformation(BaseModel):
     )
     price: float
     file_blob: str  # This matches the `file_blob` in TypeScript
+
+
+class BasketQuantityUpdate(BaseModel):
+    task_id: str
+    quantity: int
