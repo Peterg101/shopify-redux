@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {BasketInformation } from "../../app/utility/interfaces";
+import {BasketInformation, BasketQuantityUpdate } from "../../app/utility/interfaces";
 import { Accordion, AccordionDetails, AccordionSummary, Typography, Box, Card, Divider, IconButton, TextField } from "@mui/material";
 import { ExpandMore, ShoppingBasket, ColorLens, Inventory2, FormatSize, Construction, AttachMoney, Remove, Add } from "@mui/icons-material";
 import DeleteFromBasket from "./deleteFromBasket";
@@ -7,7 +7,8 @@ import EditBasketItem from "./editBasketItem";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { useFile } from "../../services/fileProvider";
-
+import { updateBasketQuantity as updateValue } from "../../services/fetchFileUtils";
+import { useUpdateBasketQuantityMutation } from "../../services/basketItemApi";
 
 export const EmptyBasket = () => {
   return (
@@ -39,12 +40,22 @@ export const Basket = () => {
 
 const BasketItemCard: React.FC<BasketInformation> = (item) => {
   const [quantity, setQuantity] = useState(item.quantity);
+  const [updateBasketQuantity] = useUpdateBasketQuantityMutation();
+
+  const updateBasketQuantityObject = {
+    task_id: item.task_id,
+    quantity: quantity
+  };
 
   const handleQuantityChange = (delta: number) => {
+    console.log(delta)
     const newQuantity = quantity + delta;
+    console.log(newQuantity)
     if (newQuantity >= 1) {
       setQuantity(newQuantity);
-      // TODO: Update store/backend here if needed
+      // updateValue(updateBasketQuantityObject)
+      updateBasketQuantity({ task_id: item.task_id, quantity: newQuantity });
+            
     }
   };
 
@@ -52,8 +63,10 @@ const BasketItemCard: React.FC<BasketInformation> = (item) => {
     const value = e.target.value;
     const parsed = parseInt(value, 10);
     if (!isNaN(parsed) && parsed >= 1) {
+      console.log(value)
       setQuantity(parsed);
-      // TODO: Update store/backend here if needed
+      // updateValue(updateBasketQuantityObject)
+      updateBasketQuantity({task_id: item.task_id, quantity: parsed });
     } else if (value === "") {
       setQuantity(0); // temporarily allow clearing input
     }

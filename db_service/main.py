@@ -143,8 +143,9 @@ async def receive_meshy_task(
 @app.post("/basket_item_quantity")
 async def update_basket_quantity(
     update_data: BasketQuantityUpdate,
-    payload: dict = Depends(verify_jwt_token),
     db: Session = Depends(get_db),
+    _: None = Depends(cookie_verification),
+   
 ):
     basket_item = db.query(BasketItem).filter(
         BasketItem.task_id == update_data.task_id,
@@ -152,7 +153,7 @@ async def update_basket_quantity(
 
     if not basket_item:
         raise HTTPException(status_code=404, detail="Basket item not found")
-
+    
     basket_item.quantity = update_data.quantity
     db.commit()
     db.refresh(basket_item)
