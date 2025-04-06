@@ -1,4 +1,4 @@
-import { FileInformation, FileResponse, BasketInformationAndFile} from "../app/utility/interfaces"
+import { FileInformation, FileResponse, BasketInformationAndFile, BasketQuantityUpdate} from "../app/utility/interfaces"
 import {convertFileToDataURI } from "../app/utility/utils";
 import { MeshyPayload, MeshyImageTo3DPayload } from "../services/meshyApi";
 export const fetchFile = async (fileId: string): Promise<FileResponse> => {
@@ -125,3 +125,30 @@ export const startImageTo3DTask = async (image_file: File, userId: string, portI
 
   const data = await response.json();
 };
+
+export const updateBasketQuantity = async (basketQuantityUpdate: BasketQuantityUpdate): Promise<void> => {
+
+  try {
+    const response = await fetch(`http://localhost:8000/basket_item_quantity`, {
+        method: "POST",
+        credentials: "include", // Include cookies in the request
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(basketQuantityUpdate),
+    });
+
+    if (!response.ok) {
+        const errorDetails = await response.json();
+        console.error("Failed to update basket item:", errorDetails);
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+
+} catch (error) {
+    console.error("Error deleting basket item:", error);
+    throw error; // Propagate the error
+}
+
+
+}
+  

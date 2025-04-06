@@ -155,3 +155,8 @@ export interface PricingConfig {
     Resin: Material[];
   };
 }
+
+export interface BasketQuantityUpdate {
+  task_id: string
+  quantity: number
+}
