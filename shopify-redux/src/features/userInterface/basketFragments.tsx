@@ -1,7 +1,7 @@
-import React from "react";
+import React, {useState} from "react";
 import {BasketInformation } from "../../app/utility/interfaces";
-import { Accordion, AccordionDetails, AccordionSummary, Typography, Box, Card, Divider } from "@mui/material";
-import { ExpandMore, ShoppingBasket, ColorLens, Inventory2, FormatSize, Construction, AttachMoney } from "@mui/icons-material";
+import { Accordion, AccordionDetails, AccordionSummary, Typography, Box, Card, Divider, IconButton, TextField } from "@mui/material";
+import { ExpandMore, ShoppingBasket, ColorLens, Inventory2, FormatSize, Construction, AttachMoney, Remove, Add } from "@mui/icons-material";
 import DeleteFromBasket from "./deleteFromBasket";
 import EditBasketItem from "./editBasketItem";
 import { useDispatch, useSelector } from "react-redux";
@@ -38,25 +38,98 @@ export const Basket = () => {
 };
 
 const BasketItemCard: React.FC<BasketInformation> = (item) => {
+  const [quantity, setQuantity] = useState(item.quantity);
+
+  const handleQuantityChange = (delta: number) => {
+    const newQuantity = quantity + delta;
+    if (newQuantity >= 1) {
+      setQuantity(newQuantity);
+      // TODO: Update store/backend here if needed
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const parsed = parseInt(value, 10);
+    if (!isNaN(parsed) && parsed >= 1) {
+      setQuantity(parsed);
+      // TODO: Update store/backend here if needed
+    } else if (value === "") {
+      setQuantity(0); // temporarily allow clearing input
+    }
+  };
+
+  const handleBlur = () => {
+    if (quantity < 1 || isNaN(quantity)) {
+      setQuantity(1); // fallback on blur
+    }
+  };
+
   return (
     <Card elevation={3} sx={{ borderRadius: 2, overflow: "hidden" }}>
       <Accordion sx={{ boxShadow: "none" }}>
-        <AccordionSummary expandIcon={<ExpandMore />} aria-controls={`panel-${item.task_id}-content`} id={`panel-${item.task_id}-header`}>
+        <AccordionSummary
+          expandIcon={<ExpandMore />}
+          aria-controls={`panel-${item.task_id}-content`}
+          id={`panel-${item.task_id}-header`}
+        >
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <ShoppingBasket color="primary" />
             <Typography variant="h6">{item.name}</Typography>
           </Box>
         </AccordionSummary>
+
         <AccordionDetails>
           <Divider sx={{ mb: 1 }} />
           <DetailRow icon={<Construction />} label="Technique" value={item.technique} />
           <DetailRow icon={<FormatSize />} label="Sizing" value={`${item.sizing}x`} />
           <DetailRow icon={<Inventory2 />} label="Material" value={item.material} />
           <DetailRow icon={<ColorLens />} label="Colour" value={item.colour} />
-          <DetailRow icon={<ShoppingBasket />} label="Quantity" value={String(item.quantity)} />
-          <DetailRow icon={<AttachMoney />} label="Price" value={String((item.quantity * item.price).toFixed(2))} />
 
+          {/* Quantity controls */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, my: 0.5 }}>
+            <ShoppingBasket />
+            <Typography variant="body1"><strong>Quantity:</strong></Typography>
+            <IconButton size="small" onClick={() => handleQuantityChange(-1)}>
+              <Remove />
+            </IconButton>
+            <TextField
+              value={quantity}
+              type="number"
+              onChange={handleInputChange}
+              onBlur={handleBlur}
+              size="small"
+              inputProps={{
+                min: 1,
+                style: { width: 40, textAlign: "center" },
+                inputMode: "numeric", // improves mobile UX
+              }}
+              sx={{
+                '& input[type=number]': {
+                  MozAppearance: 'textfield',
+                },
+                '& input[type=number]::-webkit-outer-spin-button': {
+                  WebkitAppearance: 'none',
+                  margin: 0,
+                },
+                '& input[type=number]::-webkit-inner-spin-button': {
+                  WebkitAppearance: 'none',
+                  margin: 0,
+                },
+              }}
+            />
+            <IconButton size="small" onClick={() => handleQuantityChange(1)}>
+              <Add />
+            </IconButton>
+          </Box>
+
+          <DetailRow
+            icon={<AttachMoney />}
+            label="Price"
+            value={`£${(quantity * item.price).toFixed(2)}`}
+          />
         </AccordionDetails>
+
         <AccordionDetails>
           <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", mt: 1 }}>
             <DeleteFromBasket item={item} />
@@ -68,8 +141,15 @@ const BasketItemCard: React.FC<BasketInformation> = (item) => {
   );
 };
 
-// Reusable Row Component for Basket Details
-const DetailRow = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
+const DetailRow = ({
+  icon,
+  label,
+  value
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) => (
   <Box sx={{ display: "flex", alignItems: "center", gap: 1, my: 0.5 }}>
     {icon}
     <Typography variant="body1">
