@@ -17,8 +17,6 @@ from utils import (
     delete_port_id,
 )
 
-
-
 from api_calls import session_exists
 import os
 from fitd_schemas.fitd_classes import(

@@ -13,7 +13,7 @@ from api_calls import (
     http_session_exists,
     get_obj_file_blob,
 )
-from models import (
+from fitd_schemas.fitd_classes import (
     ImageTo3DMeshyTaskStatusResponse,
     MeshyTaskStatus,
     MeshyTaskStatusResponse,
