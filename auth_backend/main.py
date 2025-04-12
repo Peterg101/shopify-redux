@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from jose import jwt
 import requests
 import uvicorn
-from models import Token, SessionData, UserInformation
+from fitd_schemas.fitd_classes import Token, SessionData, UserInformation
 import httpx
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.responses import RedirectResponse

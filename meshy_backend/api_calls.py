@@ -3,8 +3,7 @@ import httpx
 import json
 import requests
 from jwt_auth import generate_token
-from models import (
-    MeshyPayload,
+from fitd_schemas.fitd_classes import (
     MeshyRefinedPayload,
     MeshyTaskGeneratedResponse,
     MeshyTaskStatus,

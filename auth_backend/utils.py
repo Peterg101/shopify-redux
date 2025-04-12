@@ -1,6 +1,6 @@
 import uuid
 from typing import Optional, Union, Tuple
-from models import SessionData
+from fitd_schemas.fitd_classes import SessionData
 from redis import Redis
 from fastapi import HTTPException, Request
 import json

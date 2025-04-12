@@ -1,6 +1,6 @@
 import httpx
 from jwt_auth import generate_token
-from models import UserInformation
+from fitd_schemas.fitd_classes import UserInformation
 
 
 async def check_user_exists(user_id: str | None):
