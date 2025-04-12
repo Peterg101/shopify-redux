@@ -1,8 +1,9 @@
 from fastapi import FastAPI, HTTPException, Depends, Cookie, Header, Request
 from sqlalchemy.orm import Session, joinedload
 from fastapi.middleware.cors import CORSMiddleware
-from models import User, Task, BasketItem, PortID
-from db_setup import Base, engine, get_db
+from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base
+
+from db_setup import engine, get_db
 from utils import (
     check_session_token_active,
     add_or_update_basket_item_in_db,
@@ -15,14 +16,17 @@ from utils import (
     mark_meshy_task_complete,
     delete_port_id,
 )
+
+
+
 from api_calls import session_exists
 import os
-from classes import (
+from fitd_schemas.fitd_classes import(
     UserInformation,
     TaskInformation,
     MeshyTaskStatusResponse,
     BasketItemInformation,
-    BasketQuantityUpdate
+    BasketQuantityUpdate,
 )
 import uvicorn
 from typing import Optional, Dict

@@ -1,7 +1,7 @@
 Metadata-Version: 2.4
-Name: jwt_auth
+Name: fitd_schemas
 Version: 0.1.0
-Summary: JWT authentication utilities for inter-service communication
+Summary: Common FITD Schemas
 Author: Peter Goon
 Author-email: Your Name <your.email@example.com>
 License: MIT

@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from models import Base
+from fitd_schemas.fitd_db_schemas import Base
 
 # Database URL
 DATABASE_URL = (
