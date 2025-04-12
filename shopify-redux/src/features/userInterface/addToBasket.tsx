@@ -55,7 +55,7 @@ const handleAddToBasket = async () => {
         colour: dataState.modelColour,
         selected_file: dataState.selectedFile,
         selectedFileType: dataState.selectedFileType,
-        quantity: 137,
+        quantity: 1,
         file_blob: base64String,
         price: dataState.totalCost,
       };
