@@ -12,7 +12,5 @@ export const useSyncTotalCost = () => {
     console.log("Recalculating cost!!!!")
     const newTotal = recalculateTotalCost({ modelVolume, materialCost, multiplierValue })
     dispatch(setTotalCost({ totalCost: newTotal }));
-    console.log(totalCost)
-    console.log(newTotal)
   }, [modelVolume, materialCost, multiplierValue, totalCost, dispatch]);
 };

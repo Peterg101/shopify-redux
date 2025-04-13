@@ -1,4 +1,4 @@
-import { BasketItem, DataState, FileAndItem, PricingConfig, UploadedFile, UUIDType } from "./interfaces";
+import { BasketInformation, BasketItem, DataState, FileAndItem, PricingConfig, UploadedFile, UUIDType } from "./interfaces";
 import { UUID } from "crypto";
 import * as THREE from 'three';
 import { v4 as uuidv4 } from 'uuid';
@@ -214,3 +214,11 @@ export function validateData (data: Record<string, any>, schema: Record<string, 
       .filter(([key, isValid]) => !isValid(data[key]))
       .map(([key]) => key);
 };
+
+export function calculateTotalBasketValue(basketItems: BasketInformation[]): number {
+  if (basketItems.length == 0){
+    return 0
+  }
+  const subtotal = basketItems.reduce((sum, item) => sum + item.quantity * item.price, 0);
+  return subtotal
+}

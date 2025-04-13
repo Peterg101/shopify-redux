@@ -2,8 +2,8 @@ from typing import Union, Dict
 from api_calls import session_exists
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound
-from models import User, Task, BasketItem, PortID
-from classes import UserInformation, TaskInformation, BasketItemInformation
+from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID
+from fitd_schemas.fitd_classes import UserInformation, TaskInformation, BasketItemInformation
 from fastapi import HTTPException, Request
 from datetime import datetime
 from pathlib import Path

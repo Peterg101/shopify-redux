@@ -32,7 +32,8 @@ export interface UserInterfaceState {
     meshyPending: boolean,
     meshyQueueItems: number,
     isLoggedIn: boolean,
-    userInformation: UserAndTasksAndBasketAndIncomplete | null
+    userInformation: UserAndTasksAndBasketAndIncomplete | null,
+    totalBasketValue: number
     
 
 }

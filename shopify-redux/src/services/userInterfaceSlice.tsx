@@ -15,6 +15,7 @@ const initialState: UserInterfaceState = {
     meshyQueueItems: 0,
     isLoggedIn: false,
     userInformation: null,
+    totalBasketValue: 0
 }
 
 export const userInterfaceSlice = createSlice({
@@ -83,6 +84,10 @@ export const userInterfaceSlice = createSlice({
             const {selectedComponent} = action.payload
             state.selectedComponent = selectedComponent
         },
+        setTotalBasketCost: (state, action: PayloadAction<{totalBasketCost: number}>) => {
+            const {totalBasketCost} = action.payload
+            state.totalBasketValue = totalBasketCost
+        }
         
 
     },
@@ -124,6 +129,7 @@ export const {
     setMeshyPending,
     setMeshyQueueItems,
     setSelectedComponent,
+    setTotalBasketCost
 } = userInterfaceSlice.actions
 
 export default userInterfaceSlice.reducer
