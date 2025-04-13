@@ -12,7 +12,7 @@ export const useSyncTotalBasketCost = () => {
   // Subscribe to the getSession query which contains basket_items
   const { data: sessionData } = useGetSessionQuery(undefined);
   const basketItems = sessionData?.basket_items || [];
-
+    
   useEffect(() => {
     console.log("Recalculating total basket cost!!!");
     const basketTotal = calculateTotalBasketValue(basketItems);

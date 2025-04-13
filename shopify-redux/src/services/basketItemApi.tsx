@@ -20,24 +20,23 @@ export const basketApi = createApi({
           'Content-Type': 'application/json',
         }
       }),
-      async onQueryStarted({ task_id, quantity }, { dispatch, queryFulfilled, getState }) {
+      async onQueryStarted({ task_id, quantity }, { dispatch, queryFulfilled }) {
         const patchResult = dispatch(
           authApi.util.updateQueryData('getSession', undefined, (draft: any) => {
-            // Find and update the item in the session data
             const item = draft.userInformation?.basket_items.find((i: any) => i.task_id === task_id);
             if (item) {
               item.quantity = quantity;
             }
           })
         );
-
+      
         try {
-          await queryFulfilled;
+          await queryFulfilled;      
+          dispatch(authApi.endpoints.getSession.initiate(undefined, { forceRefetch: true }));
         } catch {
           patchResult.undo();
         }
       },
-      // Invalidate sessionData to trigger refetching of session data after the update
       invalidatesTags: ['sessionData'],
     }),
 
