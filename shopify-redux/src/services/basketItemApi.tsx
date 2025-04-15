@@ -7,7 +7,6 @@ export const basketApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: 'http://localhost:8000',
     credentials: 'include',
-    
   }),
   tagTypes: ['sessionData'],
   endpoints: (builder) => ({
@@ -18,28 +17,30 @@ export const basketApi = createApi({
         body: { task_id, quantity },
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
       }),
       async onQueryStarted({ task_id, quantity }, { dispatch, queryFulfilled }) {
         const patchResult = dispatch(
           authApi.util.updateQueryData('getSession', undefined, (draft: any) => {
+            // Optimistically update the basket item's quantity in the session data
             const item = draft.userInformation?.basket_items.find((i: any) => i.task_id === task_id);
             if (item) {
               item.quantity = quantity;
             }
           })
         );
-      
+
         try {
-          await queryFulfilled;      
-          dispatch(authApi.endpoints.getSession.initiate(undefined, { forceRefetch: true }));
+          await queryFulfilled;  // Wait for the API mutation to complete
+          // Invalidate the session cache to trigger a refetch of the latest data
+          dispatch(authApi.util.invalidateTags(['sessionData']));
         } catch {
-          patchResult.undo();
+          patchResult.undo();  // Rollback if the mutation fails
         }
       },
+      // This triggers refetching of the session data to get the updated basket info
       invalidatesTags: ['sessionData'],
     }),
-
   }),
 });
 

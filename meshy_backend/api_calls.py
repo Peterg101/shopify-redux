@@ -12,6 +12,8 @@ from fitd_schemas.fitd_classes import (
     UserAndTasks,
     MeshyImageTo3DPayload,
     ImageTo3DMeshyTaskStatusResponse,
+    MeshyPayload,
+    MeshyTaskGeneratedResponse
 )
 
 MESHY_API_KEY = "msy_RLiG6FNDJRdsNfSKCoFJ5E2Jhcs4r1l5Hmjp"

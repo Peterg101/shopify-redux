@@ -255,6 +255,13 @@ async def delete_basket_item(
         db.rollback()  # Rollback in case of an error
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
+# @app.post("/file_storage")
+# async def post_basket_item_to_storage(
+#     request: Request,
+#     basket_item: BasketItemInformation,
+#     db: Session = Depends(get_db),
+#     _: None = Depends(cookie_verification),
+# ):
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

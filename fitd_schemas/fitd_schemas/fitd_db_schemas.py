@@ -45,7 +45,7 @@ class BasketItem(Base):
     selectedFile: Mapped[str] = mapped_column()
     selectedFileType: Mapped[str] = mapped_column()
     price: Mapped[float] = mapped_column()
-    quantity: Mapped[int] = mapped_column(default=1999999)
+    quantity: Mapped[int] = mapped_column(default=1)
 
 
 class PortID(Base):
