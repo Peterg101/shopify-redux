@@ -1,5 +1,5 @@
 from typing import Union, Dict
-from api_calls import session_exists
+from api_calls import session_exists, session_exists_user_only
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound
 from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID
@@ -159,6 +159,18 @@ async def cookie_verification(request: Request):
     print(session_data)
     if not session_data:
         raise HTTPException(status_code=401, detail="No Session Found")
+
+
+async def cookie_verification_user_only(request: Request) -> UserInformation:
+    session_id = request.cookies.get("fitd_session_data")
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    session_data = await session_exists_user_only(session_id)
+    if not session_data:
+        raise HTTPException(status_code=401, detail="No Session Found")
+
+    return session_data
 
 
 def decode_file(file_blob: str, file_name: str, upload_dir: Path):

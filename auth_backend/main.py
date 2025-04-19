@@ -18,7 +18,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from redis import Redis
 from utils import create_session, delete_session, cookie_verification
-from api_calls import check_user_exists, create_user
+from api_calls import check_user_exists, create_user, check_only_user_exists
 
 app = FastAPI()
 app.add_middleware(
@@ -148,6 +148,19 @@ async def protected_endpoint(request: Request):
 
     try:
         user_info = await check_user_exists(session_data.user_id)
+        return user_info
+    except ValueError:
+        raise HTTPException(
+            status_code=401, detail="Invalid token or token verification failed"
+        )
+
+
+@app.get("/get_just_user_details")
+async def user_details(request: Request):
+    session_data, _ = await cookie_verification(request, redis_session)
+
+    try:
+        user_info = await check_only_user_exists(session_data.user_id)
         return user_info
     except ValueError:
         raise HTTPException(

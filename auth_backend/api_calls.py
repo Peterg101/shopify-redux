@@ -21,6 +21,25 @@ async def check_user_exists(user_id: str | None):
             print(f"Error: {response.status_code} - {response.text}")
             return None
 
+async def check_only_user_exists(user_id: str | None):
+    url = f"http://localhost:8000/only_user/{user_id}"
+    auth_token = generate_token("auth_backend")
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {auth_token}",  # Add the auth token here
+    }
+    with httpx.Client() as client:
+        response = client.get(url, headers=headers)
+
+        if response.status_code == 200:
+            # If the user was successfully found, return the response data
+            print(response.json())
+            return response.json()
+        else:
+            # Handle any errors
+            print(f"Error: {response.status_code} - {response.text}")
+            return None
+
 
 async def create_user(user_information: UserInformation):
     auth_token = generate_token("auth_backend")

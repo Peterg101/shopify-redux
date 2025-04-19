@@ -12,7 +12,8 @@ from utils import (
     check_user_existence,
     add_user_to_db,
     add_task_to_db,
-    cookie_verification, 
+    cookie_verification,
+    cookie_verification_user_only,
     decode_file,
     mark_meshy_task_complete,
     delete_port_id,
@@ -117,6 +118,20 @@ async def get_user(
         "basket_items": basket_items,
         "incomplete_task": incomplete_task,
     }  # If you fetched tasks, include that in the return value as well
+
+
+# Get User
+@app.get("/only_user/{user_id}")
+async def get_only_user(
+    user_id: str,
+    db: Session = Depends(get_db),
+    authorization: str = Depends(verify_jwt_token),
+):
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if not user:
+        print("user not found")
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 
 @app.post("/file_upload")
@@ -261,18 +276,13 @@ async def delete_basket_item(
 async def generate_tasks_from_basket_items(
     request: Request,
     db: Session = Depends(get_db),
-    _: None = Depends(cookie_verification),
+    user_info: None = Depends(cookie_verification_user_only),
 ):
-    print("here")
-    user_id = request.cookies.get("fitd_session_data")
-    print(user_id)
-    basket_items = db.query(BasketItem).filter(BasketItem.user_id == user_id).all()
+    basket_items = db.query(BasketItem).filter(BasketItem.user_id == user_info.user_id).all()
     if not basket_items:
         raise HTTPException(status_code=400, detail="Basket is empty")
 
     created_orders = []
-    print("you are hitting")
-    print(user_id)
     # for item in basket_items:
     #     task = Order(
     #         task_id=str(uuid.uuid4()),
@@ -287,7 +297,6 @@ async def generate_tasks_from_basket_items(
 
     # db.query(BasketItem).filter(BasketItem.user_id == user_id).delete()
     # db.commit()
-    print("we got all the way down here yo")
     return {"message": f"{len(created_orders)} orders created", "task_ids": [o.order_id for o in created_orders]}
 
 if __name__ == "__main__":
