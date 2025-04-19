@@ -57,3 +57,26 @@ class PortID(Base):
 
     # Back reference to Task
     task = relationship("Task", back_populates="port")
+
+
+class Order(Base):
+    __tablename__ = "task_orders"
+    order_id: Mapped[str] = mapped_column(primary_key=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"))
+    task_id: Mapped[str] = mapped_column(ForeignKey("tasks.task_id"))  # Meshy task
+    name: Mapped[str] = mapped_column()
+    material: Mapped[str] = mapped_column()
+    technique: Mapped[str] = mapped_column()
+    sizing: Mapped[float] = mapped_column()
+    colour: Mapped[str] = mapped_column()
+    selectedFile: Mapped[str] = mapped_column()
+    selectedFileType: Mapped[str] = mapped_column()
+    price: Mapped[float] = mapped_column()
+    quantity: Mapped[int] = mapped_column()
+    created_at: Mapped[str] = mapped_column(default=datetime.utcnow().isoformat())
+    is_collaborative: Mapped[bool] = mapped_column(default=False)
+    status: Mapped[str] = mapped_column(default="open")  # open, in_progress, fulfilled, etc.
+
+    # Relationships
+    user = relationship("User", backref="orders")
+    task = relationship("Task", backref="order")

@@ -12,3 +12,5 @@ async def session_exists(session_id: str) -> bool:
         except httpx.HTTPError as e:
             print(f"HTTP error occurred: {e}")
             return False
+
+

@@ -1,8 +1,9 @@
 from fastapi import FastAPI, HTTPException, Depends, Cookie, Header, Request
 from sqlalchemy.orm import Session, joinedload
 from fastapi.middleware.cors import CORSMiddleware
-from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base
-
+from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, TaskOrder
+from datetime import datetime
+import uuid
 from db_setup import engine, get_db
 from utils import (
     check_session_token_active,
@@ -11,7 +12,7 @@ from utils import (
     check_user_existence,
     add_user_to_db,
     add_task_to_db,
-    cookie_verification,
+    cookie_verification, 
     decode_file,
     mark_meshy_task_complete,
     delete_port_id,
@@ -210,7 +211,7 @@ async def delete_basket_item(
     db: Session = Depends(get_db),
     _: None = Depends(
         cookie_verification
-    ),  # Assuming cookie_verification is implemented
+    ),  
 ):
     try:
         # Query the database for the item to delete
@@ -255,13 +256,37 @@ async def delete_basket_item(
         db.rollback()  # Rollback in case of an error
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
-# @app.post("/file_storage")
-# async def post_basket_item_to_storage(
-#     request: Request,
-#     basket_item: BasketItemInformation,
-#     db: Session = Depends(get_db),
-#     _: None = Depends(cookie_verification),
-# ):
+
+@app.post("/tasks/from_basket")
+async def generate_tasks_from_basket_items(
+    request: Request,
+    user_id: str,
+    db: Session = Depends(get_db),
+    _: None = Depends(cookie_verification),
+):
+    
+    basket_items = db.query(BasketItem).filter(BasketItem.user_id == user_id).all()
+    if not basket_items:
+        raise HTTPException(status_code=400, detail="Basket is empty")
+
+    created_tasks = []
+
+    for item in basket_items:
+        task = TaskOrder(
+            task_id=str(uuid.uuid4()),
+            user_id=user_id,
+            task_name=item.name,
+            complete=False,
+            created_at=datetime.utcnow().isoformat(),
+            quantity=item.quantity
+        )
+        db.add(task)
+        created_tasks.append(task)
+
+    db.query(BasketItem).filter(BasketItem.user_id == user_id).delete()
+    db.commit()
+
+    return {"message": f"{len(created_tasks)} tasks created", "task_ids": [t.task_id for t in created_tasks]}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
