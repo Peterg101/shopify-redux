@@ -60,7 +60,7 @@ class PortID(Base):
 
 
 class Order(Base):
-    __tablename__ = "task_orders"
+    __tablename__ = "orders"
     order_id: Mapped[str] = mapped_column(primary_key=True)
     user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"))
     task_id: Mapped[str] = mapped_column(ForeignKey("tasks.task_id"))  # Meshy task
