@@ -169,3 +169,4 @@ class ImageTo3DMeshyTaskStatusResponse(BaseModel):
     texture_urls: List[TextureUrls] = []
     preceding_tasks: Optional[int] = None
     task_error: Optional[TaskError] = None
+

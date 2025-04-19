@@ -57,7 +57,7 @@ def create_user(
     db: Session = Depends(get_db),
     authorization: str = Depends(verify_jwt_token),
 ):
-
+    print("this route")
     # Check if the user already exists
     user_exists = check_user_existence(db, user_information.email)
 
@@ -260,33 +260,35 @@ async def delete_basket_item(
 @app.post("/tasks/from_basket")
 async def generate_tasks_from_basket_items(
     request: Request,
-    user_id: str,
     db: Session = Depends(get_db),
     _: None = Depends(cookie_verification),
 ):
-    
+    print("here")
+    user_id = request.cookies.get("fitd_session_data")
+    print(user_id)
     basket_items = db.query(BasketItem).filter(BasketItem.user_id == user_id).all()
     if not basket_items:
         raise HTTPException(status_code=400, detail="Basket is empty")
 
-    created_tasks = []
+    created_orders = []
+    print("you are hitting")
+    print(user_id)
+    # for item in basket_items:
+    #     task = Order(
+    #         task_id=str(uuid.uuid4()),
+    #         user_id=user_id,
+    #         task_name=item.name,
+    #         complete=False,
+    #         created_at=datetime.utcnow().isoformat(),
+    #         quantity=item.quantity
+    #     )
+    #     db.add(task)
+    #     created_tasks.append(task)
 
-    for item in basket_items:
-        task = Order(
-            task_id=str(uuid.uuid4()),
-            user_id=user_id,
-            task_name=item.name,
-            complete=False,
-            created_at=datetime.utcnow().isoformat(),
-            quantity=item.quantity
-        )
-        db.add(task)
-        created_tasks.append(task)
-
-    db.query(BasketItem).filter(BasketItem.user_id == user_id).delete()
-    db.commit()
-
-    return {"message": f"{len(created_tasks)} tasks created", "task_ids": [t.task_id for t in created_tasks]}
+    # db.query(BasketItem).filter(BasketItem.user_id == user_id).delete()
+    # db.commit()
+    print("we got all the way down here yo")
+    return {"message": f"{len(created_orders)} orders created", "task_ids": [o.order_id for o in created_orders]}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

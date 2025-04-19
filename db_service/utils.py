@@ -151,10 +151,12 @@ def add_or_update_basket_item_in_db(
 
 async def cookie_verification(request: Request):
     session_id = request.cookies.get("fitd_session_data")
+    print(session_id)
     if not session_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     session_data = await session_exists(session_id)
+    print(session_data)
     if not session_data:
         raise HTTPException(status_code=401, detail="No Session Found")
 

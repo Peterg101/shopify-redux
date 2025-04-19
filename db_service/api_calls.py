@@ -8,6 +8,7 @@ async def session_exists(session_id: str) -> bool:
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(url, cookies=cookies)
+            print(response.text)
             return response.status_code == 200
         except httpx.HTTPError as e:
             print(f"HTTP error occurred: {e}")

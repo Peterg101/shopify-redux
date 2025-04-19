@@ -30,10 +30,12 @@ import {
 
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
-import { useUpdateBasketQuantityMutation } from "../../services/basketItemApi";
+import { useGenerateTasksFromBasketMutation, useUpdateBasketQuantityMutation } from "../../services/basketItemApi";
 import DeleteFromBasket from "./deleteFromBasket";
 import EditBasketItem from "./editBasketItem";
 import { BasketInformation } from "../../app/utility/interfaces";
+import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
+import { Root } from "react-dom/client";
 
 // Empty state
 export const EmptyBasket = () => (
@@ -214,10 +216,19 @@ const BasketTotal = () => {
 
 // Sticky summary card
 export const BasketSummary = () => {
+  const user_id = useSelector((state:RootState) => state.userInterfaceState.userInformation.user.user_id)
   const basketItems = useSelector((state: RootState) => state.userInterfaceState.userInformation?.basket_items || []);
   const subtotal = useSelector((state: RootState) => state.userInterfaceState.totalBasketValue)
   const shippingEstimate = subtotal > 0 ? 4.99 : 0;
   const total = subtotal + shippingEstimate;
+  const [generateTasksFromBasket] = useGenerateTasksFromBasketMutation()
+  const dispatch = useDispatch()
+  const clickProceedToBasket = () => {
+    console.log("really clicking here fr fr")
+    dispatch(setLeftDrawerClosed())
+    generateTasksFromBasket()
+    console.log("Left closed")
+  }
 
   return (
     <Card
@@ -257,6 +268,7 @@ export const BasketSummary = () => {
       </Box>
 
       <Button
+        onClick={clickProceedToBasket}
         variant="contained"
         size="large"
         startIcon={<ShoppingCartCheckout />}
@@ -268,7 +280,9 @@ export const BasketSummary = () => {
           py: 1.5,
           fontWeight: 600,
           fontSize: "1rem",
-        }}
+        }
+        
+      }
       >
         Proceed to Checkout
       </Button>

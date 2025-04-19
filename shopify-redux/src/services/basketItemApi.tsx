@@ -41,7 +41,24 @@ export const basketApi = createApi({
       // This triggers refetching of the session data to get the updated basket info
       invalidatesTags: ['sessionData'],
     }),
+    generateTasksFromBasket: builder.mutation<{ message: string; task_ids: string[] }, void>({
+    query: () => ({
+      url: `/tasks/from_basket`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }),
+    invalidatesTags: ['sessionData'],
+}),
+
+
+
+
   }),
 });
 
-export const { useUpdateBasketQuantityMutation } = basketApi;
+export const { 
+  useUpdateBasketQuantityMutation,
+  useGenerateTasksFromBasketMutation 
+} = basketApi;
