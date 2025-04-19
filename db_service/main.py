@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends, Cookie, Header, Request
 from sqlalchemy.orm import Session, joinedload
 from fastapi.middleware.cors import CORSMiddleware
-from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, TaskOrder
+from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, Order
 from datetime import datetime
 import uuid
 from db_setup import engine, get_db
@@ -272,7 +272,7 @@ async def generate_tasks_from_basket_items(
     created_tasks = []
 
     for item in basket_items:
-        task = TaskOrder(
+        task = Order(
             task_id=str(uuid.uuid4()),
             user_id=user_id,
             task_name=item.name,
