@@ -35,7 +35,6 @@ import DeleteFromBasket from "./deleteFromBasket";
 import EditBasketItem from "./editBasketItem";
 import { BasketInformation } from "../../app/utility/interfaces";
 import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
-import { Root } from "react-dom/client";
 
 // Empty state
 export const EmptyBasket = () => (

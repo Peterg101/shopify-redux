@@ -16,6 +16,8 @@ import { SidebarItem } from "../../app/utility/interfaces";
 import { LeftDrawerList } from "./leftDrawerFragments";
 import { ProfilePage } from "./profilePage";
 import { FloatingCostSummary } from "../display/floatingCostSummary";
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import { EmptyOrderHistory, OrderHistory } from "./orderHIistoryFragments";
 
 // Color oscillation style
 const colorOscillationStyle = (theme: any) => ({
@@ -105,6 +107,18 @@ export const UpdatedUserInterface = () => {
         </Badge>
       ),
     },
+    {
+      text: "Order History",
+      icon: (
+        <Badge
+          // badgeContent={userInterfaceState.userInformation?.orders.length}
+          color="secondary"
+          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+        >
+          <LocalShippingIcon sx={{ fontSize: 40, marginTop: 1 }} />
+        </Badge>
+      ),
+    },
     ...(dataState.displayObjectConfig
       ? [
           {
@@ -134,6 +148,16 @@ export const UpdatedUserInterface = () => {
           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <List component="nav" sx={{ flexGrow: 1 }}>
               {userInterfaceState.userInformation?.basket_items.length === 0 ? <EmptyBasket /> : <Basket />}
+              <Divider sx={{ my: 1 }} />
+            </List>
+            <Box sx={{ marginTop: 'auto', padding: 2 }} />
+          </Box>
+        );
+        case "Order History":
+        return (
+          <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <List component="nav" sx={{ flexGrow: 1 }}>
+              {userInterfaceState.userInformation?.basket_items.length === 0 ? <EmptyOrderHistory /> : <OrderHistory />}
               <Divider sx={{ my: 1 }} />
             </List>
             <Box sx={{ marginTop: 'auto', padding: 2 }} />
