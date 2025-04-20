@@ -32,7 +32,7 @@ export interface UserInterfaceState {
     meshyPending: boolean,
     meshyQueueItems: number,
     isLoggedIn: boolean,
-    userInformation: UserAndTasksAndBasketAndIncomplete | null,
+    userInformation: UserAndTasksAndBasketAndIncompleteAndOrders | null,
     totalBasketValue: number
     
 
@@ -121,11 +121,30 @@ export interface BasketInformationAndFile extends BasketInformation {
   file_blob: string// Matching FastAPI model
 }
 
-export interface UserAndTasksAndBasketAndIncomplete{
+export interface Order {
+  order_id: string;
+  user_id: string;
+  task_id?: string; // Optional Meshy task
+  name: string;
+  material: string;
+  technique: string;
+  sizing: number;
+  colour: string;
+  selectedFile: string;
+  selectedFileType: string;
+  price: number;
+  quantity: number;
+  created_at: string;
+  is_collaborative: boolean;
+  status: string; // Consider using a union type for stricter typing e.g., "open" | "in_progress" | "fulfilled"
+}
+
+export interface UserAndTasksAndBasketAndIncompleteAndOrders{
   user: UserInformation
   tasks: TaskInformation[]
   basket_items: BasketInformation[],
-  incomplete_task: TaskInformationAndPortId
+  incomplete_task: TaskInformationAndPortId,
+  orders: Order[]
 }
 
 export interface FileResponse {

@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, Mapped, mapped_column
+from typing import Optional
 
 
 Base = declarative_base()
@@ -61,9 +62,10 @@ class PortID(Base):
 
 class Order(Base):
     __tablename__ = "orders"
+
     order_id: Mapped[str] = mapped_column(primary_key=True)
     user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"))
-    task_id: Mapped[str] = mapped_column(ForeignKey("tasks.task_id"))  # Meshy task
+    task_id: Mapped[Optional[str]] = mapped_column(ForeignKey("tasks.task_id"), nullable=True)  # Optional Meshy task
     name: Mapped[str] = mapped_column()
     material: Mapped[str] = mapped_column()
     technique: Mapped[str] = mapped_column()
@@ -75,8 +77,7 @@ class Order(Base):
     quantity: Mapped[int] = mapped_column()
     created_at: Mapped[str] = mapped_column(default=datetime.utcnow().isoformat())
     is_collaborative: Mapped[bool] = mapped_column(default=False)
-    status: Mapped[str] = mapped_column(default="open")  # open, in_progress, fulfilled, etc.
+    status: Mapped[str] = mapped_column(default="open")
 
-    # Relationships
     user = relationship("User", backref="orders")
     task = relationship("Task", backref="order")

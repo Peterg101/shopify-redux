@@ -103,13 +103,12 @@ async def get_user(
         .options(joinedload(Task.port))  # Preload the PortID relationship
         .first()
     )
+    orders = db.query(Order).filter(Order.user_id == user_id).all()
     # Step 3: If user not found, raise an exception
     if not user:
         print("user not found")
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Optional: If you want to fetch tasks or other related data, you can do that here.
-    # tasks = db.query(Task).filter(Task.user_id == user.id).all()
 
     # Step 4: Return the user data (you can return the user with additional info like tasks if needed)
     return {
@@ -117,6 +116,7 @@ async def get_user(
         "tasks": tasks,
         "basket_items": basket_items,
         "incomplete_task": incomplete_task,
+        "orders": orders
     }  # If you fetched tasks, include that in the return value as well
 
 
@@ -278,25 +278,35 @@ async def generate_tasks_from_basket_items(
     db: Session = Depends(get_db),
     user_info: None = Depends(cookie_verification_user_only),
 ):
+    user_id = user_info.user_id
     basket_items = db.query(BasketItem).filter(BasketItem.user_id == user_info.user_id).all()
     if not basket_items:
         raise HTTPException(status_code=400, detail="Basket is empty")
 
     created_orders = []
-    # for item in basket_items:
-    #     task = Order(
-    #         task_id=str(uuid.uuid4()),
-    #         user_id=user_id,
-    #         task_name=item.name,
-    #         complete=False,
-    #         created_at=datetime.utcnow().isoformat(),
-    #         quantity=item.quantity
-    #     )
-    #     db.add(task)
-    #     created_tasks.append(task)
+    for item in basket_items:
+        order = Order(
+            order_id=str(uuid.uuid4()),
+            user_id=user_id,
+            task_id=item.task_id,
+            name=item.name,
+            material=item.material,
+            technique=item.technique,
+            sizing=item.sizing,
+            colour=item.colour,
+            selectedFile=item.selectedFile,
+            selectedFileType=item.selectedFileType,
+            price=item.price,
+            quantity=item.quantity,
+            created_at=datetime.utcnow().isoformat(),
+            is_collaborative=False,
+            status="open"
+        )
+        db.add(order)
+        created_orders.append(order)
 
     # db.query(BasketItem).filter(BasketItem.user_id == user_id).delete()
-    # db.commit()
+    db.commit()
     return {"message": f"{len(created_orders)} orders created", "task_ids": [o.order_id for o in created_orders]}
 
 if __name__ == "__main__":
