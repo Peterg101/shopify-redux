@@ -305,7 +305,7 @@ async def generate_tasks_from_basket_items(
         db.add(order)
         created_orders.append(order)
 
-    # db.query(BasketItem).filter(BasketItem.user_id == user_id).delete()
+    db.query(BasketItem).filter(BasketItem.user_id == user_id).delete()
     db.commit()
     return {"message": f"{len(created_orders)} orders created", "task_ids": [o.order_id for o in created_orders]}
 
