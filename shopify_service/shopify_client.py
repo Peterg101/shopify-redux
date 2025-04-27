@@ -3,10 +3,10 @@ import os
 import hmac, hashlib, base64
 
 
-SHOPIFY_STORE_URL = os.getenv("SHOPIFY_STORE_URL")  # e.g., https://your-store.myshopify.com
+SHOPIFY_STORE_URL = os.getenv("SHOPIFY_STORE_URL")
 SHOPIFY_API_KEY = os.getenv("SHOPIFY_API_KEY")
 SHOPIFY_API_SECRET = os.getenv("SHOPIFY_API_SECRET")
-SHOPIFY_ACCESS_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN")  # Private app or custom app
+SHOPIFY_ACCESS_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN") 
 
 class ShopifyClient:
     def __init__(self):

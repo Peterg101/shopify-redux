@@ -45,7 +45,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:1234"],
+    allow_origins=["http://localhost:3000", "http://localhost:1234", "http://localhost:369"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
