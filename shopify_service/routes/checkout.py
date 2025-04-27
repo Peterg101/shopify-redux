@@ -2,34 +2,26 @@ from fastapi import APIRouter, Request, Depends
 from shopify_client import ShopifyClient
 from utils import (
     cookie_verification,
+    cookie_verification_user_only,
+    convert_basket_items_to_orders
 )
+from api_calls import get_all_basket_items
 
 router = APIRouter(prefix="/checkout", tags=["checkout"])
-
 shopify = ShopifyClient()
-
 
 @router.post("/")
 async def create_checkout(
     request: Request,
-    _: None = Depends(cookie_verification)
-
+    user_info: None = Depends(cookie_verification_user_only)
 ):
-    
-    # You would validate and clean up `order_details` first
-    # Build the Shopify checkout payload
-    # payload = {
-    #     "line_items": [
-    #         {
-    #             "title": order_details["name"],
-    #             "price": order_details["price"],
-    #             "quantity": order_details["quantity"],
-    #         }
-    #     ],
-    #     "email": order_details.get("email"),
-    #     "shipping_address": order_details.get("shipping_address"),
-    # }
-    
-    # checkout_data = await shopify.create_checkout(payload)
-    # return {"checkout_url": checkout_data["checkout"]["web_url"]}
-    return {"checkout_url"}
+    basket_items = await get_all_basket_items(user_info.user_id)
+    line_items = convert_basket_items_to_orders(basket_items)
+    checkout_payload = {
+        "line_items": line_items,
+        "email": user_info.email  
+    }
+    checkout_response = await shopify.create_checkout(checkout_payload)
+    return {
+        "checkout_url": checkout_response["checkout"]["web_url"]
+    }

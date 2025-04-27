@@ -272,6 +272,18 @@ async def delete_basket_item(
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 
+@app.get("/all_basket_items")
+async def get_all_basket_items(
+    user_id: str,
+    db: Session = Depends(get_db),
+    authorization: str = Depends(verify_jwt_token),
+):
+    basket_items = db.query(BasketItem).filter(BasketItem.user_id == user_id).all()
+    if not basket_items:
+        raise HTTPException(status_code=400, detail="Basket is empty")
+
+    
+
 @app.post("/tasks/from_basket")
 async def generate_tasks_from_basket_items(
     request: Request,

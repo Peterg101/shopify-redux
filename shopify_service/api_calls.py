@@ -1,6 +1,7 @@
 import httpx
-from typing import Optional
-from fitd_schemas.fitd_classes import UserInformation
+from typing import Optional, List
+from fitd_schemas.fitd_classes import UserInformation, BasketItem
+from jwt_auth import generate_token
 
 
 async def session_exists(session_id: str) -> bool:
@@ -33,3 +34,22 @@ async def session_exists_user_only(session_id: str) -> Optional[UserInformation]
         except httpx.HTTPError as e:
             print(f"HTTP error occurred: {e}")
             return None
+
+
+async def get_all_basket_items(user_id: str) -> List[BasketItem]:
+    auth_token = generate_token("shopify_service")
+    url = "http://localhost:8000/all_basket_items"
+    headers = {
+        "Authorization": f"Bearer {auth_token}",
+    }
+    params = {"user_id": user_id}
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers, params=params)
+
+    if response.status_code == 200:
+        basket_items = [BasketItem(**item) for item in response.json()]
+        return basket_items
+    else:
+        print(f"Error: {response.status_code} - {response.text}")
+        return []
