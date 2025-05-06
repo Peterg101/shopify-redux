@@ -1,6 +1,7 @@
 import httpx
 from typing import Optional, List
-from fitd_schemas.fitd_classes import UserInformation, BasketItem
+from fitd_schemas.fitd_classes import UserInformation
+from fitd_schemas.fitd_db_schemas import BasketItem
 from jwt_auth import generate_token
 
 

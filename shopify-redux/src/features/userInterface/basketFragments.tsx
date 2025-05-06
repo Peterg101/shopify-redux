@@ -35,6 +35,7 @@ import DeleteFromBasket from "./deleteFromBasket";
 import EditBasketItem from "./editBasketItem";
 import { BasketInformation } from "../../app/utility/interfaces";
 import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
+import { createShopifyCheckoutAndRedirect } from "../../services/fetchFileUtils";
 
 // Empty state
 export const EmptyBasket = () => (
@@ -225,7 +226,8 @@ export const BasketSummary = () => {
   const clickProceedToBasket = () => {
     console.log("really clicking here fr fr")
     dispatch(setLeftDrawerClosed())
-    generateTasksFromBasket()
+    createShopifyCheckoutAndRedirect()
+    // generateTasksFromBasket()
     console.log("Left closed")
   }
 

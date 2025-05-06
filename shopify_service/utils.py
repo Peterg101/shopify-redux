@@ -1,5 +1,6 @@
 from fastapi import Request, HTTPException
-from fitd_schemas.fitd_classes import UserInformation, BasketItem, Order
+from fitd_schemas.fitd_classes import UserInformation
+from fitd_schemas.fitd_db_schemas import BasketItem
 from typing import List
 from api_calls import session_exists, session_exists_user_only
 from datetime import datetime
@@ -30,26 +31,22 @@ async def cookie_verification_user_only(request: Request) -> UserInformation:
     return session_data
 
 
-def convert_basket_items_to_orders(basket_items: List[BasketItem]) -> List[Order]:
-    created_orders = []
+def convert_basket_items_to_line_items(basket_items: List[BasketItem]) -> List[dict]:
+    line_items = []
     for item in basket_items:
-        order = Order(
-            order_id=str(uuid.uuid4()),
-            user_id=user_id,
-            task_id=item.task_id,
-            name=item.name,
-            material=item.material,
-            technique=item.technique,
-            sizing=item.sizing,
-            colour=item.colour,
-            selectedFile=item.selectedFile,
-            selectedFileType=item.selectedFileType,
-            price=item.price,
-            quantity=item.quantity,
-            created_at=datetime.utcnow().isoformat(),
-            is_collaborative=False,
-            status="open"
-        )
-        created_orders.append(order)
-    return created_orders
+        line_item = {
+            "title": item.name,
+            "price": f"{item.price:.2f}",
+            "quantity": item.quantity,
+            "properties": {
+                "Material": item.material,
+                "Technique": item.technique,
+                "Sizing": item.sizing,
+                "Colour": item.colour,
+                "File Type": item.selectedFileType,
+                "File Name": item.selectedFile
+            }
+        }
+        line_items.append(line_item)
+    return line_items
     

@@ -1,9 +1,17 @@
 from fastapi import FastAPI
 from shopify_client import ShopifyClient
+from fastapi.middleware.cors import CORSMiddleware
 from routes import checkout, webhook
 import uvicorn
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Register routes
 app.include_router(checkout.router)
