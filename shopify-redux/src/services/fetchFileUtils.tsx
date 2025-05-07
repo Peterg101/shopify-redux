@@ -48,7 +48,6 @@ export const postFile = async (basketInformationAndFile: BasketInformationAndFil
       },
       body: JSON.stringify(basketInformationAndFile),
     });
-    console.log(basketInformationAndFile.price)
     if (!response.ok) {
       throw new Error(`Failed to post file ${basketInformationAndFile.name}: ${response.statusText}`);
     }
@@ -153,7 +152,6 @@ export const updateBasketQuantity = async (basketQuantityUpdate: BasketQuantityU
 
 export async function createShopifyCheckoutAndRedirect() {
   try {
-    console.log("hitting this function here")
     const response = await fetch("http://localhost:369/checkout", {
       method: "POST",
       credentials: "include", // important if you're using cookies for auth
@@ -170,7 +168,6 @@ export async function createShopifyCheckoutAndRedirect() {
 
     const data = await response.json();
     const checkoutUrl = data.checkout_url;
-    console.log(checkoutUrl)
     window.location.href = checkoutUrl;
 
   } catch (error) {

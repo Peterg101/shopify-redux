@@ -64,7 +64,6 @@ export const dataSlice = createSlice({
         },
         setMultiplierValue: (state, action: PayloadAction<{multiplierValue: number}>) => {
             const {multiplierValue} = action.payload
-            console.log(multiplierValue)
             state.multiplierValue = multiplierValue
         },
         setMaxScale: (state, action: PayloadAction<{maxScale: number}>) => {
@@ -134,9 +133,6 @@ export const dataSlice = createSlice({
             }>
         ) => {
             const {basketItem, fileInformation} = action.payload
-            console.log(basketItem)
-            console.log(basketItem.selectedFileType)
-            console.log(basketItem.sizing)
             state.taskId = basketItem.task_id
             state.fileNameBoxValue = basketItem.name
             state.printMaterial = basketItem.material
@@ -175,7 +171,6 @@ export const dataSlice = createSlice({
         setTotalCost: (state, action: PayloadAction<{totalCost: number}>) => {
             const {totalCost} = action.payload
             state.totalCost = totalCost
-            console.log(state.totalCost)
         }
 
 

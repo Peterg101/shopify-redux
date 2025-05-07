@@ -43,7 +43,6 @@ const handleAddToBasket = async () => {
     const itemUUID = generateUuid();
     if (actualFile) {
       const base64String = await convertFileToBase64WithoutFileReader(actualFile);
-      console.log(dataState.totalCost)
       
       const basketInformationAndFile: BasketInformationAndFile = {
         user_id: userState.userInformation?.user.user_id,
@@ -59,7 +58,6 @@ const handleAddToBasket = async () => {
         file_blob: base64String,
         price: dataState.totalCost,
       };
-      console.log(dataState.totalCost)
       await postFile(basketInformationAndFile);
       dispatch(resetDataState());
       dispatch(authApi.util.invalidateTags([{ type: "sessionData" }]));

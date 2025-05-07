@@ -13,13 +13,9 @@ export const createWebsocketConnection = (
   const ws = new WebSocket(`ws://localhost:1234/ws/${portId}`);
 
   ws.onmessage = async (event) => {
-    console.log(event)
     if (event.data) {
-      console.log(event.data)
       const parts = event.data.split(",");
-      console.log(parts)
       if (parts.length === 3) {
-        console.log("inside")
         const percentageComplete = parseInt(parts[0], 10); // Convert to a number
         const taskId = parts[1];                          // Task ID as a string
         const fileName = parts[2];  

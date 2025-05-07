@@ -97,7 +97,6 @@ export const userInterfaceSlice = createSlice({
             authApi.endpoints.getSession.matchFulfilled, 
             (state, { payload }) => {
               state.isLoggedIn = true;
-              console.log(payload)
               state.userInformation = payload
             }
           )

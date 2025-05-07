@@ -44,7 +44,6 @@ const OBJScene = () => {
                     if (child instanceof THREE.Mesh) {
                         child.geometry.dispose()
                         setMeasuredObj(child)
-                        console.log(dataState.multiplierValue)
                         const measuredSize = calculateSize(child)
                         const maximumScale = calculateMaxScaling(measuredSize)
                         const minimumScale = calculateMinScaling(measuredSize)

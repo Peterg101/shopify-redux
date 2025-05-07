@@ -9,7 +9,6 @@ export const useSyncTotalCost = () => {
   const { modelVolume, materialCost, multiplierValue, totalCost } = useSelector((state: RootState) => state.dataState);
 
   useEffect(() => {
-    console.log("Recalculating cost!!!!")
     const newTotal = recalculateTotalCost({ modelVolume, materialCost, multiplierValue })
     dispatch(setTotalCost({ totalCost: newTotal }));
   }, [modelVolume, materialCost, multiplierValue, totalCost, dispatch]);

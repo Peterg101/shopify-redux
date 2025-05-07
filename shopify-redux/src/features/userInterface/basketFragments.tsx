@@ -224,11 +224,8 @@ export const BasketSummary = () => {
   const [generateTasksFromBasket] = useGenerateTasksFromBasketMutation()
   const dispatch = useDispatch()
   const clickProceedToBasket = () => {
-    console.log("really clicking here fr fr")
     dispatch(setLeftDrawerClosed())
     createShopifyCheckoutAndRedirect()
-    // generateTasksFromBasket()
-    console.log("Left closed")
   }
 
   return (

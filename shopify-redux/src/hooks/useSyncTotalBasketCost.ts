@@ -14,7 +14,6 @@ export const useSyncTotalBasketCost = () => {
   const basketItems = sessionData?.basket_items || [];
     
   useEffect(() => {
-    console.log("Recalculating total basket cost!!!");
     const basketTotal = calculateTotalBasketValue(basketItems);
     dispatch(setTotalBasketCost({ totalBasketCost: basketTotal }));
   }, [basketItems, dispatch]);

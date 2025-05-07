@@ -54,12 +54,8 @@ export const JpgViewer = () => {
     };
 
     const generate3DModelFromImage = async () => {
-      console.log("Generating 3D Model")
-      console.log(image)
       setCropData("")
-      console.log(dataState.selectedFile)
       const portId = generateUUID()
-      console.log(dataState.fileNameBoxValue)
       dispatch(setMeshyPending({meshyPending: true}))
       await startImageTo3DTask(
         actualFile, 
