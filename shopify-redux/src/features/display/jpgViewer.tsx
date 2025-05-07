@@ -58,6 +58,7 @@ export const JpgViewer = () => {
       setCropData("")
       console.log(dataState.selectedFile)
       const portId = generateUUID()
+      userInterfaceState
       await startImageTo3DTask(actualFile, userInterfaceState.userInformation?.user.user_id, portId)
       setImage("")
       dispatch(setClearFileDisplay())

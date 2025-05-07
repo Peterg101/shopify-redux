@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, validator
 from typing import Optional, List, Union
 from datetime import datetime
 from dataclasses import dataclass
@@ -136,6 +136,7 @@ class ImageTo3DTaskRequest(BaseModel):
     port_id: str
     user_id: str
     meshy_image_to_3d_payload: MeshyImageTo3DPayload
+    filename: str
 
 
 class Image3DModelUrls(BaseModel):
@@ -145,28 +146,44 @@ class Image3DModelUrls(BaseModel):
     usdz: Optional[HttpUrl] = Field(default=None)
 
 
-class TextureUrls(BaseModel):
-    base_color: Optional[HttpUrl]
-    metallic: Optional[HttpUrl]
-    normal: Optional[HttpUrl]
-    roughness: Optional[HttpUrl]
+# class TextureUrls(BaseModel):
+#     base_color: Optional[HttpUrl]
+#     metallic: Optional[HttpUrl]
+#     normal: Optional[HttpUrl]
+#     roughness: Optional[HttpUrl]
 
 
 class TaskError(BaseModel):
     message: str
+    code: Optional[str] = None
+
+
+class TextureUrls(BaseModel):
+    url: Optional[str] = None  # Use str if sometimes not a valid URL
+
+
+class Image3DModelUrls(BaseModel):
+    glb: Optional[str] = None  # Accepts empty string or None
+
+    @validator("glb", pre=True)
+    def empty_str_to_none(cls, v):
+        return v or None
 
 
 class ImageTo3DMeshyTaskStatusResponse(BaseModel):
     id: str
     model_urls: Optional[Image3DModelUrls] = None
-    thumbnail_url: Optional[HttpUrl] = None
+    thumbnail_url: Optional[str] = None  # Use str to allow empty string
     progress: int
     started_at: int
     created_at: int
     expires_at: int
     finished_at: int
     status: str
-    texture_urls: List[TextureUrls] = []
+    texture_urls: Optional[List[TextureUrls]] = None
     preceding_tasks: Optional[int] = None
     task_error: Optional[TaskError] = None
 
+    @validator("thumbnail_url", pre=True)
+    def empty_str_to_none(cls, v):
+        return v or None

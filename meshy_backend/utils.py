@@ -75,11 +75,15 @@ async def generate_image_to_3d_task_and_check_for_response_decoupled_ws(
     try:
         task_generated = False
         task_posted = False
+        print("inside this function")
         generated_task = generate_image_to_3d_task(request.meshy_image_to_3d_payload)
+        print(generated_task)
         while task_generated is False:
             await asyncio.sleep(1)
             meshy_task_status = MeshyTaskStatus(task_id=generated_task.result)
+            print(meshy_task_status)
             generated_task_status = await get_image_to_3d_task_status(meshy_task_status)
+            print(generated_task_status)
             if not task_posted:
                 # await post_task_to_db(
                 # generated_task_status,

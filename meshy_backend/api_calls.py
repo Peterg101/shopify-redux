@@ -76,7 +76,7 @@ async def get_image_to_3d_task_status(
         headers=headers,
     )
     response.raise_for_status()
-
+    print(response.json())
     result = ImageTo3DMeshyTaskStatusResponse(**response.json())
     return result
 
