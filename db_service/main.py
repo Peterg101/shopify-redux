@@ -59,7 +59,6 @@ def create_user(
     db: Session = Depends(get_db),
     authorization: str = Depends(verify_jwt_token),
 ):
-    print("this route")
     # Check if the user already exists
     user_exists = check_user_existence(db, user_information.email)
 
@@ -94,7 +93,6 @@ async def get_user(
     authorization: str = Depends(verify_jwt_token),
 ):
 
-    # Step 2: Query the database to get the user by user_id
     user = db.query(User).filter(User.user_id == user_id).first()
     tasks = db.query(Task).filter(Task.user_id == user_id).all()
     basket_items = db.query(BasketItem).filter(BasketItem.user_id == user_id).all()
@@ -105,20 +103,16 @@ async def get_user(
         .first()
     )
     orders = db.query(Order).filter(Order.user_id == user_id).all()
-    # Step 3: If user not found, raise an exception
     if not user:
-        print("user not found")
         raise HTTPException(status_code=404, detail="User not found")
 
-
-    # Step 4: Return the user data (you can return the user with additional info like tasks if needed)
     return {
         "user": user,
         "tasks": tasks,
         "basket_items": basket_items,
         "incomplete_task": incomplete_task,
         "orders": orders
-    }  # If you fetched tasks, include that in the return value as well
+    }  
 
 
 # Get User
@@ -130,7 +124,6 @@ async def get_only_user(
 ):
     user = db.query(User).filter(User.user_id == user_id).first()
     if not user:
-        print("user not found")
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
@@ -226,7 +219,6 @@ async def post_basket_item_to_storage(
     db: Session = Depends(get_db),
     _: None = Depends(cookie_verification),
 ):
-    print(basket_item.price)
     # Check if the user exists in the database
     user_exists = check_user_existence(db, basket_item.user_id)
     if not user_exists:

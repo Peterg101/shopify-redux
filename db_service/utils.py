@@ -86,13 +86,11 @@ def add_or_update_basket_item_in_db(
     db: Session, basket_item_info: BasketItemInformation
 ) -> BasketItem:
     # Check if the item already exists in the database
-    print(basket_item_info.price)
     existing_item = (
         db.query(BasketItem)
         .filter(BasketItem.task_id == basket_item_info.task_id)
         .first()
     )
-    print(existing_item)
     if existing_item:
         # Check if any fields have changed
         has_changed = any(
@@ -141,7 +139,6 @@ def add_or_update_basket_item_in_db(
         price=basket_item_info.price,
         quantity=basket_item_info.quantity
     )
-    print(new_item)
     db.add(new_item)
     db.commit()
     db.refresh(new_item)
@@ -151,12 +148,10 @@ def add_or_update_basket_item_in_db(
 
 async def cookie_verification(request: Request):
     session_id = request.cookies.get("fitd_session_data")
-    print(session_id)
     if not session_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     session_data = await session_exists(session_id)
-    print(session_data)
     if not session_data:
         raise HTTPException(status_code=401, detail="No Session Found")
 
