@@ -58,11 +58,16 @@ export const JpgViewer = () => {
       setCropData("")
       console.log(dataState.selectedFile)
       const portId = generateUUID()
-      userInterfaceState
-      await startImageTo3DTask(actualFile, userInterfaceState.userInformation?.user.user_id, portId)
+      console.log(dataState.fileNameBoxValue)
+      await startImageTo3DTask(
+        actualFile, 
+        userInterfaceState.userInformation?.user.user_id, 
+        portId, 
+        dataState.fileNameBoxValue
+      )
       setImage("")
       dispatch(setClearFileDisplay())
-      // dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
+      dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
       // dispatch(setMeshyPending({meshyPending: true}))
 
       // dispatch(setMeshyLoadedPercentage({meshyLoadedPercentage: 1}));

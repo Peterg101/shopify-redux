@@ -27,6 +27,7 @@ from fitd_schemas.fitd_classes import(
     MeshyTaskStatusResponse,
     BasketItemInformation,
     BasketQuantityUpdate,
+    ImageTo3DMeshyTaskStatusResponse
 )
 import uvicorn
 from typing import Optional, Dict
@@ -137,6 +138,30 @@ async def get_only_user(
 @app.post("/file_upload")
 async def receive_meshy_task(
     response: MeshyTaskStatusResponse,
+    payload: dict = Depends(verify_jwt_token),
+    db: Session = Depends(get_db),
+):
+    if response.obj_file_blob:
+        # Decode the Base64 blob
+        file_data = base64.b64decode(response.obj_file_blob)
+        file_path = UPLOAD_DIR / f"{response.id}.obj"
+
+        # Save the decoded file
+        with open(file_path, "wb") as file:
+            file.write(file_data)
+        mark_meshy_task_complete(db, response.id)
+        delete_port_id(db, response.id)
+        return {
+            "message": "File saved successfully.",
+            "file_name": str(file_path),
+            "user": payload,
+        }
+    return {"message": "No OBJ file blob provided."}
+
+
+@app.post("/file_upload_from_image")
+async def receive_meshy_task_from_image_generator(
+    response: ImageTo3DMeshyTaskStatusResponse,
     payload: dict = Depends(verify_jwt_token),
     db: Session = Depends(get_db),
 ):

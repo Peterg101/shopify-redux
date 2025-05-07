@@ -138,14 +138,6 @@ class ImageTo3DTaskRequest(BaseModel):
     meshy_image_to_3d_payload: MeshyImageTo3DPayload
     filename: str
 
-
-class Image3DModelUrls(BaseModel):
-    glb: Optional[HttpUrl] = Field(default=None)
-    fbx: Optional[HttpUrl] = Field(default=None)
-    obj: Optional[HttpUrl] = Field(default=None)
-    usdz: Optional[HttpUrl] = Field(default=None)
-
-
 # class TextureUrls(BaseModel):
 #     base_color: Optional[HttpUrl]
 #     metallic: Optional[HttpUrl]
@@ -164,6 +156,9 @@ class TextureUrls(BaseModel):
 
 class Image3DModelUrls(BaseModel):
     glb: Optional[str] = None  # Accepts empty string or None
+    fbx: Optional[str] = None
+    obj: Optional[str] = None
+    usdz: Optional[str] = None
 
     @validator("glb", pre=True)
     def empty_str_to_none(cls, v):
@@ -183,6 +178,7 @@ class ImageTo3DMeshyTaskStatusResponse(BaseModel):
     texture_urls: Optional[List[TextureUrls]] = None
     preceding_tasks: Optional[int] = None
     task_error: Optional[TaskError] = None
+    obj_file_blob: Optional[str] = None
 
     @validator("thumbnail_url", pre=True)
     def empty_str_to_none(cls, v):

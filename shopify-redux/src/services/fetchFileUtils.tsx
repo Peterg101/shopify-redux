@@ -104,7 +104,7 @@ export const startTask = async (prompt: string, userId: string, portId: string) 
   const data = await response.json();
 };
 
-export const startImageTo3DTask = async (image_file: File, userId: string, portId: string) => {
+export const startImageTo3DTask = async (image_file: File, userId: string, portId: string, fileName: string) => {
   const image_bytes = await convertFileToDataURI(image_file)
   const payload: MeshyImageTo3DPayload = {
     image_url: image_bytes,
@@ -120,7 +120,7 @@ export const startImageTo3DTask = async (image_file: File, userId: string, portI
       'Content-Type': 'application/json', // Specify that you're sending JSON data
 
     },
-    body: JSON.stringify({ port_id: portId, user_id: userId, meshy_image_to_3d_payload: payload }),
+    body: JSON.stringify({ port_id: portId, user_id: userId, meshy_image_to_3d_payload: payload, filename: fileName}),
   });
 
   const data = await response.json();

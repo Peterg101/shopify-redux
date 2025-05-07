@@ -80,16 +80,20 @@ async def generate_image_to_3d_task_and_check_for_response_decoupled_ws(
         print(generated_task)
         while task_generated is False:
             await asyncio.sleep(1)
+            print("******")
+            print(request.filename)
+            print("******")
             meshy_task_status = MeshyTaskStatus(task_id=generated_task.result)
             print(meshy_task_status)
             generated_task_status = await get_image_to_3d_task_status(meshy_task_status)
             print(generated_task_status)
             if not task_posted:
-                # await post_task_to_db(
-                # generated_task_status,
-                # request.user_id,
-                # request.port_id
-                # )
+                await post_image_task_to_db(
+                    generated_task_status,
+                    request.user_id,
+                    request.port_id,
+                    request.filename
+                )
                 task_posted = True
 
             percentage_complete = generated_task_status.progress
@@ -97,13 +101,11 @@ async def generate_image_to_3d_task_and_check_for_response_decoupled_ws(
             await redis.publish(f"task_progress:{request.port_id}", progress)
             if percentage_complete == 100:
                 task_generated = True
-                # complete_response = await add_file_response(
-                # generated_task_status
-                # )
-                # await send_file_to_storage(complete_response)
+                complete_response = await add_file_response(
+                    generated_task_status
+                )
+                await send_obj_from_image_to_file_to_storage(complete_response)
 
-        # await websocket.send_text(generated_task_status.json(indent=2))
-        # await send_file_to_storage(generated_task_status)
         return generated_task_status
 
     except Exception as e:
@@ -145,7 +147,9 @@ async def add_file_response(
         if response.model_urls and response.model_urls.obj:
             # Retrieve the blob
             obj_file_blob = get_obj_file_blob(response.model_urls.obj)
-
+            print("******************")
+            print(obj_file_blob)
+            print("******************")
             # Encode the blob in Base64
             obj_file_base64 = base64.b64encode(obj_file_blob.getvalue()).decode("utf-8")
 
@@ -163,7 +167,25 @@ async def post_task_to_db(
     response: MeshyTaskStatusResponse, user_id: str, port_id: str
 ):
     task_info = TaskInformation(
-        user_id=user_id, task_id=response.id, task_name=response.prompt, port_id=port_id
+        user_id=user_id,
+        task_id=response.id, 
+        task_name=response.prompt,
+        port_id=port_id
+    )
+    await create_task(task_info)
+
+
+async def post_image_task_to_db(
+    response: MeshyTaskStatusResponse, 
+    user_id: str, 
+    port_id: str, 
+    filename: str
+):
+    task_info = TaskInformation(
+        user_id=user_id, 
+        task_id=response.id, 
+        task_name=filename, 
+        port_id=port_id
     )
     await create_task(task_info)
 
@@ -178,6 +200,21 @@ async def send_file_to_storage(
     complete_meshy_response: MeshyTaskStatusResponse,
 ):
     server_url = "http://localhost:8000/file_upload"
+    auth_token = generate_token("meshy_backend")
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {auth_token}",  # Add the auth token here
+    }
+    response = requests.post(
+        server_url, json=complete_meshy_response.dict(), headers=headers
+    )
+    print("Response from server:", response.json())
+
+
+async def send_obj_from_image_to_file_to_storage(
+    complete_meshy_response: ImageTo3DMeshyTaskStatusResponse,
+):
+    server_url = "http://localhost:8000/file_upload_from_image"
     auth_token = generate_token("meshy_backend")
     headers = {
         "Content-Type": "application/json",
