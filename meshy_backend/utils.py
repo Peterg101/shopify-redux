@@ -97,7 +97,7 @@ async def generate_image_to_3d_task_and_check_for_response_decoupled_ws(
                 task_posted = True
 
             percentage_complete = generated_task_status.progress
-            progress = f"{percentage_complete},{meshy_task_status.task_id}"
+            progress = f"{percentage_complete},{meshy_task_status.task_id},{request.filename}"
             await redis.publish(f"task_progress:{request.port_id}", progress)
             if percentage_complete == 100:
                 task_generated = True

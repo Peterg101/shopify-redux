@@ -17,6 +17,7 @@ import { generateUuid } from "../../app/utility/utils";
 import { generateUUID } from "three/src/math/MathUtils";
 import { useFile } from '../../services/fileProvider';
 import { authApi } from '../../services/authApi';
+import { createWebsocketConnection } from "../../services/meshyWebsocket";
 
 export const JpgViewer = () => {
     const dataState = useSelector(
@@ -59,6 +60,7 @@ export const JpgViewer = () => {
       console.log(dataState.selectedFile)
       const portId = generateUUID()
       console.log(dataState.fileNameBoxValue)
+      dispatch(setMeshyPending({meshyPending: true}))
       await startImageTo3DTask(
         actualFile, 
         userInterfaceState.userInformation?.user.user_id, 
@@ -68,13 +70,7 @@ export const JpgViewer = () => {
       setImage("")
       dispatch(setClearFileDisplay())
       dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
-      // dispatch(setMeshyPending({meshyPending: true}))
-
-      // dispatch(setMeshyLoadedPercentage({meshyLoadedPercentage: 1}));
-      //   dispatch(setMeshyPending({meshyPending: false}))
-      //   dispatch(setMeshyQueueItems({ meshyQueueItems: 0 }));
-      //   dispatch(setMeshyLoading({meshyLoading: true}))
-      //   di
+      createWebsocketConnection(portId, dispatch, setActualFile)
     };
   
   
