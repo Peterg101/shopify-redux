@@ -46,10 +46,11 @@ async def generate_task_and_check_for_response_decoupled_ws(
                 task_posted = True
 
             percentage_complete = generated_task_status.progress
+            status = generated_task_status.status
             progress = f"{percentage_complete},{meshy_task_status.task_id},{generated_task_status.prompt}"
             await redis.publish(f"task_progress:{request.port_id}", progress)
 
-            if percentage_complete == 100:
+            if status == "SUCCEEDED":
                 task_generated = True
                 complete_response = await add_file_response(generated_task_status)
 
@@ -58,6 +59,14 @@ async def generate_task_and_check_for_response_decoupled_ws(
                     await send_file_to_storage(complete_response)
                 else:
                     print(f"Unexpected response type: {type(complete_response)}")
+                success_progress = f"Task Completed,{meshy_task_status.task_id},{request.filename}"
+                await redis.publish(f"task_progress:{request.port_id}", success_progress)
+
+            elif status == "FAILED":
+                print(f"Meshy task failed: {meshy_task_status.task_id}")
+                fail_progress = f"Task Failed,{meshy_task_status.task_id},{request.filename}"
+                await redis.publish(f"task_progress:{request.port_id}", fail_progress)
+                return None
 
         return generated_task_status
 
@@ -71,15 +80,16 @@ async def generate_task_and_check_for_response_decoupled_ws(
 async def generate_image_to_3d_task_and_check_for_response_decoupled_ws(
     request: ImageTo3DTaskRequest, redis: aioredis.Redis
 ) -> Union[ImageTo3DMeshyTaskStatusResponse, None]:
-
     try:
         task_generated = False
         task_posted = False
         generated_task = generate_image_to_3d_task(request.meshy_image_to_3d_payload)
-        while task_generated is False:
+
+        while not task_generated:
             await asyncio.sleep(1)
             meshy_task_status = MeshyTaskStatus(task_id=generated_task.result)
             generated_task_status = await get_image_to_3d_task_status(meshy_task_status)
+
             if not task_posted:
                 await post_image_task_to_db(
                     generated_task_status,
@@ -90,16 +100,24 @@ async def generate_image_to_3d_task_and_check_for_response_decoupled_ws(
                 task_posted = True
 
             percentage_complete = generated_task_status.progress
+            status = generated_task_status.status
             progress = f"{percentage_complete},{meshy_task_status.task_id},{request.filename}"
             await redis.publish(f"task_progress:{request.port_id}", progress)
-            if percentage_complete == 100:
-                task_generated = True
-                complete_response = await add_file_response(
-                    generated_task_status
-                )
-                await send_obj_from_image_to_file_to_storage(complete_response)
 
-        return generated_task_status
+            if status == "SUCCEEDED":
+                task_generated = True
+                complete_response = await add_file_response(generated_task_status)
+                await send_obj_from_image_to_file_to_storage(complete_response)
+                success_progress = f"Task Completed,{meshy_task_status.task_id},{request.filename}"
+                await redis.publish(f"task_progress:{request.port_id}", success_progress)
+
+                return generated_task_status
+
+            elif status == "FAILED":
+                task_generated = True
+                fail_progress = f"Task Failed,{meshy_task_status.task_id},{request.filename}"
+                await redis.publish(f"task_progress:{request.port_id}", fail_progress)
+                return None
 
     except Exception as e:
         print(
@@ -109,14 +127,10 @@ async def generate_image_to_3d_task_and_check_for_response_decoupled_ws(
 
 
 async def validate_session(websocket: WebSocket) -> Tuple[bool, Optional[str]]:
-
     cookie_header = websocket.headers.get("cookie")
-
     if not cookie_header:
         return False, None  # Session invalid: No cookie
-
     session_valid, user_information = await websocket_session_exists(cookie_header)
-
     if not session_valid:
         return False, None  # Session invalid: Expired or invalid
 

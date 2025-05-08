@@ -109,7 +109,7 @@ async def websocket_endpoint(
                 progress = message["data"]
                 # Send progress update to the client
                 await websocket.send_text(progress)
-                if progress == "Task Completed":
+                if progress.startswith("Task Completed") or progress.startswith("Task Failed"):
                     break
 
     except WebSocketDisconnect:
