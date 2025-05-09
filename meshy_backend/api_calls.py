@@ -23,7 +23,7 @@ def generate_text_to_3d_task(payload: MeshyPayload) -> MeshyTaskGeneratedRespons
     headers = {"Authorization": f"Bearer {MESHY_API_KEY}"}
     try:
         response = requests.post(
-            "https://api.meshy.ai/v2/text-to-3d", headers=headers, json=payload.__dict__
+            "https://api.meshy.ai/openapi/v2/text-to-3d/", headers=headers, json=payload.__dict__
         )
         response.raise_for_status()
         result = MeshyTaskGeneratedResponse(**response.json())
@@ -58,7 +58,7 @@ async def get_meshy_task_status(
 ) -> MeshyTaskStatusResponse:
     headers = {"Authorization": f"Bearer {MESHY_API_KEY}"}
     response = requests.get(
-        f"https://api.meshy.ai/v2/text-to-3d/{meshy_task_args.task_id}",
+        f"https://api.meshy.ai/openapi/v2/text-to-3d/{meshy_task_args.task_id}",
         headers=headers,
     )
     response.raise_for_status()
