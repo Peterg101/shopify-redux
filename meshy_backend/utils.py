@@ -59,12 +59,12 @@ async def generate_task_and_check_for_response_decoupled_ws(
                     await send_file_to_storage(complete_response)
                 else:
                     print(f"Unexpected response type: {type(complete_response)}")
-                success_progress = f"Task Completed,{meshy_task_status.task_id},{request.filename}"
+                success_progress = f"Task Completed,{meshy_task_status.task_id},{generated_task_status.prompt}"
                 await redis.publish(f"task_progress:{request.port_id}", success_progress)
 
             elif status == "FAILED":
                 print(f"Meshy task failed: {meshy_task_status.task_id}")
-                fail_progress = f"Task Failed,{meshy_task_status.task_id},{request.filename}"
+                fail_progress = f"Task Failed,{meshy_task_status.task_id},{generated_task_status.prompt}"
                 await redis.publish(f"task_progress:{request.port_id}", fail_progress)
                 return None
 

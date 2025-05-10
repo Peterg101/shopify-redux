@@ -12,6 +12,7 @@ export interface MeshyPayload {
     prompt: string;
     art_style: string;
     negative_prompt: string;
+    ai_model: string
   }
 
 
@@ -20,6 +21,7 @@ export interface MeshyImageTo3DPayload {
   enable_pbr: boolean,
   should_remesh: boolean,
   should_texture: boolean
+  ai_model: string
 }
   
 export interface MeshyTaskGeneratedResponse {

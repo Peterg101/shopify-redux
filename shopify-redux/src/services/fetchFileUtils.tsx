@@ -88,6 +88,7 @@ export const startTask = async (prompt: string, userId: string, portId: string) 
     prompt: prompt,
     art_style: 'realistic',
     negative_prompt: 'low quality, low resolution, low poly, ugly',
+    ai_model: 'meshy-5'
   };
 
   const response = await fetch('http://localhost:1234/start_task/', {
@@ -109,7 +110,8 @@ export const startImageTo3DTask = async (image_file: File, userId: string, portI
     image_url: image_bytes,
     enable_pbr: true, 
     should_remesh: true,
-    should_texture: true
+    should_texture: true,
+    ai_model: "meshy-5"
   };
 
   const response = await fetch('http://localhost:1234/start_image_to_3d_task/', {

@@ -100,6 +100,7 @@ class MeshyPayload:
     prompt: str
     art_style: str
     negative_prompt: str
+    ai_model: str
 
 
 @dataclass
@@ -108,6 +109,7 @@ class MeshyImageTo3DPayload:
     enable_pbr: bool
     should_remesh: bool
     should_texture: bool
+    ai_model: str
 
 
 @dataclass
