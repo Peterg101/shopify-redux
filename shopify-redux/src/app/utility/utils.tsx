@@ -222,3 +222,14 @@ export function calculateTotalBasketValue(basketItems: BasketInformation[]): num
   const subtotal = basketItems.reduce((sum, item) => sum + item.quantity * item.price, 0);
   return subtotal
 }
+
+export function downloadBlob (blob: Blob, filename: string){
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
