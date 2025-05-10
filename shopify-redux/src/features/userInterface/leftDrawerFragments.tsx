@@ -1,5 +1,5 @@
 import React from "react";
-import { Typography, Button, Card, CardContent, Divider, Box } from "@mui/material";
+import { Typography, Button, Card, CardContent, Divider, Box, CircularProgress } from "@mui/material";
 import { AccessTime, Edit, Download } from "@mui/icons-material";
 import { TaskInformation } from "../../app/utility/interfaces";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,6 +11,12 @@ import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
 import { downloadBlob } from "../../app/utility/utils";
 
 export const LeftDrawerTask: React.FC<TaskInformation> = (task) => {
+  const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
+
+  const isTaskLoading =
+    userInterfaceState.userInformation.incomplete_task &&
+    userInterfaceState.userInformation.incomplete_task.task_id === task.task_id;
+
   return (
     <Card elevation={3} sx={{ borderRadius: 2, mb: 2, overflow: "hidden" }}>
       <CardContent>
@@ -24,8 +30,10 @@ export const LeftDrawerTask: React.FC<TaskInformation> = (task) => {
             {new Date(task.created_at).toLocaleString()}
           </Typography>
         </Box>
+
         <Divider sx={{ my: 1 }} />
-        <LeftDrawerButtons {...task} />
+
+        {isTaskLoading ? <LeftDrawerTaskLoading /> : <LeftDrawerButtons {...task} />}
       </CardContent>
     </Card>
   );
@@ -39,14 +47,13 @@ export const LeftDrawerButtons: React.FC<TaskInformation> = (task) => {
     setActualFile(null);
     dispatch(resetDataState());
     dispatch(setLeftDrawerClosed());
-  
+
     const data = await fetchFile(fileId);
     const fileInfo = extractFileInfo(data, filename);
 
     if (shouldDownload) {
       downloadBlob(fileInfo.file, filename.endsWith(".obj") ? filename : `${filename}.obj`);
-    }
-    else{
+    } else {
       setActualFile(fileInfo.file);
       dispatch(setFromMeshyOrHistory({ fromMeshyOrHistory: true }));
       dispatch(
@@ -55,7 +62,7 @@ export const LeftDrawerButtons: React.FC<TaskInformation> = (task) => {
           selectedFileType: "obj",
           fileNameBoxValue: filename,
         })
-    );
+      );
     }
   };
 
@@ -79,6 +86,26 @@ export const LeftDrawerButtons: React.FC<TaskInformation> = (task) => {
       >
         Edit
       </Button>
+    </Box>
+  );
+};
+
+export const LeftDrawerTaskLoading: React.FC = () => {
+  const percentage = useSelector((state: RootState) => state.userInterfaceState.meshyLoadedPercentage);
+
+  return (
+    <Box
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      justifyContent="center"
+      gap={1}
+      sx={{ py: 2 }}
+    >
+      <CircularProgress variant="determinate" value={percentage} />
+      <Typography variant="body2" color="text.secondary">
+        Loading model... {percentage}%
+      </Typography>
     </Box>
   );
 };
