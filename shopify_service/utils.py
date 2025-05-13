@@ -29,22 +29,28 @@ async def cookie_verification_user_only(request: Request) -> UserInformation:
     return session_data
 
 
-def convert_basket_items_to_line_items(basket_items: List[BasketItem]) -> List[dict]:
+def convert_basket_items_to_shopify_graphql_line_items(basket_items: List[BasketItem]) -> List[str]:
     line_items = []
     for item in basket_items:
-        line_item = {
-            "title": item.name,
-            "price": f"{item.price:.2f}",
-            "quantity": item.quantity,
-            "properties": {
-                "Material": item.material,
-                "Technique": item.technique,
-                "Sizing": item.sizing,
-                "Colour": item.colour,
-                "File Type": item.selectedFileType,
-                "File Name": item.selectedFile
-            }
-        }
-        line_items.append(line_item)
+        # Correct the key from `name` to `key`
+        properties_block = ", ".join([
+            f'''{{ key: "Material", value: "{item.material}" }}''',
+            f'''{{ key: "Technique", value: "{item.technique}" }}''',
+            f'''{{ key: "Sizing", value: "{item.sizing}" }}''',
+            f'''{{ key: "Colour", value: "{item.colour}" }}''',
+            f'''{{ key: "File Type", value: "{item.selectedFileType}" }}''',
+            f'''{{ key: "File Name", value: "{item.selectedFile}" }}'''
+        ])
+
+        line_item_block = f"""
+        {{
+            title: "{item.name}",
+            quantity: {item.quantity},
+            originalUnitPrice: "{item.price:.2f}",
+            customAttributes: [{properties_block}]
+        }}
+        """
+        line_items.append(line_item_block.strip())
     return line_items
+
     

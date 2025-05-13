@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends, Cookie, Header, Request
+from typing import List
 from sqlalchemy.orm import Session, joinedload
 from fastapi.middleware.cors import CORSMiddleware
 from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, Order
@@ -295,12 +296,14 @@ async def get_all_basket_items(
     db: Session = Depends(get_db),
     authorization: str = Depends(verify_jwt_token),
 ):
+    
     basket_items = db.query(BasketItem).filter(BasketItem.user_id == user_id).all()
     if not basket_items:
         raise HTTPException(status_code=400, detail="Basket is empty")
+    
+    return basket_items
 
     
-
 @app.post("/tasks/from_basket")
 async def generate_tasks_from_basket_items(
     request: Request,

@@ -11,9 +11,14 @@ export const createWebsocketConnection = (
   setActualFile: React.Dispatch<React.SetStateAction<File | null>>
 ): WebSocket => {
   const ws = new WebSocket(`ws://localhost:1234/ws/${portId}`);
+  let isFirstMessage = true;
 
   ws.onmessage = async (event) => {
     if (event.data) {
+      if(isFirstMessage){
+        dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
+        isFirstMessage = false
+      }
       const parts = event.data.split(",");
       if (parts.length === 3) {
         const percentageComplete = parseInt(parts[0], 10); // Convert to a number

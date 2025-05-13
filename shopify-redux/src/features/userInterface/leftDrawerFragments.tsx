@@ -104,7 +104,7 @@ export const LeftDrawerTaskLoading: React.FC = () => {
     >
       <CircularProgress variant="determinate" value={percentage} />
       <Typography variant="body2" color="text.secondary">
-        Loading model... {percentage}%
+        Generating model... {percentage}%
       </Typography>
     </Box>
   );

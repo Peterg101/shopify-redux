@@ -49,6 +49,7 @@ async def get_all_basket_items(user_id: str) -> List[BasketItem]:
         response = await client.get(url, headers=headers, params=params)
 
     if response.status_code == 200:
+        print(response.json())
         basket_items = [BasketItem(**item) for item in response.json()]
         return basket_items
     else:
