@@ -32,7 +32,6 @@ async def cookie_verification_user_only(request: Request) -> UserInformation:
 def convert_basket_items_to_shopify_graphql_line_items(basket_items: List[BasketItem]) -> List[str]:
     line_items = []
     for item in basket_items:
-        # Correct the key from `name` to `key`
         properties_block = ", ".join([
             f'''{{ key: "Material", value: "{item.material}" }}''',
             f'''{{ key: "Technique", value: "{item.technique}" }}''',

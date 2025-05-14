@@ -1,30 +1,38 @@
-from fastapi import APIRouter, Request, Header
+from fastapi import APIRouter, Request, Header, HTTPException
 from shopify_client import ShopifyClient
+import hmac
+import hashlib
+import base64
+import json
 
 router = APIRouter(prefix="/webhook", tags=["webhook"])
 
-shopify = ShopifyClient()
+SHOPIFY_WEBHOOK_SECRET = "your_shopify_webhook_secret_here"
 
 
-@router.post("/")
-async def receive_webhook(
+@router.post("/shopify/webhooks/order-created")
+async def order_created_webhook(
     request: Request,
-    x_shopify_hmac_sha256: str = Header(None),
+    x_shopify_hmac_sha256: str = Header(None)
 ):
-    raw_body = await request.body()
+    body = await request.body()
 
-    # Optional: verify webhook authenticity
-    is_valid = await shopify.verify_webhook(raw_body, x_shopify_hmac_sha256)
-    if not is_valid:
-        return {"status": "invalid webhook"}
+    # Verify the HMAC signature
+    digest = hmac.new(
+        key=SHOPIFY_WEBHOOK_SECRET.encode("utf-8"),
+        msg=body,
+        digestmod=hashlib.sha256
+    ).digest()
+    computed_hmac = base64.b64encode(digest).decode()
 
-    payload = await request.json()
+    if not hmac.compare_digest(computed_hmac, x_shopify_hmac_sha256):
+        raise HTTPException(status_code=401, detail="Invalid HMAC")
 
-    # Here you can handle specific webhook events like:
-    event_topic = request.headers.get("X-Shopify-Topic")
-    if event_topic == "orders/paid":
-        print("Order was paid!", payload)
-    elif event_topic == "checkouts/create":
-        print("Checkout created", payload)
-    
-    return {"status": "success"}
+    # Parse the JSON payload
+    payload = json.loads(body)
+    print("New order created:", payload)
+
+    # Do something with the order data (e.g., save to your database)
+    # Example: order_id = payload["id"], customer_email = payload["email"]
+
+    return {"status": "ok"}
