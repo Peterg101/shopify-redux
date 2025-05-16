@@ -1,10 +1,16 @@
 from fastapi import Request, HTTPException
 from fitd_schemas.fitd_classes import UserInformation
 from fitd_schemas.fitd_db_schemas import BasketItem
-from typing import List
+from typing import List, Dict
 from api_calls import session_exists, session_exists_user_only
 from datetime import datetime
 import uuid
+import hmac
+import hashlib
+import base64
+import os
+
+SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET") 
 
 
 async def cookie_verification(request: Request):
@@ -52,4 +58,38 @@ def convert_basket_items_to_shopify_graphql_line_items(basket_items: List[Basket
         line_items.append(line_item_block.strip())
     return line_items
 
-    
+
+def convert_basket_items_to_checkout_api_line_items(basket_items: List) -> List[Dict]:
+    line_items = []
+    for item in basket_items:
+        custom_attributes = [
+            {"name": "Material", "value": item.material},
+            {"name": "Technique", "value": item.technique},
+            {"name": "Sizing", "value": item.sizing},
+            {"name": "Colour", "value": item.colour},
+            {"name": "File Type", "value": item.selectedFileType},
+            {"name": "File Name", "value": item.selectedFile}
+        ]
+
+        line_item = {
+            "title": item.name,  # Optional: Shopify will ignore this if variant_id is used
+            "quantity": item.quantity,
+            "price": f"{item.price:.2f}",  # Optional: if you're using a custom app to generate prices
+            "custom_attributes": custom_attributes,
+            # "variant_id": item.variant_id,  # Uncomment if you're using real Shopify product variants
+        }
+
+        line_items.append(line_item)
+    return line_items   
+
+
+def verify_shopify_hmac(body: bytes, hmac_header: str):
+    digest = hmac.new(
+        key=SHOPIFY_WEBHOOK_SECRET.encode("utf-8"),
+        msg=body,
+        digestmod=hashlib.sha256
+    ).digest()
+    computed_hmac = base64.b64encode(digest).decode()
+
+    if not hmac.compare_digest(computed_hmac, hmac_header):
+        raise HTTPException(status_code=401, detail="Invalid HMAC")

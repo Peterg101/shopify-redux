@@ -4,11 +4,9 @@ import hmac
 import hashlib
 import base64
 import json
+from utils import verify_shopify_hmac
 
 router = APIRouter(prefix="/webhook", tags=["webhook"])
-
-SHOPIFY_WEBHOOK_SECRET = "your_shopify_webhook_secret_here"
-
 
 @router.post("/shopify/webhooks/order-created")
 async def order_created_webhook(
@@ -16,23 +14,62 @@ async def order_created_webhook(
     x_shopify_hmac_sha256: str = Header(None)
 ):
     body = await request.body()
+    verify_shopify_hmac(body, x_shopify_hmac_sha256)
 
-    # Verify the HMAC signature
-    digest = hmac.new(
-        key=SHOPIFY_WEBHOOK_SECRET.encode("utf-8"),
-        msg=body,
-        digestmod=hashlib.sha256
-    ).digest()
-    computed_hmac = base64.b64encode(digest).decode()
 
-    if not hmac.compare_digest(computed_hmac, x_shopify_hmac_sha256):
-        raise HTTPException(status_code=401, detail="Invalid HMAC")
-
-    # Parse the JSON payload
     payload = json.loads(body)
     print("New order created:", payload)
 
     # Do something with the order data (e.g., save to your database)
     # Example: order_id = payload["id"], customer_email = payload["email"]
+
+    return {"status": "ok"}
+
+
+@router.post("/shopify/webhooks/order-paid")
+async def order_paid_webhook(
+    request: Request,
+    x_shopify_hmac_sha256: str = Header(None)
+):
+    body = await request.body()
+    verify_shopify_hmac(body, x_shopify_hmac_sha256)
+
+    payload = json.loads(body)
+    print("Order paid:", payload)
+
+    # Example: mark order as paid in your DB
+    # db.mark_order_paid(payload["id"])
+
+    return {"status": "ok"}
+
+
+@router.post("/shopify/webhooks/order-fulfilled")
+async def order_fulfilled_webhook(
+    request: Request,
+    x_shopify_hmac_sha256: str = Header(None)
+):
+    body = await request.body()
+    verify_shopify_hmac(body, x_shopify_hmac_sha256)
+
+    payload = json.loads(body)
+    print("Order fulfilled:", payload)
+
+    # db.mark_order_fulfilled(payload["id"])
+
+    return {"status": "ok"}
+
+
+@router.post("/shopify/webhooks/order-cancelled")
+async def order_cancelled_webhook(
+    request: Request,
+    x_shopify_hmac_sha256: str = Header(None)
+):
+    body = await request.body()
+    verify_shopify_hmac(body, x_shopify_hmac_sha256)
+
+    payload = json.loads(body)
+    print("Order cancelled:", payload)
+
+    # db.cancel_order(payload["id"])
 
     return {"status": "ok"}

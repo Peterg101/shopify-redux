@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from shopify_client import ShopifyClient
-from utils import cookie_verification_user_only, convert_basket_items_to_shopify_graphql_line_items
+from utils import cookie_verification_user_only, convert_basket_items_to_shopify_graphql_line_items, convert_basket_items_to_checkout_api_line_items
 from api_calls import get_all_basket_items
 import os
 import httpx
@@ -25,7 +25,7 @@ async def create_checkout(user=Depends(cookie_verification_user_only)):
           {",".join(line_items)}
         ],
         email: "{user.email}",
-        useCustomerDefaultAddress: true
+        useCustomerDefaultAddress: true,
       }}) {{
         draftOrder {{
           id
@@ -59,3 +59,5 @@ async def create_checkout(user=Depends(cookie_verification_user_only)):
     return {
         "checkout_url": data["data"]["draftOrderCreate"]["draftOrder"]["invoiceUrl"]
     }
+
+
