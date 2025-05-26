@@ -377,6 +377,35 @@ async def create_order(
     db.commit()
     return {"status": "success", "order_count": len(created_orders)}
 
+@app.post("/orders/update_order")
+async def update_order(
+    shopify_order: ShopifyOrder, 
+    payload: dict = Depends(verify_jwt_token), 
+    db: Session = Depends(get_db)
+):
+    try:
+        order_id = shopify_order.id
+        new_status = shopify_order.order_status
+        orders = db.query(Order).filter(Order.order_id == order_id).all()
+
+        if not orders:
+            raise HTTPException(status_code=404, detail=f"No orders found with ID {order_id}")
+
+        for order in orders:
+            order.status = new_status
+
+        db.commit()
+
+        return {
+            "status": "success",
+            "updated_count": len(orders),
+            "order_id": order_id,
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error updating orders: {str(e)}")
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
