@@ -157,7 +157,7 @@ export const UpdatedUserInterface = () => {
         return (
           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <List component="nav" sx={{ flexGrow: 1 }}>
-              {userInterfaceState.userInformation?.basket_items.length === 0 ? <EmptyOrderHistory /> : <OrderHistory />}
+              {userInterfaceState.userInformation?.orders.length === 0 ? <EmptyOrderHistory /> : <OrderHistory />}
               <Divider sx={{ my: 1 }} />
             </List>
             <Box sx={{ marginTop: 'auto', padding: 2 }} />

@@ -16,7 +16,8 @@ async def create_checkout(user=Depends(cookie_verification_user_only)):
     if not basket_items:
         raise HTTPException(status_code=400, detail="Basket is empty")
     line_items = convert_basket_items_to_shopify_graphql_line_items(
-        basket_items
+        basket_items,
+        user.user_id
         )
     graphql_query = f"""
     mutation {{
@@ -51,11 +52,6 @@ async def create_checkout(user=Depends(cookie_verification_user_only)):
     response.raise_for_status()
 
     data = response.json()
-    print(data)
-    # errors = data["data"]["draftOrderCreate"]["userErrors"]
-    # if errors:
-    #     raise HTTPException(status_code=400, detail=errors)
-
     return {
         "checkout_url": data["data"]["draftOrderCreate"]["draftOrder"]["invoiceUrl"]
     }

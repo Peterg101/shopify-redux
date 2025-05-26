@@ -125,6 +125,7 @@ export interface Order {
   order_id: string;
   user_id: string;
   task_id?: string; // Optional Meshy task
+  item_id: string
   name: string;
   material: string;
   technique: string;

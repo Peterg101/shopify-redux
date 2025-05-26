@@ -1,9 +1,9 @@
-from typing import Union, Dict
+from typing import Union, Dict, List
 from api_calls import session_exists, session_exists_user_only
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound
 from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID
-from fitd_schemas.fitd_classes import UserInformation, TaskInformation, BasketItemInformation
+from fitd_schemas.fitd_classes import UserInformation, TaskInformation, BasketItemInformation, LineItem
 from fastapi import HTTPException, Request
 from datetime import datetime
 from pathlib import Path
@@ -180,3 +180,10 @@ def decode_file(file_blob: str, file_name: str, upload_dir: Path):
 
 def check_file_exists(file_path: Path) -> bool:
     return file_path.exists() and file_path.is_file()
+
+
+def get_property_value_strict(line_item: LineItem, property_name: str) -> str:
+    for prop in line_item.properties:
+        if prop.name == property_name:
+            return prop.value
+    raise ValueError(f"Property '{property_name}' not found")

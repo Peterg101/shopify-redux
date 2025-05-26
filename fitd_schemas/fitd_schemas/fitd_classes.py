@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, validator
-from typing import Optional, List, Union
+from typing import Optional, List, Union, Any
 from datetime import datetime
 from dataclasses import dataclass
 
@@ -140,13 +140,6 @@ class ImageTo3DTaskRequest(BaseModel):
     meshy_image_to_3d_payload: MeshyImageTo3DPayload
     filename: str
 
-# class TextureUrls(BaseModel):
-#     base_color: Optional[HttpUrl]
-#     metallic: Optional[HttpUrl]
-#     normal: Optional[HttpUrl]
-#     roughness: Optional[HttpUrl]
-
-
 class TaskError(BaseModel):
     message: str
     code: Optional[str] = None
@@ -185,3 +178,76 @@ class ImageTo3DMeshyTaskStatusResponse(BaseModel):
     @validator("thumbnail_url", pre=True)
     def empty_str_to_none(cls, v):
         return v or None
+
+
+class Money(BaseModel):
+    amount: str
+    currency_code: str
+
+
+class PriceSet(BaseModel):
+    shop_money: Money
+    presentment_money: Money
+
+
+class Property(BaseModel):
+    name: str
+    value: str
+
+
+class LineItem(BaseModel):
+    id: int
+    admin_graphql_api_id: str
+    attributed_staffs: List = []
+    current_quantity: int
+    fulfillable_quantity: int
+    fulfillment_service: str
+    fulfillment_status: Optional[str]
+    gift_card: bool
+    grams: int
+    name: str
+    price: str
+    price_set: PriceSet
+    product_exists: bool
+    product_id: Optional[int]
+    properties: List[Property]
+    quantity: int
+    requires_shipping: bool
+    sales_line_item_group_id: Optional[str]
+    sku: Optional[str]
+    taxable: bool
+    title: str
+    total_discount: str
+    total_discount_set: PriceSet
+    variant_id: Optional[int]
+    variant_inventory_management: Optional[str]
+    variant_title: Optional[str]
+    vendor: str
+    tax_lines: List = []
+    duties: List = []
+    discount_allocations: List = []
+
+
+class ShippingAddress(BaseModel):
+    first_name: str
+    last_name: str
+    address1: str
+    address2: Optional[str] = None
+    company: Optional[str] = None
+    phone: Optional[str] = None
+    city: str
+    zip: str
+    province: str
+    country: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    name: str
+    country_code: str
+    province_code: str
+
+
+class ShopifyOrder(BaseModel):
+    id: int
+    order_status: str
+    line_items: List[LineItem]
+    shipping_address: ShippingAddress

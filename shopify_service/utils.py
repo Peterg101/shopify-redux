@@ -1,5 +1,5 @@
 from fastapi import Request, HTTPException
-from fitd_schemas.fitd_classes import UserInformation
+from fitd_schemas.fitd_classes import UserInformation, LineItem, ShopifyOrder, ShippingAddress
 from fitd_schemas.fitd_db_schemas import BasketItem
 from typing import List, Dict
 from api_calls import session_exists, session_exists_user_only
@@ -35,16 +35,18 @@ async def cookie_verification_user_only(request: Request) -> UserInformation:
     return session_data
 
 
-def convert_basket_items_to_shopify_graphql_line_items(basket_items: List[BasketItem]) -> List[str]:
+def convert_basket_items_to_shopify_graphql_line_items(basket_items: List[BasketItem], user_id: str) -> List[str]:
     line_items = []
     for item in basket_items:
         properties_block = ", ".join([
+            f'''{{ key: "Task Id", value: "{item.task_id}" }}'''
             f'''{{ key: "Material", value: "{item.material}" }}''',
             f'''{{ key: "Technique", value: "{item.technique}" }}''',
             f'''{{ key: "Sizing", value: "{item.sizing}" }}''',
             f'''{{ key: "Colour", value: "{item.colour}" }}''',
-            f'''{{ key: "File Type", value: "{item.selectedFileType}" }}''',
-            f'''{{ key: "File Name", value: "{item.selectedFile}" }}'''
+            f'''{{ key: "Selected File Type", value: "{item.selectedFileType}" }}''',
+            f'''{{ key: "Selected File", value: "{item.selectedFile}" }}'''
+            f'''{{ key: "User Id", value: "{user_id}" }}'''
         ])
 
         line_item_block = f"""
@@ -93,3 +95,21 @@ def verify_shopify_hmac(body: bytes, hmac_header: str):
 
     if not hmac.compare_digest(computed_hmac, hmac_header):
         raise HTTPException(status_code=401, detail="Invalid HMAC")
+    
+
+def extract_order_info_from_webhook(
+    webhook_payload: Dict, 
+    order_status: str = "created"
+) -> ShopifyOrder:
+    line_items = [LineItem(**item) for item in webhook_payload.get("line_items", [])]
+    shipping_address = ShippingAddress(**webhook_payload.get("billing_address", {}))
+
+    shopify_order = ShopifyOrder(
+        id=webhook_payload["id"],
+        order_status=order_status,
+        line_items=line_items,
+        shipping_address=shipping_address
+    )
+    return shopify_order
+
+

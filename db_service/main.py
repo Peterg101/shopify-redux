@@ -18,6 +18,7 @@ from utils import (
     decode_file,
     mark_meshy_task_complete,
     delete_port_id,
+    get_property_value_strict
 )
 
 from api_calls import session_exists
@@ -28,7 +29,8 @@ from fitd_schemas.fitd_classes import(
     MeshyTaskStatusResponse,
     BasketItemInformation,
     BasketQuantityUpdate,
-    ImageTo3DMeshyTaskStatusResponse
+    ImageTo3DMeshyTaskStatusResponse,
+    ShopifyOrder
 )
 import uvicorn
 from typing import Optional, Dict
@@ -104,6 +106,7 @@ async def get_user(
         .first()
     )
     orders = db.query(Order).filter(Order.user_id == user_id).all()
+    print(orders)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -304,42 +307,76 @@ async def get_all_basket_items(
     return basket_items
 
     
-@app.post("/tasks/from_basket")
-async def generate_tasks_from_basket_items(
-    request: Request,
-    db: Session = Depends(get_db),
-    user_info: None = Depends(cookie_verification_user_only),
-):
-    user_id = user_info.user_id
-    basket_items = db.query(BasketItem).filter(BasketItem.user_id == user_info.user_id).all()
-    if not basket_items:
-        raise HTTPException(status_code=400, detail="Basket is empty")
+# @app.post("/tasks/from_basket")
+# async def generate_tasks_from_basket_items(
+#     request: Request,
+#     db: Session = Depends(get_db),
+#     user_info: None = Depends(cookie_verification_user_only),
+# ):
+#     user_id = user_info.user_id
+#     basket_items = db.query(BasketItem).filter(BasketItem.user_id == user_info.user_id).all()
+#     if not basket_items:
+#         raise HTTPException(status_code=400, detail="Basket is empty")
 
+#     created_orders = []
+#     for item in basket_items:
+#         order = Order(
+#             order_id=str(uuid.uuid4()),
+#             user_id=user_id,
+#             task_id=item.task_id,
+#             name=item.name,
+#             material=item.material,
+#             technique=item.technique,
+#             sizing=item.sizing,
+#             colour=item.colour,
+#             selectedFile=item.selectedFile,
+#             selectedFileType=item.selectedFileType,
+#             price=item.price,
+#             quantity=item.quantity,
+#             created_at=datetime.utcnow().isoformat(),
+#             is_collaborative=False,
+#             status="open"
+#         )
+#         db.add(order)
+#         created_orders.append(order)
+
+#     db.query(BasketItem).filter(BasketItem.user_id == user_id).delete()
+#     db.commit()
+#     return {"message": f"{len(created_orders)} orders created", "task_ids": [o.order_id for o in created_orders]}
+
+@app.post("/orders/create_order")
+async def create_order(
+    shopify_order: ShopifyOrder, 
+    payload: dict = Depends(verify_jwt_token), 
+    db: Session = Depends(get_db)
+):
+    user_id = get_property_value_strict(shopify_order.line_items[0], "User Id")
     created_orders = []
-    for item in basket_items:
+    for line_item in shopify_order.line_items:
         order = Order(
-            order_id=str(uuid.uuid4()),
-            user_id=user_id,
-            task_id=item.task_id,
-            name=item.name,
-            material=item.material,
-            technique=item.technique,
-            sizing=item.sizing,
-            colour=item.colour,
-            selectedFile=item.selectedFile,
-            selectedFileType=item.selectedFileType,
-            price=item.price,
-            quantity=item.quantity,
+            order_id=shopify_order.id,
+            user_id=get_property_value_strict(line_item, "User Id"),
+            item_id=str(uuid.uuid4()),
+            task_id=get_property_value_strict(line_item, "Task Id"),
+            name=line_item.name,
+            material=get_property_value_strict(line_item, "Material"),
+            technique=get_property_value_strict(line_item, "Technique"),
+            sizing=get_property_value_strict(line_item, "Sizing"),
+            colour=get_property_value_strict(line_item, "Colour"),
+            selectedFile=get_property_value_strict(line_item, "Selected File"),
+            selectedFileType=get_property_value_strict(line_item, "Selected File Type"),
+            price=line_item.price,
+            quantity=line_item.quantity,
             created_at=datetime.utcnow().isoformat(),
             is_collaborative=False,
-            status="open"
+            status=shopify_order.order_status
         )
-        db.add(order)
         created_orders.append(order)
-
+        db.add(order)
     db.query(BasketItem).filter(BasketItem.user_id == user_id).delete()
     db.commit()
-    return {"message": f"{len(created_orders)} orders created", "task_ids": [o.order_id for o in created_orders]}
+    return {"status": "success", "order_count": len(created_orders)}
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

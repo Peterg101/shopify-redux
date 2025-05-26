@@ -33,19 +33,7 @@ import {
     </Box>
   );
   
-  export const OrderHistory = () => {
-    const orders = useSelector(
-      (state: RootState) => state.userInterfaceState.userInformation?.orders
-    ) as Order[] | undefined;
   
-    const isEmpty = !orders || orders.length === 0;
-  
-    return (
-      <Box sx={{ px: 3, pt: 2 }}>
-        {isEmpty ? <EmptyOrderHistory /> : <OrderList orders={orders} />}
-      </Box>
-    );
-  };
   
   export const OrderList = ({ orders }: { orders: Order[] }) => (
     <Box
@@ -63,6 +51,33 @@ import {
       ))}
     </Box>
   );
+
+  export const OrderHistory = () => {
+    const userInformation = useSelector(
+      (state: RootState) => state.userInterfaceState.userInformation
+    );
+    const orders = userInformation?.orders;
+    
+    if (!orders) {
+      console.log("no orders")
+      return (
+        <Box sx={{ textAlign: "center", py: 6 }}>
+          <Typography variant="h6" color="text.secondary">
+            Loading your orders...
+          </Typography>
+        </Box>
+      );
+    }
+    
+    if (orders.length === 0) {
+      return <EmptyOrderHistory />;
+    }
+    
+    return (
+      <Box sx={{ px: 3, pt: 2 }}>
+        <OrderList orders={orders} />
+      </Box>
+    );}
   
   const OrderedItemCard: React.FC<Order> = (item) => {
     return (
