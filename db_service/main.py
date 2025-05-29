@@ -352,6 +352,9 @@ async def create_order(
 ):
     user_id = get_property_value_strict(shopify_order.line_items[0], "User Id")
     created_orders = []
+    if not shopify_order.line_items:
+        raise HTTPException(status_code=404, detail="No line items found")
+    
     for line_item in shopify_order.line_items:
         order = Order(
             order_id=shopify_order.id,

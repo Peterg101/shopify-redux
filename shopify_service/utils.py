@@ -9,6 +9,8 @@ import hmac
 import hashlib
 import base64
 import os
+from pydantic import ValidationError
+import logging
 
 SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET") 
 
@@ -98,18 +100,42 @@ def verify_shopify_hmac(body: bytes, hmac_header: str):
     
 
 def extract_order_info_from_webhook(
-    webhook_payload: Dict, 
+    webhook_payload: Dict,
     order_status: str = "created"
 ) -> ShopifyOrder:
-    line_items = [LineItem(**item) for item in webhook_payload.get("line_items", [])]
-    shipping_address = ShippingAddress(**webhook_payload.get("billing_address", {}))
+    try:
+        if "id" not in webhook_payload:
+            raise ValueError("Missing 'id' field in webhook payload.")
 
-    shopify_order = ShopifyOrder(
-        id=webhook_payload["id"],
-        order_status=order_status,
-        line_items=line_items,
-        shipping_address=shipping_address
-    )
-    return shopify_order
+        line_items_raw = webhook_payload.get("line_items", [])
+        if not isinstance(line_items_raw, list):
+            raise ValueError("'line_items' must be a list.")
+
+        line_items = []
+        for item in line_items_raw:
+            try:
+                line_items.append(LineItem(**item))
+            except ValidationError as ve:
+                logging.warning(f"Invalid line item skipped: {ve.json()}")
+
+        if not line_items:
+            raise ValueError("No valid line items found in webhook payload.")
+
+        shipping_data = webhook_payload.get("billing_address", {})
+        shipping_address = ShippingAddress(**shipping_data)
+
+        shopify_order = ShopifyOrder(
+            id=webhook_payload["id"],
+            order_status=order_status,
+            line_items=line_items,
+            shipping_address=shipping_address
+        )
+        return shopify_order
+
+    except (ValidationError, ValueError, KeyError) as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Malformed Shopify webhook payload: {str(e)}"
+        )
 
 
