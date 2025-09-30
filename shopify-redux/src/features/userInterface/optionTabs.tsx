@@ -12,7 +12,9 @@ import { ColourSelectDropdown } from './colourDropdown';
 import { MaterialSelectDropdown } from './materialsDropdown';
 import SizingOptions  from './sizingOptions';
 import { SettingsMenu } from './settingsMenu';
-import { FlipCameraAndroid } from '@mui/icons-material';
+import { FlipCameraAndroid, PrecisionManufacturing } from '@mui/icons-material';
+import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
+import { QADropdown } from './qaDropdown';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -63,7 +65,9 @@ interface TabPanelProps {
             <Tab label="Material" {...a11yProps(0)} icon={<ConstructionIcon/>}/>
             <Tab label="Colour" {...a11yProps(1)} icon={<PaletteIcon/>}/>
             <Tab label="Sizing" {...a11yProps(2)} icon={<PhotoSizeSelectSmallIcon/>}/>
-            <Tab label="Orientation" {...a11yProps(3)} icon={<FlipCameraAndroid/>}/>
+            <Tab label="Quality" {...a11yProps(3)} icon={<PrecisionManufacturing/>}/>
+            <Tab label="Orientation" {...a11yProps(4)} icon={<FlipCameraAndroid/>}/>
+            
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
@@ -76,8 +80,12 @@ interface TabPanelProps {
         <SizingOptions/>
         </CustomTabPanel>
         <CustomTabPanel value={value} index={3}>
+        <QADropdown/>
+        </CustomTabPanel>
+        <CustomTabPanel value={value} index={4}>
         <SettingsMenu/>
         </CustomTabPanel>
+        
       </Box>
       </div>
     );

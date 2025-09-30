@@ -1,11 +1,12 @@
 import React from 'react';
 import { LandingPage } from './features/display/landingPage';
 import './App.css';
+import AppRouter from './features/userInterface/AppRouter';
 
 function App() {
   return (
     <div>
-      <LandingPage/>
+      <AppRouter/>
     </div>
   )
    

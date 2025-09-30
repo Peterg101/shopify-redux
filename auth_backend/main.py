@@ -112,7 +112,7 @@ async def auth_callback(code: str, request: Request):
         session_id = await create_session(redis_session, session_data)
 
         # Create the response with a session cookie
-        response = RedirectResponse(url="http://localhost:3000/")
+        response = RedirectResponse(url="http://localhost:3000/generate")
         response.set_cookie(
             "fitd_session_data",
             str(session_id),

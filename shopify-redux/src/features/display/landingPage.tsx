@@ -1,18 +1,14 @@
 import { Box, Button } from "@mui/material"
-import UserInterface from "../userInterface/userInterface"
-import { MainOptions } from "./mainOptions"
 import { useState, useEffect } from "react";
 import { useGetSessionQuery, useLogOutMutation } from "../../services/authApi";
 import { useSelector } from 'react-redux';
 import { RootState } from "../../app/store";
-import LoginDialog from "./loginDialogue";
-import { MeshyPayload } from "../../services/meshyApi";
 import { createWebsocketConnection } from "../../services/meshyWebsocket";
 import { useDispatch} from "react-redux";
-import { AppDispatch } from "../../app/store";
-import { UpdatedUserInterface } from "../userInterface/updatedUserInterface";
 import { useSyncTotalCost } from "../../hooks/useSyncTotalCost";
 import { useSyncTotalBasketCost } from "../../hooks/useSyncTotalBasketCost";
+import { HeaderBar } from "../userInterface/headerBar";
+import { GenerateOrderOptions } from "./generateOrderOptions";
 export const LandingPage = () => {
 
     useSyncTotalCost()
@@ -54,19 +50,15 @@ export const LandingPage = () => {
     const handleCallProtectedEndpoint = () => {
         refetchSession()
     }
-
     
-
     const handleLogOut = () =>{
         logOut()
     }
 
     return(
         <Box sx = {{marginTop: 10}}>
-            {/* <UserInterface/> */}
-            <UpdatedUserInterface/>
-            <MainOptions/>
-            <LoginDialog/>
+            <HeaderBar/>
+            <GenerateOrderOptions/>
         </Box>
         
     )

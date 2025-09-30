@@ -182,7 +182,7 @@ export const UpdatedUserInterface = () => {
 
   return (
     <div>
-      <AppBar position="fixed" open={userInterfaceState.leftDrawerOpen} drawerWidth={userInterfaceState.drawerWidth}>
+      {/* <AppBar position="fixed" open={userInterfaceState.leftDrawerOpen} drawerWidth={userInterfaceState.drawerWidth}>
         <Toolbar>
           <Typography variant="h5" noWrap component="div">
             FITD
@@ -190,7 +190,7 @@ export const UpdatedUserInterface = () => {
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: "flex", justifyContent: "flex-end" }} />
         </Toolbar>
-      </AppBar>
+      </AppBar> */}
 
       <Drawer
       // @ts-expect-error variant undefined
