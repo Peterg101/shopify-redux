@@ -1,6 +1,8 @@
 import httpx
 import os
-import hmac, hashlib, base64
+import hmac
+import hashlib
+import base64
 
 
 SHOPIFY_STORE_URL = os.getenv("SHOPIFY_STORE_URL")
