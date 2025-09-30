@@ -1,12 +1,19 @@
+import { Box, useTheme } from "@mui/material";
 import { HeaderBar } from "../userInterface/headerBar"
+import { UpdatedUserInterface } from "../userInterface/updatedUserInterface"
+import { FulfillOptions } from "./fulfillOptions"
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../app/store";
+import { FulfillUserInterface } from "./fulfillUserInterface";
 
 export const Fulfill = () => {
+    
+    
     return(
-        <div>
+        <Box> 
             <HeaderBar/>
-            <div style={{marginTop: 100}}>
-            <h1>FULFILL</h1>
-            </div>
-        </div>
+            <FulfillUserInterface/>
+            <FulfillOptions/>
+        </Box>
     )
 }
