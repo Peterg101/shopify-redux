@@ -1,8 +1,18 @@
-import { Box, Typography, Card, CardContent, CardActions, Button } from "@mui/material";
+import { useState } from "react";
+import {
+  Card, CardContent, CardActions,
+  Typography, Button, Box, Dialog
+} from "@mui/material";
 import { Order } from "../../app/utility/interfaces";
+import { ObjPopUpViewer } from "./objPopUpViewer"; // new component
 
 export const OrderCard: React.FC<Order> = (order) => {
-  const isOpen = order.status === "created";
+  const [open, setOpen] = useState(false);
+
+  const handleView = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  const isOpen = order.status === "open";
   const isInProgress = order.status === "in_progress";
 
   return (
@@ -18,16 +28,19 @@ export const OrderCard: React.FC<Order> = (order) => {
         <Typography variant="body2" color="text.secondary">
           Status: {order.status} {order.is_collaborative && "(Collaborative)"}
         </Typography>
-        <Box mt={1}>
-          {order.selectedFileType?.startsWith("image") && (
+
+        {/* Thumbnail if it's an image */}
+        {order.selectedFileType.startsWith("image") && (
+          <Box mt={1}>
             <img
               src={order.selectedFile}
               alt={order.name}
-              style={{ maxWidth: "100%", maxHeight: 200 }}
+              style={{ maxWidth: "100%", maxHeight: 200, borderRadius: 8 }}
             />
-          )}
-        </Box>
+          </Box>
+        )}
       </CardContent>
+
       <CardActions>
         {isOpen && (
           <Button size="small" variant="contained">
@@ -39,7 +52,19 @@ export const OrderCard: React.FC<Order> = (order) => {
             Complete
           </Button>
         )}
+        {order.selectedFileType.includes("obj") && (
+          <Button size="small" variant="outlined" onClick={handleView}>
+            View
+          </Button>
+        )}
       </CardActions>
+
+      {/* Modal with 3D viewer */}
+      <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
+        <Box sx={{ height: "600px" }}>
+          <ObjPopUpViewer url={order.selectedFile} />
+        </Box>
+      </Dialog>
     </Card>
   );
 };
