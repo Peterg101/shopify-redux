@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { BasketInformation, DataState, FileInformation, VectorState } from "../app/utility/interfaces";
 import * as THREE from "three";
 import { getMidPoint } from "../app/utility/utils";
-import { PricingConfig } from '../app/utility/interfaces';
+import { PricingConfig, Order } from '../app/utility/interfaces';
 import pricingConfig from "./../config/pricingConfig.json"
 import { getPrice } from '../app/utility/utils';
 
@@ -145,6 +145,26 @@ export const dataSlice = createSlice({
             state.displayObjectConfig = true
             state.materialCost = getPrice(basketItem.material, config)
         },
+        setFulfillFileViewProperties: (
+            state,
+            action: PayloadAction<{
+                order: Order,
+                fileInformation: FileInformation
+            }>
+        ) => {
+            const {order, fileInformation} = action.payload
+            state.taskId = order.task_id
+            state.fileNameBoxValue = order.name
+            state.printMaterial = order.material
+            state.printTechnique = order.technique
+            state.multiplierValue = order.sizing
+            state.modelColour = order.colour
+            state.selectedFile= fileInformation.fileUrl
+            state.selectedFileType=order.selectedFileType
+            state.fileDisplay = true
+            state.displayObjectConfig = true
+            state.materialCost = getPrice(order.material, config)
+        },
         setXFLip: (state, action: PayloadAction<{xFlip: number}>) => {
             const {xFlip} = action.payload
             state.xFlip = xFlip
@@ -201,7 +221,8 @@ export const {
     setFromMeshyOrHistory,
     setClearFileDisplay,
     setDisplayObjectConfig,
-    setTotalCost
+    setTotalCost,
+    setFulfillFileViewProperties
 
  } = dataSlice.actions
 

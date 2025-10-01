@@ -21,7 +21,7 @@ const OBJSTLViewer = () => {
         >
           <Suspense fallback={null}>
             {
-            dataState.selectedFileType === "obj" ? (
+            dataState.selectedFileType.includes("obj") ? (
             <OBJScene 
             />
           ) : 

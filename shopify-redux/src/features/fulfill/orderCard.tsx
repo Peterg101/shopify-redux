@@ -5,15 +5,52 @@ import {
 } from "@mui/material";
 import { Order } from "../../app/utility/interfaces";
 import { ObjPopUpViewer } from "./objPopUpViewer"; // new component
+import OBJScene from "../display/objScene";
+import { useFile } from "../../services/fileProvider";
+import { extractFileInfo, fetchFile } from "../../services/fetchFileUtils";
+import { useDispatch } from "react-redux";
+import { setFulfillFileViewProperties, setSelectedFile } from "../../services/dataSlice";
+import OBJSTLViewer from "../display/objStlViewer";
 
 export const OrderCard: React.FC<Order> = (order) => {
   const [open, setOpen] = useState(false);
-
+  const {actualFile, setActualFile} = useFile()
+  const dispatch = useDispatch()
   const handleView = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
   const isOpen = order.status === "open";
   const isInProgress = order.status === "in_progress";
+
+
+  const handleViewOrderItem = async (order: Order) => {
+    console.log("VIEWWWWWW")
+    try {
+      const data = await fetchFile(order.task_id);
+      if (!data) {
+        throw new Error("File not found or could not be fetched.");
+      }
+  
+      const fileInfo = extractFileInfo(data, order.name);
+      console.log(fileInfo.file)
+      if (!fileInfo?.fileUrl) {
+        throw new Error("Failed to extract file information.");
+      }
+  
+      setActualFile(fileInfo.file);
+      dispatch(setSelectedFile({ selectedFile: fileInfo.fileUrl }));
+      dispatch(setFulfillFileViewProperties({
+        order: order,
+        fileInformation: fileInfo
+      }));
+  
+      setOpen(true);
+  
+    } catch (err) {
+      console.error("Error fetching or preparing file:", err);
+      alert("Sorry, this file could not be loaded."); // fallback UI
+    }
+  };
 
   return (
     <Card sx={{ mb: 2 }}>
@@ -53,7 +90,7 @@ export const OrderCard: React.FC<Order> = (order) => {
           </Button>
         )}
         {order.selectedFileType.includes("obj") && (
-          <Button size="small" variant="outlined" onClick={handleView}>
+          <Button size="small" variant="outlined" onClick={() => handleViewOrderItem(order)}>
             View
           </Button>
         )}
@@ -61,9 +98,13 @@ export const OrderCard: React.FC<Order> = (order) => {
 
       {/* Modal with 3D viewer */}
       <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
-        <Box sx={{ height: "600px" }}>
-          <ObjPopUpViewer url={order.selectedFile} />
-        </Box>
+      <Box sx={{ height: "600px" }}>
+      {order.selectedFileType.includes("obj") ? (
+        <OBJSTLViewer />
+      ) : (
+        <Typography sx={{ p: 3 }}>No 3D preview available.</Typography>
+      )}
+      </Box>
       </Dialog>
     </Card>
   );

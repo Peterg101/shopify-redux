@@ -1,6 +1,7 @@
 import { FileInformation, FileResponse, BasketInformationAndFile, BasketQuantityUpdate} from "../app/utility/interfaces"
 import {convertFileToDataURI } from "../app/utility/utils";
 import { MeshyPayload, MeshyImageTo3DPayload } from "../services/meshyApi";
+
 export const fetchFile = async (fileId: string): Promise<FileResponse> => {
     try {
       const response = await fetch(`http://localhost:8000/file_storage/${fileId}`, {
