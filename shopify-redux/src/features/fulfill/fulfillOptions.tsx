@@ -1,7 +1,8 @@
-import { Box, useTheme, Container, Grid, Paper} from "@mui/material";
+import { Box, useTheme, Container, List, ListItem, Paper, Typography, Divider} from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
-
+import { OrderCard } from "./orderCard";
+import React from "react";
 
 export const FulfillOptions = () =>{
     const theme = useTheme();
@@ -9,8 +10,6 @@ export const FulfillOptions = () =>{
         (state: RootState) => state.userInterfaceState
       );
     const drawerWidth = 100
-    const dataState = useSelector((state: RootState) => state.dataState);
-    const dispatch = useDispatch();
 
 
     const styles = {
@@ -30,17 +29,28 @@ export const FulfillOptions = () =>{
           },
         },
       };
-    return(
+      return (
         <Box sx={styles.fileInput}>
-        <Container maxWidth="lg" sx={styles.container}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={8} lg={12}>
-            <Paper sx={styles.paper}>
-                {userInterfaceState.userInformation.orders}
+          <Container maxWidth="lg" sx={styles.container}>
+            <Paper>
+              {(!userInterfaceState.userInformation.orders || userInterfaceState.userInformation.orders.length === 0) ? (
+                <Typography variant="h6" align="center" color="text.secondary" sx={{ mt: 4 }}>
+                  No orders available at the moment.
+                </Typography>
+              ) : (
+                <List>
+                  {userInterfaceState.userInformation.orders.map((order, index) => (
+                    <React.Fragment key={order.order_id}>
+                      <ListItem>
+                        <OrderCard {...order} />
+                      </ListItem>
+                      {index < userInterfaceState.userInformation.orders.length - 1 && <Divider />}
+                    </React.Fragment>
+                  ))}
+                </List>
+              )}
             </Paper>
-          </Grid>
-        </Grid>
-      </Container>
+          </Container>
         </Box>
-    )
+      );
 }
