@@ -11,49 +11,7 @@ import { HeaderBar } from "../userInterface/headerBar";
 import { GenerateOrderOptions } from "./generateOrderOptions";
 export const LandingPage = () => {
 
-    useSyncTotalCost()
-    useSyncTotalBasketCost()
-    const [actualFile, setActualFile] = useState<File | null>(null);
-    const [messages, setMessages] = useState<string[]>([]);
-    const [progress, setProgress] = useState<number | null>(null);
-    const userInterfaceState = useSelector(
-      (state: RootState) => state.userInterfaceState
-    )
-    const dispatch = useDispatch()
-    useEffect(() => {
-      if (userInterfaceState.userInformation?.incomplete_task?.port) {
-        const portId = userInterfaceState.userInformation?.incomplete_task.port.port_id;
-        createWebsocketConnection(portId, dispatch, setActualFile);
-      }
-    }, [userInterfaceState.userInformation]);
-
-    const {
-      data: sessionData,
-      error: sessionError,
-      isLoading: isSessionLoading,
-      refetch: refetchSession, 
-    } = useGetSessionQuery();
     
-    const [
-      logOut, 
-      { 
-        data: logOutData, 
-        error: logOutError, 
-        isLoading: isLogOutLoading 
-      }
-    ] = useLogOutMutation();
-
-    const handleLogin = () => {
-        window.location.href = "http://localhost:2468/auth/google";
-      };
-
-    const handleCallProtectedEndpoint = () => {
-        refetchSession()
-    }
-    
-    const handleLogOut = () =>{
-        logOut()
-    }
 
     return(
         <Box sx = {{marginTop: 10}}>

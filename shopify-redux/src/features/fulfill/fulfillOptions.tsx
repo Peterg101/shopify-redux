@@ -33,7 +33,7 @@ export const FulfillOptions = () =>{
         <Box sx={styles.fileInput}>
           <Container maxWidth="lg" sx={styles.container}>
             <Paper>
-              {(!userInterfaceState.userInformation.orders || userInterfaceState.userInformation.orders.length === 0) ? (
+              {(!userInterfaceState.userInformation?.orders || userInterfaceState.userInformation.orders.length === 0) ? (
                 <Typography variant="h6" align="center" color="text.secondary" sx={{ mt: 4 }}>
                   No orders available at the moment.
                 </Typography>
