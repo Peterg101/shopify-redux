@@ -99,7 +99,7 @@ export const OrderCard: React.FC<Order> = (order) => {
 
       {/* Modal with 3D viewer */}
       <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
-      <Box sx={{ height: "600px" }}>
+      <Box >
       {order.selectedFileType.includes("obj") ? (
         <OBJSTLViewer />
       ) : (
