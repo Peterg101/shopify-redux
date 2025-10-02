@@ -42,7 +42,8 @@ const OBJSTLViewer = () => {
             <Environment preset = "sunset" backgroundBlurriness={1.0} background />
           </Suspense>
         </Canvas>
-        <OptionTabs/>
+        {!dataState.fulfillMode && <OptionTabs />}
+        
       </div>
    
   );

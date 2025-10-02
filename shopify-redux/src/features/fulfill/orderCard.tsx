@@ -9,22 +9,23 @@ import OBJScene from "../display/objScene";
 import { useFile } from "../../services/fileProvider";
 import { extractFileInfo, fetchFile } from "../../services/fetchFileUtils";
 import { useDispatch } from "react-redux";
-import { setFulfillFileViewProperties, setSelectedFile } from "../../services/dataSlice";
+import { resetDataState, setFulfillFileViewProperties, setFulfillMode, setSelectedFile } from "../../services/dataSlice";
 import OBJSTLViewer from "../display/objStlViewer";
 
 export const OrderCard: React.FC<Order> = (order) => {
   const [open, setOpen] = useState(false);
   const {actualFile, setActualFile} = useFile()
   const dispatch = useDispatch()
-  const handleView = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    dispatch(resetDataState())
+    setOpen(false);
+  }
 
   const isOpen = order.status === "open";
   const isInProgress = order.status === "in_progress";
 
 
   const handleViewOrderItem = async (order: Order) => {
-    console.log("VIEWWWWWW")
     try {
       const data = await fetchFile(order.task_id);
       if (!data) {
@@ -43,7 +44,7 @@ export const OrderCard: React.FC<Order> = (order) => {
         order: order,
         fileInformation: fileInfo
       }));
-  
+      dispatch(setFulfillMode({fulfillMode: true}))
       setOpen(true);
   
     } catch (err) {

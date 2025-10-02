@@ -5,6 +5,7 @@ import { FulfillOptions } from "./fulfillOptions"
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { FulfillUserInterface } from "./fulfillUserInterface";
+import { resetDataState, setFulfillMode } from "../../services/dataSlice";
 
 export const Fulfill = () => {
     

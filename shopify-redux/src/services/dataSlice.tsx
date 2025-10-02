@@ -5,6 +5,7 @@ import { getMidPoint } from "../app/utility/utils";
 import { PricingConfig, Order } from '../app/utility/interfaces';
 import pricingConfig from "./../config/pricingConfig.json"
 import { getPrice } from '../app/utility/utils';
+import { FlutterDash } from "@mui/icons-material";
 
 const initialVectorState: VectorState = {
     position: { x: 0, y: 0, z: 0 },
@@ -31,6 +32,8 @@ const initialState: DataState = {
     displayObjectConfig: false,
     materialCost: 0,
     totalCost: 0,
+    fulfillMode: false
+
 }
 
 export const dataSlice = createSlice({
@@ -40,6 +43,10 @@ export const dataSlice = createSlice({
         setModelColour: (state, action: PayloadAction<{modelColour: string}>) => {
             const {modelColour} = action.payload
             state.modelColour = modelColour
+        },
+        setFulfillMode: (state, action: PayloadAction<{fulfillMode: boolean}>) => {
+            const {fulfillMode} = action.payload
+            state.fulfillMode = fulfillMode
         },
         setSelectedFile: (state, action: PayloadAction<{selectedFile: string}>) => {
             const {selectedFile} = action.payload
@@ -164,6 +171,8 @@ export const dataSlice = createSlice({
             state.fileDisplay = true
             state.displayObjectConfig = true
             state.materialCost = getPrice(order.material, config)
+            state.fulfillMode = true
+
         },
         setXFLip: (state, action: PayloadAction<{xFlip: number}>) => {
             const {xFlip} = action.payload
@@ -222,7 +231,8 @@ export const {
     setClearFileDisplay,
     setDisplayObjectConfig,
     setTotalCost,
-    setFulfillFileViewProperties
+    setFulfillFileViewProperties,
+    setFulfillMode
 
  } = dataSlice.actions
 

@@ -58,7 +58,8 @@ export interface DataState {
    zFlip: number,
    displayObjectConfig: boolean,
    materialCost: number,
-   totalCost: number
+   totalCost: number,
+   fulfillMode: boolean,
    
 }
 
