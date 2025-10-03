@@ -13,6 +13,10 @@ import {
   Grid,
   useMediaQuery,
   useTheme,
+  Dialog,
+  DialogActions,
+  DialogTitle,
+  DialogContent,
 } from "@mui/material";
 import {
   ExpandMore,
@@ -216,6 +220,9 @@ const BasketTotal = () => {
 
 // Sticky summary card
 export const BasketSummary = () => {
+  const [open, setOpen] = useState(false);
+  const handleClose = () => setOpen(false);
+
   const user_id = useSelector((state:RootState) => state.userInterfaceState.userInformation.user.user_id)
   const basketItems = useSelector((state: RootState) => state.userInterfaceState.userInformation?.basket_items || []);
   const subtotal = useSelector((state: RootState) => state.userInterfaceState.totalBasketValue)
@@ -224,8 +231,17 @@ export const BasketSummary = () => {
   const [generateTasksFromBasket] = useGenerateTasksFromBasketMutation()
   const dispatch = useDispatch()
   const clickProceedToBasket = () => {
+    setOpen(true)
+  }
+
+  const handleCheckoutWithFitd = () =>{
     dispatch(setLeftDrawerClosed())
+    setOpen(false)
     createShopifyCheckoutAndRedirect()
+  }
+
+  const handleCheckoutWithCommunity = () => {
+    console.log("HERE WE GOOOOOOOOOO")
   }
 
   return (
@@ -284,6 +300,24 @@ export const BasketSummary = () => {
       >
         Proceed to Checkout
       </Button>
-    </Card>
+      <Dialog open={open} onClose={handleClose}>
+      <DialogTitle>Checkout Confirmation</DialogTitle>
+      <DialogContent>
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          gap={2} // spacing between buttons
+        >
+          <Button variant="contained" color="primary" onClick={handleCheckoutWithFitd}>
+            Checkout with FITD
+          </Button>
+          <Button variant="contained" color="primary" onClick={handleCheckoutWithCommunity}>
+            Checkout with the community
+          </Button>
+        </Box>
+      </DialogContent>
+    </Dialog>
+      </Card>
   );
 };
