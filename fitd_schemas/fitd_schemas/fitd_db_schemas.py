@@ -87,3 +87,31 @@ class Order(Base):
 
     user = relationship("User", backref="orders")
     task = relationship("Task", backref="order", uselist=False)
+
+
+class Claim(Base):
+    __tablename__ = "claims"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
+    order_id: Mapped[str] = mapped_column(String, nullable=False)
+    line_item_id: Mapped[str] = mapped_column(String, nullable=False)
+    claimant_user_id: Mapped[str] = mapped_column(String, ForeignKey("users.user_id"))
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String, default="pending", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    disbursements: Mapped[list["Disbursement"]] = relationship("Disbursement", back_populates="claim")
+
+
+class Disbursement(Base):
+    __tablename__ = "disbursements"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
+    claim_id: Mapped[str] = mapped_column(String, ForeignKey("claims.id"), nullable=False)
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.user_id"), nullable=False)
+    amount_cents: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String, default="pending", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+
+    claim: Mapped["Claim"] = relationship("Claim", back_populates="disbursements")
