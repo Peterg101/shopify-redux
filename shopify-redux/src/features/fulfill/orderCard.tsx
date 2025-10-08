@@ -21,7 +21,7 @@ export const OrderCard: React.FC<Order> = (order) => {
     setOpen(false);
   }
 
-  const isOpen = order.status === "open";
+  const isOpen = order.status === "created";
   const isInProgress = order.status === "in_progress";
 
 
@@ -53,6 +53,10 @@ export const OrderCard: React.FC<Order> = (order) => {
     }
   };
 
+  const handleClaimOrderItem = async (order: Order)=>{
+    console.log(order.name)
+  }
+
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent>
@@ -81,15 +85,11 @@ export const OrderCard: React.FC<Order> = (order) => {
 
       <CardActions>
         {isOpen && (
-          <Button size="small" variant="contained">
+          <Button size="small" variant="contained" onClick={() => handleClaimOrderItem(order)}>
             Claim
           </Button>
         )}
-        {isInProgress && (
-          <Button size="small" variant="outlined">
-            Complete
-          </Button>
-        )}
+        
         {order.selectedFileType.includes("obj") && (
           <Button size="small" variant="outlined" onClick={() => handleViewOrderItem(order)}>
             View
