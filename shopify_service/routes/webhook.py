@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Request, Header, HTTPException
-from shopify_client import ShopifyClient
 from fitd_schemas.fitd_classes import UserInformation
 from jwt_auth import generate_token
 import hmac
