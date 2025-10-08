@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-from stripe_client import StripeClient
 from fastapi.middleware.cors import CORSMiddleware
 from routes import onboard
 import uvicorn
@@ -15,9 +14,6 @@ app.add_middleware(
 
 # Register routes
 app.include_router(onboard.router)
-
-# You can initialize the Shopify client once if needed
-stripe_client = ShopifyClient()
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=369)
