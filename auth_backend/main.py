@@ -23,7 +23,7 @@ from api_calls import check_user_exists, create_user, check_only_user_exists
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:1234", "http://localhost:369"],
+    allow_origins=["http://localhost:3000", "http://localhost:1234", "http://localhost:369", "http://localhost:100"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
