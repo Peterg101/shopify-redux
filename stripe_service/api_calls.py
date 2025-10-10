@@ -34,3 +34,23 @@ async def session_exists_user_only(session_id: str) -> Optional[UserInformation]
         except httpx.HTTPError as e:
             print(f"HTTP error occurred: {e}")
             return None
+
+
+async def check_user_stripe_onboarded(session_id: str) -> bool:
+    cookies = {"fitd_session_data": session_id}
+    url = "http://localhost:8000/user_onboarded_with_stripe"
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url, cookies=cookies)
+            print(response)
+            return True
+            # if response.status_code == 200:
+            #     # Parse the response JSON and return a UserInformation object
+            #     user_info = UserInformation.parse_obj(response.json())
+            #     return user_info
+            # else:
+            #     print(f"Failed to fetch user details, status code: {response.status_code}")
+            #     return None
+        except httpx.HTTPError as e:
+            print(f"HTTP error occurred: {e}")
+            return False

@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends, Cookie, Header, Request
 from typing import List
 from sqlalchemy.orm import Session, joinedload
 from fastapi.middleware.cors import CORSMiddleware
-from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, Order
+from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, Order, UserStripeAccount
 from datetime import datetime
 import uuid
 from db_setup import engine, get_db
@@ -130,6 +130,19 @@ async def get_only_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
+
+# Check that user is onboarded with stripe
+@app.get("/user_onboarded_with_stripe/{user_id}")
+async def check_user_onboarded_with_stripe(
+    user_id: str,
+    db: Session = Depends(get_db),
+    authorization: str = Depends(cookie_verification),
+):
+    user = db.query(UserStripeAccount).filter(UserStripeAccount.user_id == user_id).first()
+    if not user:
+        return False
+    return True
 
 
 @app.post("/file_upload")
