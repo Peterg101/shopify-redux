@@ -7,7 +7,7 @@ import { Order } from "../../app/utility/interfaces";
 import { ObjPopUpViewer } from "./objPopUpViewer"; // new component
 import OBJScene from "../display/objScene";
 import { useFile } from "../../services/fileProvider";
-import { extractFileInfo, fetchFile } from "../../services/fetchFileUtils";
+import { callStripeService, extractFileInfo, fetchFile } from "../../services/fetchFileUtils";
 import { useDispatch } from "react-redux";
 import { resetDataState, setFulfillFileViewProperties, setFulfillMode, setSelectedFile } from "../../services/dataSlice";
 import OBJSTLViewer from "../display/objStlViewer";
@@ -55,6 +55,7 @@ export const OrderCard: React.FC<Order> = (order) => {
 
   const handleClaimOrderItem = async (order: Order)=>{
     console.log(order.name)
+    callStripeService()
   }
 
   return (

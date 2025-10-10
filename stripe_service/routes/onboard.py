@@ -17,6 +17,7 @@ async def onboard_user(user=Depends(cookie_verification_user_only)):
     """Creates or returns a Stripe Express account for the given user."""
 
     print(user)
+    print(user.user_id)
     # account = db.query(UserStripeAccount).filter_by(user_id=user_id).first()
 
     # if account and account.stripe_account_id:

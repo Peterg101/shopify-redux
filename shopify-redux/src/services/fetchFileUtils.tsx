@@ -178,3 +178,29 @@ export async function createShopifyCheckoutAndRedirect() {
     alert("There was a problem creating the checkout. Please try again.");
   }
 }
+
+export async function callStripeService() {
+  try {
+    const response = await fetch("http://localhost:100/stripe/onboard", {
+      method: "POST",
+      credentials: "include", // important if you're using cookies for auth
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}), // empty because your server gets user from cookies
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Checkout creation failed: ${errorText}`);
+    }
+
+    // const data = await response.json();
+    // const checkoutUrl = data.checkout_url;
+    // window.location.href = checkoutUrl;
+
+  } catch (error) {
+    console.error("Error creating checkout:", error);
+    alert("There was a problem creating the checkout. Please try again.");
+  }
+}
