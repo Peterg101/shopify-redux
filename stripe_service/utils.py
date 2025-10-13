@@ -19,6 +19,7 @@ SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET")
 STRIPE_SECRET_KEY = os.getenv("SECRET_KEY")
 REFRESH_URL = "http://localhost:3000/fulfill"
 RETURN_URL = "http://localhost:3000/fulfill"
+STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
 
 async def cookie_verification(request: Request):
     session_id = request.cookies.get("fitd_session_data")
@@ -64,7 +65,6 @@ async def generate_account_link(account_id: str):
     print(account_link["url"])
     return {"onboarding_url": account_link["url"]}
 
-STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")  # ensure set
 
 async def validate_stripe_header(request: Request):
     # Read raw body bytes (do NOT json.loads first)
