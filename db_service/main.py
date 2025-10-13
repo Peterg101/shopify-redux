@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, Cookie, Header, Request
+from fastapi import FastAPI, HTTPException, Depends, Cookie, Header, Request, status, Response
 from typing import List
 from sqlalchemy.orm import Session, joinedload
 from fastapi.middleware.cors import CORSMiddleware
@@ -137,12 +137,62 @@ async def get_only_user(
 async def check_user_onboarded_with_stripe(
     user_id: str,
     db: Session = Depends(get_db),
-    authorization: str = Depends(cookie_verification),
+    _: str = Depends(verify_jwt_token),
 ):
-    user = db.query(UserStripeAccount).filter(UserStripeAccount.user_id == user_id).first()
-    if not user:
-        return False
-    return True
+    """
+    Return the user's Stripe account info if onboarded,
+    otherwise return 204 No Content.
+    """
+    user_stripe = (
+        db.query(UserStripeAccount)
+        .filter(UserStripeAccount.user_id == user_id)
+        .first()
+    )
+
+    if not user_stripe:
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+    # If you only want to return limited fields, filter them here:
+    response_data = {
+        "stripe_account_id": user_stripe.stripe_account_id,
+        "onboarding_complete": getattr(user_stripe, "onboarding_complete", False),
+        "created_at": getattr(user_stripe, "created_at", None),
+        "updated_at": getattr(user_stripe, "updated_at", None),
+    }
+
+    return response_data
+
+
+@app.post("/generate_user_stripe_account_in_db/{user_id}")
+async def generate_user_stripe_account_in_db(
+    user_id: str,
+    payload: dict,
+    db: Session = Depends(get_db),
+    _: str = Depends(verify_jwt_token),
+):
+    """
+    Creates a Stripe account record in the DB for a given user.
+    """
+    stripe_account_id = payload.get("stripe_account_id")
+    if not stripe_account_id:
+        raise HTTPException(status_code=400, detail="Missing stripe_account_id")
+
+    existing = db.query(UserStripeAccount).filter_by(user_id=user_id).first()
+    if existing:
+        existing.stripe_account_id = stripe_account_id
+        db.commit()
+        return {"message": "Stripe account updated", "user_id": user_id}
+
+    record = UserStripeAccount(
+        user_id=user_id,
+        stripe_account_id=stripe_account_id,
+        onboarding_complete=False
+    )
+    db.add(record)
+    db.commit()
+    db.refresh(record)
+
+    return {"message": "Stripe account created", "user_id": user_id, "stripe_account_id": stripe_account_id}
 
 
 @app.post("/file_upload")
@@ -422,6 +472,13 @@ async def update_order(
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error updating orders: {str(e)}")
 
+
+@app.post("/stripe/confirm_onboarding")
+async def confirm_onboarding(
+    payload: dict = Depends(verify_jwt_token),
+    db:Session = Depends(get_db)
+):
+    print("hit it")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

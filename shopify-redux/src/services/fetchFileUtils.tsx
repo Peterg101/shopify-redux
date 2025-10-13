@@ -195,9 +195,10 @@ export async function callStripeService() {
       throw new Error(`Checkout creation failed: ${errorText}`);
     }
 
-    // const data = await response.json();
-    // const checkoutUrl = data.checkout_url;
-    // window.location.href = checkoutUrl;
+    const data = await response.json();
+    console.log(data)
+    if (data.onboarding_url) {
+    window.location.href = data.onboarding_url;}
 
   } catch (error) {
     console.error("Error creating checkout:", error);
