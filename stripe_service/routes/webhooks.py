@@ -17,4 +17,6 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 @router.post("/confirm_user_onboarded")
 async def user_onboarded_webhook(event=Depends(validate_stripe_header)):
-    print("HIt this heeeeeere")
+    # user_account_id = event["data"]["object"]["id"]
+    # print(user_account_id)
+    print(event)
