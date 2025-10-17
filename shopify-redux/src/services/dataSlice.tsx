@@ -32,7 +32,7 @@ const initialState: DataState = {
     displayObjectConfig: false,
     materialCost: 0,
     totalCost: 0,
-    fulfillMode: false
+    fulfillMode: false,
 
 }
 
@@ -200,10 +200,7 @@ export const dataSlice = createSlice({
         setTotalCost: (state, action: PayloadAction<{totalCost: number}>) => {
             const {totalCost} = action.payload
             state.totalCost = totalCost
-        }
-
-
-        
+        }    
     }
 })
 
@@ -232,7 +229,7 @@ export const {
     setDisplayObjectConfig,
     setTotalCost,
     setFulfillFileViewProperties,
-    setFulfillMode
+    setFulfillMode,
 
  } = dataSlice.actions
 

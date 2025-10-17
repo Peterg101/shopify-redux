@@ -33,9 +33,8 @@ export interface UserInterfaceState {
     meshyQueueItems: number,
     isLoggedIn: boolean,
     userInformation: UserAndTasksAndBasketAndIncompleteAndOrders | null,
-    totalBasketValue: number
-    
-
+    totalBasketValue: number,
+    claimedOrder: Order
 }
 
 export interface DataState {
@@ -181,4 +180,10 @@ export interface PricingConfig {
 export interface BasketQuantityUpdate {
   task_id: string
   quantity: number
+}
+
+export interface ClaimProps{
+  open: boolean,
+  handleClose: VoidFunction,
+  order: Order
 }

@@ -6,12 +6,17 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import STLScene from './stlScene';
 import OptionTabs from '../userInterface/optionTabs';
+import { ClaimMenu } from '../fulfill/claimMenu';
 
 
 const OBJSTLViewer = () => {
     const dataState = useSelector(
         (state: RootState) => state.dataState
     )
+
+    const userInterfaceState = useSelector(
+      (state: RootState) => state.userInterfaceState
+  )
 
   return (
       <div className="App">
@@ -42,7 +47,7 @@ const OBJSTLViewer = () => {
             <Environment preset = "sunset" backgroundBlurriness={1.0} background />
           </Suspense>
         </Canvas>
-        {!dataState.fulfillMode && <OptionTabs />}
+        {!dataState.fulfillMode && userInterfaceState.claimedOrder === null && <OptionTabs />}
         
       </div>
    

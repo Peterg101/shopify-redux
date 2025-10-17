@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { UserInterfaceState, BasketItem, UploadedFile } from "../app/utility/interfaces";
+import { UserInterfaceState, BasketItem, UploadedFile, Order } from "../app/utility/interfaces";
 import { UUID } from "crypto";
 import { authApi } from "./authApi";
 
@@ -15,7 +15,8 @@ const initialState: UserInterfaceState = {
     meshyQueueItems: 0,
     isLoggedIn: false,
     userInformation: null,
-    totalBasketValue: 0
+    totalBasketValue: 0,
+    claimedOrder: null
 }
 
 export const userInterfaceSlice = createSlice({
@@ -87,6 +88,10 @@ export const userInterfaceSlice = createSlice({
         setTotalBasketCost: (state, action: PayloadAction<{totalBasketCost: number}>) => {
             const {totalBasketCost} = action.payload
             state.totalBasketValue = totalBasketCost
+        },
+        setClaimedOrder: (state, action: PayloadAction<{claimedOrder: Order}>) => {
+            const {claimedOrder} = action.payload
+            state.claimedOrder = claimedOrder
         }
         
 
@@ -130,7 +135,8 @@ export const {
     setMeshyPending,
     setMeshyQueueItems,
     setSelectedComponent,
-    setTotalBasketCost
+    setTotalBasketCost,
+    setClaimedOrder
 } = userInterfaceSlice.actions
 
 export default userInterfaceSlice.reducer

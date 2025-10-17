@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../app/store";
 import { useEffect, useState } from "react";
 import { styled, Theme, CSSObject, useTheme } from "@mui/material/styles";
+import { resetDataState } from "../../services/dataSlice";
 
 export const MainOptions = () => {
   const userInterfaceState = useSelector(
@@ -14,7 +15,7 @@ export const MainOptions = () => {
   const drawerWidth = userInterfaceState.drawerWidth;
   const dataState = useSelector((state: RootState) => state.dataState);
   const dispatch = useDispatch();
-
+  // dispatch(resetDataState())
   const [openToast, setOpenToast] = useState(false);
 
   // Track changes to displayObjectConfig to show toast
