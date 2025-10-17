@@ -38,6 +38,12 @@ import { resetDataState, setFulfillMode } from "../../services/dataSlice";
       console.log(`✅ Confirmed claim of ${quantity} item(s)`);
       dispatch(setClaimedOrder({ claimedOrder: null }));
     };
+
+    const handleCancel = () =>{
+      dispatch(setClaimedOrder({ claimedOrder: null }));
+      dispatch(resetDataState());
+      dispatch(setFulfillMode({ fulfillMode: false }));
+    }
   
     return (
       <Box
@@ -174,21 +180,39 @@ import { resetDataState, setFulfillMode } from "../../services/dataSlice";
               </Box>
   
               {/* Confirm Button */}
-              <Button
-                variant="contained"
-                color="primary"
-                size="large"
-                fullWidth
-                sx={{
-                  py: 1.4,
-                  borderRadius: 2,
-                  textTransform: "none",
-                  fontWeight: 600,
-                }}
-                onClick={confirmClaim}
-              >
-                Confirm Claim
-              </Button>
+              <Box display="flex" gap={2} width="100%" mt={2}>
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            fullWidth
+            sx={{
+              py: 1.4,
+              borderRadius: 2,
+              textTransform: "none",
+              fontWeight: 600,
+            }}
+            onClick={confirmClaim}
+          >
+            Confirm Claim
+          </Button>
+
+          <Button
+            variant="outlined"
+            color="secondary"
+            size="large"
+            fullWidth
+            sx={{
+              py: 1.4,
+              borderRadius: 2,
+              textTransform: "none",
+              fontWeight: 600,
+            }}
+            onClick={handleCancel}
+          >
+            Cancel
+          </Button>
+</Box>
             </Paper>
           </Grid>
         </Grid>
