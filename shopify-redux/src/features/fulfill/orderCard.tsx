@@ -7,6 +7,9 @@ import {
   Button,
   Box,
   Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogActions,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
@@ -150,14 +153,14 @@ export const OrderCard: React.FC<Order> = (order) => {
 
       {/* 3D Viewer Dialog */}
       <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
-        <Box>
-          {order.selectedFileType.includes("obj") ? (
-            <OBJSTLViewer />
-          ) : (
-            <Typography sx={{ p: 3 }}>No 3D preview available.</Typography>
-          )}
+      <DialogTitle>{order.name}</DialogTitle>
+          <Box>
+              <OBJSTLViewer />
         </Box>
-      </Dialog>
+          <DialogActions>
+            <Button onClick={() => handleClose()}>Close</Button>
+          </DialogActions>
+        </Dialog>
     </Card>
   );
 };
