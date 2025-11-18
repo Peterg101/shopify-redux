@@ -54,7 +54,6 @@ async def generate_task_and_check_for_response_decoupled_ws(
                 task_generated = True
                 complete_response = await add_file_response(generated_task_status)
 
-                # Ensure correct type before calling send_file_to_storage
                 if isinstance(complete_response, MeshyTaskStatusResponse):
                     await send_file_to_storage(complete_response)
                 else:

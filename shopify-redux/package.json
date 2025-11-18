@@ -9,7 +9,7 @@
     "@mui/icons-material": "^5.15.15",
     "@mui/material": "^5.16.7",
     "@mui/x-charts": "^7.3.0",
-    "@react-three/drei": "^9.105.4",
+    "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.17.10",
     "@reduxjs/toolkit": "^2.2.8",
     "@testing-library/jest-dom": "^5.17.0",
