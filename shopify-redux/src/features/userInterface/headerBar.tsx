@@ -40,7 +40,8 @@ export const HeaderBar = () => {
           >
             Generate
           </Button>
-          <Button
+          {/* <Button
+            disabled
             component={Link}
             to="/fulfill"
             sx={{
@@ -52,7 +53,7 @@ export const HeaderBar = () => {
             }}
           >
             Fulfill
-          </Button>
+          </Button> */}
         </Box>
 
         {/* Spacer */}
