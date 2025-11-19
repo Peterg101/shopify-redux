@@ -204,9 +204,14 @@ export function getPrice (materialName: string, data:PricingConfig ): number | n
 export function recalculateTotalCost(params: { modelVolume: number; materialCost: number; multiplierValue: number }): number {
   const { modelVolume, materialCost, multiplierValue } = params;
 
-  return [modelVolume, materialCost, multiplierValue].every(value => value > 0)
-      ? modelVolume * materialCost * multiplierValue
-      : 0;
+  if (![modelVolume, materialCost, multiplierValue].every(v => v > 0)) return 0;
+
+  // Soft cap for large prints: sublinear scaling
+  const volumeFactor = Math.pow(modelVolume, 0.8); // adjust exponent to control soft cap
+  // Minimum cost floor to prevent tiny prints being too cheap
+  const baseCost = 10; // e.g., $1 minimum
+
+  return Math.max(baseCost, volumeFactor * materialCost * multiplierValue);
 }
 
 export function validateData (data: Record<string, any>, schema: Record<string, (value: any) => boolean>): string[] {

@@ -13,11 +13,11 @@ const initialVectorState: VectorState = {
 const config: PricingConfig = pricingConfig;
 const initialState: DataState = {
     taskId:'',
-    modelColour: 'white',
+    modelColour: 'green',
     selectedFile: '',
     selectedFileType: '',
-    printTechnique: '',
-    printMaterial: '',
+    printTechnique: 'FDM',
+    printMaterial: 'PLA Basic',
     modelVolume: 0,
     multiplierValue: 1,
     maxScale: 10,
@@ -30,7 +30,7 @@ const initialState: DataState = {
     yFlip: 0,
     zFlip: 0,
     displayObjectConfig: false,
-    materialCost: 0,
+    materialCost: 0.00005,
     totalCost: 0,
     fulfillMode: false,
 
