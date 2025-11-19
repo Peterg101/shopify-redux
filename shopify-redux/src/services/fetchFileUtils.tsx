@@ -92,7 +92,7 @@ export const startTask = async (prompt: string, userId: string, portId: string) 
     ai_model: 'meshy-5'
   };
 
-  const response = await fetch('${}/start_task/', {
+  const response = await fetch(`${process.env.REACT_APP_MESHY_SERVICE}/start_task/`, {
     method: 'POST',
     credentials: 'include',
     headers: {
