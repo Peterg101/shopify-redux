@@ -45,10 +45,6 @@ function App() {
       }
     ] = useLogOutMutation();
 
-    const handleLogin = () => {
-        window.location.href = "http://localhost:2468/auth/google";
-      };
-
     const handleCallProtectedEndpoint = () => {
         refetchSession()
     }
