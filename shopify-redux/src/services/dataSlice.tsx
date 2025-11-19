@@ -13,7 +13,7 @@ const initialVectorState: VectorState = {
 const config: PricingConfig = pricingConfig;
 const initialState: DataState = {
     taskId:'',
-    modelColour: 'green',
+    modelColour: 'white',
     selectedFile: '',
     selectedFileType: '',
     printTechnique: 'FDM',
