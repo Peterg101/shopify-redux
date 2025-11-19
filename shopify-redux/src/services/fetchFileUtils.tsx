@@ -4,7 +4,7 @@ import { MeshyPayload, MeshyImageTo3DPayload } from "../services/meshyApi";
 
 export const fetchFile = async (fileId: string): Promise<FileResponse> => {
     try {
-      const response = await fetch(`http://localhost:8000/file_storage/${fileId}`, {
+      const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/file_storage/${fileId}`, {
         method: 'GET',
         credentials: 'include'
       });
@@ -41,7 +41,7 @@ export const extractFileInfo = (fileResponse: FileResponse, filename: string): F
 
 export const postFile = async (basketInformationAndFile: BasketInformationAndFile) => {
   try {
-    const response = await fetch(`http://localhost:8000/file_storage`, {
+    const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/file_storage`, {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -63,7 +63,7 @@ export const postFile = async (basketInformationAndFile: BasketInformationAndFil
 export const deleteBasketItem = async (fileId: string): Promise<void> => {
   
   try {
-      const response = await fetch(`http://localhost:8000/file_storage/${fileId}`, {
+      const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/file_storage/${fileId}`, {
           method: "DELETE",
           credentials: "include", // Include cookies in the request
           headers: {
@@ -92,7 +92,7 @@ export const startTask = async (prompt: string, userId: string, portId: string) 
     ai_model: 'meshy-5'
   };
 
-  const response = await fetch('http://localhost:1234/start_task/', {
+  const response = await fetch('${}/start_task/', {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -115,7 +115,7 @@ export const startImageTo3DTask = async (image_file: File, userId: string, portI
     ai_model: "meshy-5"
   };
 
-  const response = await fetch('http://localhost:1234/start_image_to_3d_task/', {
+  const response = await fetch(`${process.env.REACT_APP_MESHY_SERVICE}/start_image_to_3d_task/`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -131,7 +131,7 @@ export const startImageTo3DTask = async (image_file: File, userId: string, portI
 export const updateBasketQuantity = async (basketQuantityUpdate: BasketQuantityUpdate): Promise<void> => {
 
   try {
-    const response = await fetch(`http://localhost:8000/basket_item_quantity`, {
+    const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/basket_item_quantity`, {
         method: "POST",
         credentials: "include", // Include cookies in the request
         headers: {
@@ -155,7 +155,7 @@ export const updateBasketQuantity = async (basketQuantityUpdate: BasketQuantityU
 
 export async function createShopifyCheckoutAndRedirect() {
   try {
-    const response = await fetch("http://localhost:369/checkout", {
+    const response = await fetch(`${process.env.REACT_APP_SHOPIFY_SERVICE}/checkout`, {
       method: "POST",
       credentials: "include", // important if you're using cookies for auth
       headers: {
@@ -181,7 +181,7 @@ export async function createShopifyCheckoutAndRedirect() {
 
 export async function callStripeService() {
   try {
-    const response = await fetch("http://localhost:100/stripe/onboard", {
+    const response = await fetch(`${process.env.REACT_APP_STRIPE_SERVICE}/stripe/onboard`, {
       method: "POST",
       credentials: "include", // important if you're using cookies for auth
       headers: {

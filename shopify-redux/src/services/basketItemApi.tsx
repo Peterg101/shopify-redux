@@ -5,7 +5,7 @@ import { authApi } from './authApi';
 export const basketApi = createApi({
   reducerPath: 'basketApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: 'http://localhost:8000',
+    baseUrl: process.env.REACT_APP_DB_SERVICE,
     credentials: 'include',
   }),
   tagTypes: ['sessionData'],

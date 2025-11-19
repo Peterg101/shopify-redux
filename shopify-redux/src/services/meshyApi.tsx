@@ -70,7 +70,7 @@ export interface MeshyRefinePayload {
 
 export const meshyApi = createApi({
   reducerPath: 'meshyApi',
-  baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:1234/api/' }),
+  baseQuery: fetchBaseQuery({ baseUrl: `${process.env.REACT_APP_MESHY_SERVICE}/api/` }),
   endpoints: (builder) => ({
     meshyGenerateTask: builder.mutation<MeshyTaskGeneratedResponse, MeshyPayload>({
       query: (payload) => ({

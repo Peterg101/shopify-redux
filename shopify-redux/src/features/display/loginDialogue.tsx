@@ -15,7 +15,7 @@ const userInterfaceState = useSelector(
 )
   const theme = useTheme();
   const handleLogin = () => {
-    window.location.href = "http://localhost:2468/auth/google";
+    window.location.href = `${process.env.REACT_APP_AUTH_SERVICE}/auth/google`;
   };
   
   return (

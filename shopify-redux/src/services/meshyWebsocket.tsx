@@ -10,7 +10,7 @@ export const createWebsocketConnection = (
   dispatch: AppDispatch,
   setActualFile: React.Dispatch<React.SetStateAction<File | null>>
 ): WebSocket => {
-  const ws = new WebSocket(`ws://localhost:1234/ws/${portId}`);
+  const ws = new WebSocket(`${process.env.REACT_APP_MESHY_WEBSOCKET}/ws/${portId}`);
   let isFirstMessage = true;
 
   ws.onmessage = async (event) => {
