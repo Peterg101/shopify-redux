@@ -6,7 +6,7 @@ import { UserAndTasksAndBasketAndIncompleteAndOrders, FileResponse } from '../ap
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: 'http://localhost:2468',
+    baseUrl: process.env.REACT_APP_AUTH_SERVICE,
     credentials: 'include',
   }),
   tagTypes: ['sessionData', 'fileData'],
