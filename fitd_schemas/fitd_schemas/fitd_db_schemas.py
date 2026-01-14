@@ -94,7 +94,6 @@ class Claim(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
     order_id: Mapped[str] = mapped_column(String, nullable=False)
-    line_item_id: Mapped[str] = mapped_column(String, nullable=False)
     claimant_user_id: Mapped[str] = mapped_column(String, ForeignKey("users.user_id"))
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String, default="pending", nullable=False)
