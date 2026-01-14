@@ -1,4 +1,5 @@
 import { UUID } from "crypto";
+import internal from "stream";
 import * as THREE from 'three';
 //Basket items are safe to go in the redux store
 
@@ -186,4 +187,10 @@ export interface ClaimProps{
   open: boolean,
   handleClose: VoidFunction,
   order: Order
+}
+
+export interface ClaimOrder{
+  order_id: string
+  quantity: number
+  status: string
 }

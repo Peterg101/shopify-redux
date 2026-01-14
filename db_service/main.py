@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends, Cookie, Header, Request, st
 from typing import List
 from sqlalchemy.orm import Session, joinedload
 from fastapi.middleware.cors import CORSMiddleware
-from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, Order, UserStripeAccount
+from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, Order, UserStripeAccount, Claim
 from datetime import datetime
 import uuid
 from db_setup import engine, get_db
@@ -30,7 +30,8 @@ from fitd_schemas.fitd_classes import(
     BasketItemInformation,
     BasketQuantityUpdate,
     ImageTo3DMeshyTaskStatusResponse,
-    ShopifyOrder
+    ShopifyOrder,
+    ClaimOrder
 )
 import uvicorn
 from typing import Optional, Dict
@@ -444,7 +445,7 @@ async def create_order(
     return {"status": "success", "order_count": len(created_orders)}
 
 @app.post("/orders/update_order")
-async def claim_order(
+async def update_order(
     shopify_order: ShopifyOrder, 
     payload: dict = Depends(verify_jwt_token), 
     db: Session = Depends(get_db)
@@ -481,32 +482,34 @@ async def confirm_onboarding(
 
 @app.post("/claims/claim_order")
 async def claim_order(
-    claimed_order: ShopifyOrder, 
-    payload: dict = Depends(verify_jwt_token), 
-    db: Session = Depends(get_db)
+    claimed_order: ClaimOrder, 
+    db: Session = Depends(get_db),
+    _: None = Depends(cookie_verification),
 ):
-    try:
-        order_id = shopify_order.id
-        new_status = shopify_order.order_status
-        orders = db.query(Order).filter(Order.order_id == order_id).all()
+    print(claimed_order)
+    print("hitting here")
+    # try:
+    #     order_id = claimed_order.id
+    #     new_status = shopify_order.order_status
+    #     orders = db.query(Order).filter(Order.order_id == order_id).all()
 
-        if not orders:
-            raise HTTPException(status_code=404, detail=f"No orders found with ID {order_id}")
+    #     if not orders:
+    #         raise HTTPException(status_code=404, detail=f"No orders found with ID {order_id}")
 
-        for order in orders:
-            order.status = new_status
+    #     for order in orders:
+    #         order.status = new_status
 
-        db.commit()
+    #     db.commit()
 
-        return {
-            "status": "success",
-            "updated_count": len(orders),
-            "order_id": order_id,
-        }
+    #     return {
+    #         "status": "success",
+    #         "updated_count": len(orders),
+    #         "order_id": order_id,
+    #     }
 
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error updating orders: {str(e)}")
+    # except Exception as e:
+    #     db.rollback()
+    #     raise HTTPException(status_code=500, detail=f"Error updating orders: {str(e)}")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -2,7 +2,7 @@ from typing import Union, Dict, List
 from api_calls import session_exists, session_exists_user_only
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound
-from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID
+from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Claim
 from fitd_schemas.fitd_classes import UserInformation, TaskInformation, BasketItemInformation, LineItem
 from fastapi import HTTPException, Request
 from datetime import datetime
@@ -84,6 +84,71 @@ def delete_port_id(db: Session, task_id: str):
 
 def add_or_update_basket_item_in_db(
     db: Session, basket_item_info: BasketItemInformation
+) -> BasketItem:
+    # Check if the item already exists in the database
+    existing_item = (
+        db.query(BasketItem)
+        .filter(BasketItem.task_id == basket_item_info.task_id)
+        .first()
+    )
+    if existing_item:
+        # Check if any fields have changed
+        has_changed = any(
+            [
+                existing_item.user_id != basket_item_info.user_id,
+                existing_item.name != basket_item_info.name,
+                existing_item.material != basket_item_info.material,
+                existing_item.technique != basket_item_info.technique,
+                existing_item.sizing != basket_item_info.sizing,
+                existing_item.colour != basket_item_info.colour,
+                existing_item.selectedFile != basket_item_info.selected_file,
+                existing_item.selectedFileType != basket_item_info.selectedFileType,
+                existing_item.price != basket_item_info.price,
+                existing_item.quantity != basket_item_info.quantity
+            ]
+        )
+
+        if has_changed:
+            # Update the fields if they have changed
+            existing_item.user_id = basket_item_info.user_id
+            existing_item.name = basket_item_info.name
+            existing_item.material = basket_item_info.material
+            existing_item.technique = basket_item_info.technique
+            existing_item.sizing = basket_item_info.sizing
+            existing_item.colour = basket_item_info.colour
+            existing_item.selectedFile = basket_item_info.selected_file
+            existing_item.selectedFileType = basket_item_info.selectedFileType
+            existing_item.price = basket_item_info.price
+            existing_item.quantity = basket_item_info.quantity
+            db.commit()
+            db.refresh(existing_item)
+
+        return existing_item
+
+    # If no existing item, create a new one
+    new_item = BasketItem(
+        task_id=basket_item_info.task_id,
+        user_id=basket_item_info.user_id,
+        name=basket_item_info.name,
+        material=basket_item_info.material,
+        technique=basket_item_info.technique,
+        sizing=basket_item_info.sizing,
+        colour=basket_item_info.colour,
+        selectedFile=basket_item_info.selected_file,
+        selectedFileType=basket_item_info.selectedFileType,
+        price=basket_item_info.price,
+        quantity=basket_item_info.quantity
+    )
+    db.add(new_item)
+    db.commit()
+    db.refresh(new_item)
+
+    return new_item
+
+
+def add_or_update_claimed_item_in_db(
+    db: Session, 
+    claimed_item_info: BasketItemInformation
 ) -> BasketItem:
     # Check if the item already exists in the database
     existing_item = (

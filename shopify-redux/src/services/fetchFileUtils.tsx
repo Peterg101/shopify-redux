@@ -1,4 +1,4 @@
-import { FileInformation, FileResponse, BasketInformationAndFile, BasketQuantityUpdate} from "../app/utility/interfaces"
+import { FileInformation, FileResponse, BasketInformationAndFile, BasketQuantityUpdate, ClaimOrder} from "../app/utility/interfaces"
 import {convertFileToDataURI } from "../app/utility/utils";
 import { MeshyPayload, MeshyImageTo3DPayload } from "../services/meshyApi";
 
@@ -205,3 +205,27 @@ export async function callStripeService() {
     alert("There was a problem creating the checkout. Please try again.");
   }
 }
+
+export async function postClaimOrder(claimedOrder: ClaimOrder) {
+  try {
+    const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/claims/claim_order`, {
+        method: "POST",
+        credentials: "include", // Include cookies in the request
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(claimedOrder),
+    });
+
+    if (!response.ok) {
+        const errorDetails = await response.json();
+        console.error("Failed to update claimed order:", errorDetails);
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+
+} catch (error) {
+    console.error("Error claiming order", error);
+    throw error; // Propagate the error
+}
+}
+

@@ -251,3 +251,9 @@ class ShopifyOrder(BaseModel):
     order_status: str
     line_items: List[LineItem]
     shipping_address: ShippingAddress
+
+
+class ClaimOrder(BaseModel):
+    order_id: str
+    quantity: int
+    status: str

@@ -18,6 +18,8 @@ import { RootState } from "../../app/store";
 import OBJSTLViewer from "../display/objStlViewer";
 import { setClaimedOrder } from "../../services/userInterfaceSlice";
 import { resetDataState, setFulfillMode } from "../../services/dataSlice";
+import { ClaimOrder } from "../../app/utility/interfaces";
+import { postClaimOrder } from "../../services/fetchFileUtils";
 
 export const ClaimMenu: React.FC = () => {
   const { claimedOrder } = useSelector(
@@ -34,6 +36,14 @@ export const ClaimMenu: React.FC = () => {
 
   const confirmClaim = () => {
     console.log(`✅ Confirmed claim of ${quantity} item(s)`);
+    console.log(claimedOrder)
+    const claimOrder: ClaimOrder = {
+      order_id: claimedOrder.order_id,
+      quantity: quantity,
+      status: "in_progress"
+
+    }
+    postClaimOrder(claimedOrder)
     dispatch(setClaimedOrder({ claimedOrder: null }));
   };
 
