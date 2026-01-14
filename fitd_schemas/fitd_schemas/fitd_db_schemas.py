@@ -83,6 +83,7 @@ class Order(Base):
     quantity: Mapped[int] = mapped_column()
     created_at: Mapped[str] = mapped_column(default=lambda: datetime.utcnow().isoformat())
     is_collaborative: Mapped[bool] = mapped_column(default=False)
+    quantity_claimed: Mapped[int] = mapped_column()
     status: Mapped[str] = mapped_column(default="open")
 
     user = relationship("User", backref="orders")

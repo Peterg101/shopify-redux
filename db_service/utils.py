@@ -1,8 +1,9 @@
 from typing import Union, Dict, List
 from api_calls import session_exists, session_exists_user_only
+from sqlalchemy import select
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import NoResultFound
-from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Claim
+from sqlalchemy.exc import NoResultFound, IntegrityError
+from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Claim, Order
 from fitd_schemas.fitd_classes import UserInformation, TaskInformation, BasketItemInformation, LineItem, ClaimOrder
 from fastapi import HTTPException, Request
 from datetime import datetime
@@ -260,13 +261,39 @@ def add_claim_to_db(
         user_info: UserInformation
     ) -> Claim:
 
-    claim = Claim(
-        id=claimed_order.id,
-        claimant_user_id=user_info.user_id,
-        order_id=claimed_order.order_id,
-        quantity=claimed_order.quantity
-    )
-    db.add(claim)
-    db.commit()
-    db.refresh(claim)
-    return claim
+    try:
+        order = (
+            db.execute(
+                select(Order)
+                .where(Order.order_id == claimed_order.order_id)
+                .with_for_update()
+            )
+            .scalars()
+            .one()
+        )
+
+        available = order.quantity - order.quantity_claimed
+        if claimed_order.quantity > available:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Only {available} items remaining"
+            )
+
+        claim = Claim(
+            order_id=order.order_id,
+            claimant_user_id=user_info.user_id,
+            quantity=claimed_order.quantity,
+            status="pending",
+        )
+
+        order.quantity_claimed += claimed_order.quantity
+
+        db.add(claim)
+        db.commit()
+
+        db.refresh(claim)
+        return claim
+
+    except Exception:
+        db.rollback()
+        raise
