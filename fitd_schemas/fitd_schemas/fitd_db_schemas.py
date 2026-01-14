@@ -89,7 +89,7 @@ class Order(Base):
     task = relationship("Task", backref="order", uselist=False)
 
 
-class Claim(Base):
+class Claim(Base): 
     __tablename__ = "claims"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))

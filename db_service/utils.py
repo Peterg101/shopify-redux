@@ -3,7 +3,7 @@ from api_calls import session_exists, session_exists_user_only
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound
 from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Claim
-from fitd_schemas.fitd_classes import UserInformation, TaskInformation, BasketItemInformation, LineItem
+from fitd_schemas.fitd_classes import UserInformation, TaskInformation, BasketItemInformation, LineItem, ClaimOrder
 from fastapi import HTTPException, Request
 from datetime import datetime
 from pathlib import Path
@@ -252,3 +252,21 @@ def get_property_value_strict(line_item: LineItem, property_name: str) -> str:
         if prop.name == property_name:
             return prop.value
     raise ValueError(f"Property '{property_name}' not found")
+
+
+def add_claim_to_db(
+        db: Session, 
+        claimed_order: ClaimOrder, 
+        user_info: UserInformation
+    ) -> Claim:
+
+    claim = Claim(
+        id=claimed_order.id,
+        claimant_user_id=user_info.user_id,
+        order_id=claimed_order.order_id,
+        quantity=claimed_order.quantity
+    )
+    db.add(claim)
+    db.commit()
+    db.refresh(claim)
+    return claim

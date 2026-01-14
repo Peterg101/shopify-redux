@@ -254,6 +254,7 @@ class ShopifyOrder(BaseModel):
 
 
 class ClaimOrder(BaseModel):
+    id: str
     order_id: str
     quantity: int
     status: str

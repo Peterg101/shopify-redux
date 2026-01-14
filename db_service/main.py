@@ -18,7 +18,8 @@ from utils import (
     decode_file,
     mark_meshy_task_complete,
     delete_port_id,
-    get_property_value_strict
+    get_property_value_strict,
+    add_claim_to_db
 )
 
 from api_calls import session_exists
@@ -484,32 +485,23 @@ async def confirm_onboarding(
 async def claim_order(
     claimed_order: ClaimOrder, 
     db: Session = Depends(get_db),
-    _: None = Depends(cookie_verification),
+    user_information: None = Depends(cookie_verification_user_only),
 ):
     print(claimed_order)
+    print(user_information)
     print("hitting here")
-    # try:
-    #     order_id = claimed_order.id
-    #     new_status = shopify_order.order_status
-    #     orders = db.query(Order).filter(Order.order_id == order_id).all()
+    try:
+        claim_id = claimed_order.id
+        claim = db.query(Claim).filter(Claim.id == claim_id).first()
 
-    #     if not orders:
-    #         raise HTTPException(status_code=404, detail=f"No orders found with ID {order_id}")
+        if claim:
+            raise HTTPException(status_code=404, detail="Item already claimed")
 
-    #     for order in orders:
-    #         order.status = new_status
-
-    #     db.commit()
-
-    #     return {
-    #         "status": "success",
-    #         "updated_count": len(orders),
-    #         "order_id": order_id,
-    #     }
-
-    # except Exception as e:
-    #     db.rollback()
-    #     raise HTTPException(status_code=500, detail=f"Error updating orders: {str(e)}")
+        add_claim_to_db(db, claimed_order, user_information)
+    
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error updating orders: {str(e)}")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

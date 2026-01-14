@@ -190,6 +190,7 @@ export interface ClaimProps{
 }
 
 export interface ClaimOrder{
+  id: string
   order_id: string
   quantity: number
   status: string
