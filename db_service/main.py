@@ -445,6 +445,7 @@ async def create_order(
     db.commit()
     return {"status": "success", "order_count": len(created_orders)}
 
+
 @app.post("/orders/update_order")
 async def update_order(
     shopify_order: ShopifyOrder, 
@@ -474,6 +475,7 @@ async def update_order(
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error updating orders: {str(e)}")
 
+
 @app.post("/stripe/confirm_onboarding")
 async def confirm_onboarding(
     payload: dict = Depends(verify_jwt_token),
@@ -481,15 +483,13 @@ async def confirm_onboarding(
 ):
     print("hit it")
 
+
 @app.post("/claims/claim_order")
 async def claim_order(
     claimed_order: ClaimOrder, 
     db: Session = Depends(get_db),
     user_information: None = Depends(cookie_verification_user_only),
 ):
-    print(claimed_order)
-    print(user_information)
-    print("hitting here")
     try:
         claim_id = claimed_order.id
         claim = db.query(Claim).filter(Claim.id == claim_id).first()
