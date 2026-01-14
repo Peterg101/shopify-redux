@@ -9,7 +9,7 @@ const AppRouter: React.FC = () => {
       <Routes>
       <Route path="/" element={<Navigate to="/generate" replace />} />
         <Route path="/generate" element={<LandingPage/>} />
-        {/* <Route path="/fulfill" element={<Fulfill/>} /> */}
+        <Route path="/fulfill" element={<Fulfill/>} />
         {/* Catch-all route for 404 */}
         <Route path="*" element={<h1>404 - Page Not Found</h1>} />
       </Routes>
