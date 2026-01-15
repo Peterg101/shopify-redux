@@ -136,6 +136,7 @@ export interface Order {
   selectedFileType: string;
   price: number;
   quantity: number;
+  quantity_claimed: number;
   created_at: string;
   is_collaborative: boolean;
   status: string; // Consider using a union type for stricter typing e.g., "open" | "in_progress" | "fulfilled"

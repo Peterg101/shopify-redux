@@ -42,8 +42,8 @@ export const OrderCard: React.FC<Order> = (order) => {
     (state: RootState) => state.userInterfaceState
   );
 
-  const isOpen = order.status === "created";
-  const isInProgress = order.status === "in_progress";
+  const isOpen = order.quantity !== order.quantity_claimed
+  const isInProgress = order.quantity === order.quantity_claimed;
 
   /**
    * Fetches and prepares the OBJ/STL file for preview or claim
@@ -109,7 +109,15 @@ export const OrderCard: React.FC<Order> = (order) => {
         </Typography>
 
         <Typography variant="body2" color="text.secondary">
-          Quantity: {order.quantity} | Price: ${order.price.toFixed(2)}
+          Required Quantity: {order.quantity} | Claimed Quantity: {order.quantity_claimed} 
+        </Typography>
+
+         <Typography variant="body2" color="text.secondary">
+           Total order value: ${(order.price).toFixed(2)}
+        </Typography>
+
+        <Typography variant="body2" color="text.secondary">
+           Price per unit: ${(order.price/order.quantity).toFixed(2)}
         </Typography>
 
         <Typography variant="body2" color="text.secondary">
