@@ -126,7 +126,6 @@ export interface Order {
   order_id: string;
   user_id: string;
   task_id?: string; // Optional Meshy task
-  item_id: string
   name: string;
   material: string;
   technique: string;
@@ -136,21 +135,21 @@ export interface Order {
   selectedFileType: string;
   price: number;
   quantity: number;
-  quantity_claimed: number;
+  quantity_claimed: number; // Computed from claims
   created_at: string;
   is_collaborative: boolean;
-  status: string; // Consider using a union type for stricter typing e.g., "open" | "in_progress" | "fulfilled"
+  status: "open" | "in_progress" | "fulfilled"; // stricter typing
+  claims?: Claim[]; // Include claims for server-supplied order data
 }
 
-
-export interface Claim{
-id: string,
-order_id: string,
-claimant_user_id: string,
-quantity: number,
-status: string,
-created_at: string,
-updated_at: string
+export interface Claim {
+  id: string;
+  order_id: string;
+  claimant_user_id: string;
+  quantity: number;
+  status: "pending" | "approved" | "rejected"; // stricter typing
+  created_at: string;
+  updated_at: string;
 }
 
 

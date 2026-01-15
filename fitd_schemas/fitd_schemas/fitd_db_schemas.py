@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -64,14 +64,14 @@ class PortID(Base):
 class Order(Base):
     __tablename__ = "orders"
 
-    item_id: Mapped[str] = mapped_column(
-        String, 
-        primary_key=True, 
+    order_id: Mapped[str] = mapped_column(
+        String,
+        primary_key=True,
         default=lambda: str(uuid4())
     )
     task_id: Mapped[str] = mapped_column(ForeignKey("tasks.task_id"), nullable=False)
     user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"))
-    order_id: Mapped[str] = mapped_column(nullable=False)
+    shopify_order_id: Mapped[str | None] = mapped_column(index=True)
     name: Mapped[str] = mapped_column()
     material: Mapped[str] = mapped_column()
     technique: Mapped[str] = mapped_column()
@@ -83,15 +83,29 @@ class Order(Base):
     quantity: Mapped[int] = mapped_column()
     created_at: Mapped[str] = mapped_column(default=lambda: datetime.utcnow().isoformat())
     is_collaborative: Mapped[bool] = mapped_column(default=False)
-    quantity_claimed: Mapped[int] = mapped_column()
     status: Mapped[str] = mapped_column(default="open")
 
+    # Relationships
     user = relationship("User", backref="orders")
     task = relationship("Task", backref="order", uselist=False)
+    claims: Mapped[list["Claim"]] = relationship(
+        "Claim",
+        back_populates="order",
+        lazy="selectin",
+        cascade="all, delete-orphan"
+    )
+
+    @property
+    def quantity_claimed(self) -> int:
+        """Compute total claimed quantity dynamically."""
+        return sum(claim.quantity for claim in self.claims)
 
 
-class Claim(Base): 
+class Claim(Base):
     __tablename__ = "claims"
+    __table_args__ = (
+        UniqueConstraint("order_id", "claimant_user_id", name="uq_order_user_claim"),
+    )
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
     order_id: Mapped[str] = mapped_column(String, ForeignKey("orders.order_id"))
@@ -101,8 +115,9 @@ class Claim(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    # Relationships
+    order: Mapped["Order"] = relationship("Order", back_populates="claims", lazy="selectin")
     disbursements: Mapped[list["Disbursement"]] = relationship("Disbursement", back_populates="claim")
-
 
 class Disbursement(Base):
     __tablename__ = "disbursements"

@@ -1,6 +1,7 @@
-import { Box, useTheme, Typography, Stack, Container } from "@mui/material";
+import { Box, useTheme, Typography, Stack, Container, Paper, List, ListItem, Divider} from "@mui/material";
 import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
+import React from "react";
 
 export const ClaimedItems = () => {
   const theme = useTheme();
@@ -25,12 +26,24 @@ export const ClaimedItems = () => {
       }}
     >
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Stack spacing={2}>
-          <Typography variant="h5">Claimed Items</Typography>
-          <Typography variant="h5">Claimed Items</Typography>
-          <Typography variant="h5">Claimed Items</Typography>
-          <Typography variant="h5">Claimed Items</Typography>
-        </Stack>
+        <Paper>
+            {(!userInterfaceState.userInformation.claims || userInterfaceState.userInformation.claims.length === 0) ? (
+                <Typography variant="h6" align="center" color="text.secondary" sx={{ mt: 4 }}>
+                  You haven't claimed anything yet.
+                </Typography>
+              ) : (
+                <List>
+                  {userInterfaceState.userInformation.claims.map((claim, index) => (
+                    <React.Fragment key={claim.id}>
+                      <ListItem>
+                        <Typography>ITEM</Typography>
+                      </ListItem>
+                      {index < userInterfaceState.userInformation.claims.length - 1 && <Divider />}
+                    </React.Fragment>
+                  ))}
+                </List>
+              )}
+        </Paper>
       </Container>
     </Box>
   );

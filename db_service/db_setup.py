@@ -5,7 +5,7 @@ from fitd_schemas.fitd_db_schemas import Base
 
 # Database URL
 DATABASE_URL = (
-    "sqlite:///./test_meshy_shopify_integration.db"  # Replace with your actual database URL
+    "sqlite:///./changing_the_schemas.db"  # Replace with your actual database URL
 )
 
 # SQLAlchemy Engine and Session

@@ -258,19 +258,14 @@ def get_property_value_strict(line_item: LineItem, property_name: str) -> str:
 def add_claim_to_db(
         db: Session, 
         claimed_order: ClaimOrder, 
-        user_info: UserInformation
-    ) -> Claim:
-
+        user_info: UserInformation) -> Claim:
     try:
-        order = (
-            db.execute(
-                select(Order)
-                .where(Order.order_id == claimed_order.order_id)
-                .with_for_update()
-            )
-            .scalars()
-            .one()
-        )
+        # Lock the order row
+        order = db.execute(
+            select(Order)
+            .where(Order.order_id == claimed_order.order_id)
+            .with_for_update()
+        ).scalar_one()
 
         available = order.quantity - order.quantity_claimed
         if claimed_order.quantity > available:
@@ -286,12 +281,10 @@ def add_claim_to_db(
             status="pending",
         )
 
-        order.quantity_claimed += claimed_order.quantity
-
         db.add(claim)
         db.commit()
-
         db.refresh(claim)
+
         return claim
 
     except Exception:

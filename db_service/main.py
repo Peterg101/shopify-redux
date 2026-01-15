@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends, Cookie, Header, Request, status, Response
 from typing import List
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 from fastapi.middleware.cors import CORSMiddleware
 from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, Order, UserStripeAccount, Claim
 from datetime import datetime
@@ -97,7 +97,6 @@ async def get_user(
     db: Session = Depends(get_db),
     authorization: str = Depends(verify_jwt_token),
 ):
-
     user = db.query(User).filter(User.user_id == user_id).first()
     tasks = db.query(Task).filter(Task.user_id == user_id).all()
     basket_items = db.query(BasketItem).filter(BasketItem.user_id == user_id).all()

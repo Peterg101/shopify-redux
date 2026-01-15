@@ -40,7 +40,7 @@ export const FulfillOptions = () =>{
               ) : (
                 <List>
                   {userInterfaceState.userInformation.orders.map((order, index) => (
-                    <React.Fragment key={order.item_id}>
+                    <React.Fragment key={order.order_id}>
                       <ListItem>
                         <OrderCard {...order} />
                       </ListItem>
