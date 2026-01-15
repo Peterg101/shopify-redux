@@ -108,7 +108,7 @@ async def get_user(
         .first()
     )
     orders = db.query(Order).filter(Order.user_id == user_id).all()
-    print(orders)
+    claims = db.query(Claim).filter(Claim.claimant_user_id == user_id).all()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -117,7 +117,8 @@ async def get_user(
         "tasks": tasks,
         "basket_items": basket_items,
         "incomplete_task": incomplete_task,
-        "orders": orders
+        "orders": orders,
+        "claims": claims
     }  
 
 

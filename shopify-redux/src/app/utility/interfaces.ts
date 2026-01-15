@@ -141,12 +141,25 @@ export interface Order {
   status: string; // Consider using a union type for stricter typing e.g., "open" | "in_progress" | "fulfilled"
 }
 
+
+export interface Claim{
+id: string,
+order_id: string,
+claimant_user_id: string,
+quantity: number,
+status: string,
+created_at: string,
+updated_at: string
+}
+
+
 export interface UserAndTasksAndBasketAndIncompleteAndOrders{
   user: UserInformation
   tasks: TaskInformation[]
   basket_items: BasketInformation[],
   incomplete_task: TaskInformationAndPortId,
   orders: Order[]
+  claims: Claim[]
 }
 
 export interface FileResponse {
