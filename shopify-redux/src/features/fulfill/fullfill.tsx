@@ -7,6 +7,7 @@ import { RootState } from "../../app/store";
 import { FulfillUserInterface } from "./fulfillUserInterface";
 import { resetDataState, setFulfillMode } from "../../services/dataSlice";
 import { ClaimMenu } from "./claimMenu";
+import { FulfillOrClaimed } from "./fulfilledOrClaimed";
 
 export const Fulfill = () => {
 
@@ -17,11 +18,7 @@ export const Fulfill = () => {
         <Box> 
             <HeaderBar/>
             <FulfillUserInterface/>
-            {(!userInterfaceState?.claimedOrder) ?
-            <FulfillOptions/>  :
-            <ClaimMenu/>
-            }
-                 
+            <FulfillOrClaimed/>   
         </Box>
     )
 }

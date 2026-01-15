@@ -18,6 +18,7 @@ import { ProfilePage } from "../userInterface/profilePage";
 import { FloatingCostSummary } from "../display/floatingCostSummary";
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import { EmptyOrderHistory, OrderHistory } from "../userInterface/orderHIistoryFragments";
+import CategoryIcon from '@mui/icons-material/Category';
 
 
 // Color oscillation style
@@ -82,6 +83,12 @@ export const FulfillUserInterface = () => {
       text: "Profile",
       icon: (
         <AccountBoxIcon sx={{ fontSize: 40, marginTop: 1 }} />
+      ),
+    },
+    {
+      text: "Claimed Orders",
+      icon: (
+        <CategoryIcon sx={{ fontSize: 40, marginTop: 1 }} />
       ),
     },
     
