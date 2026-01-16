@@ -112,20 +112,20 @@ export const OrderCard: React.FC<Order> = (order) => {
           Required Quantity: {order.quantity} | Claimed Quantity: {order.quantity_claimed} 
         </Typography>
 
-         {/* <Typography variant="body2" color="text.secondary">
+         <Typography variant="body2" color="text.secondary">
            Total order value: ${(order.price).toFixed(2)}
         </Typography>
 
         <Typography variant="body2" color="text.secondary">
            Price per unit: ${(order.price/order.quantity).toFixed(2)}
-        </Typography> */}
+        </Typography>
 
         <Typography variant="body2" color="text.secondary">
           Status: {order.status}{" "}
           {order.is_collaborative && "(Collaborative)"}
         </Typography>
 
-        {/* Thumbnail (if image)
+        {/* Thumbnail (if image) */}
         {order.selectedFileType.startsWith("image") && (
           <Box mt={1}>
             <img
@@ -134,7 +134,7 @@ export const OrderCard: React.FC<Order> = (order) => {
               style={{ maxWidth: "100%", maxHeight: 200, borderRadius: 8 }}
             />
           </Box>
-        )} */}
+        )}
       </CardContent>
 
       <CardActions>

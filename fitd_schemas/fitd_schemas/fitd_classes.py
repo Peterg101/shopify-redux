@@ -140,6 +140,7 @@ class ImageTo3DTaskRequest(BaseModel):
     meshy_image_to_3d_payload: MeshyImageTo3DPayload
     filename: str
 
+
 class TaskError(BaseModel):
     message: str
     code: Optional[str] = None
@@ -266,7 +267,8 @@ class ClaimResponse(BaseModel):
     claimant_user_id: str
     quantity: int
     status: str
-    created_at: str
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         orm_mode = True
@@ -295,6 +297,7 @@ class OrderResponse(BaseModel):
     class Config:
         orm_mode = True
 
+
 class BasketItemResponse(BaseModel):
     task_id: str
     user_id: str
@@ -311,6 +314,7 @@ class BasketItemResponse(BaseModel):
     class Config:
         orm_mode = True
 
+
 class UserResponse(BaseModel):
     user_id: str
     username: str
@@ -318,6 +322,7 @@ class UserResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
 
 class TaskResponse(BaseModel):
     task_id: str
