@@ -272,7 +272,7 @@ class ClaimResponse(BaseModel):
 
     class Config:
         orm_mode = True
-
+        
 
 class OrderResponse(BaseModel):
     order_id: str
@@ -293,6 +293,18 @@ class OrderResponse(BaseModel):
 
     quantity_claimed: int          # 👈 computed property
     claims: list[ClaimResponse]    # 👈 relationship
+
+    class Config:
+        orm_mode = True
+
+class ClaimWithOrderResponse(BaseModel):
+    id: str
+    claimant_user_id: str
+    quantity: int
+    status: str
+    created_at: datetime
+    updated_at: datetime
+    order: OrderResponse
 
     class Config:
         orm_mode = True
@@ -352,7 +364,7 @@ class UserHydrationResponse(BaseModel):
     basket_items: List[BasketItemResponse]
     incomplete_task: IncompleteTaskResponse | None
     orders: List[OrderResponse]
-    claims: List[ClaimResponse]
+    claims: List[ClaimWithOrderResponse]
 
     class Config:
         orm_mode = True

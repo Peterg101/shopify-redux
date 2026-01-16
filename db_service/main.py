@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy.orm import Session, joinedload, selectinload
 from fastapi.middleware.cors import CORSMiddleware
 from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, Order, UserStripeAccount, Claim
-from fitd_schemas.fitd_classes import UserHydrationResponse
+from fitd_schemas.fitd_classes import UserHydrationResponse, ClaimWithOrderResponse, OrderResponse
 from datetime import datetime
 import uuid
 from db_setup import engine, get_db
@@ -124,33 +124,24 @@ async def get_user(
         .all()
     )
 
-    # 4️⃣ Orders owned by user
-    # IMPORTANT: preload claims so quantity_claimed works
-    orders = (
-        db.query(Order)
-        .filter(Order.user_id == user_id)
-        .options(selectinload(Order.claims))
-        .all()
-    )
-
-    # 5️⃣ Claims made by user
-    # ALSO preload the related order (and its claims)
     claims = (
         db.query(Claim)
         .filter(Claim.claimant_user_id == user_id)
-        .options(
-            joinedload(Claim.order)
-            .selectinload(Order.claims)
-        )
+        .options(selectinload(Claim.order))
         .all()
     )
+    claims_response = [ClaimWithOrderResponse.from_orm(claim) for claim in claims]
+
+    # Convert orders to Pydantic too
+    orders = db.query(Order).filter(Order.user_id == user_id).all()
+    orders_response = [OrderResponse.from_orm(order) for order in orders]
     object = {
         "user": user,
         "tasks": tasks,
         "basket_items": basket_items,
         "incomplete_task": incomplete_task,
-        "orders": orders,
-        "claims": claims,
+        "orders": orders_response,
+        "claims": claims_response,
     }
 
     print(object)
