@@ -258,3 +258,96 @@ class ClaimOrder(BaseModel):
     order_id: str
     quantity: int
     status: str
+
+
+class ClaimResponse(BaseModel):
+    id: str
+    order_id: str
+    claimant_user_id: str
+    quantity: int
+    status: str
+    created_at: str
+
+    class Config:
+        orm_mode = True
+
+
+class OrderResponse(BaseModel):
+    order_id: str
+    task_id: str
+    user_id: str
+    name: str
+    material: str
+    technique: str
+    sizing: float
+    colour: str
+    selectedFile: str
+    selectedFileType: str
+    price: float
+    quantity: int
+    created_at: str
+    is_collaborative: bool
+    status: str
+
+    quantity_claimed: int          # 👈 computed property
+    claims: list[ClaimResponse]    # 👈 relationship
+
+    class Config:
+        orm_mode = True
+
+class BasketItemResponse(BaseModel):
+    task_id: str
+    user_id: str
+    name: str
+    material: str
+    technique: str
+    sizing: float
+    colour: str
+    selectedFile: str
+    selectedFileType: str
+    price: float
+    quantity: int
+
+    class Config:
+        orm_mode = True
+
+class UserResponse(BaseModel):
+    user_id: str
+    username: str
+    email: str | None = None
+
+    class Config:
+        orm_mode = True
+
+class TaskResponse(BaseModel):
+    task_id: str
+    user_id: str
+    task_name: str
+    complete: bool
+    created_at: str
+
+    # Comes from @hybrid_property
+    port_id: Optional[str]
+
+    class Config:
+        orm_mode = True
+
+
+class IncompleteTaskResponse(BaseModel):
+    port_id: str
+    task_id: str 
+
+    class Config:
+        orm_mode = True
+
+
+class UserHydrationResponse(BaseModel):
+    user: UserResponse
+    tasks: List[TaskResponse]
+    basket_items: List[BasketItemResponse]
+    incomplete_task: IncompleteTaskResponse | None
+    orders: List[OrderResponse]
+    claims: List[ClaimResponse]
+
+    class Config:
+        orm_mode = True

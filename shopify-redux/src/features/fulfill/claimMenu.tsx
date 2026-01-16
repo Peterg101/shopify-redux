@@ -160,9 +160,9 @@ export const ClaimMenu: React.FC = () => {
             <Typography variant="body1">
               <strong>Quantity:</strong> {claimedOrder.quantity}
             </Typography>
-            <Typography variant="body1">
+            {/* <Typography variant="body1">
               <strong>Price (per unit):</strong> ${claimedOrder.price.toFixed(2)}
-            </Typography>
+            </Typography> */}
             <Typography variant="body1">
               <strong>Status:</strong> {claimedOrder.status}{" "}
               {claimedOrder.is_collaborative && "(Collaborative)"}

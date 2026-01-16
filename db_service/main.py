@@ -3,6 +3,7 @@ from typing import List
 from sqlalchemy.orm import Session, joinedload, selectinload
 from fastapi.middleware.cors import CORSMiddleware
 from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, Order, UserStripeAccount, Claim
+from fitd_schemas.fitd_classes import UserHydrationResponse
 from datetime import datetime
 import uuid
 from db_setup import engine, get_db
@@ -90,35 +91,71 @@ async def add_task(
     return ""
 
 
-# Get User
-@app.get("/users/{user_id}")
+@app.get("/users/{user_id}", response_model=UserHydrationResponse)
 async def get_user(
     user_id: str,
     db: Session = Depends(get_db),
     authorization: str = Depends(verify_jwt_token),
 ):
-    user = db.query(User).filter(User.user_id == user_id).first()
+    # 1️⃣ Load the user (fail fast)
+    user = (
+        db.query(User)
+        .filter(User.user_id == user_id)
+        .first()
+    )
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # 2️⃣ Tasks (including incomplete + port)
     tasks = db.query(Task).filter(Task.user_id == user_id).all()
-    basket_items = db.query(BasketItem).filter(BasketItem.user_id == user_id).all()
+
     incomplete_task = (
         db.query(Task)
         .filter(Task.user_id == user_id, Task.complete == False)
         .options(joinedload(Task.port))  # Preload the PortID relationship
         .first()
     )
-    orders = db.query(Order).filter(Order.user_id == user_id).all()
-    claims = db.query(Claim).filter(Claim.claimant_user_id == user_id).all()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    
+       
+    # 3️⃣ Basket items
+    basket_items = (
+        db.query(BasketItem)
+        .filter(BasketItem.user_id == user_id)
+        .all()
+    )
 
-    return {
+    # 4️⃣ Orders owned by user
+    # IMPORTANT: preload claims so quantity_claimed works
+    orders = (
+        db.query(Order)
+        .filter(Order.user_id == user_id)
+        .options(selectinload(Order.claims))
+        .all()
+    )
+
+    # 5️⃣ Claims made by user
+    # ALSO preload the related order (and its claims)
+    claims = (
+        db.query(Claim)
+        .filter(Claim.claimant_user_id == user_id)
+        .options(
+            joinedload(Claim.order)
+            .selectinload(Order.claims)
+        )
+        .all()
+    )
+    object = {
         "user": user,
         "tasks": tasks,
         "basket_items": basket_items,
         "incomplete_task": incomplete_task,
         "orders": orders,
-        "claims": claims
-    }  
+        "claims": claims,
+    }
+
+    print(object)
+
+    return object
 
 
 # Get User
