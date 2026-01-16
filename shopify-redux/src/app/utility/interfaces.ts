@@ -146,6 +146,7 @@ export interface Claim {
   id: string;
   order_id: string;
   claimant_user_id: string;
+  order: Order
   quantity: number;
   status: "pending" | "approved" | "rejected"; // stricter typing
   created_at: string;

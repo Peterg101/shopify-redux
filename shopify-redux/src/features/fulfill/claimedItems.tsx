@@ -2,6 +2,7 @@ import { Box, useTheme, Typography, Stack, Container, Paper, List, ListItem, Div
 import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import React from "react";
+import { OrderCard } from "./orderCard";
 
 export const ClaimedItems = () => {
   const theme = useTheme();
@@ -35,11 +36,11 @@ export const ClaimedItems = () => {
                 <List>
                   {userInterfaceState.userInformation.claims.map((claim, index) => (
                     <React.Fragment key={claim.id}>
-                      <ListItem>
-                        <Typography>ITEM</Typography>
-                      </ListItem>
-                      {index < userInterfaceState.userInformation.claims.length - 1 && <Divider />}
-                    </React.Fragment>
+                        <ListItem>
+                          <OrderCard {...claim.order} />
+                        </ListItem>
+                        {index < userInterfaceState.userInformation.orders.length - 1 && <Divider />}
+                      </React.Fragment>
                   ))}
                 </List>
               )}
