@@ -21,6 +21,7 @@ import { resetDataState, setFulfillMode } from "../../services/dataSlice";
 import { ClaimOrder } from "../../app/utility/interfaces";
 import { postClaimOrder } from "../../services/fetchFileUtils";
 import { generateUuid } from "../../app/utility/utils";
+import { authApi } from "../../services/authApi";
 
 export const ClaimMenu: React.FC = () => {
   const { claimedOrder } = useSelector(
@@ -35,9 +36,8 @@ export const ClaimMenu: React.FC = () => {
     setQuantity((q) => (q < claimedOrder.quantity ? q + 1 : q));
   const decrement = () => setQuantity((q) => (q > 1 ? q - 1 : q));
 
-  const confirmClaim = () => {
+  const confirmClaim = async () => {
     console.log(`✅ Confirmed claim of ${quantity} item(s)`);
-    console.log(claimedOrder)
     const claimOrder: ClaimOrder = {
       id: generateUuid(),
       order_id: claimedOrder.order_id,
@@ -45,7 +45,8 @@ export const ClaimMenu: React.FC = () => {
       status: "in_progress"
 
     }
-    postClaimOrder(claimOrder)
+    await postClaimOrder(claimOrder)
+    dispatch(authApi.util.invalidateTags(['sessionData']));
     dispatch(setClaimedOrder({ claimedOrder: null }));
   };
 
