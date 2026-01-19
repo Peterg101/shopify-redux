@@ -134,12 +134,15 @@ async def get_user(
 
     # Convert orders to Pydantic too
     orders = db.query(Order).filter(Order.user_id == user_id).all()
+    claimable_orders = db.query(Order).filter(Order.user_id != user_id).all()
     orders_response = [OrderResponse.from_orm(order) for order in orders]
+    claimable_orders_response = [OrderResponse.from_orm(order) for order in claimable_orders]
     object = {
         "user": user,
         "tasks": tasks,
         "basket_items": basket_items,
         "incomplete_task": incomplete_task,
+        "claimable_orders": claimable_orders_response,
         "orders": orders_response,
         "claims": claims_response,
     }

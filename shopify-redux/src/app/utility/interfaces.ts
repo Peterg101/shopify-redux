@@ -160,6 +160,7 @@ export interface UserAndTasksAndBasketAndIncompleteAndOrders{
   basket_items: BasketInformation[],
   incomplete_task: TaskInformationAndPortId,
   orders: Order[]
+  claimable_orders: Order[]
   claims: Claim[]
 }
 

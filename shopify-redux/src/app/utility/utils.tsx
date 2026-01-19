@@ -1,4 +1,13 @@
-import { BasketInformation, BasketItem, DataState, FileAndItem, PricingConfig, UploadedFile, UUIDType } from "./interfaces";
+import { 
+  BasketInformation, 
+  BasketItem, 
+  DataState, 
+  FileAndItem, 
+  PricingConfig, 
+  UploadedFile, 
+  UUIDType, 
+  UserInformation, 
+  Order } from "./interfaces";
 import { UUID } from "crypto";
 import * as THREE from 'three';
 import { v4 as uuidv4 } from 'uuid';
@@ -238,3 +247,21 @@ export function downloadBlob (blob: Blob, filename: string){
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 };
+
+export function visibleOrders(user: UserInformation,claimable_orders: Order[]): Order[] 
+{
+  return claimable_orders.filter((order) => {
+    if (order.quantity_claimed == order.quantity) {
+      return false;
+    }
+    const alreadyClaimedByUser = order.claims?.some(
+      (claim) => claim.claimant_user_id === user.user_id
+    );
+
+    if (alreadyClaimedByUser) {
+      return false;
+    }
+
+    return true;
+  });
+}

@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { OrderCard } from "./orderCard";
 import React from "react";
+import { visibleOrders } from "../../app/utility/utils";
 
 export const FulfillOptions = () =>{
     const theme = useTheme();
@@ -29,22 +30,23 @@ export const FulfillOptions = () =>{
         },
       },
     };
+    const visible_claimable_orders = visibleOrders(userInterfaceState.userInformation.user, userInterfaceState.userInformation.claimable_orders)
       return (
         <Box sx={styles.fileInput}>
           <Container maxWidth="lg" sx={styles.container}>
             <Paper>
-              {(!userInterfaceState.userInformation?.orders || userInterfaceState.userInformation.orders.length === 0) ? (
+              {(visible_claimable_orders.length === 0) ? (
                 <Typography variant="h6" align="center" color="text.secondary" sx={{ mt: 4 }}>
                   No orders available at the moment.
                 </Typography>
               ) : (
                 <List>
-                  {userInterfaceState.userInformation.orders.map((order, index) => (
+                  {visible_claimable_orders.map((order, index) => (
                     <React.Fragment key={order.order_id}>
                       <ListItem>
                         <OrderCard {...order} />
                       </ListItem>
-                      {index < userInterfaceState.userInformation.orders.length - 1 && <Divider />}
+                      {index < visible_claimable_orders.length - 1 && <Divider />}
                     </React.Fragment>
                   ))}
                 </List>

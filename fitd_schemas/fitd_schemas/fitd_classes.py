@@ -363,6 +363,7 @@ class UserHydrationResponse(BaseModel):
     tasks: List[TaskResponse]
     basket_items: List[BasketItemResponse]
     incomplete_task: IncompleteTaskResponse | None
+    claimable_orders: List[OrderResponse]
     orders: List[OrderResponse]
     claims: List[ClaimWithOrderResponse]
 
