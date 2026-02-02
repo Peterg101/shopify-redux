@@ -16,7 +16,8 @@ const initialState: UserInterfaceState = {
     isLoggedIn: false,
     userInformation: null,
     totalBasketValue: 0,
-    claimedOrder: null
+    claimedOrder: null,
+    updateClaimedOrder: null
 }
 
 export const userInterfaceSlice = createSlice({
@@ -92,6 +93,10 @@ export const userInterfaceSlice = createSlice({
         setClaimedOrder: (state, action: PayloadAction<{claimedOrder: Order}>) => {
             const {claimedOrder} = action.payload
             state.claimedOrder = claimedOrder
+        },
+        setUpdateClaimedOrder: (state, action: PayloadAction<{updateClaimedOrder: Order}>) => {
+            const {updateClaimedOrder} = action.payload
+            state.updateClaimedOrder = updateClaimedOrder
         }
         
 
@@ -136,7 +141,8 @@ export const {
     setMeshyQueueItems,
     setSelectedComponent,
     setTotalBasketCost,
-    setClaimedOrder
+    setClaimedOrder,
+    setUpdateClaimedOrder
 } = userInterfaceSlice.actions
 
 export default userInterfaceSlice.reducer

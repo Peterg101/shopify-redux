@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import React from "react";
 import { OrderCard } from "./orderCard";
+import { ClaimCard } from "./claimCard";
 
 export const ClaimedItems = () => {
   const theme = useTheme();
@@ -37,7 +38,7 @@ export const ClaimedItems = () => {
                   {userInterfaceState.userInformation.claims.map((claim, index) => (
                     <React.Fragment key={claim.id}>
                         <ListItem>
-                          <OrderCard {...claim.order} />
+                          <ClaimCard {...claim.order} />
                         </ListItem>
                         {index < userInterfaceState.userInformation.orders.length - 1 && <Divider />}
                       </React.Fragment>

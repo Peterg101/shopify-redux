@@ -5,7 +5,6 @@ import { getMidPoint } from "../app/utility/utils";
 import { PricingConfig, Order } from '../app/utility/interfaces';
 import pricingConfig from "./../config/pricingConfig.json"
 import { getPrice } from '../app/utility/utils';
-import { FlutterDash } from "@mui/icons-material";
 
 const initialVectorState: VectorState = {
     position: { x: 0, y: 0, z: 0 },
@@ -33,7 +32,7 @@ const initialState: DataState = {
     materialCost: 0.00005,
     totalCost: 0,
     fulfillMode: false,
-
+    updateClaimMode: false
 }
 
 export const dataSlice = createSlice({
@@ -47,6 +46,10 @@ export const dataSlice = createSlice({
         setFulfillMode: (state, action: PayloadAction<{fulfillMode: boolean}>) => {
             const {fulfillMode} = action.payload
             state.fulfillMode = fulfillMode
+        },
+        setUpdateClaimMode: (state, action: PayloadAction<{updateClaimMode: boolean}>) => {
+            const {updateClaimMode} = action.payload
+            state.updateClaimMode = updateClaimMode
         },
         setSelectedFile: (state, action: PayloadAction<{selectedFile: string}>) => {
             const {selectedFile} = action.payload
@@ -230,6 +233,7 @@ export const {
     setTotalCost,
     setFulfillFileViewProperties,
     setFulfillMode,
+    setUpdateClaimMode
 
  } = dataSlice.actions
 

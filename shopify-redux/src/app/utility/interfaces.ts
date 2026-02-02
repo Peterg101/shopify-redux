@@ -35,7 +35,8 @@ export interface UserInterfaceState {
     isLoggedIn: boolean,
     userInformation: UserAndTasksAndBasketAndIncompleteAndOrders | null,
     totalBasketValue: number,
-    claimedOrder: Order
+    claimedOrder: Order,
+    updateClaimedOrder: Order
 }
 
 export interface DataState {
@@ -60,6 +61,7 @@ export interface DataState {
    materialCost: number,
    totalCost: number,
    fulfillMode: boolean,
+   updateClaimMode: boolean
    
 }
 

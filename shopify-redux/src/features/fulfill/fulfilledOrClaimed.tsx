@@ -4,6 +4,7 @@ import { FulfillableItems } from "./fulfillableItems";
 import { ClaimedItems } from "./claimedItems";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { ClaimedItemsOrUpdateClaim } from "./claimedItemsOrUpdateClaim";
 
 export const FulfillOrClaimed = () => {
   const [tabIndex, setTabIndex] = useState(0);
@@ -42,7 +43,7 @@ export const FulfillOrClaimed = () => {
 
       <Box>
         {tabIndex === 0 && <FulfillableItems />}
-        {tabIndex === 1 && <ClaimedItems />}
+        {tabIndex === 1 && <ClaimedItemsOrUpdateClaim />}
       </Box>
     </Box>
   );

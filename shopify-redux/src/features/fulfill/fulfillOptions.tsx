@@ -6,32 +6,36 @@ import React from "react";
 import { visibleOrders } from "../../app/utility/utils";
 
 export const FulfillOptions = () =>{
-    const theme = useTheme();
-    const userInterfaceState = useSelector(
-        (state: RootState) => state.userInterfaceState
-      );
-    const drawerWidth = 100
+  const theme = useTheme();
+  const userInterfaceState = useSelector(
+      (state: RootState) => state.userInterfaceState
+  );
+  const drawerWidth = 100 
+  if (!userInterfaceState.userInformation || !userInterfaceState.userInformation.user || !userInterfaceState.userInformation.user.user_id) {
+  return <Typography>Loading…</Typography>;
+} 
 
-
-    const styles = {
-      container: { mt: 4, mb: 4 },
-      paper: { p: 2, display: "flex", flexDirection: "column", height: 800, marginLeft: 10, marginRight: 2 },
-      viewPort: { display: "flex", alignItems: "center", justifyContent: "space-between" },
-      fileBox: { textAlign: "center", minHeight: "20px" },
-      fileInput: {
-        marginTop: 10,
-        marginLeft: userInterfaceState.leftDrawerOpen && {
-          marginLeft: drawerWidth,
-          width: `calc(100% - ${drawerWidth}px)`,
-          transition: theme.transitions.create(["width", "margin"], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
-          }),
-        },
+  const styles = {
+    container: { mt: 4, mb: 4 },
+    paper: { p: 2, display: "flex", flexDirection: "column", height: 800, marginLeft: 10, marginRight: 2 },
+    viewPort: { display: "flex", alignItems: "center", justifyContent: "space-between" },
+    fileBox: { textAlign: "center", minHeight: "20px" },
+    fileInput: {
+      marginTop: 10,
+      marginLeft: userInterfaceState.leftDrawerOpen && {
+        marginLeft: drawerWidth,
+        width: `calc(100% - ${drawerWidth}px)`,
+        transition: theme.transitions.create(["width", "margin"], {
+          easing: theme.transitions.easing.sharp,
+          duration: theme.transitions.duration.enteringScreen,
+        }),
       },
-    };
-    const visible_claimable_orders = visibleOrders(userInterfaceState.userInformation.user, userInterfaceState.userInformation.claimable_orders)
-      return (
+    },
+  };
+  const visible_claimable_orders = visibleOrders(
+    userInterfaceState.userInformation.user,
+    userInterfaceState.userInformation.claimable_orders ?? []
+  );      return (
         <Box sx={styles.fileInput}>
           <Container maxWidth="lg" sx={styles.container}>
             <Paper>
@@ -41,10 +45,10 @@ export const FulfillOptions = () =>{
                 </Typography>
               ) : (
                 <List>
-                  {visible_claimable_orders.map((order, index) => (
-                    <React.Fragment key={order.order_id}>
+                  {visible_claimable_orders.map((claimed_order, index) => (
+                    <React.Fragment key={claimed_order.order_id}>
                       <ListItem>
-                        <OrderCard {...order} />
+                        <OrderCard {...claimed_order} />
                       </ListItem>
                       {index < visible_claimable_orders.length - 1 && <Divider />}
                     </React.Fragment>
