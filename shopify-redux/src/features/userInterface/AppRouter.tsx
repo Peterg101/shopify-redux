@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LandingPage } from "../display/landingPage";
-import { Fulfill } from "../fulfill/fullfill";
+import { Fulfill } from "../fulfill/fulfill";
 
 const AppRouter: React.FC = () => {
   return (

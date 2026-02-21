@@ -1,5 +1,4 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { UUID } from "crypto";
 import { UserAndTasksAndBasketAndIncompleteAndOrders, FileResponse } from '../app/utility/interfaces';
 
 
@@ -9,7 +8,7 @@ export const authApi = createApi({
     baseUrl: process.env.REACT_APP_AUTH_SERVICE,
     credentials: 'include',
   }),
-  tagTypes: ['sessionData', 'fileData'],
+  tagTypes: ['sessionData'],
   endpoints: (builder) => ({
     getSession: builder.query<UserAndTasksAndBasketAndIncompleteAndOrders, void>({
       query: () => ({

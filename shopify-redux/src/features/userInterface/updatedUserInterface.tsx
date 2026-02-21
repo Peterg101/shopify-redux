@@ -1,14 +1,13 @@
 import { useRef, useState, useEffect } from "react";
-import { Box, Container, Grid, Paper, Badge, ListItem, ListItemIcon, IconButton, Typography, List, Toolbar, Divider } from "@mui/material";
+import { Box, Badge, ListItemButton, ListItemIcon, IconButton, Typography, List, Divider, Tooltip } from "@mui/material";
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import { Basket, EmptyBasket } from "./basketFragments"
+import { Basket, EmptyBasket } from "./basketFragments";
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ShoppingBasketIcon from '@mui/icons-material/ShoppingBasket';
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { useTheme } from "@mui/material/styles";
-import { AppBar, Drawer, DrawerHeader } from './uiComponents';
+import { Drawer, DrawerHeader } from './uiComponents';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { setLeftDrawerClosed, setLeftDrawerOpen, setSelectedComponent } from "../../services/userInterfaceSlice";
@@ -17,34 +16,8 @@ import { LeftDrawerList } from "./leftDrawerFragments";
 import { ProfilePage } from "./profilePage";
 import { FloatingCostSummary } from "../display/floatingCostSummary";
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import { EmptyOrderHistory, OrderHistory } from "./orderHIistoryFragments";
-
-// Color oscillation style
-const colorOscillationStyle = (theme: any) => ({
-  animation: "oscillateColorAndJiggle 0.5s linear infinite", // Oscillating and jiggling
-  "@keyframes oscillateColorAndJiggle": {
-    "0%": {
-      color: theme.palette.primary.main, // Primary color
-      transform: "rotate(0deg) translateX(0)", // No rotation or translation at the start
-    },
-    "25%": {
-      color: theme.palette.secondary.main, // Secondary color
-      transform: "rotate(5deg) translateX(5px)", // Slight rotation and translation to the right
-    },
-    "50%": {
-      color: theme.palette.primary.main, // Primary color
-      transform: "rotate(0deg) translateX(0)", // Reset to the original position
-    },
-    "75%": {
-      color: theme.palette.secondary.main, // Secondary color
-      transform: "rotate(-5deg) translateX(-5px)", // Slight rotation and translation to the left
-    },
-    "100%": {
-      color: theme.palette.primary.main, // Primary color
-      transform: "rotate(0deg) translateX(0)", // Reset to the original position
-    },
-  },
-});
+import { EmptyOrderHistory, OrderHistory } from "./orderHistoryFragments";
+import { colorOscillationStyle } from "../shared/animations";
 
 export const UpdatedUserInterface = () => {
   const [animationTriggered, setAnimationTriggered] = useState(false);
@@ -54,9 +27,18 @@ export const UpdatedUserInterface = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
 
-  const openDrawer = (index: string) => {
-    dispatch(setLeftDrawerOpen());
-    dispatch(setSelectedComponent({ selectedComponent: index }));
+  const openDrawer = (itemText: string) => {
+    if (userInterfaceState.leftDrawerOpen && userInterfaceState.selectedComponent === itemText) {
+      // Same icon clicked while open — close
+      dispatch(setLeftDrawerClosed());
+      dispatch(setSelectedComponent({ selectedComponent: "" }));
+    } else {
+      // Different icon or drawer was closed — open/switch
+      if (!userInterfaceState.leftDrawerOpen) {
+        dispatch(setLeftDrawerOpen()); // toggles false → true
+      }
+      dispatch(setSelectedComponent({ selectedComponent: itemText }));
+    }
   };
 
   const handleDrawerClose = () => {
@@ -64,13 +46,12 @@ export const UpdatedUserInterface = () => {
     dispatch(setSelectedComponent({ selectedComponent: "" }));
   };
 
-  // Trigger animation on dataState change
   useEffect(() => {
     if (dataState) {
       setAnimationTriggered(true);
       const timer = setTimeout(() => {
         setAnimationTriggered(false);
-      }, 3000); // Reset after 3 seconds (duration of animation)
+      }, 3000);
 
       return () => clearTimeout(timer);
     }
@@ -79,9 +60,7 @@ export const UpdatedUserInterface = () => {
   const resultsItems: SidebarItem[] = [
     {
       text: "Profile",
-      icon: (
-        <AccountBoxIcon sx={{ fontSize: 40, marginTop: 1 }} />
-      ),
+      icon: <AccountBoxIcon />,
     },
     {
       text: "Gen AI History",
@@ -91,7 +70,7 @@ export const UpdatedUserInterface = () => {
           color="secondary"
           anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
         >
-          <AutoAwesomeIcon sx={{ fontSize: 40, marginTop: 1 }} />
+          <AutoAwesomeIcon />
         </Badge>
       ),
     },
@@ -103,7 +82,7 @@ export const UpdatedUserInterface = () => {
           color="secondary"
           anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
         >
-          <ShoppingBasketIcon sx={{ fontSize: 40, marginTop: 1 }} />
+          <ShoppingBasketIcon />
         </Badge>
       ),
     },
@@ -111,11 +90,10 @@ export const UpdatedUserInterface = () => {
       text: "Order History",
       icon: (
         <Badge
-          // badgeContent={userInterfaceState.userInformation?.orders.length}
           color="secondary"
           anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
         >
-          <LocalShippingIcon sx={{ fontSize: 40, marginTop: 1 }} />
+          <LocalShippingIcon />
         </Badge>
       ),
     },
@@ -126,8 +104,6 @@ export const UpdatedUserInterface = () => {
             icon: (
               <AttachMoneyIcon
                 sx={{
-                  fontSize: 40,
-                  marginTop: 1,
                   ...(animationTriggered ? colorOscillationStyle(theme) : {}),
                 }}
               />
@@ -150,17 +126,15 @@ export const UpdatedUserInterface = () => {
               {userInterfaceState.userInformation?.basket_items.length === 0 ? <EmptyBasket /> : <Basket />}
               <Divider sx={{ my: 1 }} />
             </List>
-            <Box sx={{ marginTop: 'auto', padding: 2 }} />
           </Box>
         );
-        case "Order History":
+      case "Order History":
         return (
           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <List component="nav" sx={{ flexGrow: 1 }}>
               {userInterfaceState.userInformation?.orders.length === 0 ? <EmptyOrderHistory /> : <OrderHistory />}
               <Divider sx={{ my: 1 }} />
             </List>
-            <Box sx={{ marginTop: 'auto', padding: 2 }} />
           </Box>
         );
       case "Cost Summary":
@@ -172,9 +146,27 @@ export const UpdatedUserInterface = () => {
 
   const sidebarItems = (items: SidebarItem[]) => {
     return items.map((item, index) => (
-      <ListItem button key={index} onClick={() => openDrawer(item.text)}>
-        <ListItemIcon sx={{ marginRight: '16px' }}>{item.icon}</ListItemIcon>
-      </ListItem>
+      <Tooltip title={item.text} placement="right" key={index}>
+        <ListItemButton
+          selected={userInterfaceState.leftDrawerOpen && userInterfaceState.selectedComponent === item.text}
+          onClick={() => openDrawer(item.text)}
+          sx={{
+            minHeight: 48,
+            justifyContent: userInterfaceState.leftDrawerOpen ? 'initial' : 'center',
+            px: 2.5,
+          }}
+        >
+          <ListItemIcon
+            sx={{
+              minWidth: 0,
+              mr: userInterfaceState.leftDrawerOpen ? 2 : 'auto',
+              justifyContent: 'center',
+            }}
+          >
+            {item.icon}
+          </ListItemIcon>
+        </ListItemButton>
+      </Tooltip>
     ));
   };
 
@@ -182,40 +174,33 @@ export const UpdatedUserInterface = () => {
 
   return (
     <div>
-      {/* <AppBar position="fixed" open={userInterfaceState.leftDrawerOpen} drawerWidth={userInterfaceState.drawerWidth}>
-        <Toolbar>
-          <Typography variant="h5" noWrap component="div">
-            FITD
-          </Typography>
-          <Box sx={{ flexGrow: 1 }} />
-          <Box sx={{ display: "flex", justifyContent: "flex-end" }} />
-        </Toolbar>
-      </AppBar> */}
-
       <Drawer
-      // @ts-expect-error variant undefined
-        variant={"permanent"}
+        variant="permanent"
         ref={drawerRef}
         drawerWidth={userInterfaceState.drawerWidth}
         open={userInterfaceState.leftDrawerOpen}
       >
-        <DrawerHeader sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Typography variant="h5">
-            {userInterfaceState.selectedComponent}
-          </Typography>
-          <IconButton onClick={() => handleDrawerClose()}>
-            {theme.direction === "rtl" ? (
-              <ChevronRightIcon />
-            ) : (
+        {/* Only show header with title and close button when open */}
+        {userInterfaceState.leftDrawerOpen && (
+          <DrawerHeader sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
+              {userInterfaceState.selectedComponent}
+            </Typography>
+            <IconButton onClick={handleDrawerClose}>
               <ChevronLeftIcon />
-            )}
-          </IconButton>
-        </DrawerHeader>
+            </IconButton>
+          </DrawerHeader>
+        )}
 
-        {!userInterfaceState.leftDrawerOpen ? (
-          sidebarItems(resultsItems)
-        ) : (
-          <Box sx={{ p: 2 }}>
+        {/* When closed: show icon strip. When open: show content only */}
+        {!userInterfaceState.leftDrawerOpen && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, py: 1 }}>
+            {sidebarItems(resultsItems)}
+          </Box>
+        )}
+
+        {userInterfaceState.leftDrawerOpen && (
+          <Box sx={{ p: 2, overflow: 'auto', flexGrow: 1 }}>
             {renderResultsOptionsComponent()}
           </Box>
         )}

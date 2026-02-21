@@ -84,48 +84,66 @@ export const deleteBasketItem = async (fileId: string): Promise<void> => {
 }
 
 export const startTask = async (prompt: string, userId: string, portId: string) => {
-  const payload: MeshyPayload = {
-    mode: 'preview',
-    prompt: prompt,
-    art_style: 'realistic',
-    negative_prompt: 'low quality, low resolution, low poly, ugly',
-    ai_model: 'meshy-5'
-  };
+  try {
+    const payload: MeshyPayload = {
+      mode: 'preview',
+      prompt: prompt,
+      art_style: 'realistic',
+      negative_prompt: 'low quality, low resolution, low poly, ugly',
+      ai_model: 'meshy-5'
+    };
 
-  const response = await fetch(`${process.env.REACT_APP_MESHY_SERVICE}/start_task/`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json', // Specify that you're sending JSON data
+    const response = await fetch(`${process.env.REACT_APP_MESHY_SERVICE}/start_task/`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ port_id: portId, user_id: userId, meshy_payload: payload }),
+    });
 
-    },
-    body: JSON.stringify({ port_id: portId, user_id: userId, meshy_payload: payload }),
-  });
+    if (!response.ok) {
+      throw new Error(`Failed to start task: ${response.statusText}`);
+    }
 
-  const data = await response.json();
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error starting task:", error);
+    throw error;
+  }
 };
 
 export const startImageTo3DTask = async (image_file: File, userId: string, portId: string, fileName: string) => {
-  const image_bytes = await convertFileToDataURI(image_file)
-  const payload: MeshyImageTo3DPayload = {
-    image_url: image_bytes,
-    enable_pbr: true, 
-    should_remesh: true,
-    should_texture: true,
-    ai_model: "meshy-5"
-  };
+  try {
+    const image_bytes = await convertFileToDataURI(image_file)
+    const payload: MeshyImageTo3DPayload = {
+      image_url: image_bytes,
+      enable_pbr: true,
+      should_remesh: true,
+      should_texture: true,
+      ai_model: "meshy-5"
+    };
 
-  const response = await fetch(`${process.env.REACT_APP_MESHY_SERVICE}/start_image_to_3d_task/`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json', // Specify that you're sending JSON data
+    const response = await fetch(`${process.env.REACT_APP_MESHY_SERVICE}/start_image_to_3d_task/`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ port_id: portId, user_id: userId, meshy_image_to_3d_payload: payload, filename: fileName}),
+    });
 
-    },
-    body: JSON.stringify({ port_id: portId, user_id: userId, meshy_image_to_3d_payload: payload, filename: fileName}),
-  });
+    if (!response.ok) {
+      throw new Error(`Failed to start image-to-3D task: ${response.statusText}`);
+    }
 
-  const data = await response.json();
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error starting image-to-3D task:", error);
+    throw error;
+  }
 };
 
 export const updateBasketQuantity = async (basketQuantityUpdate: BasketQuantityUpdate): Promise<void> => {

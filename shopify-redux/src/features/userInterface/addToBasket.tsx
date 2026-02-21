@@ -10,7 +10,7 @@ import { postFile } from "../../services/fetchFileUtils";
 import { authApi } from "../../services/authApi";
 import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
 import { useState } from "react";
-import { useSyncTotalCost } from "../../hooks/useSyncTotalCost";
+import { selectTotalCost } from "../../services/selectors";
 
 export const AddToBasket = () => {
   const dispatch = useDispatch()
@@ -20,7 +20,7 @@ export const AddToBasket = () => {
   const userState = useSelector(
     (state: RootState) => state.userInterfaceState
   )
-  const syncCost = useSyncTotalCost
+  const totalCost = useSelector(selectTotalCost)
   const {actualFile} = useFile()
 
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
@@ -56,7 +56,7 @@ const handleAddToBasket = async () => {
         selectedFileType: dataState.selectedFileType,
         quantity: 1,
         file_blob: base64String,
-        price: dataState.totalCost,
+        price: totalCost,
       };
       await postFile(basketInformationAndFile);
       dispatch(resetDataState());
@@ -73,20 +73,11 @@ const handleAddToBasket = async () => {
 return (
   <>
     <Button
-      component="label"
-      role={undefined}
       variant="contained"
-      tabIndex={-1}
+      color="primary"
       onClick={handleAddToBasket}
-      sx={{
-        border: "1px",
-        backgroundColor: "white",
-        "&:hover": {
-          backgroundColor: "theme-color",
-        },
-      }}
     >
-      <ShoppingBasketIcon sx={{ color: "black" }} />
+      <ShoppingBasketIcon />
     </Button>
 
     <Snackbar

@@ -57,7 +57,7 @@ export const dataSlice = createSlice({
         },
         setSelectedFileType: (state, action: PayloadAction<{selectedFileType: string}>) => {
             const {selectedFileType} = action.payload
-            state.selectedFile = selectedFileType
+            state.selectedFileType = selectedFileType
         },
         setPrintTechnique: (state, action: PayloadAction<{printTechnique: string}>) => {
             const {printTechnique} = action.payload

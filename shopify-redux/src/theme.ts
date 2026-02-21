@@ -1,74 +1,108 @@
 import { createTheme } from "@mui/material/styles"
 
-// Define your custom theme
+// FITD Dark/Technical Theme
+const cyan = "#00E5FF"
+const cyanDark = "#00B8D4"
+const neonGreen = "#76FF03"
+const amber = "#FF9100"
+const bgDefault = "#0A0E14"
+const bgPaper = "#131920"
+const textPrimary = "#E4E8EE"
+const textSecondary = "#8899AA"
+const borderSubtle = "rgba(0, 229, 255, 0.12)"
+
 export const theme = createTheme({
   palette: {
+    mode: "dark",
     primary: {
-      main: "#DCDCDC", // Primary color: Light grey
-      contrastText: "#333", // White text color for primary buttons
+      main: cyan,
+      dark: cyanDark,
+      contrastText: "#0A0E14",
     },
     secondary: {
-      main: "#CF581D", // Secondary color: Orange
-      contrastText: "#fff", // White text color for secondary buttons
+      main: neonGreen,
+      contrastText: "#0A0E14",
+    },
+    warning: {
+      main: amber,
     },
     background: {
-      default: "#f5f5f5", // Background color: Light grey
-      paper: "#fff", // Paper color: White
+      default: bgDefault,
+      paper: bgPaper,
     },
     text: {
-      primary: "#333", // Primary text color: Dark grey
-      secondary: "#333", // Secondary text color: Medium grey
+      primary: textPrimary,
+      secondary: textSecondary,
     },
     error: {
-      main: "#d32f2f", // Error color: Red
+      main: "#FF5252",
     },
+    divider: "rgba(136, 153, 170, 0.15)",
   },
   typography: {
-    fontFamily: "Roboto, Arial, sans-serif", // Font family
+    fontFamily: "'Inter', 'Roboto', Arial, sans-serif",
     h1: {
       fontSize: "2rem",
       fontWeight: 700,
+      color: textPrimary,
     },
     h2: {
       fontSize: "1.75rem",
       fontWeight: 700,
+      color: textPrimary,
     },
     h3: {
       fontSize: "1.5rem",
       fontWeight: 700,
+      color: textPrimary,
     },
     h4: {
       fontSize: "1.25rem",
       fontWeight: 700,
+      color: textPrimary,
     },
     body1: {
       fontSize: "1rem",
-      color: "#333",
+      color: textPrimary,
+    },
+    body2: {
+      fontSize: "0.875rem",
+      color: textSecondary,
     },
     button: {
-      textTransform: "none", // Prevent text from being uppercased
+      textTransform: "none",
+      fontWeight: 600,
     },
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          backgroundColor: bgDefault,
+          color: textPrimary,
+        },
+      },
+    },
     MuiTextField: {
       styleOverrides: {
         root: {
           "& .MuiInputBase-input": {
-            color: "#333", // Text color
+            color: textPrimary,
           },
           "& .MuiFormLabel-root": {
-            color: "#333", // Label color
+            color: textSecondary,
           },
           "& .MuiOutlinedInput-root": {
             "& fieldset": {
-              borderColor: "#DCDCDC", // Border color
-              borderRadius: "8px", // Rounded edges
+              borderColor: borderSubtle,
+              borderRadius: "8px",
             },
             "&:hover fieldset": {
-              borderColor: "#CF581D", // Border color on hover (orange)
+              borderColor: cyan,
             },
             "&.Mui-focused fieldset": {
-              borderColor: "#CF581D", // Border color when focused (orange)
+              borderColor: cyan,
+              boxShadow: `0 0 8px ${cyan}40`,
             },
           },
         },
@@ -77,25 +111,36 @@ export const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: "8px", // Rounded edges for buttons
+          borderRadius: "8px",
+          transition: "all 0.2s ease-in-out",
           "&.MuiButton-containedPrimary": {
-            color: "#fff", // White text color for primary contained button
-            backgroundColor: "#CF581D", // Orange background for primary contained button
+            color: bgDefault,
+            backgroundColor: cyan,
             "&:hover": {
-              backgroundColor: "#C94E1C", // Darker orange on hover
+              backgroundColor: cyanDark,
+              boxShadow: `0 0 16px ${cyan}60`,
             },
           },
           "&.MuiButton-containedSecondary": {
-            color: "#fff", // White text color for secondary contained button
-            backgroundColor: "#CF581D", // Orange background color for secondary contained button
+            color: bgDefault,
+            backgroundColor: neonGreen,
             "&:hover": {
-              backgroundColor: "#C94E1C", // Darker orange on hover
+              backgroundColor: "#64DD17",
+              boxShadow: `0 0 16px ${neonGreen}60`,
+            },
+          },
+          "&.MuiButton-outlined": {
+            borderColor: borderSubtle,
+            color: textPrimary,
+            "&:hover": {
+              borderColor: cyan,
+              boxShadow: `0 0 8px ${cyan}30`,
             },
           },
           "&.Mui-disabled": {
-            color: "#B0B0B0", // Grey text color for disabled state
-            backgroundColor: "#D0D0D0", // Grey background for disabled state
-            borderColor: "#D0D0D0", // Grey border for disabled state
+            color: "#445566",
+            backgroundColor: "#1a2230",
+            borderColor: "#1a2230",
           },
         },
       },
@@ -103,9 +148,9 @@ export const theme = createTheme({
     MuiCheckbox: {
       styleOverrides: {
         root: {
-          color: "#CF581D", // Checkbox color
+          color: textSecondary,
           "&.Mui-checked": {
-            color: "#CF581D", // Checked checkbox color
+            color: cyan,
           },
         },
       },
@@ -113,9 +158,9 @@ export const theme = createTheme({
     MuiRadio: {
       styleOverrides: {
         root: {
-          color: "#CF581D", // Radio button color
+          color: textSecondary,
           "&.Mui-checked": {
-            color: "#CF581D", // Checked radio button color
+            color: cyan,
           },
         },
       },
@@ -123,45 +168,69 @@ export const theme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          borderRadius: "8px", // Rounded edges
-          boxShadow:
-            "0px 4px 6px rgba(0, 0, 0, 0.1), 0px 1px 3px rgba(0, 0, 0, 0.08)", // Raised shadow
+          borderRadius: "8px",
+          backgroundColor: bgPaper,
+          backgroundImage: "none",
+          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.4)",
         },
       },
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: "8px", // Rounded edges
-          boxShadow:
-            "0px 4px 6px rgba(0, 0, 0, 0.1), 0px 1px 3px rgba(0, 0, 0, 0.08)", // Raised shadow
+          borderRadius: "8px",
+          backgroundColor: bgPaper,
+          backgroundImage: "none",
+          border: `1px solid ${borderSubtle}`,
+          boxShadow: `0 0 12px rgba(0, 229, 255, 0.05)`,
+          transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+          "&:hover": {
+            borderColor: "rgba(0, 229, 255, 0.25)",
+            boxShadow: `0 0 20px rgba(0, 229, 255, 0.1)`,
+          },
         },
       },
     },
     MuiDialog: {
       styleOverrides: {
         paper: {
-          borderRadius: "8px", // Rounded edges
-          boxShadow:
-            "0px 4px 6px rgba(0, 0, 0, 0.1), 0px 1px 3px rgba(0, 0, 0, 0.08)", // Raised shadow
+          borderRadius: "12px",
+          backgroundColor: bgPaper,
+          backgroundImage: "none",
+          border: `1px solid ${borderSubtle}`,
+          boxShadow: `0 0 24px rgba(0, 229, 255, 0.1)`,
         },
       },
     },
     MuiAppBar: {
+      defaultProps: {
+        color: "transparent",
+      },
       styleOverrides: {
         root: {
-          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)", // Raised shadow for AppBar
-          borderRadius: "0px", // No rounded edges
-          backgroundColor: "#DCDCDC", // Background color of the AppBar
+          boxShadow: `0 1px 0 ${borderSubtle}`,
+          borderRadius: "0px",
+          backgroundColor: bgPaper,
+          backgroundImage: "none",
+          color: textPrimary,
+        },
+      },
+    },
+    MuiDrawer: {
+      styleOverrides: {
+        paper: {
+          backgroundColor: bgPaper,
+          backgroundImage: "none",
+          borderColor: borderSubtle,
         },
       },
     },
     MuiInputLabel: {
       styleOverrides: {
         root: {
-          color: "#333", // Default label color
+          color: textSecondary,
           "&.Mui-focused": {
-            color: "#CF581D", // Orange label color when focused
+            color: cyan,
           },
         },
       },
@@ -169,17 +238,82 @@ export const theme = createTheme({
     MuiOutlinedInput: {
       styleOverrides: {
         notchedOutline: {
-          borderColor: "#DCDCDC", // Light grey border color
+          borderColor: borderSubtle,
         },
         root: {
           "&:hover .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#CF581D", // Orange border color on hover
+            borderColor: cyan,
           },
           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#CF581D", // Orange border color when focused
+            borderColor: cyan,
           },
+        },
+      },
+    },
+    MuiSelect: {
+      styleOverrides: {
+        icon: {
+          color: textSecondary,
+        },
+      },
+    },
+    MuiSlider: {
+      styleOverrides: {
+        root: {
+          color: cyan,
+        },
+      },
+    },
+    MuiTab: {
+      styleOverrides: {
+        root: {
+          color: textSecondary,
+          "&.Mui-selected": {
+            color: cyan,
+          },
+        },
+      },
+    },
+    MuiTabs: {
+      styleOverrides: {
+        indicator: {
+          backgroundColor: cyan,
+        },
+      },
+    },
+    MuiListItemButton: {
+      styleOverrides: {
+        root: {
+          "&.Mui-selected": {
+            backgroundColor: "rgba(0, 229, 255, 0.08)",
+            "&:hover": {
+              backgroundColor: "rgba(0, 229, 255, 0.12)",
+            },
+          },
+          "&:hover": {
+            backgroundColor: "rgba(0, 229, 255, 0.04)",
+          },
+        },
+      },
+    },
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          backgroundColor: "#1a2230",
+          color: textPrimary,
+          border: `1px solid ${borderSubtle}`,
+        },
+      },
+    },
+    MuiSkeleton: {
+      styleOverrides: {
+        root: {
+          backgroundColor: "rgba(136, 153, 170, 0.1)",
         },
       },
     },
   },
 })
+
+// Monospace font for technical data (dimensions, costs, IDs)
+export const monoFontFamily = "'Roboto Mono', 'Consolas', 'Courier New', monospace"

@@ -1,0 +1,123 @@
+import React from 'react'
+import { screen } from '@testing-library/react'
+import { renderWithProviders } from '../../../test-utils/renderWithProviders'
+import { FulfillOptions } from '../fulfillOptions'
+import { createMockOrder, createMockUserInformation, createMockSessionData } from '../../../test-utils/mockData'
+
+// Mock OBJSTLViewer to avoid three.js imports
+jest.mock('../../display/objStlViewer', () => ({
+  __esModule: true,
+  default: () => <div data-testid="mock-viewer">3D Viewer</div>,
+}))
+
+describe('FulfillOptions', () => {
+  it('renders loading state when user is not loaded', () => {
+    renderWithProviders(<FulfillOptions />)
+    expect(screen.getByText('Loading...')).toBeInTheDocument()
+  })
+
+  it('renders empty state when there are no claimable orders', () => {
+    const sessionData = createMockSessionData({
+      claimable_orders: [],
+    })
+
+    renderWithProviders(<FulfillOptions />, {
+      preloadedState: {
+        userInterfaceState: {
+          leftDrawerOpen: false,
+          rightDrawerOpen: false,
+          basketItems: [],
+          drawerWidth: 400,
+          selectedComponent: '',
+          meshyLoading: false,
+          meshyLoadedPercentage: 0,
+          meshyPending: false,
+          meshyQueueItems: 0,
+          isLoggedIn: true,
+          userInformation: sessionData,
+          totalBasketValue: 0,
+          claimedOrder: null as any,
+          updateClaimedOrder: null as any,
+        },
+      },
+    })
+
+    expect(screen.getByText('No orders available at the moment.')).toBeInTheDocument()
+    expect(screen.getByText('Check back later for new orders to fulfill.')).toBeInTheDocument()
+  })
+
+  it('renders order cards when claimable orders exist', () => {
+    const order = createMockOrder({
+      name: 'Widget A',
+      quantity: 5,
+      quantity_claimed: 2,
+    })
+    const sessionData = createMockSessionData({
+      claimable_orders: [order],
+    })
+
+    renderWithProviders(<FulfillOptions />, {
+      preloadedState: {
+        userInterfaceState: {
+          leftDrawerOpen: false,
+          rightDrawerOpen: false,
+          basketItems: [],
+          drawerWidth: 400,
+          selectedComponent: '',
+          meshyLoading: false,
+          meshyLoadedPercentage: 0,
+          meshyPending: false,
+          meshyQueueItems: 0,
+          isLoggedIn: true,
+          userInformation: sessionData,
+          totalBasketValue: 0,
+          claimedOrder: null as any,
+          updateClaimedOrder: null as any,
+        },
+      },
+    })
+
+    expect(screen.getByText('Widget A')).toBeInTheDocument()
+  })
+
+  it('filters out fully claimed orders', () => {
+    const fullyClaimed = createMockOrder({
+      name: 'Fully Claimed',
+      quantity: 3,
+      quantity_claimed: 3,
+    })
+    const partialClaimed = createMockOrder({
+      name: 'Partial Claim',
+      quantity: 5,
+      quantity_claimed: 2,
+    })
+    const sessionData = createMockSessionData({
+      claimable_orders: [fullyClaimed, partialClaimed],
+    })
+
+    renderWithProviders(<FulfillOptions />, {
+      preloadedState: {
+        userInterfaceState: {
+          leftDrawerOpen: false,
+          rightDrawerOpen: false,
+          basketItems: [],
+          drawerWidth: 400,
+          selectedComponent: '',
+          meshyLoading: false,
+          meshyLoadedPercentage: 0,
+          meshyPending: false,
+          meshyQueueItems: 0,
+          isLoggedIn: true,
+          userInformation: sessionData,
+          totalBasketValue: 0,
+          claimedOrder: null as any,
+          updateClaimedOrder: null as any,
+        },
+      },
+    })
+
+    // The fully claimed order should be filtered by OrderCard (returns null if not claimable)
+    expect(screen.queryByText('Fully Claimed')).not.toBeInTheDocument()
+    expect(screen.getByText('Partial Claim')).toBeInTheDocument()
+  })
+})

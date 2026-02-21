@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { UserInterfaceState, BasketItem, UploadedFile, Order } from "../app/utility/interfaces";
+import { UserInterfaceState, BasketItem, Order } from "../app/utility/interfaces";
 import { UUID } from "crypto";
 import { authApi } from "./authApi";
 

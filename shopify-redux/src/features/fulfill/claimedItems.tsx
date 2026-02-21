@@ -1,32 +1,16 @@
-import { Box, useTheme, Typography, Stack, Container, Paper, List, ListItem, Divider} from "@mui/material";
+import { Box, Typography, Container, Paper, List, ListItem, Divider} from "@mui/material";
 import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import React from "react";
-import { OrderCard } from "./orderCard";
 import { ClaimCard } from "./claimCard";
 
 export const ClaimedItems = () => {
-  const theme = useTheme();
   const userInterfaceState = useSelector(
     (state: RootState) => state.userInterfaceState
   );
 
-  const drawerWidth = 100;
-
   return (
-    <Box
-      sx={{
-        mt: 10,
-        ...(userInterfaceState.leftDrawerOpen && {
-          ml: `${drawerWidth}px`,
-          width: `calc(100% - ${drawerWidth}px)`,
-          transition: theme.transitions.create(["width", "margin"], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
-          }),
-        }),
-      }}
-    >
+    <Box>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Paper>
             {(!userInterfaceState.userInformation.claims || userInterfaceState.userInformation.claims.length === 0) ? (

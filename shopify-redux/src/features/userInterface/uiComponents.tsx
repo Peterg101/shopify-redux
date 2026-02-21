@@ -1,5 +1,5 @@
 import { styled, Theme, CSSObject } from "@mui/material/styles"
-import MuiDrawer from "@mui/material/Drawer"
+import MuiDrawer, { DrawerProps as MuiDrawerProps } from "@mui/material/Drawer"
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar"
 
 export const openedMixin = (theme: Theme, drawerWidth: number): CSSObject => ({
@@ -9,6 +9,10 @@ export const openedMixin = (theme: Theme, drawerWidth: number): CSSObject => ({
     duration: theme.transitions.duration.enteringScreen,
   }),
   overflowX: "hidden",
+  top: typeof theme.mixins.toolbar.minHeight === 'number'
+    ? theme.mixins.toolbar.minHeight
+    : 56,
+  height: `calc(100% - ${typeof theme.mixins.toolbar.minHeight === 'number' ? theme.mixins.toolbar.minHeight : 56}px)`,
 })
 
 export const closedMixin = (theme: Theme): CSSObject => ({
@@ -21,6 +25,10 @@ export const closedMixin = (theme: Theme): CSSObject => ({
   [theme.breakpoints.up("sm")]: {
     width: `calc(${theme.spacing(8)} + 1px)`,
   },
+  top: typeof theme.mixins.toolbar.minHeight === 'number'
+    ? theme.mixins.toolbar.minHeight
+    : 56,
+  height: `calc(100% - ${typeof theme.mixins.toolbar.minHeight === 'number' ? theme.mixins.toolbar.minHeight : 56}px)`,
 })
 
 export const DrawerHeader = styled("div")(({ theme }) => ({
@@ -32,6 +40,11 @@ export const DrawerHeader = styled("div")(({ theme }) => ({
 }))
 
 export interface AppBarProps extends MuiAppBarProps {
+  open?: boolean
+  drawerWidth: number
+}
+
+export interface StyledDrawerProps extends MuiDrawerProps {
   open?: boolean
   drawerWidth: number
 }
@@ -55,11 +68,11 @@ export const AppBar = styled(MuiAppBar, {
 }))
 
 export const Drawer = styled(MuiDrawer, {
-  shouldForwardProp: prop => prop !== "open",
-})<AppBarProps>(({ theme, open, drawerWidth }) => ({
+  shouldForwardProp: prop => prop !== "drawerWidth",
+})<StyledDrawerProps>(({ theme, open, drawerWidth }) => ({
   width: drawerWidth,
   flexShrink: 0,
-  whiteSpace: "nowrap",
+  whiteSpace: open ? "normal" : "nowrap",
   boxSizing: "border-box",
   ...(open && {
     ...openedMixin(theme, drawerWidth),

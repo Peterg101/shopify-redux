@@ -40,6 +40,8 @@ import EditBasketItem from "./editBasketItem";
 import { BasketInformation } from "../../app/utility/interfaces";
 import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
 import { createShopifyCheckoutAndRedirect } from "../../services/fetchFileUtils";
+import { selectTotalBasketValue } from "../../services/selectors";
+import { monoFontFamily } from "../../theme";
 
 // Empty state
 export const EmptyBasket = () => (
@@ -76,7 +78,7 @@ export const BasketList = () => {
         flexDirection: "column",
         gap: 3,
         width: "100%",
-        maxWidth: "800px", // Control width of the whole column
+        maxWidth: "100%",
         mx: "auto",         // Center it
         px: 2,              // Padding for smaller screens
       }}
@@ -174,6 +176,7 @@ const BasketItemCard: React.FC<BasketInformation> = (item) => {
               icon={<AttachMoney />}
               label="Price"
               value={`£${(quantity * item.price).toFixed(2)}`}
+              mono
             />
           </Box>
 
@@ -192,14 +195,16 @@ const DetailRow = ({
   icon,
   label,
   value,
+  mono,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
+  mono?: boolean;
 }) => (
   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
     {icon}
-    <Typography variant="body1">
+    <Typography variant="body1" sx={mono ? { fontFamily: monoFontFamily } : undefined}>
       <strong>{label}:</strong> {value}
     </Typography>
   </Box>
@@ -207,11 +212,11 @@ const DetailRow = ({
 
 // Bottom total on list
 const BasketTotal = () => {
-  const total = useSelector((state: RootState) => state.userInterfaceState.totalBasketValue)
+  const total = useSelector(selectTotalBasketValue)
 
   return (
     <Box sx={{ textAlign: "right", pr: 1 }}>
-      <Typography variant="h6" sx={{ fontWeight: 600 }}>
+      <Typography variant="h6" sx={{ fontWeight: 600, fontFamily: monoFontFamily }}>
         Total: £{total.toFixed(2)}
       </Typography>
     </Box>
@@ -225,7 +230,7 @@ export const BasketSummary = () => {
 
   const user_id = useSelector((state:RootState) => state.userInterfaceState.userInformation.user.user_id)
   const basketItems = useSelector((state: RootState) => state.userInterfaceState.userInformation?.basket_items || []);
-  const subtotal = useSelector((state: RootState) => state.userInterfaceState.totalBasketValue)
+  const subtotal = useSelector(selectTotalBasketValue)
   const shippingEstimate = subtotal > 0 ? 4.99 : 0;
   const total = subtotal + shippingEstimate;
   const [generateTasksFromBasket] = useGenerateTasksFromBasketMutation()
@@ -251,12 +256,11 @@ export const BasketSummary = () => {
     p: 3,
     borderRadius: 3,
     backdropFilter: "blur(6px)",
-    background: "rgba(255, 255, 255, 0.75)",
-    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.1)",
+    background: "rgba(19, 25, 32, 0.85)",
+    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.3), 0 0 12px rgba(0, 229, 255, 0.05)",
     display: "flex",
     flexDirection: "column",
     gap: 2,
-    
   }}
 >
       <Typography variant="h6" sx={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 1 }}>
@@ -266,19 +270,19 @@ export const BasketSummary = () => {
 
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
         <Typography color="text.secondary">Subtotal</Typography>
-        <Typography>£{subtotal.toFixed(2)}</Typography>
+        <Typography sx={{ fontFamily: monoFontFamily }}>£{subtotal.toFixed(2)}</Typography>
       </Box>
 
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
         <Typography color="text.secondary">Shipping Estimate</Typography>
-        <Typography>£{shippingEstimate.toFixed(2)}</Typography>
+        <Typography sx={{ fontFamily: monoFontFamily }}>£{shippingEstimate.toFixed(2)}</Typography>
       </Box>
 
       <Divider />
 
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
         <Typography variant="h6">Total</Typography>
-        <Typography variant="h6">£{total.toFixed(2)}</Typography>
+        <Typography variant="h6" sx={{ fontFamily: monoFontFamily }}>£{total.toFixed(2)}</Typography>
       </Box>
 
       <Button

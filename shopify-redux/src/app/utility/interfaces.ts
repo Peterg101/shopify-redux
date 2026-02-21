@@ -1,6 +1,4 @@
 import { UUID } from "crypto";
-import internal from "stream";
-import * as THREE from 'three';
 //Basket items are safe to go in the redux store
 
 export type UUIDType = `${string}-${string}-${string}-${string}-${string}`;
@@ -69,11 +67,6 @@ export interface FileAndItem {
     uploadedFile: UploadedFile,
     basketItem: BasketItem
 }
-
-export interface DrawerProps {
-    open: boolean;
-    drawerWidth: number;
-  }
 
 export interface VectorState {
     position: {

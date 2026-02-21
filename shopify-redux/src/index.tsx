@@ -16,7 +16,7 @@ root.render(
       
       <FileProvider>
       <UploadedFilesProvider>
-      <App />``
+      <App />
       </UploadedFilesProvider>
       </FileProvider>
 
