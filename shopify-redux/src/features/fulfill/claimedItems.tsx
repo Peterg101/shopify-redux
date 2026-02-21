@@ -22,7 +22,7 @@ export const ClaimedItems = () => {
                   {userInterfaceState.userInformation.claims.map((claim, index) => (
                     <React.Fragment key={claim.id}>
                         <ListItem>
-                          <ClaimCard {...claim.order} />
+                          <ClaimCard claim={claim} />
                         </ListItem>
                         {index < userInterfaceState.userInformation.orders.length - 1 && <Divider />}
                       </React.Fragment>

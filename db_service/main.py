@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends, Cookie, Header, Request, st
 from typing import List
 from sqlalchemy.orm import Session, joinedload, selectinload
 from fastapi.middleware.cors import CORSMiddleware
-from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, Order, UserStripeAccount, Claim
+from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, Order, UserStripeAccount, Claim, Disbursement
 from fitd_schemas.fitd_classes import UserHydrationResponse, ClaimWithOrderResponse, OrderResponse
 from datetime import datetime
 import uuid
@@ -33,7 +33,8 @@ from fitd_schemas.fitd_classes import(
     BasketQuantityUpdate,
     ImageTo3DMeshyTaskStatusResponse,
     ShopifyOrder,
-    ClaimOrder
+    ClaimOrder,
+    ClaimStatusUpdate
 )
 import uvicorn
 from typing import Optional, Dict
@@ -44,9 +45,6 @@ import re
 
 UPLOAD_DIR = Path("./uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
-
-# Ensure tables are created
-Base.metadata.create_all(bind=engine)
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -137,7 +135,14 @@ async def get_user(
     claimable_orders = db.query(Order).filter(Order.user_id != user_id).all()
     orders_response = [OrderResponse.from_orm(order) for order in orders]
     claimable_orders_response = [OrderResponse.from_orm(order) for order in claimable_orders]
-    object = {
+
+    # Check Stripe onboarding status
+    user_stripe = db.query(UserStripeAccount).filter(
+        UserStripeAccount.user_id == user_id
+    ).first()
+    stripe_onboarded = bool(user_stripe and user_stripe.onboarding_complete)
+
+    return {
         "user": user,
         "tasks": tasks,
         "basket_items": basket_items,
@@ -145,11 +150,8 @@ async def get_user(
         "claimable_orders": claimable_orders_response,
         "orders": orders_response,
         "claims": claims_response,
+        "stripe_onboarded": stripe_onboarded,
     }
-
-    print(object)
-
-    return object
 
 
 # Get User
@@ -402,43 +404,6 @@ async def get_all_basket_items(
     
     return basket_items
 
-    
-# @app.post("/tasks/from_basket")
-# async def generate_tasks_from_basket_items(
-#     request: Request,
-#     db: Session = Depends(get_db),
-#     user_info: None = Depends(cookie_verification_user_only),
-# ):
-#     user_id = user_info.user_id
-#     basket_items = db.query(BasketItem).filter(BasketItem.user_id == user_info.user_id).all()
-#     if not basket_items:
-#         raise HTTPException(status_code=400, detail="Basket is empty")
-
-#     created_orders = []
-#     for item in basket_items:
-#         order = Order(
-#             order_id=str(uuid.uuid4()),
-#             user_id=user_id,
-#             task_id=item.task_id,
-#             name=item.name,
-#             material=item.material,
-#             technique=item.technique,
-#             sizing=item.sizing,
-#             colour=item.colour,
-#             selectedFile=item.selectedFile,
-#             selectedFileType=item.selectedFileType,
-#             price=item.price,
-#             quantity=item.quantity,
-#             created_at=datetime.utcnow().isoformat(),
-#             is_collaborative=False,
-#             status="open"
-#         )
-#         db.add(order)
-#         created_orders.append(order)
-
-#     db.query(BasketItem).filter(BasketItem.user_id == user_id).delete()
-#     db.commit()
-#     return {"message": f"{len(created_orders)} orders created", "task_ids": [o.order_id for o in created_orders]}
 
 @app.post("/orders/create_order")
 async def create_order(
@@ -446,16 +411,16 @@ async def create_order(
     payload: dict = Depends(verify_jwt_token), 
     db: Session = Depends(get_db)
 ):
-    user_id = get_property_value_strict(shopify_order.line_items[0], "User Id")
-    created_orders = []
     if not shopify_order.line_items:
         raise HTTPException(status_code=404, detail="No line items found")
-    
+
+    user_id = get_property_value_strict(shopify_order.line_items[0], "User Id")
+    created_orders = []
+
     for line_item in shopify_order.line_items:
         order = Order(
-            order_id=shopify_order.id,
+            shopify_order_id=str(shopify_order.id),
             user_id=get_property_value_strict(line_item, "User Id"),
-            item_id=str(uuid.uuid4()),
             task_id=get_property_value_strict(line_item, "Task Id"),
             name=line_item.name,
             material=get_property_value_strict(line_item, "Material"),
@@ -507,12 +472,21 @@ async def update_order(
         raise HTTPException(status_code=500, detail=f"Error updating orders: {str(e)}")
 
 
-@app.post("/stripe/confirm_onboarding")
+@app.post("/stripe/confirm_onboarding/{stripe_account_id}")
 async def confirm_onboarding(
+    stripe_account_id: str,
     payload: dict = Depends(verify_jwt_token),
-    db:Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
-    print("hit it")
+    account = db.query(UserStripeAccount).filter(
+        UserStripeAccount.stripe_account_id == stripe_account_id
+    ).first()
+    if not account:
+        raise HTTPException(status_code=404, detail="Stripe account not found")
+
+    account.onboarding_complete = True
+    db.commit()
+    return {"message": "Onboarding confirmed", "stripe_account_id": stripe_account_id}
 
 
 @app.post("/claims/claim_order")
@@ -522,17 +496,111 @@ async def claim_order(
     user_information: None = Depends(cookie_verification_user_only),
 ):
     try:
-        claim_id = claimed_order.id
-        claim = db.query(Claim).filter(Claim.id == claim_id).first()
+        existing_claim = db.query(Claim).filter(
+            Claim.order_id == claimed_order.order_id,
+            Claim.claimant_user_id == user_information.user_id
+        ).first()
 
-        if claim:
-            raise HTTPException(status_code=404, detail="Item already claimed")
+        if existing_claim:
+            raise HTTPException(status_code=409, detail="You have already claimed this order")
 
         add_claim_to_db(db, claimed_order, user_information)
-    
+
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error updating orders: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error claiming order: {str(e)}")
+
+ALLOWED_STATUS_TRANSITIONS = {
+    "pending": ["in_progress"],
+    "in_progress": ["printing", "shipped", "completed"],
+    "printing": ["shipped"],
+    "shipped": ["completed"],
+}
+
+
+@app.patch("/claims/{claim_id}/status")
+async def update_claim_status(
+    claim_id: str,
+    status_update: ClaimStatusUpdate,
+    db: Session = Depends(get_db),
+    user_information: None = Depends(cookie_verification_user_only),
+):
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+
+    if claim.claimant_user_id != user_information.user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to update this claim")
+
+    allowed = ALLOWED_STATUS_TRANSITIONS.get(claim.status, [])
+    if status_update.status not in allowed:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot transition from '{claim.status}' to '{status_update.status}'. Allowed: {allowed}"
+        )
+
+    claim.status = status_update.status
+    db.commit()
+
+    # If claim is completed, create a disbursement
+    if status_update.status == "completed":
+        order = claim.order
+        amount_cents = int(order.price * claim.quantity / order.quantity * 100)
+        disbursement = Disbursement(
+            claim_id=claim.id,
+            user_id=claim.claimant_user_id,
+            amount_cents=amount_cents,
+            status="pending",
+        )
+        db.add(disbursement)
+        db.commit()
+
+    return {"message": "Claim status updated", "claim_id": claim_id, "new_status": status_update.status}
+
+
+@app.get("/disbursements/pending/{claim_id}")
+async def get_pending_disbursement(
+    claim_id: str,
+    db: Session = Depends(get_db),
+    _: dict = Depends(verify_jwt_token),
+):
+    disbursement = db.query(Disbursement).filter(
+        Disbursement.claim_id == claim_id,
+        Disbursement.status == "pending"
+    ).first()
+    if not disbursement:
+        raise HTTPException(status_code=404, detail="No pending disbursement found")
+    return {
+        "id": disbursement.id,
+        "claim_id": disbursement.claim_id,
+        "user_id": disbursement.user_id,
+        "amount_cents": disbursement.amount_cents,
+        "status": disbursement.status,
+    }
+
+
+@app.patch("/disbursements/{disbursement_id}/paid")
+async def mark_disbursement_paid(
+    disbursement_id: str,
+    payload: dict,
+    db: Session = Depends(get_db),
+    _: dict = Depends(verify_jwt_token),
+):
+    disbursement = db.query(Disbursement).filter(Disbursement.id == disbursement_id).first()
+    if not disbursement:
+        raise HTTPException(status_code=404, detail="Disbursement not found")
+
+    stripe_transfer_id = payload.get("stripe_transfer_id")
+    if not stripe_transfer_id:
+        raise HTTPException(status_code=400, detail="Missing stripe_transfer_id")
+
+    disbursement.status = "paid"
+    db.commit()
+
+    return {"message": "Disbursement marked as paid", "disbursement_id": disbursement_id}
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

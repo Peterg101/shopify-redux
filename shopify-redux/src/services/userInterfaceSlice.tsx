@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { UserInterfaceState, BasketItem, Order } from "../app/utility/interfaces";
+import { UserInterfaceState, BasketItem, Order, Claim } from "../app/utility/interfaces";
 import { UUID } from "crypto";
 import { authApi } from "./authApi";
 
@@ -94,7 +94,7 @@ export const userInterfaceSlice = createSlice({
             const {claimedOrder} = action.payload
             state.claimedOrder = claimedOrder
         },
-        setUpdateClaimedOrder: (state, action: PayloadAction<{updateClaimedOrder: Order}>) => {
+        setUpdateClaimedOrder: (state, action: PayloadAction<{updateClaimedOrder: Claim | null}>) => {
             const {updateClaimedOrder} = action.payload
             state.updateClaimedOrder = updateClaimedOrder
         }

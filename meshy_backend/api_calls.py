@@ -1,3 +1,4 @@
+import os
 from io import BytesIO
 import httpx
 import json
@@ -16,7 +17,7 @@ from fitd_schemas.fitd_classes import (
     MeshyTaskGeneratedResponse
 )
 
-MESHY_API_KEY = "msy_RLiG6FNDJRdsNfSKCoFJ5E2Jhcs4r1l5Hmjp"
+MESHY_API_KEY = os.getenv("MESHY_API_KEY")
 
 
 def generate_text_to_3d_task(payload: MeshyPayload) -> MeshyTaskGeneratedResponse:

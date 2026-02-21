@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+python-jose[cryptography]
+httpx
+python-dotenv
+pytest
+pytest-asyncio

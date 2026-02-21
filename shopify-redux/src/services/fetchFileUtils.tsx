@@ -1,4 +1,4 @@
-import { FileInformation, FileResponse, BasketInformationAndFile, BasketQuantityUpdate, ClaimOrder} from "../app/utility/interfaces"
+import { FileInformation, FileResponse, BasketInformationAndFile, BasketQuantityUpdate, ClaimOrder } from "../app/utility/interfaces"
 import {convertFileToDataURI } from "../app/utility/utils";
 import { MeshyPayload, MeshyImageTo3DPayload } from "../services/meshyApi";
 
@@ -228,7 +228,7 @@ export async function postClaimOrder(claimedOrder: ClaimOrder) {
   try {
     const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/claims/claim_order`, {
         method: "POST",
-        credentials: "include", // Include cookies in the request
+        credentials: "include",
         headers: {
             "Content-Type": "application/json",
         },
@@ -243,7 +243,31 @@ export async function postClaimOrder(claimedOrder: ClaimOrder) {
 
 } catch (error) {
     console.error("Error claiming order", error);
-    throw error; // Propagate the error
+    throw error;
 }
+}
+
+export async function patchClaimStatus(claimId: string, status: string) {
+  try {
+    const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/claims/${claimId}/status`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status }),
+    });
+
+    if (!response.ok) {
+        const errorDetails = await response.json();
+        console.error("Failed to update claim status:", errorDetails);
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating claim status", error);
+    throw error;
+  }
 }
 

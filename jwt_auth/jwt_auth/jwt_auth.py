@@ -1,8 +1,9 @@
+import os
 from fastapi import HTTPException, Header
 import jwt
 import datetime
 
-SECRET_KEY = "your-secret-key"  # Store securely (e.g., environment variables)
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key")
 ALGORITHM = "HS256"  # JWT signing algorithm
 
 

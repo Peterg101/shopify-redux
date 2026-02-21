@@ -4,7 +4,6 @@ import { setClaimedOrder } from '../../services/userInterfaceSlice'
 import { resetDataState, setFulfillMode } from '../../services/dataSlice'
 import { ClaimOrder } from '../../app/utility/interfaces'
 import { postClaimOrder } from '../../services/fetchFileUtils'
-import { generateUuid } from '../../app/utility/utils'
 import { authApi } from '../../services/authApi'
 import { ClaimPanel } from '../shared/ClaimPanel'
 
@@ -16,10 +15,9 @@ export const ClaimMenu: React.FC = () => {
 
   const confirmClaim = async (quantity: number) => {
     const claimOrder: ClaimOrder = {
-      id: generateUuid(),
       order_id: claimedOrder.order_id,
       quantity,
-      status: 'in_progress',
+      status: 'pending',
     }
     await postClaimOrder(claimOrder)
     dispatch(authApi.util.invalidateTags(['sessionData']))

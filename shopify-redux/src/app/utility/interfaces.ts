@@ -34,7 +34,7 @@ export interface UserInterfaceState {
     userInformation: UserAndTasksAndBasketAndIncompleteAndOrders | null,
     totalBasketValue: number,
     claimedOrder: Order,
-    updateClaimedOrder: Order
+    updateClaimedOrder: Claim | null
 }
 
 export interface DataState {
@@ -143,7 +143,7 @@ export interface Claim {
   claimant_user_id: string;
   order: Order
   quantity: number;
-  status: "pending" | "approved" | "rejected"; // stricter typing
+  status: "pending" | "in_progress" | "printing" | "shipped" | "completed";
   created_at: string;
   updated_at: string;
 }
@@ -157,6 +157,7 @@ export interface UserAndTasksAndBasketAndIncompleteAndOrders{
   orders: Order[]
   claimable_orders: Order[]
   claims: Claim[]
+  stripe_onboarded?: boolean
 }
 
 export interface FileResponse {
@@ -200,7 +201,6 @@ export interface ClaimProps{
 }
 
 export interface ClaimOrder{
-  id: string
   order_id: string
   quantity: number
   status: string

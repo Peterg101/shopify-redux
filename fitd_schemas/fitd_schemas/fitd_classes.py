@@ -255,10 +255,13 @@ class ShopifyOrder(BaseModel):
 
 
 class ClaimOrder(BaseModel):
-    id: str
     order_id: str
     quantity: int
     status: str
+
+
+class ClaimStatusUpdate(BaseModel):
+    status: str  # "in_progress", "printing", "shipped", "completed"
 
 
 class ClaimResponse(BaseModel):
@@ -366,6 +369,7 @@ class UserHydrationResponse(BaseModel):
     claimable_orders: List[OrderResponse]
     orders: List[OrderResponse]
     claims: List[ClaimWithOrderResponse]
+    stripe_onboarded: bool = False
 
     class Config:
         orm_mode = True

@@ -1,5 +1,5 @@
 import { useLogOutMutation } from "../../services/authApi";
-import { Box, Button, Typography, Card, CardContent, Grid, Avatar } from "@mui/material";
+import { Box, Button, Typography, Card, CardContent, Grid, Avatar, Chip } from "@mui/material";
 import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import PersonIcon from "@mui/icons-material/Person";
@@ -7,6 +7,8 @@ import ShoppingBasketIcon from "@mui/icons-material/ShoppingBasket";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import LogoutIcon from "@mui/icons-material/Logout";
+import PaymentIcon from "@mui/icons-material/Payment";
+import { callStripeService } from "../../services/fetchFileUtils";
 
 export const ProfilePage = () => {
   const userInfo = useSelector(
@@ -82,6 +84,40 @@ export const ProfilePage = () => {
           </Grid>
         ))}
       </Grid>
+
+      {/* Stripe Payments */}
+      <Card variant="outlined">
+        <CardContent
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            py: 1.5,
+            "&:last-child": { pb: 1.5 },
+          }}
+        >
+          <Box sx={{ color: "primary.main" }}>
+            <PaymentIcon />
+          </Box>
+          <Box sx={{ flexGrow: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              Payments
+            </Typography>
+            {userInfo?.stripe_onboarded ? (
+              <Chip label="Payments Active" color="success" size="small" />
+            ) : (
+              <Button
+                variant="contained"
+                size="small"
+                onClick={callStripeService}
+                sx={{ mt: 0.5 }}
+              >
+                Set Up Payments
+              </Button>
+            )}
+          </Box>
+        </CardContent>
+      </Card>
 
       {/* Logout */}
       <Button

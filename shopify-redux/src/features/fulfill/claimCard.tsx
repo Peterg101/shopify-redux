@@ -1,23 +1,23 @@
 import { useDispatch } from 'react-redux'
-import { Order } from '../../app/utility/interfaces'
+import { Claim } from '../../app/utility/interfaces'
 import { setUpdateClaimedOrder } from '../../services/userInterfaceSlice'
 import { setUpdateClaimMode } from '../../services/dataSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
 import { OrderDetailCard } from '../shared/OrderDetailCard'
 
-export const ClaimCard: React.FC<Order> = (order) => {
+export const ClaimCard: React.FC<{ claim: Claim }> = ({ claim }) => {
   const dispatch = useDispatch()
   const { prepareOrderFile } = useOrderFileLoader()
 
-  const handleUpdateClaim = async (order: Order) => {
-    await prepareOrderFile(order)
+  const handleUpdateClaim = async () => {
+    await prepareOrderFile(claim.order)
     dispatch(setUpdateClaimMode({ updateClaimMode: true }))
-    dispatch(setUpdateClaimedOrder({ updateClaimedOrder: order }))
+    dispatch(setUpdateClaimedOrder({ updateClaimedOrder: claim }))
   }
 
   return (
     <OrderDetailCard
-      order={order}
+      order={claim.order}
       variant="claimed"
       onAction={handleUpdateClaim}
       actionLabel="Update Claim Status"

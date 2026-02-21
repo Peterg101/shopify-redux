@@ -1,6 +1,7 @@
 from fastapi import Request, HTTPException
 from fitd_schemas.fitd_classes import UserInformation, LineItem, ShopifyOrder, ShippingAddress
 from fitd_schemas.fitd_db_schemas import BasketItem
+from fitd_schemas.auth_utils import cookie_verification as _cookie_verification, cookie_verification_user_only as _cookie_verification_user_only
 from typing import List, Dict
 from api_calls import session_exists, session_exists_user_only
 from datetime import datetime
@@ -16,31 +17,17 @@ from typing import Optional
 
 
 SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET") 
-STRIPE_SECRET_KEY = os.getenv("SECRET_KEY")
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 REFRESH_URL = "http://localhost:3000/fulfill"
 RETURN_URL = "http://localhost:3000/fulfill"
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
 
 async def cookie_verification(request: Request):
-    session_id = request.cookies.get("fitd_session_data")
-    if not session_id:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
-    session_data = await session_exists(session_id)
-    if not session_data:
-        raise HTTPException(status_code=401, detail="No Session Found")
+    return await _cookie_verification(request, session_exists)
 
 
 async def cookie_verification_user_only(request: Request) -> UserInformation:
-    session_id = request.cookies.get("fitd_session_data")
-    if not session_id:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
-    session_data = await session_exists_user_only(session_id)
-    if not session_data:
-        raise HTTPException(status_code=401, detail="No Session Found")
-
-    return session_data
+    return await _cookie_verification_user_only(request, session_exists_user_only)
 
 
 async def generate_stripe_account(email: str):
@@ -62,7 +49,6 @@ async def generate_account_link(account_id: str):
         return_url=RETURN_URL,
         type="account_onboarding"
     )
-    print(account_link["url"])
     return {"onboarding_url": account_link["url"]}
 
 
@@ -84,6 +70,6 @@ async def validate_stripe_header(request: Request):
             secret=STRIPE_WEBHOOK_SECRET,
         )
         return event
-    except:
+    except Exception as e:
         raise HTTPException(status_code=400, detail="Invalid Stripe signature")
         

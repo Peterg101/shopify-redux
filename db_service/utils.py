@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound, IntegrityError
 from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Claim, Order
 from fitd_schemas.fitd_classes import UserInformation, TaskInformation, BasketItemInformation, LineItem, ClaimOrder
+from fitd_schemas.auth_utils import cookie_verification as _cookie_verification, cookie_verification_user_only as _cookie_verification_user_only
 from fastapi import HTTPException, Request
 from datetime import datetime
 from pathlib import Path
@@ -147,91 +148,12 @@ def add_or_update_basket_item_in_db(
     return new_item
 
 
-def add_or_update_claimed_item_in_db(
-    db: Session, 
-    claimed_item_info: BasketItemInformation
-) -> BasketItem:
-    # Check if the item already exists in the database
-    existing_item = (
-        db.query(BasketItem)
-        .filter(BasketItem.task_id == basket_item_info.task_id)
-        .first()
-    )
-    if existing_item:
-        # Check if any fields have changed
-        has_changed = any(
-            [
-                existing_item.user_id != basket_item_info.user_id,
-                existing_item.name != basket_item_info.name,
-                existing_item.material != basket_item_info.material,
-                existing_item.technique != basket_item_info.technique,
-                existing_item.sizing != basket_item_info.sizing,
-                existing_item.colour != basket_item_info.colour,
-                existing_item.selectedFile != basket_item_info.selected_file,
-                existing_item.selectedFileType != basket_item_info.selectedFileType,
-                existing_item.price != basket_item_info.price,
-                existing_item.quantity != basket_item_info.quantity
-            ]
-        )
-
-        if has_changed:
-            # Update the fields if they have changed
-            existing_item.user_id = basket_item_info.user_id
-            existing_item.name = basket_item_info.name
-            existing_item.material = basket_item_info.material
-            existing_item.technique = basket_item_info.technique
-            existing_item.sizing = basket_item_info.sizing
-            existing_item.colour = basket_item_info.colour
-            existing_item.selectedFile = basket_item_info.selected_file
-            existing_item.selectedFileType = basket_item_info.selectedFileType
-            existing_item.price = basket_item_info.price
-            existing_item.quantity = basket_item_info.quantity
-            db.commit()
-            db.refresh(existing_item)
-
-        return existing_item
-
-    # If no existing item, create a new one
-    new_item = BasketItem(
-        task_id=basket_item_info.task_id,
-        user_id=basket_item_info.user_id,
-        name=basket_item_info.name,
-        material=basket_item_info.material,
-        technique=basket_item_info.technique,
-        sizing=basket_item_info.sizing,
-        colour=basket_item_info.colour,
-        selectedFile=basket_item_info.selected_file,
-        selectedFileType=basket_item_info.selectedFileType,
-        price=basket_item_info.price,
-        quantity=basket_item_info.quantity
-    )
-    db.add(new_item)
-    db.commit()
-    db.refresh(new_item)
-
-    return new_item
-
-
 async def cookie_verification(request: Request):
-    session_id = request.cookies.get("fitd_session_data")
-    if not session_id:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
-    session_data = await session_exists(session_id)
-    if not session_data:
-        raise HTTPException(status_code=401, detail="No Session Found")
+    return await _cookie_verification(request, session_exists)
 
 
 async def cookie_verification_user_only(request: Request) -> UserInformation:
-    session_id = request.cookies.get("fitd_session_data")
-    if not session_id:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
-    session_data = await session_exists_user_only(session_id)
-    if not session_data:
-        raise HTTPException(status_code=401, detail="No Session Found")
-
-    return session_data
+    return await _cookie_verification_user_only(request, session_exists_user_only)
 
 
 def decode_file(file_blob: str, file_name: str, upload_dir: Path):
@@ -260,7 +182,8 @@ def add_claim_to_db(
         claimed_order: ClaimOrder, 
         user_info: UserInformation) -> Claim:
     try:
-        # Lock the order row
+        # Lock the order row (with_for_update() is a no-op on SQLite;
+        # the UniqueConstraint on (order_id, claimant_user_id) provides protection)
         order = db.execute(
             select(Order)
             .where(Order.order_id == claimed_order.order_id)

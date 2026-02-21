@@ -3,6 +3,7 @@ import base64
 import aiohttp
 from fastapi import WebSocket, Request, HTTPException
 from typing import Tuple, Optional, Union
+from fitd_schemas.auth_utils import cookie_verification as _cookie_verification
 from api_calls import (
     generate_text_to_3d_task,
     get_image_to_3d_task_status,
@@ -230,14 +231,7 @@ async def send_obj_from_image_to_file_to_storage(
 
 
 async def cookie_verification(request: Request):
-    session_id = request.cookies.get("fitd_session_data")
-    if not session_id:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
-    # session_data = await session_exists_2(session_id)
-    session_data = await http_session_exists(session_id)
-    if not session_data:
-        raise HTTPException(status_code=401, detail="No Session Found")
+    return await _cookie_verification(request, http_session_exists)
 
 
 async def download_blob(blob_url: str) -> bytes:

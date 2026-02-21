@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+aioredis
+python-jose[cryptography]
+httpx
+google-auth
+google-auth-oauthlib
+requests
+python-dotenv
+pytest
+fakeredis

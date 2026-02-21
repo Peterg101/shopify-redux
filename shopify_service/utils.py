@@ -1,6 +1,7 @@
 from fastapi import Request, HTTPException
 from fitd_schemas.fitd_classes import UserInformation, LineItem, ShopifyOrder, ShippingAddress
 from fitd_schemas.fitd_db_schemas import BasketItem
+from fitd_schemas.auth_utils import cookie_verification as _cookie_verification, cookie_verification_user_only as _cookie_verification_user_only
 from typing import List, Dict
 from api_calls import session_exists, session_exists_user_only
 from datetime import datetime
@@ -16,38 +17,24 @@ SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET")
 
 
 async def cookie_verification(request: Request):
-    session_id = request.cookies.get("fitd_session_data")
-    if not session_id:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
-    session_data = await session_exists(session_id)
-    if not session_data:
-        raise HTTPException(status_code=401, detail="No Session Found")
+    return await _cookie_verification(request, session_exists)
 
 
 async def cookie_verification_user_only(request: Request) -> UserInformation:
-    session_id = request.cookies.get("fitd_session_data")
-    if not session_id:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
-    session_data = await session_exists_user_only(session_id)
-    if not session_data:
-        raise HTTPException(status_code=401, detail="No Session Found")
-
-    return session_data
+    return await _cookie_verification_user_only(request, session_exists_user_only)
 
 
 def convert_basket_items_to_shopify_graphql_line_items(basket_items: List[BasketItem], user_id: str) -> List[str]:
     line_items = []
     for item in basket_items:
         properties_block = ", ".join([
-            f'''{{ key: "Task Id", value: "{item.task_id}" }}'''
+            f'''{{ key: "Task Id", value: "{item.task_id}" }}''',
             f'''{{ key: "Material", value: "{item.material}" }}''',
             f'''{{ key: "Technique", value: "{item.technique}" }}''',
             f'''{{ key: "Sizing", value: "{item.sizing}" }}''',
             f'''{{ key: "Colour", value: "{item.colour}" }}''',
             f'''{{ key: "Selected File Type", value: "{item.selectedFileType}" }}''',
-            f'''{{ key: "Selected File", value: "{item.selectedFile}" }}'''
+            f'''{{ key: "Selected File", value: "{item.selectedFile}" }}''',
             f'''{{ key: "User Id", value: "{user_id}" }}'''
         ])
 
