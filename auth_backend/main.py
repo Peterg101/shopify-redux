@@ -1,51 +1,44 @@
 import os
-from fastapi import FastAPI, Depends, HTTPException, Response, Request
-import asyncio
-import asyncio_redis
-from fastapi.responses import RedirectResponse, JSONResponse
-import aioredis
-from fastapi_sessions.session_verifier import SessionVerifier
-from fastapi.middleware.cors import CORSMiddleware
-from jose import jwt
-import requests
-import uvicorn
-from fitd_schemas.fitd_classes import Token, SessionData, UserInformation
-import httpx
-from fastapi import FastAPI, Request, HTTPException, Depends
+import logging
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.middleware.cors import CORSMiddleware
+from redis.asyncio import Redis as AsyncRedis
+import uvicorn
+from fitd_schemas.fitd_classes import SessionData, UserInformation
+import httpx
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
-from redis import Redis
 from utils import create_session, delete_session, cookie_verification
 from api_calls import check_user_exists, create_user, check_only_user_exists
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:1234", "http://localhost:369", "http://localhost:100"],
+    allow_origins=[FRONTEND_URL, "http://localhost:1234", "http://localhost:369", "http://localhost:100"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
 # Redis Configuration
-REDIS_HOST = "localhost"
-REDIS_PORT = 6379
-redis_session = aioredis.from_url(
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
+redis_session = AsyncRedis.from_url(
     f"redis://{REDIS_HOST}:{REDIS_PORT}", decode_responses=True
 )
-
 
 # Google OAuth2 configuration
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
-REDIRECT_URI = (
-    "http://localhost:2468/auth/google/callback"  # The redirect URI in Google console
-)
+REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:2468/auth/google/callback")
 GOOGLE_CERTS_URL = "https://www.googleapis.com/oauth2/v3/certs"
 
 
@@ -63,7 +56,7 @@ def auth_google():
 
 @app.get("/auth/google/callback")
 async def auth_callback(code: str, request: Request):
-    redirect_uri = "http://localhost:2468/auth/google/callback"
+    redirect_uri = REDIRECT_URI
     token_request_uri = "https://oauth2.googleapis.com/token"
 
     data = {
@@ -110,7 +103,7 @@ async def auth_callback(code: str, request: Request):
         session_id = await create_session(redis_session, session_data)
 
         # Create the response with a session cookie
-        response = RedirectResponse(url="http://localhost:3000/generate")
+        response = RedirectResponse(url=f"{FRONTEND_URL}/generate")
         response.set_cookie(
             "fitd_session_data",
             str(session_id),

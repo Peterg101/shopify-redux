@@ -1,0 +1,10 @@
+FROM python:3.11-slim
+ARG SERVICE_DIR
+WORKDIR /app
+COPY fitd_schemas/ /packages/fitd_schemas/
+COPY jwt_auth/ /packages/jwt_auth/
+RUN pip install /packages/fitd_schemas/ /packages/jwt_auth/
+COPY ${SERVICE_DIR}/requirements.txt .
+RUN pip install -r requirements.txt
+COPY ${SERVICE_DIR}/ .
+CMD ["python", "main.py"]

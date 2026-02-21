@@ -1,10 +1,16 @@
+import os
+import logging
 import httpx
 from jwt_auth import generate_token
 from fitd_schemas.fitd_classes import UserInformation
 
+logger = logging.getLogger(__name__)
+
+DB_SERVICE_URL = os.getenv("DB_SERVICE_URL", "http://localhost:8000")
+
 
 async def check_user_exists(user_id: str | None):
-    url = f"http://localhost:8000/users/{user_id}"
+    url = f"{DB_SERVICE_URL}/users/{user_id}"
     auth_token = generate_token("auth_backend")
     headers = {
         "Content-Type": "application/json",
@@ -18,11 +24,11 @@ async def check_user_exists(user_id: str | None):
             return response.json()
         else:
             # Handle any errors
-            print(f"Error: {response.status_code} - {response.text}")
+            logger.error(f"Error: {response.status_code} - {response.text}")
             return None
 
 async def check_only_user_exists(user_id: str | None):
-    url = f"http://localhost:8000/only_user/{user_id}"
+    url = f"{DB_SERVICE_URL}/only_user/{user_id}"
     auth_token = generate_token("auth_backend")
     headers = {
         "Content-Type": "application/json",
@@ -33,17 +39,17 @@ async def check_only_user_exists(user_id: str | None):
 
         if response.status_code == 200:
             # If the user was successfully found, return the response data
-            print(response.json())
+            logger.info(f"User details: {response.json()}")
             return response.json()
         else:
             # Handle any errors
-            print(f"Error: {response.status_code} - {response.text}")
+            logger.error(f"Error: {response.status_code} - {response.text}")
             return None
 
 
 async def create_user(user_information: UserInformation):
     auth_token = generate_token("auth_backend")
-    url = "http://localhost:8000/users"  # Adjust with your actual FastAPI URL
+    url = f"{DB_SERVICE_URL}/users"
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {auth_token}",  # Add the auth token here
@@ -58,5 +64,5 @@ async def create_user(user_information: UserInformation):
             return response.json()
         else:
             # Handle any errors
-            print(f"Error: {response.status_code} - {response.text}")
+            logger.error(f"Error: {response.status_code} - {response.text}")
             return None

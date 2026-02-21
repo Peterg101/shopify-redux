@@ -1,6 +1,6 @@
 fastapi
 uvicorn
-aioredis
+redis[async]
 python-jose[cryptography]
 httpx
 google-auth

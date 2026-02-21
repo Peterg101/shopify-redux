@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import logging
 import aiohttp
 from fastapi import WebSocket, Request, HTTPException
 from typing import Tuple, Optional, Union
@@ -23,12 +24,17 @@ from fitd_schemas.fitd_classes import (
     TaskRequest,
 )
 from jwt_auth import generate_token
-import aioredis
+from redis.asyncio import Redis as AsyncRedis
+import os
 import requests
+
+logger = logging.getLogger(__name__)
+
+DB_SERVICE_URL = os.getenv("DB_SERVICE_URL", "http://localhost:8000")
 
 
 async def generate_task_and_check_for_response_decoupled_ws(
-    request: TaskRequest, redis: aioredis.Redis
+    request: TaskRequest, redis: AsyncRedis
 ) -> Union[MeshyTaskStatusResponse, None]:
     try:
         task_generated = False
@@ -58,12 +64,12 @@ async def generate_task_and_check_for_response_decoupled_ws(
                 if isinstance(complete_response, MeshyTaskStatusResponse):
                     await send_file_to_storage(complete_response)
                 else:
-                    print(f"Unexpected response type: {type(complete_response)}")
+                    logger.error(f"Unexpected response type: {type(complete_response)}")
                 success_progress = f"Task Completed,{meshy_task_status.task_id},{generated_task_status.prompt}"
                 await redis.publish(f"task_progress:{request.port_id}", success_progress)
 
             elif status == "FAILED":
-                print(f"Meshy task failed: {meshy_task_status.task_id}")
+                logger.error(f"Meshy task failed: {meshy_task_status.task_id}")
                 fail_progress = f"Task Failed,{meshy_task_status.task_id},{generated_task_status.prompt}"
                 await redis.publish(f"task_progress:{request.port_id}", fail_progress)
                 return None
@@ -71,14 +77,14 @@ async def generate_task_and_check_for_response_decoupled_ws(
         return generated_task_status
 
     except Exception as e:
-        print(
+        logger.error(
             f"Unexpected error in generate_task_and_check_for_response_decoupled_ws: {e}"
         )
         return None
 
 
 async def generate_image_to_3d_task_and_check_for_response_decoupled_ws(
-    request: ImageTo3DTaskRequest, redis: aioredis.Redis
+    request: ImageTo3DTaskRequest, redis: AsyncRedis
 ) -> Union[ImageTo3DMeshyTaskStatusResponse, None]:
     try:
         task_generated = False
@@ -120,7 +126,7 @@ async def generate_image_to_3d_task_and_check_for_response_decoupled_ws(
                 return None
 
     except Exception as e:
-        print(
+        logger.error(
             f"Unexpected error in generate_image_to_3d_task_and_check_for_response_decoupled_ws: {e}"
         )
         return None
@@ -161,7 +167,7 @@ async def add_file_response(
             response.obj_file_blob = obj_file_base64
     except Exception as e:
         # Log the error for debugging purposes
-        print(f"Error while processing file response: {e}")
+        logger.error(f"Error while processing file response: {e}")
         # Optionally, you can add a fallback or additional logic here
 
     return response
@@ -203,7 +209,7 @@ async def clean_up_connection(websocket: WebSocket, connections):
 async def send_file_to_storage(
     complete_meshy_response: MeshyTaskStatusResponse,
 ):
-    server_url = "http://localhost:8000/file_upload"
+    server_url = f"{DB_SERVICE_URL}/file_upload"
     auth_token = generate_token("meshy_backend")
     headers = {
         "Content-Type": "application/json",
@@ -212,13 +218,13 @@ async def send_file_to_storage(
     response = requests.post(
         server_url, json=complete_meshy_response.dict(), headers=headers
     )
-    print("Response from server:", response.json())
+    logger.info(f"Response from server: {response.json()}")
 
 
 async def send_obj_from_image_to_file_to_storage(
     complete_meshy_response: ImageTo3DMeshyTaskStatusResponse,
 ):
-    server_url = "http://localhost:8000/file_upload_from_image"
+    server_url = f"{DB_SERVICE_URL}/file_upload_from_image"
     auth_token = generate_token("meshy_backend")
     headers = {
         "Content-Type": "application/json",
@@ -227,7 +233,7 @@ async def send_obj_from_image_to_file_to_storage(
     response = requests.post(
         server_url, json=complete_meshy_response.dict(), headers=headers
     )
-    print("Response from server:", response.json())
+    logger.info(f"Response from server: {response.json()}")
 
 
 async def cookie_verification(request: Request):

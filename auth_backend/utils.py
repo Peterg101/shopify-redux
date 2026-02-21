@@ -1,10 +1,13 @@
 import uuid
+import logging
 from typing import Optional, Union, Tuple
 from fitd_schemas.fitd_classes import SessionData
 from redis import Redis
 from fastapi import HTTPException, Request
 import json
 from uuid import UUID
+
+logger = logging.getLogger(__name__)
 
 
 async def create_session(redis_session: Redis, session_data: SessionData):
@@ -23,7 +26,7 @@ async def get_session(redis_session: Redis, session_id: str) -> Optional[Session
             session_dict = json.loads(session_data)  # Parse JSON into a dictionary
             return SessionData(**session_dict)  # Convert dictionary to SessionData
         except (json.JSONDecodeError, ValueError) as e:
-            print(f"Error decoding session data: {e}")
+            logger.error(f"Error decoding session data: {e}")
             return None
     return None
 

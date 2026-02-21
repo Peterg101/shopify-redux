@@ -1,3 +1,5 @@
+import os
+import logging
 from fastapi import APIRouter, Request, Header, HTTPException
 from fitd_schemas.fitd_classes import UserInformation
 from jwt_auth import generate_token
@@ -7,6 +9,10 @@ import base64
 import json
 import requests
 from utils import verify_shopify_hmac, extract_order_info_from_webhook
+
+logger = logging.getLogger(__name__)
+
+DB_SERVICE_URL = os.getenv("DB_SERVICE_URL", "http://localhost:8000")
 
 router = APIRouter(prefix="/webhook", tags=["webhook"])
 
@@ -19,7 +25,7 @@ async def order_created_webhook(
     verify_shopify_hmac(body, x_shopify_hmac_sha256)
     payload = json.loads(body)
     shopify_order = extract_order_info_from_webhook(payload)
-    server_url = "http://localhost:8000/orders/create_order"
+    server_url = f"{DB_SERVICE_URL}/orders/create_order"
     auth_token = generate_token("shopify_service")
     headers = {
         "Content-Type": "application/json",
@@ -28,7 +34,7 @@ async def order_created_webhook(
     response = requests.post(
         server_url, json=shopify_order.dict(), headers=headers
     )
-    print("Response from server:", response.json())
+    logger.info(f"Response from server: {response.json()}")
 
     return {"status": "ok"}
 
@@ -41,12 +47,12 @@ async def order_fulfilled_webhook(
     verify_shopify_hmac(body, x_shopify_hmac_sha256)
 
     payload = json.loads(body)
-    print("Order fulfilled:", payload)
+    logger.info(f"Order fulfilled: {payload}")
     shopify_order = extract_order_info_from_webhook(
         payload,
         order_status="fulfilled"
     )
-    server_url = "http://localhost:8000/orders/update_order"
+    server_url = f"{DB_SERVICE_URL}/orders/update_order"
     auth_token = generate_token("shopify_service")
     headers = {
         "Content-Type": "application/json",
@@ -55,7 +61,7 @@ async def order_fulfilled_webhook(
     response = requests.post(
         server_url, json=shopify_order.dict(), headers=headers
     )
-    print("Response from server:", response.json())
+    logger.info(f"Response from server: {response.json()}")
 
     return {"status": "ok"}
 
@@ -69,12 +75,12 @@ async def order_cancelled_webhook(
     verify_shopify_hmac(body, x_shopify_hmac_sha256)
 
     payload = json.loads(body)
-    print("Order Cancelled:", payload)
+    logger.info(f"Order Cancelled: {payload}")
     shopify_order = extract_order_info_from_webhook(
         payload,
         order_status="cancelled"
     )
-    server_url = "http://localhost:8000/orders/update_order"
+    server_url = f"{DB_SERVICE_URL}/orders/update_order"
     auth_token = generate_token("shopify_service")
     headers = {
         "Content-Type": "application/json",
@@ -83,6 +89,6 @@ async def order_cancelled_webhook(
     response = requests.post(
         server_url, json=shopify_order.dict(), headers=headers
     )
-    print("Response from server:", response.json())
+    logger.info(f"Response from server: {response.json()}")
 
     return {"status": "ok"}

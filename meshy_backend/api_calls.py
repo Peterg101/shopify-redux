@@ -1,4 +1,5 @@
 import os
+import logging
 from io import BytesIO
 import httpx
 import json
@@ -17,7 +18,11 @@ from fitd_schemas.fitd_classes import (
     MeshyTaskGeneratedResponse
 )
 
+logger = logging.getLogger(__name__)
+
 MESHY_API_KEY = os.getenv("MESHY_API_KEY")
+AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:2468")
+DB_SERVICE_URL = os.getenv("DB_SERVICE_URL", "http://localhost:8000")
 
 
 def generate_text_to_3d_task(payload: MeshyPayload) -> MeshyTaskGeneratedResponse:
@@ -31,7 +36,7 @@ def generate_text_to_3d_task(payload: MeshyPayload) -> MeshyTaskGeneratedRespons
         return result
 
     except requests.exceptions.RequestException as e:
-        print(f"Request failed: {e}")
+        logger.error(f"Request failed: {e}")
         return None
 
 
@@ -50,7 +55,7 @@ def generate_image_to_3d_task(
         return result
 
     except requests.exceptions.RequestException as e:
-        print(f"Request failed: {e}")
+        logger.error(f"Request failed: {e}")
         return None
 
 
@@ -77,7 +82,7 @@ async def get_image_to_3d_task_status(
         headers=headers,
     )
     response.raise_for_status()
-    print(response.json())
+    logger.info(f"Image-to-3D task status: {response.json()}")
     result = ImageTo3DMeshyTaskStatusResponse(**response.json())
     return result
 
@@ -106,7 +111,7 @@ def get_obj_file_blob(url: str) -> BytesIO:
 
 
 async def websocket_session_exists(session_id: str):
-    url = "http://localhost:2468/get_session"
+    url = f"{AUTH_SERVICE_URL}/get_session"
     headers = {"Cookie": f"{session_id}"}
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers)
@@ -118,20 +123,20 @@ async def websocket_session_exists(session_id: str):
 
 async def http_session_exists(session_id: str) -> bool:
     cookies = {"fitd_session_data": session_id}
-    url = "http://localhost:2468/get_session"
+    url = f"{AUTH_SERVICE_URL}/get_session"
 
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(url, cookies=cookies)
             return response.status_code == 200
         except httpx.HTTPError as e:
-            print(f"HTTP error occurred: {e}")
+            logger.error(f"HTTP error occurred: {e}")
             return False
 
 
 async def create_task(task_information: TaskInformation):
     auth_token = generate_token("meshy_backend")
-    url = "http://localhost:8000/tasks"  # Adjust with your actual FastAPI URL
+    url = f"{DB_SERVICE_URL}/tasks"
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {auth_token}",  # Add the auth token here
@@ -146,5 +151,5 @@ async def create_task(task_information: TaskInformation):
             return response.json()
         else:
             # Handle any errors
-            print(f"Error: {response.status_code} - {response.text}")
+            logger.error(f"Error: {response.status_code} - {response.text}")
             return None

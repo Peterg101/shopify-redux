@@ -16,10 +16,13 @@ import stripe
 from typing import Optional
 
 
-SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET") 
+logger = logging.getLogger(__name__)
+
+SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET")
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
-REFRESH_URL = "http://localhost:3000/fulfill"
-RETURN_URL = "http://localhost:3000/fulfill"
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+REFRESH_URL = f"{FRONTEND_URL}/fulfill"
+RETURN_URL = f"{FRONTEND_URL}/fulfill"
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
 
 async def cookie_verification(request: Request):

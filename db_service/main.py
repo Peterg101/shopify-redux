@@ -1,7 +1,11 @@
+import logging
 from fastapi import FastAPI, HTTPException, Depends, Cookie, Header, Request, status, Response
 from typing import List
 from sqlalchemy.orm import Session, joinedload, selectinload
 from fastapi.middleware.cors import CORSMiddleware
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
 from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, Order, UserStripeAccount, Claim, Disbursement
 from fitd_schemas.fitd_classes import UserHydrationResponse, ClaimWithOrderResponse, OrderResponse
 from datetime import datetime
@@ -46,11 +50,13 @@ import re
 UPLOAD_DIR = Path("./uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+
 # Initialize FastAPI app
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:1234", "http://localhost:369"],
+    allow_origins=[FRONTEND_URL, "http://localhost:1234", "http://localhost:369"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -369,7 +375,7 @@ async def delete_basket_item(
             if os.path.exists(file_path):
                 os.remove(file_path)
                 file_deleted = True
-                print(f"Deleted file: {file_path}")
+                logger.info(f"Deleted file: {file_path}")
 
         if not file_deleted:
             raise HTTPException(

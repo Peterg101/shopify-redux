@@ -1,5 +1,7 @@
+import os
+import logging
 import uvicorn
-import aioredis
+from redis.asyncio import Redis as AsyncRedis
 from fastapi import (
     FastAPI,
     HTTPException,
@@ -10,6 +12,9 @@ from fastapi import (
 )
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
 from fitd_schemas.fitd_classes import (
     MeshyTaskGeneratedResponse,
     MeshyPayload,
@@ -27,22 +32,24 @@ from utils import (
     cookie_verification,
 )
 
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[FRONTEND_URL],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # Redis Configuration
-REDIS_HOST = "localhost"
-REDIS_PORT = 6379
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 
 
 async def get_redis():
-    redis = await aioredis.from_url(
+    redis = AsyncRedis.from_url(
         f"redis://{REDIS_HOST}:{REDIS_PORT}", decode_responses=True
     )
     return redis
@@ -62,7 +69,7 @@ async def generate_meshy_task(payload: MeshyPayload):
 async def start_task(
     request: TaskRequest,
     background_tasks: BackgroundTasks,
-    redis: aioredis.Redis = Depends(get_redis),
+    redis: AsyncRedis = Depends(get_redis),
     _: None = Depends(cookie_verification),
 ):
     # Add the task to the background
@@ -76,14 +83,14 @@ async def start_task(
 async def start_image_to_3d_task(
     request: ImageTo3DTaskRequest,
     background_tasks: BackgroundTasks,
-    redis: aioredis.Redis = Depends(get_redis),
+    redis: AsyncRedis = Depends(get_redis),
     _: None = Depends(cookie_verification),
 ):
     # Add the task to the background
     background_tasks.add_task(
         generate_image_to_3d_task_and_check_for_response_decoupled_ws, request, redis
     )
-    print("background task successfully added")
+    logger.info("background task successfully added")
     # return {"message": "Task started!", "task_id": request.port_id}
 
 
@@ -113,15 +120,15 @@ async def websocket_endpoint(
                     break
 
     except WebSocketDisconnect:
-        print(f"WebSocket disconnected for task {port_id}")
+        logger.info(f"WebSocket disconnected for task {port_id}")
     except Exception as e:
-        print(f"WebSocket Error: {e}")
+        logger.error(f"WebSocket Error: {e}")
     finally:
         # Cleanup: close the Redis pubsub and WebSocket connection
         await pubsub.unsubscribe(f"task_progress:{port_id}")
         await pubsub.close()
         await websocket.close()
-        print(f"WebSocket connection for task {port_id} closed.")
+        logger.info(f"WebSocket connection for task {port_id} closed.")
 
 
 if __name__ == "__main__":

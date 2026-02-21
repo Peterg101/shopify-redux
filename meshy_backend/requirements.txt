@@ -1,7 +1,7 @@
 fastapi
 uvicorn
 aiohttp
-aioredis
+redis[async]
 httpx
 requests
 python-dotenv
