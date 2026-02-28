@@ -8,6 +8,19 @@ class UserInformation(BaseModel):
     user_id: Optional[str] = None
     username: Optional[str] = None
     email: Optional[str] = None
+    password_hash: Optional[str] = None
+    auth_provider: Optional[str] = "google"
+
+
+class EmailRegisterRequest(BaseModel):
+    username: str
+    email: str
+    password: str
+
+
+class EmailLoginRequest(BaseModel):
+    email: str
+    password: str
 
 
 class TaskInformation(BaseModel):
@@ -261,7 +274,37 @@ class ClaimOrder(BaseModel):
 
 
 class ClaimStatusUpdate(BaseModel):
-    status: str  # "in_progress", "printing", "shipped", "completed"
+    status: str
+    evidence_description: Optional[str] = None
+
+
+class ClaimEvidenceResponse(BaseModel):
+    id: str
+    claim_id: str
+    file_path: str
+    uploaded_at: datetime
+    status_at_upload: str
+    description: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
+class ClaimStatusHistoryResponse(BaseModel):
+    id: str
+    claim_id: str
+    previous_status: str
+    new_status: str
+    changed_by: str
+    changed_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class BuyerReviewRequest(BaseModel):
+    decision: str
+    reason: Optional[str] = None
 
 
 class ClaimResponse(BaseModel):
@@ -272,10 +315,12 @@ class ClaimResponse(BaseModel):
     status: str
     created_at: datetime
     updated_at: datetime
+    evidence: list = []
+    status_history: list = []
 
     class Config:
         orm_mode = True
-        
+
 
 class OrderResponse(BaseModel):
     order_id: str
@@ -293,9 +338,10 @@ class OrderResponse(BaseModel):
     created_at: str
     is_collaborative: bool
     status: str
+    qa_level: str = "standard"
 
-    quantity_claimed: int          # 👈 computed property
-    claims: list[ClaimResponse]    # 👈 relationship
+    quantity_claimed: int
+    claims: list[ClaimResponse]
 
     class Config:
         orm_mode = True

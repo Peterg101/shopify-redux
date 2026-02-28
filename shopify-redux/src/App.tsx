@@ -10,7 +10,6 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { theme } from './theme';
 import './App.css';
 import AppRouter from './features/userInterface/AppRouter';
-import LoginDialog from './features/display/loginDialogue';
 
 function App() {
 
@@ -26,13 +25,12 @@ function App() {
       }
     }, [userInterfaceState.userInformation]);
 
-    useGetSessionQuery();
+    useGetSessionQuery(undefined, { pollingInterval: 5 * 60 * 1000 });
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AppRouter/>
-      <LoginDialog/>
     </ThemeProvider>
   )
 }

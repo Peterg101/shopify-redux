@@ -15,6 +15,14 @@ export const handlers = [
     return HttpResponse.json({ message: 'Logged out' })
   }),
 
+  http.post(`${AUTH_BASE}/auth/register`, () => {
+    return HttpResponse.json({ message: 'Registration successful', user_id: 'new-user-1' })
+  }),
+
+  http.post(`${AUTH_BASE}/auth/login`, () => {
+    return HttpResponse.json({ message: 'Login successful', user_id: 'user-1' })
+  }),
+
   // File storage
   http.get(`${DB_BASE}/file_storage/:fileId`, () => {
     return HttpResponse.json({
@@ -39,6 +47,22 @@ export const handlers = [
   // Claims
   http.post(`${DB_BASE}/claims/claim_order`, () => {
     return HttpResponse.json({ success: true })
+  }),
+
+  http.patch(`${DB_BASE}/claims/:claimId/status`, () => {
+    return HttpResponse.json({ message: 'Claim status updated' })
+  }),
+
+  http.post(`${DB_BASE}/claims/:claimId/evidence`, () => {
+    return HttpResponse.json({ id: 'evidence-1', claim_id: 'claim-1' })
+  }),
+
+  http.get(`${DB_BASE}/claims/:claimId/evidence`, () => {
+    return HttpResponse.json([])
+  }),
+
+  http.get(`${DB_BASE}/claims/:claimId/history`, () => {
+    return HttpResponse.json([])
   }),
 
   // Meshy

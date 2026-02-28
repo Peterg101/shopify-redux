@@ -52,17 +52,43 @@ async def create_user(user_information: UserInformation):
     url = f"{DB_SERVICE_URL}/users"
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {auth_token}",  # Add the auth token here
+        "Authorization": f"Bearer {auth_token}",
     }
 
-    # Send the POST request with user data and session token in cookies
     async with httpx.AsyncClient() as client:
         response = await client.post(url, json=user_information.dict(), headers=headers)
 
         if response.status_code == 200:
-            # If successful, return the user data
             return response.json()
         else:
-            # Handle any errors
             logger.error(f"Error: {response.status_code} - {response.text}")
+            return None
+
+
+async def register_email_user(user_info: UserInformation):
+    auth_token = generate_token("auth_backend")
+    url = f"{DB_SERVICE_URL}/users/register"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {auth_token}",
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, json=user_info.dict(), headers=headers)
+        return response
+
+
+async def get_user_by_email(email: str):
+    auth_token = generate_token("auth_backend")
+    url = f"{DB_SERVICE_URL}/users/by_email/{email}"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {auth_token}",
+    }
+
+    with httpx.Client() as client:
+        response = client.get(url, headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
             return None

@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
-// import { setQALevel, setCustomQAField } from '../../services/dataSlice';
+import { setQALevel } from '../../services/dataSlice';
 
 const defaultQAProfiles = {
   standard: {
@@ -22,18 +22,13 @@ const defaultQAProfiles = {
 
 export const QADropdown = () => {
   const dispatch = useDispatch();
-  // const { qaLevel, customQA } = useSelector((state: RootState) => state.dataState);
+  const { qaLevel } = useSelector((state: RootState) => state.dataState);
 
-  // const isEditable = qaLevel === 'custom';
-  const isEditable = "custom"
-  // const currentProfile = isEditable ? customQA : defaultQAProfiles[qaLevel];
-  const currentProfile = defaultQAProfiles.standard
+  const currentProfile = defaultQAProfiles[qaLevel];
+
   const handleQALevelChange = (event: SelectChangeEvent) => {
-    // dispatch(setQALevel({ qaLevel: event.target.value }));
-  };
-
-  const handleFieldChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    // dispatch(setCustomQAField({ field, value: event.target.value }));
+    const value = event.target.value as "standard" | "high";
+    dispatch(setQALevel({ qaLevel: value }));
   };
 
   return (
@@ -45,13 +40,12 @@ export const QADropdown = () => {
             <Select
               labelId="qa-level-label"
               id="qa-level-select"
-              value={"custom"}
+              value={qaLevel}
               label="QA Level"
               onChange={handleQALevelChange}
             >
               <MenuItem value="standard">Standard</MenuItem>
               <MenuItem value="high">High</MenuItem>
-              <MenuItem value="custom">Custom</MenuItem>
             </Select>
           </FormControl>
         </Grid>
@@ -61,8 +55,7 @@ export const QADropdown = () => {
             fullWidth
             label="Dimensional Tolerance"
             value={currentProfile.dimensionalTolerance}
-            InputProps={{ readOnly: !isEditable }}
-            onChange={handleFieldChange('dimensionalTolerance')}
+            InputProps={{ readOnly: true }}
           />
         </Grid>
 
@@ -71,8 +64,7 @@ export const QADropdown = () => {
             fullWidth
             label="Photo Evidence Required"
             value={currentProfile.photoEvidence}
-            InputProps={{ readOnly: !isEditable }}
-            onChange={handleFieldChange('photoEvidence')}
+            InputProps={{ readOnly: true }}
           />
         </Grid>
 
@@ -81,8 +73,7 @@ export const QADropdown = () => {
             fullWidth
             label="Surface Finish"
             value={currentProfile.surfaceFinish}
-            InputProps={{ readOnly: !isEditable }}
-            onChange={handleFieldChange('surfaceFinish')}
+            InputProps={{ readOnly: true }}
           />
         </Grid>
       </Grid>

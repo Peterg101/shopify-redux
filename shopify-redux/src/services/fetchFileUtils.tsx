@@ -247,6 +247,36 @@ export async function postClaimOrder(claimedOrder: ClaimOrder) {
 }
 }
 
+export async function registerWithEmail(username: string, email: string, password: string) {
+  const response = await fetch(`${process.env.REACT_APP_AUTH_SERVICE}/auth/register`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, email, password }),
+  });
+
+  if (!response.ok) {
+    const errorDetails = await response.json();
+    throw new Error(errorDetails.detail || `Error ${response.status}`);
+  }
+  return await response.json();
+}
+
+export async function loginWithEmail(email: string, password: string) {
+  const response = await fetch(`${process.env.REACT_APP_AUTH_SERVICE}/auth/login`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!response.ok) {
+    const errorDetails = await response.json();
+    throw new Error(errorDetails.detail || `Error ${response.status}`);
+  }
+  return await response.json();
+}
+
 export async function patchClaimStatus(claimId: string, status: string) {
   try {
     const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/claims/${claimId}/status`, {
@@ -269,5 +299,44 @@ export async function patchClaimStatus(claimId: string, status: string) {
     console.error("Error updating claim status", error);
     throw error;
   }
+}
+
+export async function uploadClaimEvidence(claimId: string, imageData: string, description?: string) {
+  const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/claims/${claimId}/evidence`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ image_data: imageData, description }),
+  });
+
+  if (!response.ok) {
+    const errorDetails = await response.json();
+    throw new Error(errorDetails.detail || `Error ${response.status}`);
+  }
+  return await response.json();
+}
+
+export async function fetchClaimEvidence(claimId: string) {
+  const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/claims/${claimId}/evidence`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Error ${response.status}: ${response.statusText}`);
+  }
+  return await response.json();
+}
+
+export async function fetchClaimHistory(claimId: string) {
+  const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/claims/${claimId}/history`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Error ${response.status}: ${response.statusText}`);
+  }
+  return await response.json();
 }
 

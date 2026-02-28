@@ -1,3 +1,6 @@
+import os
+from dotenv import load_dotenv
+load_dotenv()
 import logging
 from fastapi import FastAPI, HTTPException, Depends, Cookie, Header, Request, status, Response
 from typing import List
@@ -6,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
-from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, Order, UserStripeAccount, Claim, Disbursement
+from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, Order, UserStripeAccount, Claim, Disbursement, ClaimEvidence, ClaimStatusHistory
 from fitd_schemas.fitd_classes import UserHydrationResponse, ClaimWithOrderResponse, OrderResponse
 from datetime import datetime
 import uuid
@@ -38,7 +41,8 @@ from fitd_schemas.fitd_classes import(
     ImageTo3DMeshyTaskStatusResponse,
     ShopifyOrder,
     ClaimOrder,
-    ClaimStatusUpdate
+    ClaimStatusUpdate,
+    EmailRegisterRequest
 )
 import uvicorn
 from typing import Optional, Dict
@@ -78,6 +82,42 @@ def create_user(
 
     # Return the created user's data
     return {"user_id": user.user_id, "username": user.username, "email": user.email}
+
+
+@app.post("/users/register", response_model=Dict[str, str])
+def register_user(
+    user_information: UserInformation,
+    db: Session = Depends(get_db),
+    authorization: str = Depends(verify_jwt_token),
+):
+    existing_email = db.query(User).filter(User.email == user_information.email).first()
+    if existing_email:
+        raise HTTPException(status_code=409, detail="Email already registered")
+
+    existing_username = db.query(User).filter(User.username == user_information.username).first()
+    if existing_username:
+        raise HTTPException(status_code=409, detail="Username already taken")
+
+    user = add_user_to_db(db, user_information)
+    return {"user_id": user.user_id, "username": user.username, "email": user.email}
+
+
+@app.get("/users/by_email/{email}")
+def get_user_by_email(
+    email: str,
+    db: Session = Depends(get_db),
+    authorization: str = Depends(verify_jwt_token),
+):
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {
+        "user_id": user.user_id,
+        "username": user.username,
+        "email": user.email,
+        "password_hash": user.password_hash,
+        "auth_provider": user.auth_provider,
+    }
 
 
 # Add a Task
@@ -520,9 +560,10 @@ async def claim_order(
 
 ALLOWED_STATUS_TRANSITIONS = {
     "pending": ["in_progress"],
-    "in_progress": ["printing", "shipped", "completed"],
+    "in_progress": ["printing"],
     "printing": ["shipped"],
-    "shipped": ["completed"],
+    "shipped": ["delivered"],
+    "delivered": ["accepted", "disputed"],
 }
 
 
@@ -537,8 +578,15 @@ async def update_claim_status(
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
 
-    if claim.claimant_user_id != user_information.user_id:
-        raise HTTPException(status_code=403, detail="Not authorized to update this claim")
+    order = claim.order
+
+    # Authorization split: delivered -> accepted/disputed requires the ORDER OWNER (buyer)
+    if claim.status == "delivered":
+        if order.user_id != user_information.user_id:
+            raise HTTPException(status_code=403, detail="Only the buyer can accept or dispute a delivered claim")
+    else:
+        if claim.claimant_user_id != user_information.user_id:
+            raise HTTPException(status_code=403, detail="Not authorized to update this claim")
 
     allowed = ALLOWED_STATUS_TRANSITIONS.get(claim.status, [])
     if status_update.status not in allowed:
@@ -547,12 +595,22 @@ async def update_claim_status(
             detail=f"Cannot transition from '{claim.status}' to '{status_update.status}'. Allowed: {allowed}"
         )
 
+    previous_status = claim.status
     claim.status = status_update.status
     db.commit()
 
-    # If claim is completed, create a disbursement
-    if status_update.status == "completed":
-        order = claim.order
+    # Record status change in history
+    history = ClaimStatusHistory(
+        claim_id=claim.id,
+        previous_status=previous_status,
+        new_status=status_update.status,
+        changed_by=user_information.user_id,
+    )
+    db.add(history)
+    db.commit()
+
+    # Disbursement triggers on "accepted" (not "completed")
+    if status_update.status == "accepted":
         amount_cents = int(order.price * claim.quantity / order.quantity * 100)
         disbursement = Disbursement(
             claim_id=claim.id,
@@ -564,6 +622,96 @@ async def update_claim_status(
         db.commit()
 
     return {"message": "Claim status updated", "claim_id": claim_id, "new_status": status_update.status}
+
+
+@app.post("/claims/{claim_id}/evidence")
+async def upload_claim_evidence(
+    claim_id: str,
+    payload: dict,
+    db: Session = Depends(get_db),
+    user_information: None = Depends(cookie_verification_user_only),
+):
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+
+    if claim.claimant_user_id != user_information.user_id:
+        raise HTTPException(status_code=403, detail="Only the fulfiller can upload evidence")
+
+    image_data = payload.get("image_data")
+    if not image_data:
+        raise HTTPException(status_code=400, detail="Missing image_data")
+
+    file_id = str(uuid.uuid4())
+    file_path = UPLOAD_DIR / f"evidence_{file_id}.jpg"
+    file_bytes = base64.b64decode(image_data)
+    with open(file_path, "wb") as f:
+        f.write(file_bytes)
+
+    evidence = ClaimEvidence(
+        claim_id=claim_id,
+        file_path=str(file_path),
+        status_at_upload=claim.status,
+        description=payload.get("description"),
+    )
+    db.add(evidence)
+    db.commit()
+    db.refresh(evidence)
+
+    return {
+        "id": evidence.id,
+        "claim_id": evidence.claim_id,
+        "file_path": evidence.file_path,
+        "status_at_upload": evidence.status_at_upload,
+        "description": evidence.description,
+    }
+
+
+@app.get("/claims/{claim_id}/evidence")
+async def get_claim_evidence(
+    claim_id: str,
+    db: Session = Depends(get_db),
+    _: None = Depends(cookie_verification),
+):
+    evidence_list = db.query(ClaimEvidence).filter(ClaimEvidence.claim_id == claim_id).all()
+    result = []
+    for ev in evidence_list:
+        ev_data = {
+            "id": ev.id,
+            "claim_id": ev.claim_id,
+            "file_path": ev.file_path,
+            "uploaded_at": ev.uploaded_at.isoformat() if ev.uploaded_at else None,
+            "status_at_upload": ev.status_at_upload,
+            "description": ev.description,
+        }
+        # Include base64 image data if file exists
+        if os.path.exists(ev.file_path):
+            with open(ev.file_path, "rb") as f:
+                ev_data["image_data"] = base64.b64encode(f.read()).decode("utf-8")
+        result.append(ev_data)
+    return result
+
+
+@app.get("/claims/{claim_id}/history")
+async def get_claim_history(
+    claim_id: str,
+    db: Session = Depends(get_db),
+    _: None = Depends(cookie_verification),
+):
+    history = db.query(ClaimStatusHistory).filter(
+        ClaimStatusHistory.claim_id == claim_id
+    ).order_by(ClaimStatusHistory.changed_at).all()
+    return [
+        {
+            "id": h.id,
+            "claim_id": h.claim_id,
+            "previous_status": h.previous_status,
+            "new_status": h.new_status,
+            "changed_by": h.changed_by,
+            "changed_at": h.changed_at.isoformat() if h.changed_at else None,
+        }
+        for h in history
+    ]
 
 
 @app.get("/disbursements/pending/{claim_id}")

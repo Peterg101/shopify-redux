@@ -96,7 +96,7 @@ async def start_image_to_3d_task(
 
 @app.websocket("/ws/{port_id}")
 async def websocket_endpoint(
-    websocket: WebSocket, port_id: str, redis: aioredis.Redis = Depends(get_redis)
+    websocket: WebSocket, port_id: str, redis: AsyncRedis = Depends(get_redis)
 ):
     await websocket.accept()
 

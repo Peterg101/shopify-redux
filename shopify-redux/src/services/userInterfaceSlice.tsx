@@ -112,15 +112,17 @@ export const userInterfaceSlice = createSlice({
             }
           )
           .addMatcher(
-            authApi.endpoints.getSession.matchRejected, 
+            authApi.endpoints.getSession.matchRejected,
             (state, action) => {
-                state.isLoggedIn = false; 
+                state.isLoggedIn = false;
+                state.userInformation = null;
               }
           )
           .addMatcher(
-            authApi.endpoints.logOut.matchFulfilled, 
+            authApi.endpoints.logOut.matchFulfilled,
             (state, action) => {
-                state.isLoggedIn = false; 
+                state.isLoggedIn = false;
+                state.userInformation = null;
               }
           );
       },

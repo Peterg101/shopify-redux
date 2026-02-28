@@ -30,6 +30,7 @@ const initialState: DataState = {
   totalCost: 0,
   fulfillMode: false,
   updateClaimMode: false,
+  qaLevel: 'standard',
 }
 
 describe('dataSlice', () => {

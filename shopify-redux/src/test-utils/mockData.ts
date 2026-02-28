@@ -6,6 +6,8 @@ import {
   UserInformation,
   UserAndTasksAndBasketAndIncompleteAndOrders,
   UUIDType,
+  ClaimEvidence,
+  ClaimStatusHistory,
 } from '../app/utility/interfaces'
 
 let counter = 0
@@ -29,6 +31,7 @@ export function createMockOrder(overrides: Partial<Order> = {}): Order {
     created_at: '2025-01-01T00:00:00Z',
     is_collaborative: true,
     status: 'open',
+    qa_level: 'standard',
     claims: [],
     ...overrides,
   }
@@ -85,6 +88,30 @@ export function createMockUserInformation(overrides: Partial<UserInformation> = 
     user_id: 'user-1',
     username: 'testuser',
     email: 'test@example.com',
+    ...overrides,
+  }
+}
+
+export function createMockClaimEvidence(overrides: Partial<ClaimEvidence> = {}): ClaimEvidence {
+  return {
+    id: nextId(),
+    claim_id: 'claim-1',
+    file_path: '/uploads/evidence_test.jpg',
+    uploaded_at: '2025-01-01T00:00:00Z',
+    status_at_upload: 'printing',
+    description: 'Test evidence',
+    ...overrides,
+  }
+}
+
+export function createMockClaimStatusHistory(overrides: Partial<ClaimStatusHistory> = {}): ClaimStatusHistory {
+  return {
+    id: nextId(),
+    claim_id: 'claim-1',
+    previous_status: 'pending',
+    new_status: 'in_progress',
+    changed_by: 'user-1',
+    changed_at: '2025-01-01T00:00:00Z',
     ...overrides,
   }
 }

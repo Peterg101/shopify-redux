@@ -57,10 +57,10 @@ def test_update_claim_status_invalid_transition(claimant_client, seed_order, see
     from fitd_schemas.fitd_db_schemas import Claim
     claim = db_session.query(Claim).first()
 
-    # Try invalid transition: pending -> completed
+    # Try invalid transition: pending -> delivered
     response = claimant_client.patch(
         f"/claims/{claim.id}/status",
-        json={"status": "completed"},
+        json={"status": "delivered"},
     )
     assert response.status_code == 400
 
@@ -96,8 +96,12 @@ def test_update_claim_status_not_found(claimant_client):
     assert response.status_code == 404
 
 
-def test_claim_completed_creates_disbursement(claimant_client, seed_order, seed_claimant_user, db_session):
-    # Create claim
+def test_claim_accepted_creates_disbursement(claimant_client, seed_order, seed_claimant_user, db_session):
+    """Full new lifecycle: pending -> in_progress -> printing -> shipped -> delivered -> accepted (buyer)."""
+    from conftest import set_auth_as_buyer, set_auth_as_claimant
+
+    # Fulfiller creates claim (auth is currently set to claimant via seed_order -> client)
+    set_auth_as_claimant()
     claimant_client.post(
         "/claims/claim_order",
         json={"order_id": "order-001", "quantity": 2, "status": "pending"},
@@ -105,12 +109,64 @@ def test_claim_completed_creates_disbursement(claimant_client, seed_order, seed_
     from fitd_schemas.fitd_db_schemas import Claim, Disbursement
     claim = db_session.query(Claim).first()
 
-    # Transition through: pending -> in_progress -> completed
+    # Fulfiller transitions through to delivered
     claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "in_progress"})
-    claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "completed"})
+    claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "printing"})
+    claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "shipped"})
+    claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "delivered"})
+
+    # Swap to buyer (test-user-123, who owns order-001) for acceptance
+    set_auth_as_buyer()
+    response = claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "accepted"})
+    assert response.status_code == 200
 
     db_session.expire_all()
     disbursement = db_session.query(Disbursement).filter(Disbursement.claim_id == claim.id).first()
     assert disbursement is not None
     assert disbursement.status == "pending"
     assert disbursement.amount_cents > 0
+
+
+def test_claim_delivered_requires_buyer(claimant_client, seed_order, seed_claimant_user, db_session):
+    """Fulfiller cannot accept their own delivered claim - only the buyer can."""
+    from conftest import set_auth_as_claimant
+
+    set_auth_as_claimant()
+    claimant_client.post(
+        "/claims/claim_order",
+        json={"order_id": "order-001", "quantity": 2, "status": "pending"},
+    )
+    from fitd_schemas.fitd_db_schemas import Claim
+    claim = db_session.query(Claim).first()
+
+    claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "in_progress"})
+    claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "printing"})
+    claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "shipped"})
+    claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "delivered"})
+
+    # Fulfiller tries to accept - should be 403 (only buyer can accept)
+    response = claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "accepted"})
+    assert response.status_code == 403
+
+
+def test_status_history_recorded(claimant_client, seed_order, seed_claimant_user, db_session):
+    """Every status transition should create a ClaimStatusHistory entry."""
+    claimant_client.post(
+        "/claims/claim_order",
+        json={"order_id": "order-001", "quantity": 2, "status": "pending"},
+    )
+    from fitd_schemas.fitd_db_schemas import Claim, ClaimStatusHistory
+    claim = db_session.query(Claim).first()
+
+    claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "in_progress"})
+    claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "printing"})
+
+    db_session.expire_all()
+    history = db_session.query(ClaimStatusHistory).filter(
+        ClaimStatusHistory.claim_id == claim.id
+    ).all()
+    assert len(history) == 2
+    assert history[0].previous_status == "pending"
+    assert history[0].new_status == "in_progress"
+    assert history[1].previous_status == "in_progress"
+    assert history[1].new_status == "printing"

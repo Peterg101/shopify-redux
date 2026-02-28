@@ -8,6 +8,8 @@ export const authApi = createApi({
     baseUrl: process.env.REACT_APP_AUTH_SERVICE,
     credentials: 'include',
   }),
+  refetchOnFocus: true,
+  refetchOnReconnect: true,
   tagTypes: ['sessionData'],
   endpoints: (builder) => ({
     getSession: builder.query<UserAndTasksAndBasketAndIncompleteAndOrders, void>({

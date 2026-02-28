@@ -2,9 +2,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../app/store'
 import { setUpdateClaimedOrder } from '../../services/userInterfaceSlice'
 import { resetDataState, setUpdateClaimMode } from '../../services/dataSlice'
-import { patchClaimStatus } from '../../services/fetchFileUtils'
+import { patchClaimStatus, uploadClaimEvidence } from '../../services/fetchFileUtils'
 import { authApi } from '../../services/authApi'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import {
   Box,
   Typography,
@@ -16,18 +16,21 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  TextField,
 } from '@mui/material'
 import OBJSTLViewer from '../display/objStlViewer'
+import { BuyerReviewPanel } from './BuyerReviewPanel'
 
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
   pending: ['in_progress'],
-  in_progress: ['printing', 'shipped', 'completed'],
+  in_progress: ['printing'],
   printing: ['shipped'],
-  shipped: ['completed'],
+  shipped: ['delivered'],
+  delivered: ['accepted', 'disputed'],
 }
 
 export const UpdateClaimStatus = () => {
-  const { updateClaimedOrder } = useSelector(
+  const { updateClaimedOrder, userInformation } = useSelector(
     (state: RootState) => state.userInterfaceState
   )
   const dispatch = useDispatch()
@@ -36,8 +39,33 @@ export const UpdateClaimStatus = () => {
   const validNextStatuses = ALLOWED_TRANSITIONS[currentStatus] ?? []
   const [selectedStatus, setSelectedStatus] = useState(validNextStatuses[0] ?? '')
 
+  // Photo upload state
+  const [evidenceFile, setEvidenceFile] = useState<File | null>(null)
+  const [evidenceDescription, setEvidenceDescription] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setEvidenceFile(e.target.files[0])
+    }
+  }
+
   const confirmUpdate = async () => {
     if (!updateClaimedOrder || !selectedStatus) return
+
+    // Upload evidence before status patch if file selected
+    if (evidenceFile) {
+      const reader = new FileReader()
+      await new Promise<void>((resolve) => {
+        reader.onload = async () => {
+          const base64 = (reader.result as string).split(',')[1]
+          await uploadClaimEvidence(updateClaimedOrder.id, base64, evidenceDescription || undefined)
+          resolve()
+        }
+        reader.readAsDataURL(evidenceFile)
+      })
+    }
+
     await patchClaimStatus(updateClaimedOrder.id, selectedStatus)
     dispatch(authApi.util.invalidateTags(['sessionData']))
     dispatch(setUpdateClaimedOrder({ updateClaimedOrder: null }))
@@ -53,6 +81,12 @@ export const UpdateClaimStatus = () => {
 
   if (!updateClaimedOrder) return null
   const order = updateClaimedOrder.order
+
+  // If claim is delivered and current user is the buyer, show buyer review panel
+  const isBuyer = userInformation?.user?.user_id === order.user_id
+  if (currentStatus === 'delivered' && isBuyer) {
+    return <BuyerReviewPanel claim={updateClaimedOrder} onClose={handleCancel} />
+  }
 
   return (
     <Box
@@ -114,6 +148,37 @@ export const UpdateClaimStatus = () => {
               Update Status
             </Typography>
             <Divider sx={{ mb: 3 }} />
+
+            {/* Photo evidence upload */}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                Upload photo evidence (optional)
+              </Typography>
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={handleFileSelect}
+                style={{ display: 'none' }}
+              />
+              <Button
+                variant="outlined"
+                onClick={() => fileInputRef.current?.click()}
+                sx={{ mb: 1 }}
+              >
+                {evidenceFile ? evidenceFile.name : 'Choose Photo'}
+              </Button>
+              {evidenceFile && (
+                <TextField
+                  label="Evidence Description"
+                  value={evidenceDescription}
+                  onChange={(e) => setEvidenceDescription(e.target.value)}
+                  fullWidth
+                  size="small"
+                  sx={{ mt: 1 }}
+                />
+              )}
+            </Box>
 
             {validNextStatuses.length > 0 ? (
               <FormControl fullWidth sx={{ mb: 3 }}>

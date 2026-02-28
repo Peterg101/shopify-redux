@@ -161,3 +161,13 @@ def seed_order(client, seed_task, db_session):
     db_session.add(order)
     db_session.commit()
     return order
+
+
+def set_auth_as_buyer():
+    """Switch the cookie auth override to the order owner (buyer)."""
+    app.dependency_overrides[cookie_verification_user_only] = override_cookie_verification_user_only
+
+
+def set_auth_as_claimant():
+    """Switch the cookie auth override to the claimant (fulfiller)."""
+    app.dependency_overrides[cookie_verification_user_only] = override_cookie_verification_claimant

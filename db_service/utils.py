@@ -33,6 +33,8 @@ def add_user_to_db(db: Session, user_information: UserInformation) -> User:
         user_id=user_information.user_id,
         username=user_information.username,
         email=user_information.email,
+        password_hash=user_information.password_hash,
+        auth_provider=user_information.auth_provider or "google",
     )
     db.add(user)
     db.commit()

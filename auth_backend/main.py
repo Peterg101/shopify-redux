@@ -1,16 +1,19 @@
 import os
+from dotenv import load_dotenv
+load_dotenv()
 import logging
 from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from redis.asyncio import Redis as AsyncRedis
 import uvicorn
-from fitd_schemas.fitd_classes import SessionData, UserInformation
+from fitd_schemas.fitd_classes import SessionData, UserInformation, EmailRegisterRequest, EmailLoginRequest
 import httpx
+import bcrypt
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from utils import create_session, delete_session, cookie_verification
-from api_calls import check_user_exists, create_user, check_only_user_exists
+from api_calls import check_user_exists, create_user, check_only_user_exists, register_email_user, get_user_by_email
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -50,6 +53,7 @@ def auth_google():
         f"&redirect_uri={REDIRECT_URI}"
         f"&response_type=code"
         f"&scope=openid%20email%20profile"
+        f"&prompt=select_account"
     )
     return RedirectResponse(google_auth_url)
 
@@ -116,6 +120,73 @@ async def auth_callback(code: str, request: Request):
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid id_token: {str(e)}")
+
+
+@app.post("/auth/register")
+async def email_register(register_request: EmailRegisterRequest):
+    hashed = bcrypt.hashpw(register_request.password.encode("utf-8"), bcrypt.gensalt())
+
+    import uuid
+    user_info = UserInformation(
+        user_id=str(uuid.uuid4()),
+        username=register_request.username,
+        email=register_request.email,
+        password_hash=hashed.decode("utf-8"),
+        auth_provider="email",
+    )
+
+    response = await register_email_user(user_info)
+    if response.status_code == 409:
+        raise HTTPException(status_code=409, detail=response.json().get("detail", "Already exists"))
+    if response.status_code != 200:
+        raise HTTPException(status_code=500, detail="Registration failed")
+
+    user_data = response.json()
+    session_data = SessionData(user_id=user_data["user_id"])
+    session_id = await create_session(redis_session, session_data)
+
+    from fastapi.responses import JSONResponse
+    resp = JSONResponse(content={"message": "Registration successful", "user_id": user_data["user_id"]})
+    resp.set_cookie(
+        "fitd_session_data",
+        str(session_id),
+        max_age=3600,
+        httponly=True,
+        secure=True,
+        samesite="Lax",
+    )
+    return resp
+
+
+@app.post("/auth/login")
+async def email_login(login_request: EmailLoginRequest):
+    user_data = await get_user_by_email(login_request.email)
+    if not user_data:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    if user_data.get("auth_provider") != "email":
+        raise HTTPException(status_code=400, detail="This account uses Google sign-in")
+
+    stored_hash = user_data.get("password_hash")
+    if not stored_hash or not bcrypt.checkpw(
+        login_request.password.encode("utf-8"), stored_hash.encode("utf-8")
+    ):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    session_data = SessionData(user_id=user_data["user_id"])
+    session_id = await create_session(redis_session, session_data)
+
+    from fastapi.responses import JSONResponse
+    resp = JSONResponse(content={"message": "Login successful", "user_id": user_data["user_id"]})
+    resp.set_cookie(
+        "fitd_session_data",
+        str(session_id),
+        max_age=3600,
+        httponly=True,
+        secure=True,
+        samesite="Lax",
+    )
+    return resp
 
 
 @app.get("/logout")

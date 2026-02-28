@@ -59,8 +59,8 @@ export interface DataState {
    materialCost: number,
    totalCost: number,
    fulfillMode: boolean,
-   updateClaimMode: boolean
-   
+   updateClaimMode: boolean,
+   qaLevel: "standard" | "high"
 }
 
 export interface FileAndItem {
@@ -117,10 +117,29 @@ export interface BasketInformationAndFile extends BasketInformation {
   file_blob: string// Matching FastAPI model
 }
 
+export interface ClaimEvidence {
+  id: string;
+  claim_id: string;
+  file_path: string;
+  uploaded_at: string;
+  status_at_upload: string;
+  description?: string;
+  image_data?: string;
+}
+
+export interface ClaimStatusHistory {
+  id: string;
+  claim_id: string;
+  previous_status: string;
+  new_status: string;
+  changed_by: string;
+  changed_at: string;
+}
+
 export interface Order {
   order_id: string;
   user_id: string;
-  task_id?: string; // Optional Meshy task
+  task_id?: string;
   name: string;
   material: string;
   technique: string;
@@ -130,11 +149,12 @@ export interface Order {
   selectedFileType: string;
   price: number;
   quantity: number;
-  quantity_claimed: number; // Computed from claims
+  quantity_claimed: number;
   created_at: string;
   is_collaborative: boolean;
-  status: "open" | "in_progress" | "fulfilled"; // stricter typing
-  claims?: Claim[]; // Include claims for server-supplied order data
+  status: "open" | "in_progress" | "fulfilled";
+  qa_level?: "standard" | "high";
+  claims?: Claim[];
 }
 
 export interface Claim {
@@ -143,9 +163,11 @@ export interface Claim {
   claimant_user_id: string;
   order: Order
   quantity: number;
-  status: "pending" | "in_progress" | "printing" | "shipped" | "completed";
+  status: "pending" | "in_progress" | "printing" | "shipped" | "delivered" | "accepted" | "disputed";
   created_at: string;
   updated_at: string;
+  evidence?: ClaimEvidence[];
+  status_history?: ClaimStatusHistory[];
 }
 
 

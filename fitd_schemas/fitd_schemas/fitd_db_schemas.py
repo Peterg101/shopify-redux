@@ -15,6 +15,8 @@ class User(Base):
     user_id = Column(String, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
+    password_hash = Column(String, nullable=True)
+    auth_provider = Column(String, default="google")
     tasks = relationship("Task", back_populates="owner")
 
 
@@ -84,6 +86,7 @@ class Order(Base):
     created_at: Mapped[str] = mapped_column(default=lambda: datetime.utcnow().isoformat())
     is_collaborative: Mapped[bool] = mapped_column(default=False)
     status: Mapped[str] = mapped_column(default="open")
+    qa_level: Mapped[str] = mapped_column(String, default="standard")
 
     # Relationships
     user = relationship("User", backref="orders")
@@ -146,11 +149,33 @@ class UserStripeAccount(Base):
 class PayoutRecord(Base):
     __tablename__ = "payouts"
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
-    claim_id: Mapped[str] = mapped_column(String, nullable=True)  # optional reference to main app claim id
+    claim_id: Mapped[str] = mapped_column(String, nullable=True)
     user_id: Mapped[str] = mapped_column(String, nullable=False)
     stripe_transfer_id: Mapped[str] = mapped_column(String, nullable=True)
     amount_cents: Mapped[int] = mapped_column(Integer, nullable=False)
     currency: Mapped[str] = mapped_column(String, default="gbp")
-    status: Mapped[str] = mapped_column(String, default="pending")  # pending/paid/failed
+    status: Mapped[str] = mapped_column(String, default="pending")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class ClaimEvidence(Base):
+    __tablename__ = "claim_evidence"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
+    claim_id: Mapped[str] = mapped_column(String, ForeignKey("claims.id"), nullable=False)
+    file_path: Mapped[str] = mapped_column(String, nullable=False)
+    uploaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    status_at_upload: Mapped[str] = mapped_column(String, nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    claim = relationship("Claim", backref="evidence")
+
+
+class ClaimStatusHistory(Base):
+    __tablename__ = "claim_status_history"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
+    claim_id: Mapped[str] = mapped_column(String, ForeignKey("claims.id"), nullable=False)
+    previous_status: Mapped[str] = mapped_column(String, nullable=False)
+    new_status: Mapped[str] = mapped_column(String, nullable=False)
+    changed_by: Mapped[str] = mapped_column(String, ForeignKey("users.user_id"), nullable=False)
+    changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    claim = relationship("Claim", backref="status_history")

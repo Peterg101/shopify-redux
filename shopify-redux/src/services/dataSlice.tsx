@@ -32,7 +32,8 @@ const initialState: DataState = {
     materialCost: 0.00005,
     totalCost: 0,
     fulfillMode: false,
-    updateClaimMode: false
+    updateClaimMode: false,
+    qaLevel: 'standard'
 }
 
 export const dataSlice = createSlice({
@@ -203,7 +204,11 @@ export const dataSlice = createSlice({
         setTotalCost: (state, action: PayloadAction<{totalCost: number}>) => {
             const {totalCost} = action.payload
             state.totalCost = totalCost
-        }    
+        },
+        setQALevel: (state, action: PayloadAction<{qaLevel: "standard" | "high"}>) => {
+            const {qaLevel} = action.payload
+            state.qaLevel = qaLevel
+        }
     }
 })
 
@@ -233,7 +238,8 @@ export const {
     setTotalCost,
     setFulfillFileViewProperties,
     setFulfillMode,
-    setUpdateClaimMode
+    setUpdateClaimMode,
+    setQALevel
 
  } = dataSlice.actions
 
