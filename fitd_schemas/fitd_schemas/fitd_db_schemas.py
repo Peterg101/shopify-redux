@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, UniqueConstraint
+from sqlalchemy.orm import backref
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -73,7 +74,7 @@ class Order(Base):
     )
     task_id: Mapped[str] = mapped_column(ForeignKey("tasks.task_id"), nullable=False)
     user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"))
-    shopify_order_id: Mapped[str | None] = mapped_column(index=True)
+    stripe_checkout_session_id: Mapped[str | None] = mapped_column(index=True)
     name: Mapped[str] = mapped_column()
     material: Mapped[str] = mapped_column()
     technique: Mapped[str] = mapped_column()
@@ -87,6 +88,14 @@ class Order(Base):
     is_collaborative: Mapped[bool] = mapped_column(default=False)
     status: Mapped[str] = mapped_column(default="open")
     qa_level: Mapped[str] = mapped_column(String, default="standard")
+
+    # Shipping address (collected from Stripe Checkout)
+    shipping_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    shipping_line1: Mapped[str | None] = mapped_column(String, nullable=True)
+    shipping_line2: Mapped[str | None] = mapped_column(String, nullable=True)
+    shipping_city: Mapped[str | None] = mapped_column(String, nullable=True)
+    shipping_postal_code: Mapped[str | None] = mapped_column(String, nullable=True)
+    shipping_country: Mapped[str | None] = mapped_column(String, nullable=True)
 
     # Relationships
     user = relationship("User", backref="orders")
@@ -118,6 +127,12 @@ class Claim(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    # Shipping (populated when fulfiller marks as "shipped")
+    tracking_number: Mapped[str | None] = mapped_column(String, nullable=True)
+    label_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    carrier_code: Mapped[str | None] = mapped_column(String, nullable=True)
+    shipment_id: Mapped[str | None] = mapped_column(String, nullable=True)
+
     # Relationships
     order: Mapped["Order"] = relationship("Order", back_populates="claims", lazy="selectin")
     disbursements: Mapped[list["Disbursement"]] = relationship("Disbursement", back_populates="claim")
@@ -144,6 +159,14 @@ class UserStripeAccount(Base):
     onboarding_complete: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Fulfiller shipping address (ship-from)
+    address_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    address_line1: Mapped[str | None] = mapped_column(String, nullable=True)
+    address_line2: Mapped[str | None] = mapped_column(String, nullable=True)
+    address_city: Mapped[str | None] = mapped_column(String, nullable=True)
+    address_postal_code: Mapped[str | None] = mapped_column(String, nullable=True)
+    address_country: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
 class PayoutRecord(Base):
@@ -179,3 +202,22 @@ class ClaimStatusHistory(Base):
     changed_by: Mapped[str] = mapped_column(String, ForeignKey("users.user_id"), nullable=False)
     changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
     claim = relationship("Claim", backref="status_history")
+
+
+class Dispute(Base):
+    __tablename__ = "disputes"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
+    claim_id: Mapped[str] = mapped_column(String, ForeignKey("claims.id"), nullable=False, unique=True)
+    opened_by: Mapped[str] = mapped_column(String, ForeignKey("users.user_id"), nullable=False)
+    reason: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[str] = mapped_column(String, default="open")  # open | responded | resolved
+    resolution: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # accepted | partial | rejected
+    resolution_amount_cents: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    resolved_by: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # "buyer" | "auto"
+    fulfiller_response: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    responded_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    fulfiller_deadline: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    buyer_deadline: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    claim = relationship("Claim", backref=backref("dispute", uselist=False))

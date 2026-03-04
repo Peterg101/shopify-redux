@@ -2,7 +2,7 @@ import os
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import onboard, webhooks, payouts
+from routes import onboard, webhooks, payouts, checkout, shipping
 import uvicorn
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
@@ -23,6 +23,8 @@ app.add_middleware(
 app.include_router(onboard.router)
 app.include_router(webhooks.router)
 app.include_router(payouts.router)
+app.include_router(checkout.router)
+app.include_router(shipping.router)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=100)

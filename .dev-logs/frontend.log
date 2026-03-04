@@ -2,12 +2,12 @@
 > shopify-redux@0.1.0 start
 > react-scripts start
 
-Browserslist: browsers data (caniuse-lite) is 14 months old. Please run:
+Browserslist: browsers data (caniuse-lite) is 15 months old. Please run:
   npx update-browserslist-db@latest
   Why you should do it regularly: https://github.com/browserslist/update-db#readme
-(node:78390) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+(node:6952) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
 (Use `node --trace-deprecation ...` to show where the warning was created)
-(node:78390) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+(node:6952) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
 Starting the development server...
 
 Compiled with warnings.
@@ -22,4 +22,1166 @@ Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
 Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
 
 webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 32:10:  'useTheme' is defined but never used                                                                          @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 46:10:  'setLeftDrawerClosed' is defined but never used                                                               @typescript-eslint/no-unused-vars
+  Line 46:31:  'setSelectedComponent' is defined but never used                                                              @typescript-eslint/no-unused-vars
+  Line 48:10:  'UpdatedUserInterface' is defined but never used                                                              @typescript-eslint/no-unused-vars
+  Line 116:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 32:10:  'useTheme' is defined but never used                                                                          @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 46:10:  'setLeftDrawerClosed' is defined but never used                                                               @typescript-eslint/no-unused-vars
+  Line 46:31:  'setSelectedComponent' is defined but never used                                                              @typescript-eslint/no-unused-vars
+  Line 48:10:  'UpdatedUserInterface' is defined but never used                                                              @typescript-eslint/no-unused-vars
+  Line 116:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 2 warnings
+No issues found.
+[0;33mOne of your dependencies, babel-preset-react-app, is importing the
+"@babel/plugin-proposal-private-property-in-object" package without
+declaring it in its dependencies. This is currently working because
+"@babel/plugin-proposal-private-property-in-object" is already in your
+node_modules folder for unrelated reasons, but it [1mmay break at any time[0;33m.
+
+babel-preset-react-app is part of the create-react-app project, [1mwhich
+is not maintianed anymore[0;33m. It is thus unlikely that this bug will
+ever be fixed. Add "@babel/plugin-proposal-private-property-in-object" to
+your devDependencies to work around this error. This will make this message
+go away.[0m
+  
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 48:10:  'UpdatedUserInterface' is defined but never used                                                              @typescript-eslint/no-unused-vars
+  Line 95:9:   'collapsedWidth' is assigned a value but never used                                                           @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 48:10:  'UpdatedUserInterface' is defined but never used                                                              @typescript-eslint/no-unused-vars
+  Line 95:9:   'collapsedWidth' is assigned a value but never used                                                           @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 2 warnings
+No issues found.
+Compiling...
+Failed to compile.
+
+Attempted import error: 'createShopifyCheckoutAndRedirect' is not exported from '../../services/fetchFileUtils' (imported as 'createShopifyCheckoutAndRedirect').
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+ERROR in ./src/features/userInterface/basketFragments.tsx 488:4-36
+export 'createShopifyCheckoutAndRedirect' (imported as 'createShopifyCheckoutAndRedirect') was not found in '../../services/fetchFileUtils' (possible exports: callStripeService, createStripeCheckoutAndRedirect, deleteBasketItem, extractFileInfo, fetchClaimEvidence, fetchClaimHistory, fetchDispute, fetchFile, fetchOrderDetail, loginWithEmail, patchClaimQuantity, patchClaimStatus, postClaimOrder, postFile, registerWithEmail, resolveDispute, startImageTo3DTask, startTask, submitDisputeResponse, toggleOrderVisibility, updateBasketQuantity, uploadClaimEvidence, uploadDisputeEvidence)
+
+webpack compiled with 1 error and 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+ERROR in src/features/userInterface/basketFragments.tsx:42:10
+TS2724: '"../../services/fetchFileUtils"' has no exported member named 'createShopifyCheckoutAndRedirect'. Did you mean 'createStripeCheckoutAndRedirect'?
+    40 | import { BasketInformation } from "../../app/utility/interfaces";
+    41 | import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
+  > 42 | import { createShopifyCheckoutAndRedirect } from "../../services/fetchFileUtils";
+       |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    43 | import { selectTotalBasketValue } from "../../services/selectors";
+    44 | import { monoFontFamily } from "../../theme";
+    45 |
+
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 42:10:   'createStripeCheckoutAndRedirect' is defined but never used   @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 42:10:   'createStripeCheckoutAndRedirect' is defined but never used   @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+ERROR in src/features/userInterface/basketFragments.tsx:245:5
+TS2552: Cannot find name 'createShopifyCheckoutAndRedirect'. Did you mean 'createStripeCheckoutAndRedirect'?
+    243 |     dispatch(setLeftDrawerClosed())
+    244 |     setOpen(false)
+  > 245 |     createShopifyCheckoutAndRedirect()
+        |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    246 |   }
+    247 |
+    248 |   const handleCheckoutWithCommunity = () => {
+
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/services/fetchFileUtils.tsx
+  Line 1:101:  'FulfillerAddress' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/services/fetchFileUtils.tsx
+  Line 1:101:  'FulfillerAddress' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/fulfill/updateClaimStatus.tsx
+  Line 5:49:  'createShippingLabel' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/fulfill/updateClaimStatus.tsx
+  Line 5:49:  'createShippingLabel' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/fulfill/updateClaimStatus.tsx
+  Line 5:49:   'createShippingLabel' is defined but never used        @typescript-eslint/no-unused-vars
+  Line 47:10:  'labelResult' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  Line 47:23:  'setLabelResult' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  Line 48:10:  'labelError' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  Line 48:22:  'setLabelError' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  Line 49:10:  'creatingLabel' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  Line 49:25:  'setCreatingLabel' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/fulfill/updateClaimStatus.tsx
+  Line 5:49:   'createShippingLabel' is defined but never used        @typescript-eslint/no-unused-vars
+  Line 47:10:  'labelResult' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  Line 47:23:  'setLabelResult' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  Line 48:10:  'labelError' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  Line 48:22:  'setLabelError' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  Line 49:10:  'creatingLabel' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  Line 49:25:  'setCreatingLabel' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/fulfill/updateClaimStatus.tsx
+  Line 47:10:  'labelResult' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  Line 48:10:  'labelError' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  Line 49:10:  'creatingLabel' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/fulfill/updateClaimStatus.tsx
+  Line 47:10:  'labelResult' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  Line 48:10:  'labelError' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  Line 49:10:  'creatingLabel' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/orders/OrderDetailPage.tsx
+  Line 17:3:   'StepContent' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 34:45:  'ClaimEvidence' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  Line 39:3:   'fetchDispute' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  Line 43:3:   'fetchClaimEvidence' is defined but never used                                                                @typescript-eslint/no-unused-vars
+  Line 108:6:  React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  Line 125:6:  React Hook useEffect has a missing dependency: 'loadOrder'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/userInterface/basketFragments.tsx
+  Line 13:3:    'Grid' is defined but never used                              @typescript-eslint/no-unused-vars
+  Line 14:3:    'useMediaQuery' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 15:3:    'useTheme' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 17:3:    'DialogActions' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 214:7:   'BasketTotal' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 231:9:   'user_id' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  Line 232:9:   'basketItems' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  Line 236:10:  'generateTasksFromBasket' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
 No issues found.

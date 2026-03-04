@@ -56,20 +56,6 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
     depends_on: [redis, db_service, auth_backend]
 
-  shopify_service:
-    build:
-      context: .
-      dockerfile: Dockerfile.python
-      args: { SERVICE_DIR: shopify_service }
-    ports: ["369:369"]
-    environment:
-      DB_SERVICE_URL: http://db_service:8000
-      AUTH_SERVICE_URL: http://auth_backend:2468
-      SHOPIFY_WEBHOOK_SECRET: ${SHOPIFY_WEBHOOK_SECRET}
-      FRONTEND_URL: http://localhost:3000
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-    depends_on: [db_service, auth_backend]
-
   stripe_service:
     build:
       context: .
@@ -95,7 +81,6 @@ services:
       REACT_APP_DB_SERVICE: http://localhost:8000
       REACT_APP_AUTH_SERVICE: http://localhost:2468
       REACT_APP_MESHY_SERVICE: http://localhost:1234
-      REACT_APP_SHOPIFY_SERVICE: http://localhost:369
       REACT_APP_STRIPE_SERVICE: http://localhost:100
     depends_on: [db_service, auth_backend]
 

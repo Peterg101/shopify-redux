@@ -1,4 +1,75 @@
-INFO:     Started server process [78369]
+INFO:     Started server process [6931]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:100 (Press CTRL+C to quit)
+INFO:     127.0.0.1:62890 - "OPTIONS /stripe/onboard HTTP/1.1" 200 OK
+2026-03-04 14:40:49,418 [httpx] INFO: HTTP Request: GET http://localhost:2468/get_just_user_details "HTTP/1.1 200 OK"
+2026-03-04 14:40:49,436 [httpx] INFO: HTTP Request: GET http://localhost:8000/user_onboarded_with_stripe/103968401714276034667 "HTTP/1.1 204 No Content"
+INFO:     127.0.0.1:62892 - "POST /stripe/onboard HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/uvicorn/protocols/http/h11_impl.py", line 407, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 78, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/applications.py", line 123, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/middleware/cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/middleware/cors.py", line 148, in simple_response
+    await self.app(scope, receive, send)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/routing.py", line 754, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/routing.py", line 774, in app
+    await route.handle(scope, receive, send)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/routing.py", line 295, in handle
+    await self.app(scope, receive, send)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/routing.py", line 74, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/fastapi/routing.py", line 297, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/fastapi/routing.py", line 210, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/petergoon/Documents/Development/Shopify App with Redux/stripe_service/routes/onboard.py", line 32, in onboard_user
+    stripe_account = await generate_stripe_account(user.email)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/petergoon/Documents/Development/Shopify App with Redux/stripe_service/utils.py", line 38, in generate_stripe_account
+    stripe.api_key = STRIPE_SECRET_KEY
+                     ^^^^^^^^^^^^^^^^^
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/stripe/_account.py", line 1509, in create
+    cls._static_request(
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/stripe/_api_resource.py", line 172, in _static_request
+    return _APIRequestor._global_instance().request(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/stripe/_api_requestor.py", line 200, in request
+    rbody, rcode, rheaders = requestor.request_raw(
+                             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/stripe/_api_requestor.py", line 701, in request_raw
+    ) = self._args_for_request_with_retries(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/stripe/_api_requestor.py", line 561, in _args_for_request_with_retries
+    raise error.AuthenticationError(
+stripe._error.AuthenticationError: No API key provided. (HINT: set your API key using "stripe.api_key = <API-KEY>"). You can generate API keys from the Stripe web interface.  See https://stripe.com/api for details, or email support@stripe.com if you have any questions.

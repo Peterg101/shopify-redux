@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [db_service, auth_backend, meshy_backend, shopify_service, stripe_service, fitd_schemas]
+        service: [db_service, auth_backend, meshy_backend, stripe_service, fitd_schemas]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

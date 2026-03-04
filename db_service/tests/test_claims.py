@@ -112,6 +112,7 @@ def test_claim_accepted_creates_disbursement(claimant_client, seed_order, seed_c
     # Fulfiller transitions through to delivered
     claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "in_progress"})
     claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "printing"})
+    claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "qa_check"})
     claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "shipped"})
     claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "delivered"})
 
@@ -141,12 +142,71 @@ def test_claim_delivered_requires_buyer(claimant_client, seed_order, seed_claima
 
     claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "in_progress"})
     claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "printing"})
+    claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "qa_check"})
     claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "shipped"})
     claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "delivered"})
 
     # Fulfiller tries to accept - should be 403 (only buyer can accept)
     response = claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "accepted"})
     assert response.status_code == 403
+
+
+def test_update_claim_quantity(claimant_client, seed_order, seed_claimant_user, db_session):
+    """Fulfiller can adjust quantity while claim is pending."""
+    from conftest import set_auth_as_claimant
+
+    set_auth_as_claimant()
+    claimant_client.post(
+        "/claims/claim_order",
+        json={"order_id": "order-001", "quantity": 2, "status": "pending"},
+    )
+    from fitd_schemas.fitd_db_schemas import Claim
+    claim = db_session.query(Claim).first()
+
+    response = claimant_client.patch(
+        f"/claims/{claim.id}/quantity",
+        json={"quantity": 3},
+    )
+    assert response.status_code == 200
+    assert response.json()["new_quantity"] == 3
+
+
+def test_update_claim_quantity_invalid(claimant_client, seed_order, seed_claimant_user, db_session):
+    """Cannot adjust quantity to 0 or exceed available."""
+    from conftest import set_auth_as_claimant
+
+    set_auth_as_claimant()
+    claimant_client.post(
+        "/claims/claim_order",
+        json={"order_id": "order-001", "quantity": 2, "status": "pending"},
+    )
+    from fitd_schemas.fitd_db_schemas import Claim
+    claim = db_session.query(Claim).first()
+
+    # quantity <= 0
+    response = claimant_client.patch(f"/claims/{claim.id}/quantity", json={"quantity": 0})
+    assert response.status_code == 400
+
+    # exceeds available
+    response = claimant_client.patch(f"/claims/{claim.id}/quantity", json={"quantity": 100})
+    assert response.status_code == 400
+
+
+def test_update_claim_quantity_not_pending(claimant_client, seed_order, seed_claimant_user, db_session):
+    """Cannot adjust quantity after claim moves past pending."""
+    from conftest import set_auth_as_claimant
+
+    set_auth_as_claimant()
+    claimant_client.post(
+        "/claims/claim_order",
+        json={"order_id": "order-001", "quantity": 2, "status": "pending"},
+    )
+    from fitd_schemas.fitd_db_schemas import Claim
+    claim = db_session.query(Claim).first()
+
+    claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "in_progress"})
+    response = claimant_client.patch(f"/claims/{claim.id}/quantity", json={"quantity": 3})
+    assert response.status_code == 400
 
 
 def test_status_history_recorded(claimant_client, seed_order, seed_claimant_user, db_session):
@@ -170,3 +230,64 @@ def test_status_history_recorded(claimant_client, seed_order, seed_claimant_user
     assert history[0].new_status == "in_progress"
     assert history[1].previous_status == "in_progress"
     assert history[1].new_status == "printing"
+
+
+def test_claim_shipping_update(client, seed_order, db_session):
+    """PATCH /claims/{id}/shipping sets tracking_number, label_url, carrier_code."""
+    from fitd_schemas.fitd_db_schemas import Claim
+    import uuid
+
+    claim = Claim(
+        id="claim-ship-001",
+        order_id="order-001",
+        claimant_user_id="test-user-123",
+        quantity=1,
+        status="shipped",
+    )
+    db_session.add(claim)
+    db_session.commit()
+
+    response = client.patch(
+        "/claims/claim-ship-001/shipping",
+        json={
+            "tracking_number": "TRACK123",
+            "label_url": "https://labels.shipengine.com/test.pdf",
+            "carrier_code": "evri",
+            "shipment_id": "se-12345",
+        },
+        headers={"Authorization": "Bearer fake"},
+    )
+    assert response.status_code == 200
+
+    db_session.expire_all()
+    updated = db_session.query(Claim).filter(Claim.id == "claim-ship-001").first()
+    assert updated.tracking_number == "TRACK123"
+    assert updated.label_url == "https://labels.shipengine.com/test.pdf"
+    assert updated.carrier_code == "evri"
+    assert updated.shipment_id == "se-12345"
+
+
+def test_claim_response_includes_shipping(claimant_client, seed_order, seed_claimant_user, db_session):
+    """Claim responses include tracking_number, label_url, carrier_code."""
+    from fitd_schemas.fitd_db_schemas import Claim
+
+    claim = Claim(
+        id="claim-ship-resp",
+        order_id="order-001",
+        claimant_user_id="claimant-user-456",
+        quantity=1,
+        status="shipped",
+        tracking_number="TRACK789",
+        label_url="https://labels.test/label.pdf",
+        carrier_code="royal_mail",
+    )
+    db_session.add(claim)
+    db_session.commit()
+
+    # Check via order detail
+    response = claimant_client.get("/orders/order-001/detail")
+    assert response.status_code == 200
+    claim_data = response.json()["claims"][0]
+    assert claim_data["tracking_number"] == "TRACK789"
+    assert claim_data["label_url"] == "https://labels.test/label.pdf"
+    assert claim_data["carrier_code"] == "royal_mail"

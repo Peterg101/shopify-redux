@@ -155,6 +155,29 @@ export interface Order {
   status: "open" | "in_progress" | "fulfilled";
   qa_level?: "standard" | "high";
   claims?: Claim[];
+  shipping_name?: string;
+  shipping_line1?: string;
+  shipping_line2?: string;
+  shipping_city?: string;
+  shipping_postal_code?: string;
+  shipping_country?: string;
+}
+
+export interface Dispute {
+  id: string;
+  claim_id: string;
+  opened_by: string;
+  reason: string;
+  status: "open" | "responded" | "resolved";
+  resolution?: "accepted" | "partial" | "rejected";
+  resolution_amount_cents?: number;
+  resolved_by?: "buyer" | "auto";
+  fulfiller_response?: string;
+  responded_at?: string;
+  fulfiller_deadline: string;
+  buyer_deadline?: string;
+  created_at: string;
+  resolved_at?: string;
 }
 
 export interface Claim {
@@ -163,13 +186,71 @@ export interface Claim {
   claimant_user_id: string;
   order: Order
   quantity: number;
-  status: "pending" | "in_progress" | "printing" | "shipped" | "delivered" | "accepted" | "disputed";
+  status: "pending" | "in_progress" | "printing" | "qa_check" | "shipped" | "delivered" | "accepted" | "disputed" | "resolved_accepted" | "resolved_partial" | "resolved_rejected";
   created_at: string;
   updated_at: string;
   evidence?: ClaimEvidence[];
   status_history?: ClaimStatusHistory[];
+  dispute?: Dispute;
+  tracking_number?: string;
+  label_url?: string;
+  carrier_code?: string;
 }
 
+
+export interface ClaimDetail {
+  id: string;
+  order_id: string;
+  claimant_user_id: string;
+  claimant_username: string;
+  quantity: number;
+  status: Claim["status"];
+  created_at: string;
+  updated_at: string;
+  evidence: ClaimEvidence[];
+  status_history: ClaimStatusHistory[];
+  dispute?: Dispute;
+  tracking_number?: string;
+  label_url?: string;
+  carrier_code?: string;
+}
+
+export interface OrderDetail {
+  order_id: string;
+  task_id: string;
+  user_id: string;
+  owner_username: string;
+  name: string;
+  material: string;
+  technique: string;
+  sizing: number;
+  colour: string;
+  selectedFile: string;
+  selectedFileType: string;
+  price: number;
+  quantity: number;
+  quantity_claimed: number;
+  created_at: string;
+  is_collaborative: boolean;
+  status: string;
+  qa_level: string;
+  claims: ClaimDetail[];
+  shipping_name?: string;
+  shipping_line1?: string;
+  shipping_line2?: string;
+  shipping_city?: string;
+  shipping_postal_code?: string;
+  shipping_country?: string;
+}
+
+export interface FulfillerAddress {
+  name: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  postal_code: string;
+  country: string;
+}
 
 export interface UserAndTasksAndBasketAndIncompleteAndOrders{
   user: UserInformation

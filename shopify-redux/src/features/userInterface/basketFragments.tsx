@@ -39,7 +39,7 @@ import DeleteFromBasket from "./deleteFromBasket";
 import EditBasketItem from "./editBasketItem";
 import { BasketInformation } from "../../app/utility/interfaces";
 import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
-import { createShopifyCheckoutAndRedirect } from "../../services/fetchFileUtils";
+import { createStripeCheckoutAndRedirect } from "../../services/fetchFileUtils";
 import { selectTotalBasketValue } from "../../services/selectors";
 import { monoFontFamily } from "../../theme";
 
@@ -242,7 +242,7 @@ export const BasketSummary = () => {
   const handleCheckoutWithFitd = () =>{
     dispatch(setLeftDrawerClosed())
     setOpen(false)
-    createShopifyCheckoutAndRedirect()
+    createStripeCheckoutAndRedirect()
   }
 
   const handleCheckoutWithCommunity = () => {

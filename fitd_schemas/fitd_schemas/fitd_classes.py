@@ -194,77 +194,51 @@ class ImageTo3DMeshyTaskStatusResponse(BaseModel):
         return v or None
 
 
-class Money(BaseModel):
-    amount: str
-    currency_code: str
-
-
-class PriceSet(BaseModel):
-    shop_money: Money
-    presentment_money: Money
-
-
-class Property(BaseModel):
+class StripeCheckoutLineItem(BaseModel):
+    task_id: str
+    user_id: str
     name: str
-    value: str
-
-
-class LineItem(BaseModel):
-    id: int
-    admin_graphql_api_id: str
-    attributed_staffs: List = []
-    current_quantity: int
-    fulfillable_quantity: int
-    fulfillment_service: str
-    fulfillment_status: Optional[str]
-    gift_card: bool
-    grams: int
-    name: str
-    price: str
-    price_set: PriceSet
-    product_exists: bool
-    product_id: Optional[int]
-    properties: List[Property]
+    material: str
+    technique: str
+    sizing: float
+    colour: str
+    selectedFile: str
+    selectedFileType: str
+    price: float
     quantity: int
-    requires_shipping: bool
-    sales_line_item_group_id: Optional[str]
-    sku: Optional[str]
-    taxable: bool
-    title: str
-    total_discount: str
-    total_discount_set: PriceSet
-    variant_id: Optional[int]
-    variant_inventory_management: Optional[str]
-    variant_title: Optional[str]
-    vendor: str
-    tax_lines: List = []
-    duties: List = []
-    discount_allocations: List = []
 
 
 class ShippingAddress(BaseModel):
-    first_name: str
-    last_name: str
-    address1: str
-    address2: Optional[str] = None
-    company: Optional[str] = None
-    phone: Optional[str] = None
-    city: str
-    zip: str
-    province: str
-    country: str
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
     name: str
-    country_code: str
-    province_code: str
+    line1: str
+    line2: Optional[str] = None
+    city: str
+    postal_code: str
+    country: str = "GB"
 
 
-class ShopifyOrder(BaseModel):
-    id: int
-    order_status: str
-    line_items: List[LineItem]
-    shipping_address: ShippingAddress
+class StripeCheckoutOrder(BaseModel):
+    stripe_checkout_session_id: str
+    user_id: str
+    order_status: str = "created"
+    line_items: List[StripeCheckoutLineItem]
+    shipping_address: Optional[ShippingAddress] = None
+
+
+class FulfillerAddressUpdate(BaseModel):
+    name: str
+    line1: str
+    line2: Optional[str] = None
+    city: str
+    postal_code: str
+    country: str = "GB"
+
+
+class ClaimShippingUpdate(BaseModel):
+    tracking_number: str
+    label_url: str
+    carrier_code: str
+    shipment_id: str
 
 
 class ClaimOrder(BaseModel):
@@ -273,9 +247,43 @@ class ClaimOrder(BaseModel):
     status: str
 
 
+class ClaimQuantityUpdate(BaseModel):
+    quantity: int
+
+
+class DisputeFulfillerResponse(BaseModel):
+    response_text: str
+
+
+class DisputeResolveRequest(BaseModel):
+    resolution: str  # accepted | partial | rejected
+    partial_amount_cents: Optional[int] = None
+
+
+class DisputeResponse(BaseModel):
+    id: str
+    claim_id: str
+    opened_by: str
+    reason: str
+    status: str
+    resolution: Optional[str] = None
+    resolution_amount_cents: Optional[int] = None
+    resolved_by: Optional[str] = None
+    fulfiller_response: Optional[str] = None
+    responded_at: Optional[datetime] = None
+    fulfiller_deadline: datetime
+    buyer_deadline: Optional[datetime] = None
+    created_at: datetime
+    resolved_at: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
+
+
 class ClaimStatusUpdate(BaseModel):
     status: str
     evidence_description: Optional[str] = None
+    reason: Optional[str] = None
 
 
 class ClaimEvidenceResponse(BaseModel):
@@ -317,6 +325,29 @@ class ClaimResponse(BaseModel):
     updated_at: datetime
     evidence: list = []
     status_history: list = []
+    tracking_number: Optional[str] = None
+    label_url: Optional[str] = None
+    carrier_code: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
+class ClaimDetailResponse(BaseModel):
+    id: str
+    order_id: str
+    claimant_user_id: str
+    claimant_username: str
+    quantity: int
+    status: str
+    created_at: datetime
+    updated_at: datetime
+    evidence: List[ClaimEvidenceResponse]
+    status_history: List[ClaimStatusHistoryResponse]
+    dispute: Optional[DisputeResponse] = None
+    tracking_number: Optional[str] = None
+    label_url: Optional[str] = None
+    carrier_code: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -342,6 +373,45 @@ class OrderResponse(BaseModel):
 
     quantity_claimed: int
     claims: list[ClaimResponse]
+
+    shipping_name: Optional[str] = None
+    shipping_line1: Optional[str] = None
+    shipping_line2: Optional[str] = None
+    shipping_city: Optional[str] = None
+    shipping_postal_code: Optional[str] = None
+    shipping_country: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
+class OrderDetailResponse(BaseModel):
+    order_id: str
+    task_id: str
+    user_id: str
+    owner_username: str
+    name: str
+    material: str
+    technique: str
+    sizing: float
+    colour: str
+    selectedFile: str
+    selectedFileType: str
+    price: float
+    quantity: int
+    quantity_claimed: int
+    created_at: str
+    is_collaborative: bool
+    status: str
+    qa_level: str
+    claims: List[ClaimDetailResponse]
+
+    shipping_name: Optional[str] = None
+    shipping_line1: Optional[str] = None
+    shipping_line2: Optional[str] = None
+    shipping_city: Optional[str] = None
+    shipping_postal_code: Optional[str] = None
+    shipping_country: Optional[str] = None
 
     class Config:
         orm_mode = True

@@ -41,7 +41,8 @@ export const BuyerReviewPanel: React.FC<BuyerReviewPanelProps> = ({ claim, onClo
   }
 
   const handleDispute = async () => {
-    await patchClaimStatus(claim.id, 'disputed')
+    if (!disputeReason.trim()) return
+    await patchClaimStatus(claim.id, 'disputed', disputeReason)
     dispatch(authApi.util.invalidateTags(['sessionData']))
     dispatch(setUpdateClaimedOrder({ updateClaimedOrder: null }))
     dispatch(setUpdateClaimMode({ updateClaimMode: false }))

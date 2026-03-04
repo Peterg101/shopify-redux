@@ -9,9 +9,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
-from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, Order, UserStripeAccount, Claim, Disbursement, ClaimEvidence, ClaimStatusHistory
-from fitd_schemas.fitd_classes import UserHydrationResponse, ClaimWithOrderResponse, OrderResponse
-from datetime import datetime
+from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, Order, UserStripeAccount, Claim, Disbursement, ClaimEvidence, ClaimStatusHistory, Dispute
+from fitd_schemas.fitd_classes import UserHydrationResponse, ClaimWithOrderResponse, OrderResponse, OrderDetailResponse, ClaimDetailResponse, DisputeFulfillerResponse, DisputeResolveRequest, DisputeResponse, ClaimEvidenceResponse, ClaimStatusHistoryResponse
+from datetime import datetime, timedelta
 import uuid
 from db_setup import engine, get_db
 from utils import (
@@ -26,7 +26,6 @@ from utils import (
     decode_file,
     mark_meshy_task_complete,
     delete_port_id,
-    get_property_value_strict,
     add_claim_to_db
 )
 
@@ -39,10 +38,13 @@ from fitd_schemas.fitd_classes import(
     BasketItemInformation,
     BasketQuantityUpdate,
     ImageTo3DMeshyTaskStatusResponse,
-    ShopifyOrder,
+    StripeCheckoutOrder,
     ClaimOrder,
     ClaimStatusUpdate,
-    EmailRegisterRequest
+    EmailRegisterRequest,
+    ClaimQuantityUpdate,
+    FulfillerAddressUpdate,
+    ClaimShippingUpdate,
 )
 import uvicorn
 from typing import Optional, Dict
@@ -60,7 +62,7 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL, "http://localhost:1234", "http://localhost:369"],
+    allow_origins=[FRONTEND_URL, "http://localhost:1234", "http://localhost:100"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -150,15 +152,14 @@ async def get_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # 2️⃣ Tasks (including incomplete + port)
-    tasks = db.query(Task).filter(Task.user_id == user_id).all()
-
-    incomplete_task = (
+    # 2️⃣ Tasks — single query with eager-loaded port for incomplete task detection
+    tasks = (
         db.query(Task)
-        .filter(Task.user_id == user_id, Task.complete == False)
-        .options(joinedload(Task.port))  # Preload the PortID relationship
-        .first()
+        .filter(Task.user_id == user_id)
+        .options(joinedload(Task.port))
+        .all()
     )
+    incomplete_task = next((t for t in tasks if not t.complete), None)
     
        
     # 3️⃣ Basket items
@@ -178,7 +179,10 @@ async def get_user(
 
     # Convert orders to Pydantic too
     orders = db.query(Order).filter(Order.user_id == user_id).all()
-    claimable_orders = db.query(Order).filter(Order.user_id != user_id).all()
+    claimable_orders = db.query(Order).filter(
+        Order.user_id != user_id,
+        Order.is_collaborative == True
+    ).all()
     orders_response = [OrderResponse.from_orm(order) for order in orders]
     claimable_orders_response = [OrderResponse.from_orm(order) for order in claimable_orders]
 
@@ -451,52 +455,168 @@ async def get_all_basket_items(
     return basket_items
 
 
-@app.post("/orders/create_order")
-async def create_order(
-    shopify_order: ShopifyOrder, 
-    payload: dict = Depends(verify_jwt_token), 
+@app.post("/orders/create_from_stripe_checkout")
+async def create_order_from_stripe(
+    checkout_order: StripeCheckoutOrder,
+    payload: dict = Depends(verify_jwt_token),
     db: Session = Depends(get_db)
 ):
-    if not shopify_order.line_items:
-        raise HTTPException(status_code=404, detail="No line items found")
+    if not checkout_order.line_items:
+        raise HTTPException(status_code=400, detail="No line items found")
 
-    user_id = get_property_value_strict(shopify_order.line_items[0], "User Id")
+    # Idempotency guard: if orders already exist for this session, return early
+    existing = db.query(Order).filter(
+        Order.stripe_checkout_session_id == checkout_order.stripe_checkout_session_id
+    ).first()
+    if existing:
+        return {"status": "already_processed", "stripe_checkout_session_id": checkout_order.stripe_checkout_session_id}
+
+    shipping = checkout_order.shipping_address
     created_orders = []
-
-    for line_item in shopify_order.line_items:
+    for item in checkout_order.line_items:
         order = Order(
-            shopify_order_id=str(shopify_order.id),
-            user_id=get_property_value_strict(line_item, "User Id"),
-            task_id=get_property_value_strict(line_item, "Task Id"),
-            name=line_item.name,
-            material=get_property_value_strict(line_item, "Material"),
-            technique=get_property_value_strict(line_item, "Technique"),
-            sizing=get_property_value_strict(line_item, "Sizing"),
-            colour=get_property_value_strict(line_item, "Colour"),
-            selectedFile=get_property_value_strict(line_item, "Selected File"),
-            selectedFileType=get_property_value_strict(line_item, "Selected File Type"),
-            price=line_item.price,
-            quantity=line_item.quantity,
+            stripe_checkout_session_id=checkout_order.stripe_checkout_session_id,
+            user_id=item.user_id,
+            task_id=item.task_id,
+            name=item.name,
+            material=item.material,
+            technique=item.technique,
+            sizing=item.sizing,
+            colour=item.colour,
+            selectedFile=item.selectedFile,
+            selectedFileType=item.selectedFileType,
+            price=item.price,
+            quantity=item.quantity,
             created_at=datetime.utcnow().isoformat(),
             is_collaborative=False,
-            status=shopify_order.order_status
+            status=checkout_order.order_status,
+            shipping_name=shipping.name if shipping else None,
+            shipping_line1=shipping.line1 if shipping else None,
+            shipping_line2=shipping.line2 if shipping else None,
+            shipping_city=shipping.city if shipping else None,
+            shipping_postal_code=shipping.postal_code if shipping else None,
+            shipping_country=shipping.country if shipping else None,
         )
         created_orders.append(order)
         db.add(order)
-    db.query(BasketItem).filter(BasketItem.user_id == user_id).delete()
+
+    db.query(BasketItem).filter(BasketItem.user_id == checkout_order.user_id).delete()
     db.commit()
     return {"status": "success", "order_count": len(created_orders)}
 
 
+@app.get("/orders/{order_id}/detail", response_model=OrderDetailResponse)
+async def get_order_detail(
+    order_id: str,
+    db: Session = Depends(get_db),
+    user_information: None = Depends(cookie_verification_user_only),
+):
+    order = db.query(Order).filter(Order.order_id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    owner = db.query(User).filter(User.user_id == order.user_id).first()
+
+    claims_detail = []
+    for claim in order.claims:
+        claimant = db.query(User).filter(User.user_id == claim.claimant_user_id).first()
+        evidence = (
+            db.query(ClaimEvidence)
+            .filter(ClaimEvidence.claim_id == claim.id)
+            .order_by(ClaimEvidence.uploaded_at)
+            .all()
+        )
+        history = (
+            db.query(ClaimStatusHistory)
+            .filter(ClaimStatusHistory.claim_id == claim.id)
+            .order_by(ClaimStatusHistory.changed_at)
+            .all()
+        )
+        dispute = db.query(Dispute).filter(Dispute.claim_id == claim.id).first()
+
+        claims_detail.append(ClaimDetailResponse(
+            id=claim.id,
+            order_id=claim.order_id,
+            claimant_user_id=claim.claimant_user_id,
+            claimant_username=claimant.username if claimant else "Unknown",
+            quantity=claim.quantity,
+            status=claim.status,
+            created_at=claim.created_at,
+            updated_at=claim.updated_at,
+            evidence=[ClaimEvidenceResponse.from_orm(e) for e in evidence],
+            status_history=[ClaimStatusHistoryResponse.from_orm(h) for h in history],
+            dispute=DisputeResponse.from_orm(dispute) if dispute else None,
+            tracking_number=claim.tracking_number,
+            label_url=claim.label_url,
+            carrier_code=claim.carrier_code,
+        ))
+
+    return OrderDetailResponse(
+        order_id=order.order_id,
+        task_id=order.task_id,
+        user_id=order.user_id,
+        owner_username=owner.username if owner else "Unknown",
+        name=order.name,
+        material=order.material,
+        technique=order.technique,
+        sizing=order.sizing,
+        colour=order.colour,
+        selectedFile=order.selectedFile,
+        selectedFileType=order.selectedFileType,
+        price=order.price,
+        quantity=order.quantity,
+        quantity_claimed=order.quantity_claimed,
+        created_at=order.created_at,
+        is_collaborative=order.is_collaborative,
+        status=order.status,
+        qa_level=order.qa_level,
+        claims=claims_detail,
+        shipping_name=order.shipping_name,
+        shipping_line1=order.shipping_line1,
+        shipping_line2=order.shipping_line2,
+        shipping_city=order.shipping_city,
+        shipping_postal_code=order.shipping_postal_code,
+        shipping_country=order.shipping_country,
+    )
+
+
+@app.patch("/orders/{order_id}/visibility")
+async def toggle_order_visibility(
+    order_id: str,
+    db: Session = Depends(get_db),
+    user_information: None = Depends(cookie_verification_user_only),
+):
+    order = db.query(Order).filter(Order.order_id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order.user_id != user_information.user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to modify this order")
+    # Don't allow making an order collaborative if it has active claims
+    if not order.is_collaborative:
+        # Allow toggling to collaborative freely
+        pass
+    else:
+        # Toggling back to solo — block if there are active (non-terminal) claims
+        active_claims = [c for c in order.claims if c.status not in ("accepted", "resolved_accepted", "resolved_partial", "resolved_rejected")]
+        if active_claims:
+            raise HTTPException(status_code=400, detail="Cannot make order private while it has active claims")
+    order.is_collaborative = not order.is_collaborative
+    db.commit()
+    return {"order_id": order_id, "is_collaborative": order.is_collaborative}
+
+
 @app.post("/orders/update_order")
 async def update_order(
-    shopify_order: ShopifyOrder, 
-    payload: dict = Depends(verify_jwt_token), 
+    update_payload: dict,
+    payload: dict = Depends(verify_jwt_token),
     db: Session = Depends(get_db)
 ):
     try:
-        order_id = shopify_order.id
-        new_status = shopify_order.order_status
+        order_id = update_payload.get("order_id")
+        new_status = update_payload.get("order_status")
+        if not order_id or not new_status:
+            raise HTTPException(status_code=400, detail="order_id and order_status are required")
+
         orders = db.query(Order).filter(Order.order_id == order_id).all()
 
         if not orders:
@@ -513,6 +633,8 @@ async def update_order(
             "order_id": order_id,
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error updating orders: {str(e)}")
@@ -558,10 +680,109 @@ async def claim_order(
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error claiming order: {str(e)}")
 
+@app.patch("/claims/{claim_id}/quantity")
+async def update_claim_quantity(
+    claim_id: str,
+    quantity_update: ClaimQuantityUpdate,
+    db: Session = Depends(get_db),
+    user_information: None = Depends(cookie_verification_user_only),
+):
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+
+    if claim.claimant_user_id != user_information.user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to update this claim")
+
+    if claim.status != "pending":
+        raise HTTPException(status_code=400, detail="Can only adjust quantity while claim is pending")
+
+    if quantity_update.quantity <= 0:
+        raise HTTPException(status_code=400, detail="Quantity must be greater than 0")
+
+    order = claim.order
+    # Available = total - claimed by others (exclude this claim's current quantity)
+    other_claimed = sum(c.quantity for c in order.claims if c.id != claim.id)
+    available = order.quantity - other_claimed
+
+    if quantity_update.quantity > available:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Only {available} items available (order has {order.quantity}, {other_claimed} claimed by others)"
+        )
+
+    claim.quantity = quantity_update.quantity
+    claim.updated_at = datetime.utcnow()
+    db.commit()
+
+    return {"message": "Claim quantity updated", "claim_id": claim_id, "new_quantity": quantity_update.quantity}
+
+
+DISPUTE_RESPONSE_DAYS = 7
+DISPUTE_BUYER_REVIEW_DAYS = 7
+
+
+def check_and_auto_resolve(dispute: Dispute, db: Session):
+    """Lazy timer check: auto-resolve disputes when deadlines pass."""
+    now = datetime.utcnow()
+    if dispute.status == "resolved":
+        return
+
+    claim = dispute.claim
+    order = claim.order
+
+    if dispute.status == "open" and dispute.fulfiller_deadline < now:
+        # Fulfiller didn't respond — buyer wins (rejected)
+        dispute.status = "resolved"
+        dispute.resolution = "rejected"
+        dispute.resolved_by = "auto"
+        dispute.resolved_at = now
+
+        disbursement = db.query(Disbursement).filter(
+            Disbursement.claim_id == claim.id, Disbursement.status == "held"
+        ).first()
+        if disbursement:
+            disbursement.status = "cancelled"
+
+        previous_status = claim.status
+        claim.status = "resolved_rejected"
+        db.add(ClaimStatusHistory(
+            claim_id=claim.id,
+            previous_status=previous_status,
+            new_status="resolved_rejected",
+            changed_by="system",
+        ))
+        db.commit()
+
+    elif dispute.status == "responded" and dispute.buyer_deadline and dispute.buyer_deadline < now:
+        # Buyer didn't act — fulfiller wins (accepted)
+        dispute.status = "resolved"
+        dispute.resolution = "accepted"
+        dispute.resolved_by = "auto"
+        dispute.resolved_at = now
+
+        disbursement = db.query(Disbursement).filter(
+            Disbursement.claim_id == claim.id, Disbursement.status == "held"
+        ).first()
+        if disbursement:
+            disbursement.status = "pending"
+
+        previous_status = claim.status
+        claim.status = "resolved_accepted"
+        db.add(ClaimStatusHistory(
+            claim_id=claim.id,
+            previous_status=previous_status,
+            new_status="resolved_accepted",
+            changed_by="system",
+        ))
+        db.commit()
+
+
 ALLOWED_STATUS_TRANSITIONS = {
     "pending": ["in_progress"],
     "in_progress": ["printing"],
-    "printing": ["shipped"],
+    "printing": ["qa_check"],
+    "qa_check": ["shipped"],
     "shipped": ["delivered"],
     "delivered": ["accepted", "disputed"],
 }
@@ -595,7 +816,25 @@ async def update_claim_status(
             detail=f"Cannot transition from '{claim.status}' to '{status_update.status}'. Allowed: {allowed}"
         )
 
+    # QA gate: high-QA orders require evidence before shipping
+    if claim.status == "qa_check" and status_update.status == "shipped":
+        if order.qa_level == "high":
+            evidence_count = db.query(ClaimEvidence).filter(
+                ClaimEvidence.claim_id == claim.id,
+                ClaimEvidence.status_at_upload == "qa_check"
+            ).count()
+            if evidence_count == 0:
+                raise HTTPException(
+                    status_code=400,
+                    detail="High-QA orders require at least one evidence photo during QA check before shipping"
+                )
+
     previous_status = claim.status
+
+    # Dispute requires reason
+    if status_update.status == "disputed" and not status_update.reason:
+        raise HTTPException(status_code=400, detail="Reason is required when disputing a claim")
+
     claim.status = status_update.status
     db.commit()
 
@@ -611,7 +850,7 @@ async def update_claim_status(
 
     # Disbursement triggers on "accepted" (not "completed")
     if status_update.status == "accepted":
-        amount_cents = int(order.price * claim.quantity / order.quantity * 100)
+        amount_cents = round(order.price * claim.quantity / order.quantity * 100)
         disbursement = Disbursement(
             claim_id=claim.id,
             user_id=claim.claimant_user_id,
@@ -619,6 +858,27 @@ async def update_claim_status(
             status="pending",
         )
         db.add(disbursement)
+        db.commit()
+
+    # Dispute flow: create held escrow + dispute record
+    if status_update.status == "disputed":
+        amount_cents = round(order.price * claim.quantity / order.quantity * 100)
+        disbursement = Disbursement(
+            claim_id=claim.id,
+            user_id=claim.claimant_user_id,
+            amount_cents=amount_cents,
+            status="held",
+        )
+        db.add(disbursement)
+
+        dispute = Dispute(
+            claim_id=claim.id,
+            opened_by=user_information.user_id,
+            reason=status_update.reason,
+            status="open",
+            fulfiller_deadline=datetime.utcnow() + timedelta(days=DISPUTE_RESPONSE_DAYS),
+        )
+        db.add(dispute)
         db.commit()
 
     return {"message": "Claim status updated", "claim_id": claim_id, "new_status": status_update.status}
@@ -754,6 +1014,252 @@ async def mark_disbursement_paid(
     db.commit()
 
     return {"message": "Disbursement marked as paid", "disbursement_id": disbursement_id}
+
+
+@app.get("/disputes/{claim_id}", response_model=DisputeResponse)
+async def get_dispute(
+    claim_id: str,
+    db: Session = Depends(get_db),
+    _: None = Depends(cookie_verification),
+):
+    dispute = db.query(Dispute).filter(Dispute.claim_id == claim_id).first()
+    if not dispute:
+        raise HTTPException(status_code=404, detail="Dispute not found")
+    check_and_auto_resolve(dispute, db)
+    return dispute
+
+
+@app.post("/disputes/{dispute_id}/respond")
+async def respond_to_dispute(
+    dispute_id: str,
+    payload: DisputeFulfillerResponse,
+    db: Session = Depends(get_db),
+    user_information: None = Depends(cookie_verification_user_only),
+):
+    dispute = db.query(Dispute).filter(Dispute.id == dispute_id).first()
+    if not dispute:
+        raise HTTPException(status_code=404, detail="Dispute not found")
+
+    claim = dispute.claim
+    if claim.claimant_user_id != user_information.user_id:
+        raise HTTPException(status_code=403, detail="Only the fulfiller can respond to a dispute")
+
+    if dispute.status != "open":
+        raise HTTPException(status_code=400, detail="Dispute is not open for response")
+
+    now = datetime.utcnow()
+    if dispute.fulfiller_deadline < now:
+        check_and_auto_resolve(dispute, db)
+        raise HTTPException(status_code=400, detail="Response deadline has passed")
+
+    dispute.fulfiller_response = payload.response_text
+    dispute.responded_at = now
+    dispute.status = "responded"
+    dispute.buyer_deadline = now + timedelta(days=DISPUTE_BUYER_REVIEW_DAYS)
+    db.commit()
+
+    return {"message": "Response recorded", "dispute_id": dispute_id, "status": "responded"}
+
+
+@app.post("/disputes/{dispute_id}/resolve")
+async def resolve_dispute(
+    dispute_id: str,
+    payload: DisputeResolveRequest,
+    db: Session = Depends(get_db),
+    user_information: None = Depends(cookie_verification_user_only),
+):
+    dispute = db.query(Dispute).filter(Dispute.id == dispute_id).first()
+    if not dispute:
+        raise HTTPException(status_code=404, detail="Dispute not found")
+
+    claim = dispute.claim
+    order = claim.order
+
+    if order.user_id != user_information.user_id:
+        raise HTTPException(status_code=403, detail="Only the buyer can resolve a dispute")
+
+    if payload.resolution not in ("accepted", "partial", "rejected"):
+        raise HTTPException(status_code=400, detail="Resolution must be accepted, partial, or rejected")
+
+    disbursement = db.query(Disbursement).filter(
+        Disbursement.claim_id == claim.id, Disbursement.status == "held"
+    ).first()
+
+    previous_status = claim.status
+    now = datetime.utcnow()
+
+    if payload.resolution == "accepted":
+        if disbursement:
+            disbursement.status = "pending"
+        claim.status = "resolved_accepted"
+    elif payload.resolution == "partial":
+        if not payload.partial_amount_cents or payload.partial_amount_cents <= 0:
+            raise HTTPException(status_code=400, detail="partial_amount_cents is required for partial resolution")
+        if disbursement:
+            disbursement.amount_cents = payload.partial_amount_cents
+            disbursement.status = "pending"
+        claim.status = "resolved_partial"
+    elif payload.resolution == "rejected":
+        if disbursement:
+            disbursement.status = "cancelled"
+        claim.status = "resolved_rejected"
+
+    dispute.status = "resolved"
+    dispute.resolution = payload.resolution
+    dispute.resolution_amount_cents = payload.partial_amount_cents
+    dispute.resolved_by = "buyer"
+    dispute.resolved_at = now
+
+    db.add(ClaimStatusHistory(
+        claim_id=claim.id,
+        previous_status=previous_status,
+        new_status=claim.status,
+        changed_by=user_information.user_id,
+    ))
+    db.commit()
+
+    return {"message": "Dispute resolved", "dispute_id": dispute_id, "resolution": payload.resolution}
+
+
+@app.post("/disputes/{dispute_id}/evidence")
+async def upload_dispute_evidence(
+    dispute_id: str,
+    payload: dict,
+    db: Session = Depends(get_db),
+    user_information: None = Depends(cookie_verification_user_only),
+):
+    dispute = db.query(Dispute).filter(Dispute.id == dispute_id).first()
+    if not dispute:
+        raise HTTPException(status_code=404, detail="Dispute not found")
+
+    claim = dispute.claim
+    if claim.claimant_user_id != user_information.user_id:
+        raise HTTPException(status_code=403, detail="Only the fulfiller can upload counter-evidence")
+
+    image_data = payload.get("image_data")
+    if not image_data:
+        raise HTTPException(status_code=400, detail="Missing image_data")
+
+    file_id = str(uuid.uuid4())
+    file_path = UPLOAD_DIR / f"evidence_{file_id}.jpg"
+    file_bytes = base64.b64decode(image_data)
+    with open(file_path, "wb") as f:
+        f.write(file_bytes)
+
+    evidence = ClaimEvidence(
+        claim_id=claim.id,
+        file_path=str(file_path),
+        status_at_upload="disputed",
+        description=payload.get("description"),
+    )
+    db.add(evidence)
+    db.commit()
+    db.refresh(evidence)
+
+    return {
+        "id": evidence.id,
+        "claim_id": evidence.claim_id,
+        "file_path": evidence.file_path,
+        "status_at_upload": evidence.status_at_upload,
+        "description": evidence.description,
+    }
+
+
+@app.put("/users/{user_id}/fulfiller_address")
+async def update_fulfiller_address(
+    user_id: str,
+    address: FulfillerAddressUpdate,
+    db: Session = Depends(get_db),
+    user_information=Depends(cookie_verification_user_only),
+):
+    if user_information.user_id != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to update this address")
+
+    stripe_account = db.query(UserStripeAccount).filter(
+        UserStripeAccount.user_id == user_id
+    ).first()
+    if not stripe_account:
+        raise HTTPException(status_code=404, detail="Stripe account not found. Complete Stripe onboarding first.")
+
+    stripe_account.address_name = address.name
+    stripe_account.address_line1 = address.line1
+    stripe_account.address_line2 = address.line2
+    stripe_account.address_city = address.city
+    stripe_account.address_postal_code = address.postal_code
+    stripe_account.address_country = address.country
+    db.commit()
+
+    return {"message": "Fulfiller address updated"}
+
+
+@app.get("/users/{user_id}/fulfiller_address")
+async def get_fulfiller_address(
+    user_id: str,
+    payload: dict = Depends(verify_jwt_token),
+    db: Session = Depends(get_db),
+):
+    stripe_account = db.query(UserStripeAccount).filter(
+        UserStripeAccount.user_id == user_id
+    ).first()
+    if not stripe_account or not stripe_account.address_line1:
+        raise HTTPException(status_code=404, detail="Fulfiller address not found")
+
+    return {
+        "name": stripe_account.address_name,
+        "line1": stripe_account.address_line1,
+        "line2": stripe_account.address_line2,
+        "city": stripe_account.address_city,
+        "postal_code": stripe_account.address_postal_code,
+        "country": stripe_account.address_country,
+    }
+
+
+@app.get("/claims/{claim_id}/shipping_context")
+async def get_claim_shipping_context(
+    claim_id: str,
+    payload: dict = Depends(verify_jwt_token),
+    db: Session = Depends(get_db),
+):
+    """Returns claim + order shipping details for label creation (inter-service)."""
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+
+    order = claim.order
+    return {
+        "claim_id": claim.id,
+        "claimant_user_id": claim.claimant_user_id,
+        "status": claim.status,
+        "order_id": order.order_id,
+        "ship_to": {
+            "name": order.shipping_name,
+            "line1": order.shipping_line1,
+            "line2": order.shipping_line2,
+            "city": order.shipping_city,
+            "postal_code": order.shipping_postal_code,
+            "country": order.shipping_country,
+        },
+    }
+
+
+@app.patch("/claims/{claim_id}/shipping")
+async def update_claim_shipping(
+    claim_id: str,
+    shipping_data: ClaimShippingUpdate,
+    payload: dict = Depends(verify_jwt_token),
+    db: Session = Depends(get_db),
+):
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+
+    claim.tracking_number = shipping_data.tracking_number
+    claim.label_url = shipping_data.label_url
+    claim.carrier_code = shipping_data.carrier_code
+    claim.shipment_id = shipping_data.shipment_id
+    db.commit()
+
+    return {"message": "Shipping info updated", "claim_id": claim_id}
 
 
 if __name__ == "__main__":

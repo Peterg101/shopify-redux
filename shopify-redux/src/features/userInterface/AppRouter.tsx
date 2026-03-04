@@ -5,6 +5,7 @@ import { RootState } from "../../app/store";
 import { LandingPage } from "../display/landingPage";
 import { Fulfill } from "../fulfill/fulfill";
 import { LoginPage } from "../display/LoginPage";
+import { OrderDetailPage } from "../orders/OrderDetailPage";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { authApi } from "../../services/authApi";
 import { CircularProgress, Box } from "@mui/material";
@@ -34,6 +35,7 @@ const AppRouter: React.FC = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/generate" element={<ProtectedRoute><LandingPage /></ProtectedRoute>} />
         <Route path="/fulfill" element={<ProtectedRoute><Fulfill /></ProtectedRoute>} />
+        <Route path="/orders/:orderId" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />
         <Route path="*" element={<h1>404 - Page Not Found</h1>} />
       </Routes>
     </BrowserRouter>

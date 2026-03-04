@@ -26,10 +26,6 @@ class TestHealthChecks:
         r = client.get(f"{base_urls['meshy']}/docs")
         assert r.status_code == 200
 
-    def test_shopify_service_docs(self, client, base_urls):
-        r = client.get(f"{base_urls['shopify']}/docs")
-        assert r.status_code == 200
-
     def test_stripe_service_docs(self, client, base_urls):
         r = client.get(f"{base_urls['stripe']}/docs")
         assert r.status_code == 200
@@ -106,61 +102,27 @@ class TestCoreCRUDFlow:
 
     def test_create_order(self, client, base_urls, auth_headers, test_user_id):
         r = client.post(
-            f"{base_urls['db']}/orders/create_order",
+            f"{base_urls['db']}/orders/create_from_stripe_checkout",
             headers=auth_headers,
             json={
-                "id": 99999001,
+                "stripe_checkout_session_id": "cs_e2e_test_001",
+                "user_id": test_user_id,
                 "order_status": "created",
                 "line_items": [
                     {
-                        "id": 1,
-                        "admin_graphql_api_id": "gid://test/1",
-                        "current_quantity": 2,
-                        "fulfillable_quantity": 2,
-                        "fulfillment_service": "manual",
-                        "gift_card": False,
-                        "grams": 100,
+                        "task_id": "e2e_task_001",
+                        "user_id": test_user_id,
                         "name": "E2E Test Item",
-                        "price": "25.00",
-                        "price_set": {
-                            "shop_money": {"amount": "25.00", "currency_code": "GBP"},
-                            "presentment_money": {"amount": "25.00", "currency_code": "GBP"},
-                        },
-                        "product_exists": True,
-                        "properties": [
-                            {"name": "Task Id", "value": "e2e_task_001"},
-                            {"name": "Material", "value": "PLA"},
-                            {"name": "Technique", "value": "FDM"},
-                            {"name": "Sizing", "value": "1.0"},
-                            {"name": "Colour", "value": "Blue"},
-                            {"name": "Selected File", "value": "model.obj"},
-                            {"name": "Selected File Type", "value": "obj"},
-                            {"name": "User Id", "value": test_user_id},
-                        ],
+                        "material": "PLA",
+                        "technique": "FDM",
+                        "sizing": 1.0,
+                        "colour": "Blue",
+                        "selectedFile": "model.obj",
+                        "selectedFileType": "obj",
+                        "price": 25.00,
                         "quantity": 2,
-                        "requires_shipping": True,
-                        "taxable": True,
-                        "title": "E2E Test Item",
-                        "total_discount": "0.00",
-                        "total_discount_set": {
-                            "shop_money": {"amount": "0.00", "currency_code": "GBP"},
-                            "presentment_money": {"amount": "0.00", "currency_code": "GBP"},
-                        },
-                        "vendor": "FITD",
                     }
                 ],
-                "shipping_address": {
-                    "first_name": "Test",
-                    "last_name": "User",
-                    "address1": "123 Test St",
-                    "city": "London",
-                    "zip": "SW1A 1AA",
-                    "province": "England",
-                    "country": "United Kingdom",
-                    "name": "Test User",
-                    "country_code": "GB",
-                    "province_code": "ENG",
-                },
             },
         )
         assert r.status_code == 200
@@ -214,57 +176,23 @@ class TestCoreCRUDFlow:
 
 class TestOrderUpdates:
     def test_update_order_status(self, client, base_urls, auth_headers, test_user_id):
-        """Simulate a fulfilled webhook updating order status."""
+        """Update order status via the simplified endpoint."""
+        # First get the order to find its ID
+        r = client.get(
+            f"{base_urls['db']}/users/{test_user_id}",
+            headers=auth_headers,
+        )
+        orders = r.json().get("orders", [])
+        if not orders:
+            pytest.skip("No orders found to update")
+
+        order_id = orders[0]["order_id"]
         r = client.post(
             f"{base_urls['db']}/orders/update_order",
             headers=auth_headers,
             json={
-                "id": 99999001,
+                "order_id": order_id,
                 "order_status": "fulfilled",
-                "line_items": [
-                    {
-                        "id": 1,
-                        "admin_graphql_api_id": "gid://test/1",
-                        "current_quantity": 2,
-                        "fulfillable_quantity": 2,
-                        "fulfillment_service": "manual",
-                        "gift_card": False,
-                        "grams": 100,
-                        "name": "E2E Test Item",
-                        "price": "25.00",
-                        "price_set": {
-                            "shop_money": {"amount": "25.00", "currency_code": "GBP"},
-                            "presentment_money": {"amount": "25.00", "currency_code": "GBP"},
-                        },
-                        "product_exists": True,
-                        "properties": [
-                            {"name": "Task Id", "value": "e2e_task_001"},
-                            {"name": "User Id", "value": test_user_id},
-                        ],
-                        "quantity": 2,
-                        "requires_shipping": True,
-                        "taxable": True,
-                        "title": "E2E Test Item",
-                        "total_discount": "0.00",
-                        "total_discount_set": {
-                            "shop_money": {"amount": "0.00", "currency_code": "GBP"},
-                            "presentment_money": {"amount": "0.00", "currency_code": "GBP"},
-                        },
-                        "vendor": "FITD",
-                    }
-                ],
-                "shipping_address": {
-                    "first_name": "Test",
-                    "last_name": "User",
-                    "address1": "123 Test St",
-                    "city": "London",
-                    "zip": "SW1A 1AA",
-                    "province": "England",
-                    "country": "United Kingdom",
-                    "name": "Test User",
-                    "country_code": "GB",
-                    "province_code": "ENG",
-                },
             },
         )
         assert r.status_code == 200

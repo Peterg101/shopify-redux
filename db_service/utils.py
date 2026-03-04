@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound, IntegrityError
 from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Claim, Order
-from fitd_schemas.fitd_classes import UserInformation, TaskInformation, BasketItemInformation, LineItem, ClaimOrder
+from fitd_schemas.fitd_classes import UserInformation, TaskInformation, BasketItemInformation, ClaimOrder
 from fitd_schemas.auth_utils import cookie_verification as _cookie_verification, cookie_verification_user_only as _cookie_verification_user_only
 from fastapi import HTTPException, Request
 from datetime import datetime
@@ -172,18 +172,14 @@ def check_file_exists(file_path: Path) -> bool:
     return file_path.exists() and file_path.is_file()
 
 
-def get_property_value_strict(line_item: LineItem, property_name: str) -> str:
-    for prop in line_item.properties:
-        if prop.name == property_name:
-            return prop.value
-    raise ValueError(f"Property '{property_name}' not found")
-
-
 def add_claim_to_db(
         db: Session, 
         claimed_order: ClaimOrder, 
         user_info: UserInformation) -> Claim:
     try:
+        if claimed_order.quantity <= 0:
+            raise HTTPException(status_code=400, detail="Quantity must be greater than 0")
+
         # Lock the order row (with_for_update() is a no-op on SQLite;
         # the UniqueConstraint on (order_id, claimant_user_id) provides protection)
         order = db.execute(

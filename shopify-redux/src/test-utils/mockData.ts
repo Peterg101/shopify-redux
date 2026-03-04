@@ -8,6 +8,9 @@ import {
   UUIDType,
   ClaimEvidence,
   ClaimStatusHistory,
+  Dispute,
+  ClaimDetail,
+  OrderDetail,
 } from '../app/utility/interfaces'
 
 let counter = 0
@@ -112,6 +115,60 @@ export function createMockClaimStatusHistory(overrides: Partial<ClaimStatusHisto
     new_status: 'in_progress',
     changed_by: 'user-1',
     changed_at: '2025-01-01T00:00:00Z',
+    ...overrides,
+  }
+}
+
+export function createMockDispute(overrides: Partial<Dispute> = {}): Dispute {
+  return {
+    id: nextId(),
+    claim_id: 'claim-1',
+    opened_by: 'user-1',
+    reason: 'Item damaged on arrival',
+    status: 'open',
+    fulfiller_deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    created_at: '2025-01-01T00:00:00Z',
+    ...overrides,
+  }
+}
+
+export function createMockClaimDetail(overrides: Partial<ClaimDetail> = {}): ClaimDetail {
+  return {
+    id: nextId(),
+    order_id: 'order-1',
+    claimant_user_id: 'claimant-1',
+    claimant_username: 'fulfilleruser',
+    quantity: 1,
+    status: 'pending',
+    created_at: '2025-01-01T00:00:00Z',
+    updated_at: '2025-01-01T00:00:00Z',
+    evidence: [],
+    status_history: [],
+    ...overrides,
+  }
+}
+
+export function createMockOrderDetail(overrides: Partial<OrderDetail> = {}): OrderDetail {
+  return {
+    order_id: nextId(),
+    task_id: 'task-1',
+    user_id: 'user-1',
+    owner_username: 'testuser',
+    name: 'Test Model',
+    material: 'PLA Basic',
+    technique: 'FDM',
+    sizing: 1,
+    colour: 'white',
+    selectedFile: 'model.stl',
+    selectedFileType: 'stl',
+    price: 25.0,
+    quantity: 2,
+    quantity_claimed: 0,
+    created_at: '2025-01-01T00:00:00Z',
+    is_collaborative: true,
+    status: 'open',
+    qa_level: 'standard',
+    claims: [],
     ...overrides,
   }
 }

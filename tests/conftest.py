@@ -10,7 +10,6 @@ def base_urls():
         "db": os.getenv("DB_SERVICE_URL", "http://localhost:8000"),
         "auth": os.getenv("AUTH_SERVICE_URL", "http://localhost:2468"),
         "meshy": os.getenv("MESHY_SERVICE_URL", "http://localhost:1234"),
-        "shopify": os.getenv("SHOPIFY_SERVICE_URL", "http://localhost:369"),
         "stripe": os.getenv("STRIPE_SERVICE_URL", "http://localhost:100"),
     }
 

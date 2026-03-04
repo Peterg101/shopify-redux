@@ -144,7 +144,7 @@ def seed_order(client, seed_task, db_session):
         order_id="order-001",
         task_id="task-001",
         user_id="test-user-123",
-        shopify_order_id="shopify-123",
+        stripe_checkout_session_id="cs_test_123",
         name="Test Print",
         material="PLA Basic",
         technique="FDM",

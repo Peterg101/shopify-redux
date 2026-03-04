@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../app/store'
 import { setUpdateClaimedOrder } from '../../services/userInterfaceSlice'
 import { resetDataState, setUpdateClaimMode } from '../../services/dataSlice'
-import { patchClaimStatus, uploadClaimEvidence } from '../../services/fetchFileUtils'
+import { patchClaimStatus, uploadClaimEvidence, createShippingLabel } from '../../services/fetchFileUtils'
 import { authApi } from '../../services/authApi'
 import { useState, useRef } from 'react'
 import {
@@ -20,11 +20,13 @@ import {
 } from '@mui/material'
 import OBJSTLViewer from '../display/objStlViewer'
 import { BuyerReviewPanel } from './BuyerReviewPanel'
+import { DisputePanel } from './DisputePanel'
 
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
   pending: ['in_progress'],
   in_progress: ['printing'],
-  printing: ['shipped'],
+  printing: ['qa_check'],
+  qa_check: ['shipped'],
   shipped: ['delivered'],
   delivered: ['accepted', 'disputed'],
 }
@@ -42,6 +44,9 @@ export const UpdateClaimStatus = () => {
   // Photo upload state
   const [evidenceFile, setEvidenceFile] = useState<File | null>(null)
   const [evidenceDescription, setEvidenceDescription] = useState('')
+  const [labelResult, setLabelResult] = useState<{ label_url: string; tracking_number: string; carrier_code: string } | null>(null)
+  const [labelError, setLabelError] = useState('')
+  const [creatingLabel, setCreatingLabel] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,6 +71,21 @@ export const UpdateClaimStatus = () => {
       })
     }
 
+    // Auto-create shipping label when moving to "shipped"
+    if (selectedStatus === 'shipped') {
+      setCreatingLabel(true)
+      setLabelError('')
+      try {
+        const result = await createShippingLabel(updateClaimedOrder.id)
+        setLabelResult(result)
+      } catch (err: any) {
+        setLabelError(err.message || 'Failed to create shipping label')
+        setCreatingLabel(false)
+        return
+      }
+      setCreatingLabel(false)
+    }
+
     await patchClaimStatus(updateClaimedOrder.id, selectedStatus)
     dispatch(authApi.util.invalidateTags(['sessionData']))
     dispatch(setUpdateClaimedOrder({ updateClaimedOrder: null }))
@@ -86,6 +106,11 @@ export const UpdateClaimStatus = () => {
   const isBuyer = userInformation?.user?.user_id === order.user_id
   if (currentStatus === 'delivered' && isBuyer) {
     return <BuyerReviewPanel claim={updateClaimedOrder} onClose={handleCancel} />
+  }
+
+  // If claim is disputed or resolved, show dispute panel
+  if (currentStatus === 'disputed' || currentStatus.startsWith('resolved_')) {
+    return <DisputePanel claim={updateClaimedOrder} onClose={handleCancel} />
   }
 
   return (
@@ -139,7 +164,8 @@ export const UpdateClaimStatus = () => {
               <Typography variant="body1"><strong>Technique:</strong> {order.technique}</Typography>
               <Typography variant="body1"><strong>Colour:</strong> {order.colour}</Typography>
               <Typography variant="body1"><strong>Quantity Claimed:</strong> {updateClaimedOrder.quantity}</Typography>
-              <Typography variant="body1"><strong>Current Status:</strong> {currentStatus}</Typography>
+              <Typography variant="body1"><strong>Current Status:</strong> {currentStatus.replace(/_/g, ' ')}</Typography>
+              <Typography variant="body1"><strong>QA Level:</strong> {order.qa_level || 'standard'}</Typography>
             </Box>
           </Paper>
 
@@ -152,7 +178,9 @@ export const UpdateClaimStatus = () => {
             {/* Photo evidence upload */}
             <Box sx={{ mb: 3 }}>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                Upload photo evidence (optional)
+                {currentStatus === 'qa_check' && order.qa_level === 'high'
+                  ? 'Upload QA evidence photo (required for high-QA orders)'
+                  : 'Upload photo evidence (optional)'}
               </Typography>
               <input
                 type="file"
@@ -201,17 +229,43 @@ export const UpdateClaimStatus = () => {
               </Typography>
             )}
 
+            {labelError && (
+              <Typography color="error" variant="body2" sx={{ mb: 2 }}>
+                {labelError}
+              </Typography>
+            )}
+
+            {labelResult && (
+              <Box sx={{ mb: 3, p: 2, bgcolor: 'success.light', borderRadius: 2 }}>
+                <Typography variant="body2" fontWeight={600}>
+                  Shipping label created!
+                </Typography>
+                <Typography variant="body2">
+                  Tracking: {labelResult.tracking_number} ({labelResult.carrier_code})
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  href={labelResult.label_url}
+                  target="_blank"
+                  sx={{ mt: 1 }}
+                >
+                  Download Label (PDF)
+                </Button>
+              </Box>
+            )}
+
             <Box display="flex" gap={2}>
               <Button
                 variant="contained"
                 color="primary"
                 size="large"
                 fullWidth
-                disabled={!selectedStatus || validNextStatuses.length === 0}
+                disabled={!selectedStatus || validNextStatuses.length === 0 || creatingLabel}
                 onClick={confirmUpdate}
                 sx={{ py: 1.4, borderRadius: 2, fontWeight: 600 }}
               >
-                Confirm
+                {creatingLabel ? 'Creating Label...' : 'Confirm'}
               </Button>
               <Button
                 variant="outlined"

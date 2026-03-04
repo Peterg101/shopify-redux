@@ -1,24 +1,14 @@
 from fastapi import Request, HTTPException
-from fitd_schemas.fitd_classes import UserInformation, LineItem, ShopifyOrder, ShippingAddress
-from fitd_schemas.fitd_db_schemas import BasketItem
+from fitd_schemas.fitd_classes import UserInformation
 from fitd_schemas.auth_utils import cookie_verification as _cookie_verification, cookie_verification_user_only as _cookie_verification_user_only
-from typing import List, Dict
 from api_calls import session_exists, session_exists_user_only
-from datetime import datetime
-import uuid
-import hmac
-import hashlib
-import base64
 import os
-from pydantic import ValidationError
 import logging
 import stripe
-from typing import Optional
 
 
 logger = logging.getLogger(__name__)
 
-SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET")
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 REFRESH_URL = f"{FRONTEND_URL}/fulfill"

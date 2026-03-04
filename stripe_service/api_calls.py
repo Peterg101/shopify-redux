@@ -70,6 +70,108 @@ async def check_user_stripe_onboarded(user_id: str) -> Optional[dict]:
             return None
 
 
+async def get_all_basket_items(user_id: str) -> List[dict]:
+    auth_token = generate_token("stripe_service")
+    url = f"{DB_SERVICE_URL}/all_basket_items"
+    headers = {
+        "Authorization": f"Bearer {auth_token}",
+    }
+    params = {"user_id": user_id}
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url, headers=headers, params=params)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                logger.error(f"Error fetching basket items: {response.status_code} - {response.text}")
+                return []
+        except httpx.HTTPError as e:
+            logger.error(f"HTTP error fetching basket items: {e}")
+            return []
+
+
+async def create_orders_from_checkout(checkout_payload: dict) -> dict:
+    auth_token = generate_token("stripe_service")
+    url = f"{DB_SERVICE_URL}/orders/create_from_stripe_checkout"
+    headers = {
+        "Authorization": f"Bearer {auth_token}",
+        "Content-Type": "application/json",
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(url, headers=headers, json=checkout_payload)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                logger.error(f"Failed to create orders: {response.status_code} - {response.text}")
+                return {"status": "error", "detail": response.text}
+        except httpx.HTTPError as e:
+            logger.error(f"HTTP error creating orders: {e}")
+            return {"status": "error", "detail": str(e)}
+
+
+async def get_fulfiller_address(user_id: str) -> Optional[dict]:
+    """Fetch the fulfiller's ship-from address from db_service."""
+    auth_token = generate_token("stripe_service")
+    url = f"{DB_SERVICE_URL}/users/{user_id}/fulfiller_address"
+    headers = {"Authorization": f"Bearer {auth_token}"}
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url, headers=headers)
+            if response.status_code == 200:
+                return response.json()
+            logger.error(f"Fulfiller address not found: {response.status_code}")
+            return None
+        except httpx.HTTPError as e:
+            logger.error(f"HTTP error fetching fulfiller address: {e}")
+            return None
+
+
+async def get_claim_detail(claim_id: str) -> Optional[dict]:
+    """Fetch claim details from db_service (uses cookie-authenticated endpoint via order detail)."""
+    auth_token = generate_token("stripe_service")
+    # We need claim + order data; simplest approach is to get the claim directly
+    # but there's no JWT-protected claim endpoint. We'll add a lightweight one.
+    # For now, use a direct DB query pattern via a new endpoint.
+    url = f"{DB_SERVICE_URL}/claims/{claim_id}/shipping_context"
+    headers = {"Authorization": f"Bearer {auth_token}"}
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url, headers=headers)
+            if response.status_code == 200:
+                return response.json()
+            logger.error(f"Claim detail not found: {response.status_code}")
+            return None
+        except httpx.HTTPError as e:
+            logger.error(f"HTTP error fetching claim detail: {e}")
+            return None
+
+
+async def update_claim_shipping(claim_id: str, shipping_data: dict) -> Optional[dict]:
+    """Update shipping info on a claim in db_service."""
+    auth_token = generate_token("stripe_service")
+    url = f"{DB_SERVICE_URL}/claims/{claim_id}/shipping"
+    headers = {
+        "Authorization": f"Bearer {auth_token}",
+        "Content-Type": "application/json",
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.patch(url, headers=headers, json=shipping_data)
+            if response.status_code == 200:
+                return response.json()
+            logger.error(f"Failed to update claim shipping: {response.status_code}")
+            return None
+        except httpx.HTTPError as e:
+            logger.error(f"HTTP error updating claim shipping: {e}")
+            return None
+
+
 async def generate_stripe_account_in_db(user_id: str, stripe_account_id: str):
     auth_token = generate_token("stripe_service")
     url = f"{DB_SERVICE_URL}/generate_user_stripe_account_in_db/{user_id}"
