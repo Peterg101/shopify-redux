@@ -8,6 +8,7 @@ import { RootState } from "../../app/store";
 import { setLeftDrawerClosed, setLeftDrawerOpen, setSelectedComponent } from "../../services/userInterfaceSlice";
 import { SidebarItem } from "../../app/utility/interfaces";
 import { ProfilePage } from "../userInterface/profilePage";
+import { ClaimedOrdersPanel } from "./ClaimedOrdersPanel";
 import CategoryIcon from '@mui/icons-material/Category';
 
 export const FulfillUserInterface = () => {
@@ -46,6 +47,8 @@ export const FulfillUserInterface = () => {
     switch (userInterfaceState.selectedComponent) {
       case "Profile":
         return <ProfilePage />;
+      case "Claimed Orders":
+        return <ClaimedOrdersPanel />;
       default:
         return null;
     }
