@@ -7,7 +7,7 @@ describe('ToolBar', () => {
   it('renders cost display', () => {
     renderWithProviders(<ToolBar />)
     // Default totalCost selector should return 0 for initial state
-    expect(screen.getByText('0.00')).toBeInTheDocument()
+    expect(screen.getByText(/0\.00/)).toBeInTheDocument()
   })
 
   it('renders file name input', () => {
@@ -15,8 +15,8 @@ describe('ToolBar', () => {
     expect(screen.getByLabelText('File Name')).toBeInTheDocument()
   })
 
-  it('renders pound sign for cost', () => {
+  it('renders clear button with text', () => {
     renderWithProviders(<ToolBar />)
-    expect(screen.getByText('£')).toBeInTheDocument()
+    expect(screen.getByText('Clear')).toBeInTheDocument()
   })
 })

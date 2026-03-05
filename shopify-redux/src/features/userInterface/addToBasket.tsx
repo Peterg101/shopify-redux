@@ -76,8 +76,10 @@ return (
       variant="contained"
       color="primary"
       onClick={handleAddToBasket}
+      startIcon={<ShoppingBasketIcon />}
+      sx={{ fontWeight: 600 }}
     >
-      <ShoppingBasketIcon />
+      Add to Basket
     </Button>
 
     <Snackbar

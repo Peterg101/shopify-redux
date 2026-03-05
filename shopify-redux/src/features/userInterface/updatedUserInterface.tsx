@@ -1,6 +1,5 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 import { Box, Badge, ListItemButton, ListItemIcon, IconButton, Typography, List, Divider, Tooltip } from "@mui/material";
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { Basket, EmptyBasket } from "./basketFragments";
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
@@ -14,28 +13,21 @@ import { setLeftDrawerClosed, setLeftDrawerOpen, setSelectedComponent } from "..
 import { SidebarItem } from "../../app/utility/interfaces";
 import { LeftDrawerList } from "./leftDrawerFragments";
 import { ProfilePage } from "./profilePage";
-import { FloatingCostSummary } from "../display/floatingCostSummary";
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import { EmptyOrderHistory, OrderHistory } from "./orderHistoryFragments";
-import { colorOscillationStyle } from "../shared/animations";
 
 export const UpdatedUserInterface = () => {
-  const [animationTriggered, setAnimationTriggered] = useState(false);
-
   const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
-  const dataState = useSelector((state: RootState) => state.dataState);
   const dispatch = useDispatch();
   const theme = useTheme();
 
   const openDrawer = (itemText: string) => {
     if (userInterfaceState.leftDrawerOpen && userInterfaceState.selectedComponent === itemText) {
-      // Same icon clicked while open — close
       dispatch(setLeftDrawerClosed());
       dispatch(setSelectedComponent({ selectedComponent: "" }));
     } else {
-      // Different icon or drawer was closed — open/switch
       if (!userInterfaceState.leftDrawerOpen) {
-        dispatch(setLeftDrawerOpen()); // toggles false → true
+        dispatch(setLeftDrawerOpen());
       }
       dispatch(setSelectedComponent({ selectedComponent: itemText }));
     }
@@ -45,17 +37,6 @@ export const UpdatedUserInterface = () => {
     dispatch(setLeftDrawerClosed());
     dispatch(setSelectedComponent({ selectedComponent: "" }));
   };
-
-  useEffect(() => {
-    if (dataState) {
-      setAnimationTriggered(true);
-      const timer = setTimeout(() => {
-        setAnimationTriggered(false);
-      }, 3000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [dataState]);
 
   const resultsItems: SidebarItem[] = [
     {
@@ -97,20 +78,6 @@ export const UpdatedUserInterface = () => {
         </Badge>
       ),
     },
-    ...(dataState.displayObjectConfig
-      ? [
-          {
-            text: "Cost Summary",
-            icon: (
-              <AttachMoneyIcon
-                sx={{
-                  ...(animationTriggered ? colorOscillationStyle(theme) : {}),
-                }}
-              />
-            ),
-          },
-        ]
-      : []),
   ];
 
   const renderResultsOptionsComponent = () => {
@@ -137,8 +104,6 @@ export const UpdatedUserInterface = () => {
             </List>
           </Box>
         );
-      case "Cost Summary":
-        return <FloatingCostSummary />;
       default:
         return null;
     }
@@ -180,7 +145,6 @@ export const UpdatedUserInterface = () => {
         drawerWidth={userInterfaceState.drawerWidth}
         open={userInterfaceState.leftDrawerOpen}
       >
-        {/* Only show header with title and close button when open */}
         {userInterfaceState.leftDrawerOpen && (
           <DrawerHeader sx={{ display: "flex", justifyContent: "space-between" }}>
             <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
@@ -192,7 +156,6 @@ export const UpdatedUserInterface = () => {
           </DrawerHeader>
         )}
 
-        {/* When closed: show icon strip. When open: show content only */}
         {!userInterfaceState.leftDrawerOpen && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, py: 1 }}>
             {sidebarItems(resultsItems)}

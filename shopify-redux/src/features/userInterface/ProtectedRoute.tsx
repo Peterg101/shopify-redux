@@ -15,7 +15,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const isLoggedIn = useSelector((state: RootState) => state.userInterfaceState.isLoggedIn);
   const { isLoading } = useSelector(selectSessionQuery);
 
-  if (isLoading) {
+  if (isLoading && !isLoggedIn) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
         <CircularProgress />

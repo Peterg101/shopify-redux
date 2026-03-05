@@ -1,35 +1,28 @@
 import React, { useState } from "react";
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
   Typography,
   Box,
   Card,
+  CardContent,
   Divider,
   IconButton,
   TextField,
   Button,
-  Grid,
-  useMediaQuery,
-  useTheme,
+  Chip,
+  Collapse,
   Dialog,
   DialogActions,
   DialogTitle,
   DialogContent,
 } from "@mui/material";
 import {
-  ExpandMore,
-  ShoppingBasket,
-  ColorLens,
-  Inventory2,
-  FormatSize,
-  Construction,
-  AttachMoney,
   Remove,
   Add,
   ShoppingCartCheckout,
   ReceiptLong,
+  ExpandMore,
+  ExpandLess,
+  ShoppingBasketOutlined,
 } from "@mui/icons-material";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -46,8 +39,12 @@ import { monoFontFamily } from "../../theme";
 // Empty state
 export const EmptyBasket = () => (
   <Box sx={{ textAlign: "center", py: 6 }}>
+    <ShoppingBasketOutlined sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.2, mb: 2 }} />
     <Typography variant="h6" color="text.secondary">
-      Your basket is empty. Add a model to get started!
+      Your basket is empty
+    </Typography>
+    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, opacity: 0.7 }}>
+      Add a model to get started
     </Typography>
   </Box>
 );
@@ -55,11 +52,10 @@ export const EmptyBasket = () => (
 // Main Basket component
 export const Basket = () => {
   const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
-
   const isEmpty = userInterfaceState.userInformation?.basket_items.length === 0;
 
   return (
-    <Box sx={{ px: 3, pt: 2 }}>
+    <Box sx={{ px: 1, pt: 1 }}>
       {isEmpty ? <EmptyBasket /> : <BasketList />}
     </Box>
   );
@@ -72,29 +68,19 @@ export const BasketList = () => {
   ) as BasketInformation[];
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 3,
-        width: "100%",
-        maxWidth: "100%",
-        mx: "auto",         // Center it
-        px: 2,              // Padding for smaller screens
-      }}
-    >
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, width: "100%" }}>
       <BasketSummary />
-
       {basketItems.map((item) => (
         <BasketItemCard key={item.task_id} {...item} />
       ))}
-
     </Box>
   );
 };
+
 // Individual item card
 const BasketItemCard: React.FC<BasketInformation> = (item) => {
   const [quantity, setQuantity] = useState(item.quantity);
+  const [showDetails, setShowDetails] = useState(false);
   const [updateBasketQuantity] = useUpdateBasketQuantityMutation();
 
   const handleQuantityChange = (delta: number) => {
@@ -124,204 +110,211 @@ const BasketItemCard: React.FC<BasketInformation> = (item) => {
   };
 
   return (
-    <Card elevation={4} sx={{ borderRadius: 3 }}>
-      <Accordion sx={{ boxShadow: "none", borderRadius: 3 }}>
-        <AccordionSummary expandIcon={<ExpandMore />}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <ShoppingBasket color="primary" />
-            <Typography variant="h6">{item.name}</Typography>
-          </Box>
-        </AccordionSummary>
+    <Card
+      sx={{
+        border: '1px solid rgba(0, 229, 255, 0.12)',
+        transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+        '&:hover': {
+          borderColor: 'rgba(0, 229, 255, 0.3)',
+          boxShadow: '0 0 16px rgba(0, 229, 255, 0.1)',
+        },
+      }}
+    >
+      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+        {/* Header: name + price */}
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+          <Typography variant="body1" fontWeight={600} noWrap sx={{ flex: 1, mr: 1 }}>
+            {item.name}
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{ fontFamily: monoFontFamily, fontWeight: 700, color: 'primary.main', flexShrink: 0 }}
+          >
+            {'\u00a3'}{(quantity * item.price).toFixed(2)}
+          </Typography>
+        </Box>
 
-        <AccordionDetails>
-          <Divider sx={{ mb: 2 }} />
-          <Box sx={{ display: "grid", gap: 1.5 }}>
-            <DetailRow icon={<Construction />} label="Technique" value={item.technique} />
-            <DetailRow icon={<FormatSize />} label="Sizing" value={`${item.sizing}x`} />
-            <DetailRow icon={<Inventory2 />} label="Material" value={item.material} />
-            <DetailRow icon={<ColorLens />} label="Colour" value={item.colour} />
+        {/* Material chips */}
+        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1.5 }}>
+          <Chip label={item.technique} size="small" variant="outlined" />
+          <Chip label={item.material} size="small" variant="outlined" />
+          <Chip label={item.colour} size="small" variant="outlined" />
+        </Box>
 
-            {/* Quantity */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <ShoppingBasket />
-              <Typography variant="body1" fontWeight={500}>
-                Quantity:
-              </Typography>
-              <IconButton size="small" onClick={() => handleQuantityChange(-1)}>
-                <Remove />
-              </IconButton>
-              <TextField
-                value={quantity}
-                type="number"
-                onChange={handleInputChange}
-                onBlur={handleBlur}
-                size="small"
-                inputProps={{
-                  min: 1,
-                  style: { width: 40, textAlign: "center" },
-                  inputMode: "numeric",
-                }}
-                sx={{
-                  '& input[type=number]': { MozAppearance: 'textfield' },
-                  '& input[type=number]::-webkit-outer-spin-button': { WebkitAppearance: 'none', margin: 0 },
-                  '& input[type=number]::-webkit-inner-spin-button': { WebkitAppearance: 'none', margin: 0 },
-                }}
-              />
-              <IconButton size="small" onClick={() => handleQuantityChange(1)}>
-                <Add />
-              </IconButton>
-            </Box>
-
-            <DetailRow
-              icon={<AttachMoney />}
-              label="Price"
-              value={`£${(quantity * item.price).toFixed(2)}`}
-              mono
+        {/* Quantity row */}
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <IconButton size="small" onClick={() => handleQuantityChange(-1)}>
+              <Remove sx={{ fontSize: 16 }} />
+            </IconButton>
+            <TextField
+              value={quantity}
+              type="number"
+              onChange={handleInputChange}
+              onBlur={handleBlur}
+              size="small"
+              inputProps={{
+                min: 1,
+                style: { width: 36, textAlign: "center", padding: '4px' },
+                inputMode: "numeric",
+              }}
+              sx={{
+                '& input[type=number]': { MozAppearance: 'textfield' },
+                '& input[type=number]::-webkit-outer-spin-button': { WebkitAppearance: 'none', margin: 0 },
+                '& input[type=number]::-webkit-inner-spin-button': { WebkitAppearance: 'none', margin: 0 },
+              }}
             />
+            <IconButton size="small" onClick={() => handleQuantityChange(1)}>
+              <Add sx={{ fontSize: 16 }} />
+            </IconButton>
           </Box>
 
-          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
-            <DeleteFromBasket item={item} />
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
             <EditBasketItem item={item} />
+            <DeleteFromBasket item={item} />
           </Box>
-        </AccordionDetails>
-      </Accordion>
+        </Box>
+
+        {/* Expandable details */}
+        <Box
+          onClick={() => setShowDetails(!showDetails)}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mt: 1,
+            cursor: 'pointer',
+            color: 'text.secondary',
+            '&:hover': { color: 'primary.main' },
+          }}
+        >
+          <Typography variant="caption">{showDetails ? 'Hide details' : 'Show details'}</Typography>
+          {showDetails ? <ExpandLess sx={{ fontSize: 16 }} /> : <ExpandMore sx={{ fontSize: 16 }} />}
+        </Box>
+        <Collapse in={showDetails}>
+          <Box sx={{ mt: 1, pt: 1, borderTop: '1px solid rgba(0, 229, 255, 0.08)' }}>
+            <DetailRow label="Sizing" value={`${item.sizing}x`} />
+            <DetailRow label="Unit Price" value={`\u00a3${item.price.toFixed(2)}`} mono />
+          </Box>
+        </Collapse>
+      </CardContent>
     </Card>
   );
 };
 
-// Row used inside cards
-const DetailRow = ({
-  icon,
-  label,
-  value,
-  mono,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  mono?: boolean;
-}) => (
-  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-    {icon}
-    <Typography variant="body1" sx={mono ? { fontFamily: monoFontFamily } : undefined}>
-      <strong>{label}:</strong> {value}
-    </Typography>
+const DetailRow = ({ label, value, mono }: { label: string; value: string; mono?: boolean }) => (
+  <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.25 }}>
+    <Typography variant="caption" color="text.secondary">{label}</Typography>
+    <Typography variant="caption" sx={mono ? { fontFamily: monoFontFamily } : undefined}>{value}</Typography>
   </Box>
 );
-
-// Bottom total on list
-const BasketTotal = () => {
-  const total = useSelector(selectTotalBasketValue)
-
-  return (
-    <Box sx={{ textAlign: "right", pr: 1 }}>
-      <Typography variant="h6" sx={{ fontWeight: 600, fontFamily: monoFontFamily }}>
-        Total: £{total.toFixed(2)}
-      </Typography>
-    </Box>
-  );
-};
 
 // Sticky summary card
 export const BasketSummary = () => {
   const [open, setOpen] = useState(false);
   const handleClose = () => setOpen(false);
 
-  const user_id = useSelector((state:RootState) => state.userInterfaceState.userInformation.user.user_id)
+  const user_id = useSelector((state: RootState) => state.userInterfaceState.userInformation.user.user_id);
   const basketItems = useSelector((state: RootState) => state.userInterfaceState.userInformation?.basket_items || []);
-  const subtotal = useSelector(selectTotalBasketValue)
+  const subtotal = useSelector(selectTotalBasketValue);
   const shippingEstimate = subtotal > 0 ? 4.99 : 0;
   const total = subtotal + shippingEstimate;
-  const [generateTasksFromBasket] = useGenerateTasksFromBasketMutation()
-  const dispatch = useDispatch()
-  const clickProceedToBasket = () => {
-    setOpen(true)
-  }
+  const [generateTasksFromBasket] = useGenerateTasksFromBasketMutation();
+  const dispatch = useDispatch();
 
-  const handleCheckoutWithFitd = () =>{
-    dispatch(setLeftDrawerClosed())
-    setOpen(false)
-    createStripeCheckoutAndRedirect()
-  }
+  const clickProceedToBasket = () => {
+    setOpen(true);
+  };
+
+  const handleCheckoutWithFitd = () => {
+    dispatch(setLeftDrawerClosed());
+    setOpen(false);
+    createStripeCheckoutAndRedirect();
+  };
 
   const handleCheckoutWithCommunity = () => {
-    console.log("HERE WE GOOOOOOOOOO")
-  }
+    console.log("HERE WE GOOOOOOOOOO");
+  };
 
   return (
     <Card
-  elevation={6}
-  sx={{
-    p: 3,
-    borderRadius: 3,
-    backdropFilter: "blur(6px)",
-    background: "rgba(19, 25, 32, 0.85)",
-    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.3), 0 0 12px rgba(0, 229, 255, 0.05)",
-    display: "flex",
-    flexDirection: "column",
-    gap: 2,
-  }}
->
-      <Typography variant="h6" sx={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 1 }}>
-        <ReceiptLong fontSize="medium" />
+      sx={{
+        p: 2.5,
+        border: '1px solid rgba(0, 229, 255, 0.15)',
+        backdropFilter: "blur(6px)",
+        background: "rgba(19, 25, 32, 0.85)",
+        boxShadow: "0 8px 24px rgba(0, 0, 0, 0.3), 0 0 12px rgba(0, 229, 255, 0.05)",
+        display: "flex",
+        flexDirection: "column",
+        gap: 1.5,
+      }}
+    >
+      <Typography variant="subtitle1" sx={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 1 }}>
+        <ReceiptLong fontSize="small" />
         Order Summary
       </Typography>
 
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Typography color="text.secondary">Subtotal</Typography>
-        <Typography sx={{ fontFamily: monoFontFamily }}>£{subtotal.toFixed(2)}</Typography>
+        <Typography variant="body2" color="text.secondary">
+          Items ({basketItems.length})
+        </Typography>
+        <Typography variant="body2" sx={{ fontFamily: monoFontFamily }}>
+          {'\u00a3'}{subtotal.toFixed(2)}
+        </Typography>
       </Box>
 
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Typography color="text.secondary">Shipping Estimate</Typography>
-        <Typography sx={{ fontFamily: monoFontFamily }}>£{shippingEstimate.toFixed(2)}</Typography>
+        <Typography variant="body2" color="text.secondary">Shipping</Typography>
+        <Typography variant="body2" sx={{ fontFamily: monoFontFamily }}>
+          {'\u00a3'}{shippingEstimate.toFixed(2)}
+        </Typography>
       </Box>
 
       <Divider />
 
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Typography variant="h6">Total</Typography>
-        <Typography variant="h6" sx={{ fontFamily: monoFontFamily }}>£{total.toFixed(2)}</Typography>
+        <Typography variant="subtitle2" fontWeight={600}>Total</Typography>
+        <Typography
+          variant="subtitle2"
+          sx={{ fontFamily: monoFontFamily, fontWeight: 700, color: 'primary.main' }}
+        >
+          {'\u00a3'}{total.toFixed(2)}
+        </Typography>
       </Box>
 
       <Button
         onClick={clickProceedToBasket}
         variant="contained"
-        size="large"
+        size="medium"
         startIcon={<ShoppingCartCheckout />}
         color="primary"
         fullWidth
         sx={{
-          borderRadius: 2,
-          mt: 1,
-          py: 1.5,
+          mt: 0.5,
+          py: 1.2,
           fontWeight: 600,
-          fontSize: "1rem",
-        }
-        
-      }
+          transition: 'all 0.2s ease',
+          '&:hover': {
+            boxShadow: '0 0 20px rgba(0, 229, 255, 0.3)',
+          },
+        }}
       >
         Proceed to Checkout
       </Button>
+
       <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>Checkout Confirmation</DialogTitle>
-      <DialogContent>
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          gap={2} // spacing between buttons
-        >
-          <Button variant="contained" color="primary" onClick={handleCheckoutWithFitd}>
-            Checkout with FITD
-          </Button>
-          <Button variant="contained" color="primary" onClick={handleCheckoutWithCommunity}>
-            Checkout with the community
-          </Button>
-        </Box>
-      </DialogContent>
-    </Dialog>
-      </Card>
+        <DialogTitle>Checkout Confirmation</DialogTitle>
+        <DialogContent>
+          <Box display="flex" justifyContent="center" alignItems="center" gap={2}>
+            <Button variant="contained" color="primary" onClick={handleCheckoutWithFitd}>
+              Checkout with FITD
+            </Button>
+            <Button variant="contained" color="primary" onClick={handleCheckoutWithCommunity}>
+              Checkout with the community
+            </Button>
+          </Box>
+        </DialogContent>
+      </Dialog>
+    </Card>
   );
 };

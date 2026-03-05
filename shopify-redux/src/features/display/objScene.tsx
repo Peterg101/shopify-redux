@@ -30,7 +30,7 @@ const OBJScene = () => {
             },
             undefined,
             (error) => {
-                console.error("Error loading OBJ file:", error);
+                console.error("[OBJScene] Error loading OBJ file:", error);
             }
         );
     }, [dataState.selectedFile, dispatch]);

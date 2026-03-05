@@ -1,6 +1,6 @@
 import React from "react";
-import { Typography, Button, Card, CardContent, Divider, Box, CircularProgress } from "@mui/material";
-import { AccessTime, Edit, Download } from "@mui/icons-material";
+import { Typography, Button, Card, CardContent, Box, CircularProgress, LinearProgress } from "@mui/material";
+import { AccessTime, Edit, Download, AutoAwesome } from "@mui/icons-material";
 import { TaskInformation } from "../../app/utility/interfaces";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
@@ -10,6 +10,20 @@ import { extractFileInfo, fetchFile } from "../../services/fetchFileUtils";
 import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
 import { downloadBlob } from "../../app/utility/utils";
 
+const formatRelativeTime = (dateString: string): string => {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString();
+};
+
 export const LeftDrawerTask: React.FC<TaskInformation> = (task) => {
   const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
 
@@ -18,29 +32,50 @@ export const LeftDrawerTask: React.FC<TaskInformation> = (task) => {
     userInterfaceState.userInformation.incomplete_task.task_id === task.task_id;
 
   return (
-    <Card elevation={3} sx={{ borderRadius: 2, mb: 2, overflow: "hidden" }}>
-      <CardContent>
-        <Typography variant="h6" gutterBottom>
-          {task.task_name}
-        </Typography>
+    <Card
+      sx={{
+        mb: 1.5,
+        overflow: "hidden",
+        border: '1px solid rgba(0, 229, 255, 0.12)',
+        transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+        '&:hover': {
+          borderColor: 'rgba(0, 229, 255, 0.3)',
+          boxShadow: '0 0 16px rgba(0, 229, 255, 0.1)',
+        },
+      }}
+    >
+      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+            <AutoAwesome sx={{ color: 'primary.main', fontSize: 18, flexShrink: 0 }} />
+            <Typography variant="body1" fontWeight={600} noWrap>
+              {task.task_name}
+            </Typography>
+          </Box>
+          {isTaskLoading && (
+            <CircularProgress size={16} thickness={4} sx={{ color: 'primary.main', flexShrink: 0 }} />
+          )}
+        </Box>
 
-        <Box display="flex" alignItems="center" gap={1} sx={{ mb: 1 }}>
-          <AccessTime fontSize="small" color="action" />
-          <Typography variant="body2" color="text.secondary">
-            {new Date(task.created_at).toLocaleString()}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5, ml: 3.5 }}>
+          <AccessTime sx={{ fontSize: 14, color: 'text.secondary' }} />
+          <Typography variant="caption" color="text.secondary">
+            {formatRelativeTime(task.created_at)}
           </Typography>
         </Box>
 
-        <Divider sx={{ my: 1 }} />
-
-        {isTaskLoading ? <LeftDrawerTaskLoading /> : <LeftDrawerButtons {...task} />}
+        {isTaskLoading ? (
+          <LeftDrawerTaskLoading />
+        ) : (
+          <LeftDrawerButtons {...task} />
+        )}
       </CardContent>
     </Card>
   );
 };
 
 export const LeftDrawerButtons: React.FC<TaskInformation> = (task) => {
-  const { actualFile, setActualFile } = useFile();
+  const { setActualFile } = useFile();
   const dispatch = useDispatch();
 
   const handleGetFile = async (fileId: string, filename: string, shouldDownload = false) => {
@@ -67,22 +102,22 @@ export const LeftDrawerButtons: React.FC<TaskInformation> = (task) => {
   };
 
   return (
-    <Box display="flex" justifyContent="flex-end" gap={1}>
+    <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 1.5 }}>
       <Button
-        variant="contained"
-        color="primary"
+        variant="outlined"
         size="small"
-        startIcon={<Download />}
+        startIcon={<Download sx={{ fontSize: 16 }} />}
         onClick={() => handleGetFile(task.task_id, task.task_name, true)}
+        sx={{ fontSize: '0.75rem' }}
       >
         Download
       </Button>
       <Button
-        variant="contained"
-        color="primary"
+        variant="outlined"
         size="small"
-        startIcon={<Edit />}
+        startIcon={<Edit sx={{ fontSize: 16 }} />}
         onClick={() => handleGetFile(task.task_id, task.task_name)}
+        sx={{ fontSize: '0.75rem' }}
       >
         Edit
       </Button>
@@ -94,18 +129,25 @@ export const LeftDrawerTaskLoading: React.FC = () => {
   const percentage = useSelector((state: RootState) => state.userInterfaceState.meshyLoadedPercentage);
 
   return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="center"
-      gap={1}
-      sx={{ py: 2 }}
-    >
-      <CircularProgress variant="determinate" value={percentage} />
-      <Typography variant="body2" color="text.secondary">
-        Generating model... {percentage}%
-      </Typography>
+    <Box sx={{ mt: 2, px: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+        <Typography variant="caption" color="text.secondary">
+          Generating...
+        </Typography>
+        <Typography variant="caption" color="primary.main" fontWeight={600}>
+          {percentage}%
+        </Typography>
+      </Box>
+      <LinearProgress
+        variant="determinate"
+        value={percentage}
+        sx={{
+          height: 4,
+          borderRadius: 2,
+          backgroundColor: 'rgba(0, 229, 255, 0.1)',
+          '& .MuiLinearProgress-bar': { borderRadius: 2 },
+        }}
+      />
     </Box>
   );
 };
@@ -115,11 +157,17 @@ export const LeftDrawerList: React.FC = () => {
   const tasks = userInterfaceState.userInformation?.tasks ?? [];
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box>
       {tasks.length === 0 ? (
-        <Typography variant="body1" color="text.secondary">
-          No task history available.
-        </Typography>
+        <Box sx={{ textAlign: 'center', py: 6 }}>
+          <AutoAwesome sx={{ fontSize: 48, color: 'text.secondary', opacity: 0.3, mb: 1 }} />
+          <Typography variant="body1" color="text.secondary">
+            No generation history yet
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, opacity: 0.7 }}>
+            Use the AI prompt to create your first model
+          </Typography>
+        </Box>
       ) : (
         tasks.map((task) => <LeftDrawerTask key={task.task_id} {...task} />)
       )}

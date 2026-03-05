@@ -12,8 +12,10 @@ jest.mock('../../display/objStlViewer', () => ({
 
 describe('FulfillOptions', () => {
   it('renders loading state when user is not loaded', () => {
-    renderWithProviders(<FulfillOptions />)
-    expect(screen.getByText('Loading...')).toBeInTheDocument()
+    const { container } = renderWithProviders(<FulfillOptions />)
+    // Loading state now renders skeleton cards instead of text
+    const skeletons = container.querySelectorAll('.MuiSkeleton-root')
+    expect(skeletons.length).toBeGreaterThan(0)
   })
 
   it('renders empty state when there are no claimable orders', () => {
@@ -42,8 +44,8 @@ describe('FulfillOptions', () => {
       },
     })
 
-    expect(screen.getByText('No orders available at the moment.')).toBeInTheDocument()
-    expect(screen.getByText('Check back later for new orders to fulfill.')).toBeInTheDocument()
+    expect(screen.getByText('No orders available right now.')).toBeInTheDocument()
+    expect(screen.getByText('New orders appear here when buyers submit collaborative prints.')).toBeInTheDocument()
   })
 
   it('renders order cards when claimable orders exist', () => {

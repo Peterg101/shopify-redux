@@ -18,16 +18,15 @@ const STLScene = (
     )
 
     useEffect(() => {
-
         const loader = new STLLoader();
         loader.load(dataState.selectedFile, (geometry) => {
             // Create a Mesh from the loaded geometry
             const material = new THREE.MeshStandardMaterial({ color: dataState.modelColour, wireframeLinewidth: 2 });
             const loadedStl = new THREE.Mesh(geometry, material);
             setStl(loadedStl); // Set the Mesh object
-            
+
         }, undefined, (error) => {
-            console.error("Error loading STL file:", error);
+            console.error("[STLScene] Error loading STL file:", error);
         });
     }, [dataState.selectedFile, dataState.multiplierValue]);
 

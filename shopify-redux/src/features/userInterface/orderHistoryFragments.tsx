@@ -1,208 +1,212 @@
 import {
-    Accordion,
-    AccordionDetails,
-    AccordionSummary,
-    Typography,
-    Box,
-    Card,
-    Divider,
-    Chip,
-    Button,
-  } from "@mui/material";
+  Typography,
+  Box,
+  Card,
+  CardContent,
+  Divider,
+  Chip,
+  Button,
+  Collapse,
+} from "@mui/material";
 
-  import {
-    ExpandMore,
-    ShoppingBasket,
-    ColorLens,
-    Inventory2,
-    FormatSize,
-    Construction,
-    AttachMoney,
-    ReceiptLong,
-    Gavel,
-    Public,
-    Lock,
-    OpenInNew,
-  } from "@mui/icons-material";
+import {
+  Construction,
+  Inventory2,
+  ColorLens,
+  Gavel,
+  Public,
+  Lock,
+  OpenInNew,
+  LocalShipping,
+  ExpandMore,
+  ExpandLess,
+} from "@mui/icons-material";
 
-  import { useState } from "react";
-  import { useSelector, useDispatch } from "react-redux";
-  import { useNavigate } from "react-router-dom";
-  import { RootState } from "../../app/store";
-  import { Order } from "../../app/utility/interfaces";
-  import { toggleOrderVisibility } from "../../services/fetchFileUtils";
-  import { authApi } from "../../services/authApi";
+import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { RootState } from "../../app/store";
+import { Order } from "../../app/utility/interfaces";
+import { toggleOrderVisibility } from "../../services/fetchFileUtils";
+import { authApi } from "../../services/authApi";
+import { monoFontFamily } from "../../theme";
 
-  export const EmptyOrderHistory = () => (
-    <Box sx={{ textAlign: "center", py: 6 }}>
-      <Typography variant="h6" color="text.secondary">
-        Your order history is empty. Consume!
-      </Typography>
-    </Box>
+export const EmptyOrderHistory = () => (
+  <Box sx={{ textAlign: "center", py: 6 }}>
+    <LocalShipping sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.2, mb: 2 }} />
+    <Typography variant="h6" color="text.secondary">
+      No orders yet
+    </Typography>
+    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, opacity: 0.7 }}>
+      Your order history will appear here
+    </Typography>
+  </Box>
+);
+
+export const OrderList = ({ orders }: { orders: Order[] }) => (
+  <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, width: "100%" }}>
+    {orders.map((item) => (
+      <OrderedItemCard key={item.order_id} {...item} />
+    ))}
+  </Box>
+);
+
+export const OrderHistory = () => {
+  const userInformation = useSelector(
+    (state: RootState) => state.userInterfaceState.userInformation
   );
+  const orders = userInformation?.orders;
 
-
-
-  export const OrderList = ({ orders }: { orders: Order[] }) => (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 3,
-        maxWidth: "800px",
-        mx: "auto",
-        px: 2,
-      }}
-    >
-      {orders.map((item) => (
-        <OrderedItemCard key={item.order_id} {...item} />
-      ))}
-    </Box>
-  );
-
-  export const OrderHistory = () => {
-    const userInformation = useSelector(
-      (state: RootState) => state.userInterfaceState.userInformation
-    );
-    const orders = userInformation?.orders;
-
-    if (!orders) {
-      return (
-        <Box sx={{ textAlign: "center", py: 6 }}>
-          <Typography variant="h6" color="text.secondary">
-            Loading your orders...
-          </Typography>
-        </Box>
-      );
-    }
-
-    if (orders.length === 0) {
-      return <EmptyOrderHistory />;
-    }
-
+  if (!orders) {
     return (
-      <Box sx={{ px: 3, pt: 2 }}>
-        <OrderList orders={orders} />
+      <Box sx={{ textAlign: "center", py: 6 }}>
+        <Typography variant="body1" color="text.secondary">
+          Loading your orders...
+        </Typography>
       </Box>
     );
   }
 
-  const DISPUTE_STATUSES = ["disputed", "resolved_accepted", "resolved_partial", "resolved_rejected"];
+  if (orders.length === 0) {
+    return <EmptyOrderHistory />;
+  }
 
-  const ClaimStatusChip: React.FC<{ status: string }> = ({ status }) => {
-    const colorMap: Record<string, "error" | "warning" | "success" | "default" | "info"> = {
-      disputed: "error",
-      resolved_accepted: "success",
-      resolved_partial: "warning",
-      resolved_rejected: "error",
-      delivered: "info",
-      shipped: "info",
-      qa_check: "warning",
-      pending: "default",
-    };
-    return (
-      <Chip
-        label={status.replace(/_/g, " ")}
-        color={colorMap[status] || "default"}
-        size="small"
-        sx={{ fontWeight: 600 }}
-      />
-    );
+  return (
+    <Box sx={{ pt: 1 }}>
+      <OrderList orders={orders} />
+    </Box>
+  );
+};
+
+const DISPUTE_STATUSES = ["disputed", "resolved_accepted", "resolved_partial", "resolved_rejected"];
+
+const ClaimStatusChip: React.FC<{ status: string }> = ({ status }) => {
+  const colorMap: Record<string, "error" | "warning" | "success" | "default" | "info"> = {
+    disputed: "error",
+    resolved_accepted: "success",
+    resolved_partial: "warning",
+    resolved_rejected: "error",
+    delivered: "info",
+    shipped: "info",
+    qa_check: "warning",
+    pending: "default",
+  };
+  return (
+    <Chip
+      label={status.replace(/_/g, " ")}
+      color={colorMap[status] || "default"}
+      size="small"
+      sx={{ fontWeight: 600, fontSize: '0.7rem' }}
+    />
+  );
+};
+
+const OrderedItemCard: React.FC<Order> = (item) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [toggling, setToggling] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+
+  const handleToggleVisibility = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setToggling(true);
+    try {
+      await toggleOrderVisibility(item.order_id);
+      dispatch(authApi.util.invalidateTags(["sessionData"]));
+    } catch (err) {
+      console.error("Error toggling visibility:", err);
+    } finally {
+      setToggling(false);
+    }
   };
 
-  const OrderedItemCard: React.FC<Order> = (item) => {
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
-    const [toggling, setToggling] = useState(false);
+  const disputeClaims = (item.claims || []).filter(
+    (c) => DISPUTE_STATUSES.includes(c.status)
+  );
+  const hasDelivered = (item.claims || []).some((c) => c.status === "delivered");
 
-    const handleToggleVisibility = async (e: React.MouseEvent) => {
-      e.stopPropagation();
-      setToggling(true);
-      try {
-        await toggleOrderVisibility(item.order_id);
-        dispatch(authApi.util.invalidateTags(["sessionData"]));
-      } catch (err) {
-        console.error("Error toggling visibility:", err);
-      } finally {
-        setToggling(false);
-      }
-    };
-
-    const disputeClaims = (item.claims || []).filter(
-      (c) => DISPUTE_STATUSES.includes(c.status)
-    );
-
-    const hasDelivered = (item.claims || []).some((c) => c.status === "delivered");
-
-    return (
-      <Card elevation={4} sx={{ borderRadius: 3 }}>
-        <Accordion sx={{ boxShadow: "none", borderRadius: 3 }}>
-          <AccordionSummary expandIcon={<ExpandMore />}>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, width: "100%" }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <ShoppingBasket color="primary" />
-                <Typography variant="h6">{item.name}</Typography>
-                {disputeClaims.length > 0 && (
-                  <Chip
-                    icon={<Gavel />}
-                    label={`${disputeClaims.length} dispute${disputeClaims.length > 1 ? "s" : ""}`}
-                    color="error"
-                    size="small"
-                    sx={{ ml: "auto" }}
-                  />
-                )}
-                {hasDelivered && disputeClaims.length === 0 && (
-                  <Chip
-                    label="Review needed"
-                    color="warning"
-                    size="small"
-                    sx={{ ml: "auto" }}
-                  />
-                )}
-              </Box>
-              <Typography variant="caption" color="text.secondary">
-                Ordered: {new Date(item.created_at).toLocaleDateString()} · {item.quantity_claimed}/{item.quantity} claimed
-              </Typography>
-            </Box>
-          </AccordionSummary>
-
-          <AccordionDetails>
-            <Divider sx={{ mb: 2 }} />
-
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-              <DetailRow icon={<Construction />} label="Technique" value={item.technique} />
-              <DetailRow icon={<FormatSize />} label="Sizing" value={`${item.sizing}x`} />
-              <DetailRow icon={<Inventory2 />} label="Material" value={item.material} />
-              <DetailRow icon={<ColorLens />} label="Colour" value={item.colour} />
-              <DetailRow icon={<AttachMoney />} label="Price" value={`$${item.price.toFixed(2)}`} />
-              <DetailRow icon={<ReceiptLong />} label="Quantity" value={`${item.quantity}`} />
-            </Box>
-
-            <Box sx={{ mt: 2, display: "flex", flexWrap: "wrap", gap: 1, alignItems: "center" }}>
-              <Chip label={item.selectedFileType} variant="outlined" size="small" />
+  return (
+    <Card
+      sx={{
+        border: '1px solid rgba(0, 229, 255, 0.12)',
+        transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+        '&:hover': {
+          borderColor: 'rgba(0, 229, 255, 0.3)',
+          boxShadow: '0 0 16px rgba(0, 229, 255, 0.1)',
+        },
+      }}
+    >
+      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+        {/* Header */}
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+          <Typography variant="body1" fontWeight={600} noWrap sx={{ flex: 1, mr: 1 }}>
+            {item.name}
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
+            {disputeClaims.length > 0 && (
               <Chip
-                icon={item.is_collaborative ? <Public /> : <Lock />}
-                label={item.is_collaborative ? "Community" : "Private"}
-                color={item.is_collaborative ? "success" : "default"}
+                icon={<Gavel sx={{ fontSize: 14 }} />}
+                label={`${disputeClaims.length}`}
+                color="error"
                 size="small"
-                onClick={handleToggleVisibility}
-                disabled={toggling}
-                sx={{ cursor: "pointer" }}
               />
-              <Typography variant="caption" color="text.secondary">
-                {item.is_collaborative
-                  ? "Visible to fulfillers"
-                  : "Click to post to community"}
-              </Typography>
-            </Box>
+            )}
+            {hasDelivered && disputeClaims.length === 0 && (
+              <Chip label="Review" color="warning" size="small" />
+            )}
+          </Box>
+        </Box>
 
-            {/* Claims summary */}
-            {item.claims && item.claims.length > 0 && (
-              <Box sx={{ mt: 3 }}>
-                <Divider sx={{ mb: 2 }} />
-                <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                  Claims ({item.claims.length})
-                </Typography>
+        {/* Meta line */}
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+          {new Date(item.created_at).toLocaleDateString()} · {item.quantity_claimed}/{item.quantity} claimed
+        </Typography>
+
+        {/* Chips row */}
+        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1 }}>
+          <Chip label={item.technique} size="small" variant="outlined" icon={<Construction sx={{ fontSize: 14 }} />} />
+          <Chip label={item.material} size="small" variant="outlined" icon={<Inventory2 sx={{ fontSize: 14 }} />} />
+          <Chip label={item.colour} size="small" variant="outlined" icon={<ColorLens sx={{ fontSize: 14 }} />} />
+          <Chip
+            icon={item.is_collaborative ? <Public sx={{ fontSize: 14 }} /> : <Lock sx={{ fontSize: 14 }} />}
+            label={item.is_collaborative ? "Community" : "Private"}
+            color={item.is_collaborative ? "success" : "default"}
+            size="small"
+            onClick={handleToggleVisibility}
+            disabled={toggling}
+            sx={{ cursor: "pointer" }}
+          />
+        </Box>
+
+        {/* Price */}
+        <Typography
+          variant="body2"
+          sx={{ fontFamily: monoFontFamily, fontWeight: 600, color: 'primary.main', mb: 1 }}
+        >
+          {'\u00a3'}{item.price.toFixed(2)} x {item.quantity}
+        </Typography>
+
+        {/* Expandable claims */}
+        {item.claims && item.claims.length > 0 && (
+          <>
+            <Box
+              onClick={() => setShowDetails(!showDetails)}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                color: 'text.secondary',
+                '&:hover': { color: 'primary.main' },
+              }}
+            >
+              <Typography variant="caption">
+                {item.claims.length} claim{item.claims.length > 1 ? 's' : ''}
+              </Typography>
+              {showDetails ? <ExpandLess sx={{ fontSize: 16 }} /> : <ExpandMore sx={{ fontSize: 16 }} />}
+            </Box>
+            <Collapse in={showDetails}>
+              <Box sx={{ mt: 1, pt: 1, borderTop: '1px solid rgba(0, 229, 255, 0.08)' }}>
                 {item.claims.map((claim) => (
                   <Box
                     key={claim.id}
@@ -210,53 +214,36 @@ import {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
-                      py: 1,
-                      px: 1.5,
-                      mb: 1,
-                      borderRadius: 2,
-                      backgroundColor: "action.hover",
+                      py: 0.5,
+                      px: 1,
+                      mb: 0.5,
+                      borderRadius: 1,
+                      backgroundColor: "rgba(0, 229, 255, 0.03)",
                     }}
                   >
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                      <ClaimStatusChip status={claim.status} />
-                      <Typography variant="body2">
-                        Qty: {claim.quantity}
-                      </Typography>
-                    </Box>
+                    <ClaimStatusChip status={claim.status} />
+                    <Typography variant="caption" color="text.secondary">
+                      Qty: {claim.quantity}
+                    </Typography>
                   </Box>
                 ))}
               </Box>
-            )}
+            </Collapse>
+          </>
+        )}
 
-            {/* View Details button — navigates to full order detail page */}
-            <Button
-              variant="contained"
-              fullWidth
-              startIcon={<OpenInNew />}
-              onClick={() => navigate(`/orders/${item.order_id}`)}
-              sx={{ mt: 3, py: 1.2, borderRadius: 2, fontWeight: 600 }}
-            >
-              View Full Details
-            </Button>
-          </AccordionDetails>
-        </Accordion>
-      </Card>
-    );
-  };
-
-  const DetailRow = ({
-    icon,
-    label,
-    value,
-  }: {
-    icon: React.ReactNode;
-    label: string;
-    value: string;
-  }) => (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      {icon}
-      <Typography variant="body1">
-        <strong>{label}:</strong> {value}
-      </Typography>
-    </Box>
+        {/* View Details */}
+        <Button
+          variant="outlined"
+          fullWidth
+          size="small"
+          startIcon={<OpenInNew sx={{ fontSize: 14 }} />}
+          onClick={() => navigate(`/orders/${item.order_id}`)}
+          sx={{ mt: 1.5, fontSize: '0.75rem' }}
+        >
+          View Details
+        </Button>
+      </CardContent>
+    </Card>
   );
+};

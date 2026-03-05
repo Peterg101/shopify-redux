@@ -1,12 +1,13 @@
-import { Box, TextField, Paper, Typography } from "@mui/material"
-import { ClearFile } from "../userInterface/clearFile";
-import { AddToBasket } from "../userInterface/addToBasket";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../app/store";
-import { ChangeEvent } from "react";
-import { setFileNameBoxValue } from "../../services/dataSlice";
-import { selectTotalCost } from "../../services/selectors";
-import { monoFontFamily } from "../../theme";
+import { Box, TextField, Typography, Button } from '@mui/material';
+import ClearIcon from '@mui/icons-material/Clear';
+import ShoppingBasketIcon from '@mui/icons-material/ShoppingBasket';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../app/store';
+import { ChangeEvent } from 'react';
+import { setFileNameBoxValue, resetDataState } from '../../services/dataSlice';
+import { selectTotalCost } from '../../services/selectors';
+import { monoFontFamily } from '../../theme';
+import { AddToBasket } from '../userInterface/addToBasket';
 
 export const ToolBar = () => {
   const dispatch = useDispatch();
@@ -17,59 +18,79 @@ export const ToolBar = () => {
     dispatch(setFileNameBoxValue({ fileNameBoxValue: event.target.value }));
   };
 
+  const handleClear = () => {
+    dispatch(resetDataState());
+  };
+
   return (
-    <Paper
+    <Box
       sx={{
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        p: 2,
-        gap: 2,
-        mb: 4,
+        gap: 1.5,
+        p: 1.5,
+        mb: 2,
+        borderRadius: 2,
+        border: '1px solid rgba(0, 229, 255, 0.12)',
+        backgroundColor: 'rgba(0, 229, 255, 0.02)',
       }}
     >
-      <Box>
-        <ClearFile />
-      </Box>
-
-      <Typography
-        variant="h6"
+      {/* Clear Button */}
+      <Button
+        variant="outlined"
+        size="small"
+        startIcon={<ClearIcon />}
+        onClick={handleClear}
         sx={{
-          fontWeight: 600,
-          fontSize: '1.25rem',
-          minWidth: 150,
-          textAlign: 'center',
-          backgroundColor: 'primary.main',
-          color: 'primary.contrastText',
-          borderRadius: 2,
-          px: 2,
-          py: 1,
-          boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
-          fontFamily: monoFontFamily,
+          transition: 'all 0.2s ease',
+          '&:hover': {
+            borderColor: 'error.main',
+            color: 'error.main',
+          },
         }}
       >
-        £
-        <Box
-          component="span"
-          sx={{ fontWeight: 'bold', fontSize: '1.5rem', ml: 0.5 }}
-        >
-          {totalCost.toFixed(2)}
-        </Box>
-      </Typography>
+        Clear
+      </Button>
 
+      {/* File Name */}
       <TextField
         label="File Name"
         variant="outlined"
         size="small"
         value={dataState.fileNameBoxValue}
         onChange={handleChange}
-        sx={{ flexGrow: 1, minWidth: 200 }}
+        sx={{ flexGrow: 1, minWidth: 150 }}
       />
 
-      <Box>
-        <AddToBasket />
+      {/* Cost Badge */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          backgroundColor: 'rgba(0, 229, 255, 0.1)',
+          border: '1px solid rgba(0, 229, 255, 0.25)',
+          borderRadius: 2,
+          px: 2,
+          py: 0.75,
+          boxShadow: '0 0 12px rgba(0, 229, 255, 0.08)',
+        }}
+      >
+        <Typography
+          variant="body1"
+          sx={{
+            fontFamily: monoFontFamily,
+            fontWeight: 700,
+            color: 'primary.main',
+            fontSize: '1.1rem',
+          }}
+        >
+          {'\u00a3'}{totalCost.toFixed(2)}
+        </Typography>
       </Box>
-    </Paper>
+
+      {/* Add to Basket */}
+      <AddToBasket />
+    </Box>
   );
 };
