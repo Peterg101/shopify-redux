@@ -4,7 +4,7 @@ def test_create_user(client):
         json={"user_id": "user-1", "username": "alice", "email": "alice@example.com"},
         headers={"Authorization": "Bearer fake"},
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     data = response.json()
     assert data["user_id"] == "user-1"
     assert data["username"] == "alice"

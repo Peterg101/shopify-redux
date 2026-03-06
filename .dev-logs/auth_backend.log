@@ -1096,3 +1096,5 @@ INFO:     127.0.0.1:51169 - "GET /get_session HTTP/1.1" 200 OK
 INFO:     127.0.0.1:51229 - "GET /get_session HTTP/1.1" 200 OK
 2026-03-06 11:41:52,829 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
 INFO:     127.0.0.1:52512 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:46:53,842 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:53814 - "GET /get_session HTTP/1.1" 200 OK

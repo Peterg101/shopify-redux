@@ -8,16 +8,20 @@ import STLScene from './stlScene';
 import { ViewerErrorBoundary } from '../shared/ViewerErrorBoundary';
 import { OrientationControls } from './OrientationControls';
 
-const OBJSTLViewer = () => {
+interface OBJSTLViewerProps {
+  hideOrientationControls?: boolean;
+}
+
+const OBJSTLViewer = ({ hideOrientationControls = false }: OBJSTLViewerProps) => {
     const dataState = useSelector(
         (state: RootState) => state.dataState
     )
 
   return (
-      <div className="App">
+      <div className="App" style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
         <ViewerErrorBoundary>
           <Canvas
-            style={{ width: '100%', height: '500px', background: 'radial-gradient(circle at center, #1a2230 0%, #0A0E14 100%)' }}
+            style={{ flex: 1, minHeight: 0, background: 'radial-gradient(circle at center, #1a2230 0%, #0A0E14 100%)' }}
             camera={{ fov: 100, near: 0.1, far: 1000, position: [100, 100, 100] }}
           >
             <Suspense fallback={null}>
@@ -42,7 +46,7 @@ const OBJSTLViewer = () => {
             </Suspense>
           </Canvas>
         </ViewerErrorBoundary>
-        <OrientationControls />
+        {!hideOrientationControls && <OrientationControls />}
       </div>
   );
 };

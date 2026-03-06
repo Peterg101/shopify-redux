@@ -18,7 +18,7 @@ import { registerWithEmail, loginWithEmail } from '../../services/fetchFileUtils
 import GoogleButton from 'react-google-button';
 import { monoFontFamily } from '../../theme';
 
-export const LoginPage: React.FC = () => {
+export function LoginPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isLoggedIn = useSelector((state: RootState) => state.userInterfaceState.isLoggedIn);

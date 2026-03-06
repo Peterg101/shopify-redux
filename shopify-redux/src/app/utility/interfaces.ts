@@ -186,7 +186,7 @@ export interface Claim {
   claimant_user_id: string;
   order: Order
   quantity: number;
-  status: "pending" | "in_progress" | "printing" | "qa_check" | "shipped" | "delivered" | "accepted" | "disputed" | "resolved_accepted" | "resolved_partial" | "resolved_rejected";
+  status: "pending" | "in_progress" | "printing" | "qa_check" | "shipped" | "delivered" | "accepted" | "disputed" | "resolved_accepted" | "resolved_partial" | "resolved_rejected" | "cancelled";
   created_at: string;
   updated_at: string;
   evidence?: ClaimEvidence[];

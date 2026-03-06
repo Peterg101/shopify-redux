@@ -58,7 +58,7 @@ class MeshyTaskStatusResponse(BaseModel):
     progress: int
     started_at: int
     finished_at: int
-    task_error: Optional[str]
+    task_error: Optional[str] = None
     thumbnail_url: str
     video_url: str
     beet: Optional[int] = 0
@@ -463,7 +463,7 @@ class TaskResponse(BaseModel):
     created_at: str
 
     # Comes from @hybrid_property
-    port_id: Optional[str]
+    port_id: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -471,7 +471,7 @@ class TaskResponse(BaseModel):
 
 class IncompleteTaskResponse(BaseModel):
     port_id: str
-    task_id: str 
+    task_id: str
 
     class Config:
         orm_mode = True

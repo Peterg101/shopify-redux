@@ -9,7 +9,7 @@ import { deleteBasketItem } from '../../services/fetchFileUtils';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { authApi } from '../../services/authApi';
 
-const DeleteFromBasket: React.FC<{item: BasketInformation}> = ({item}) => {
+function DeleteFromBasket({ item }: { item: BasketInformation }) {
 const dispatch = useDispatch()
 const {uploadedFiles, setUploadedFiles} = useUploadedFiles()
 const userInterfaceSlice = useSelector(

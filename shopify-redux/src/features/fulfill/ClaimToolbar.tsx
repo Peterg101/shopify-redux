@@ -34,7 +34,7 @@ interface ClaimToolbarProps {
   resultCount: number
 }
 
-export const ClaimToolbar: React.FC<ClaimToolbarProps> = ({
+export function ClaimToolbar({
   searchQuery,
   onSearchChange,
   statusFilter,
@@ -44,7 +44,7 @@ export const ClaimToolbar: React.FC<ClaimToolbarProps> = ({
   viewMode,
   onViewModeChange,
   resultCount,
-}) => {
+}: ClaimToolbarProps) {
   const [localSearch, setLocalSearch] = useState(searchQuery)
   const debounceRef = useRef<ReturnType<typeof setTimeout>>()
 

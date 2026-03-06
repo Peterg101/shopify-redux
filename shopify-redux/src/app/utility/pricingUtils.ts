@@ -6,7 +6,7 @@ export function calculate3DPrintCost(volume: number, materialCost: number, marku
 }
 
 export function getPrice(materialName: string, data: PricingConfig): number | null {
-  for (const technique in data.materials) {
+  for (const technique of Object.keys(data.materials) as Array<keyof typeof data.materials>) {
     const material = data.materials[technique].find((m) => m.name === materialName)
     if (material) return material.price
   }

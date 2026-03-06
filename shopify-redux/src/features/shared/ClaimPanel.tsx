@@ -23,12 +23,12 @@ interface ClaimPanelProps {
   onCancel: () => void
 }
 
-export const ClaimPanel: React.FC<ClaimPanelProps> = ({
+export function ClaimPanel({
   order,
   mode,
   onConfirm,
   onCancel,
-}) => {
+}: ClaimPanelProps) {
   const maxQuantity = order.quantity - order.quantity_claimed
   const [quantity, setQuantity] = useState(Math.min(order.quantity, maxQuantity) || 1)
   const [viewerOpen, setViewerOpen] = useState(false)

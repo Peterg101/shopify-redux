@@ -1,5 +1,4 @@
 from unittest.mock import patch, AsyncMock, MagicMock
-import pytest
 from fastapi.testclient import TestClient
 from main import app
 from utils import validate_stripe_header

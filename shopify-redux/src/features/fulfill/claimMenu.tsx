@@ -9,7 +9,7 @@ import { authApi } from '../../services/authApi'
 import { Snackbar, Alert } from '@mui/material'
 import { ClaimPanel } from '../shared/ClaimPanel'
 
-export const ClaimMenu: React.FC = () => {
+export function ClaimMenu() {
   const { claimedOrder } = useSelector(
     (state: RootState) => state.userInterfaceState
   )

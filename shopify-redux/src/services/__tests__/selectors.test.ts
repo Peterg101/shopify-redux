@@ -1,6 +1,6 @@
-import { selectTotalCost, selectTotalBasketValue } from '../selectors'
+import { selectTotalCost, selectTotalBasketValue, selectVisibleOrders } from '../selectors'
 import { RootState, rootInitialState } from '../../app/store'
-import { createMockBasketInformation } from '../../test-utils/mockData'
+import { createMockBasketInformation, createMockOrder } from '../../test-utils/mockData'
 
 describe('selectTotalCost', () => {
   it('returns 0 when inputs are 0', () => {
@@ -104,5 +104,87 @@ describe('selectTotalBasketValue', () => {
     } as RootState
 
     expect(selectTotalBasketValue(state)).toBe(0)
+  })
+})
+
+describe('selectVisibleOrders', () => {
+  it('returns empty array when userInformation is null', () => {
+    const state = {
+      ...rootInitialState,
+      userInterfaceState: {
+        ...rootInitialState.userInterfaceState,
+        userInformation: null,
+      },
+    } as RootState
+
+    expect(selectVisibleOrders(state)).toEqual([])
+  })
+
+  it('filters out fully claimed orders', () => {
+    const state = {
+      ...rootInitialState,
+      userInterfaceState: {
+        ...rootInitialState.userInterfaceState,
+        userInformation: {
+          user: { user_id: 'u1', username: 'test', email: 'test@test.com' },
+          tasks: [],
+          basket_items: [],
+          incomplete_task: null as any,
+          orders: [],
+          claimable_orders: [
+            createMockOrder({ quantity: 2, quantity_claimed: 2, claims: [] }),
+          ],
+          claims: [],
+        },
+      },
+    } as RootState
+
+    expect(selectVisibleOrders(state)).toHaveLength(0)
+  })
+
+  it('returns orders that are claimable', () => {
+    const state = {
+      ...rootInitialState,
+      userInterfaceState: {
+        ...rootInitialState.userInterfaceState,
+        userInformation: {
+          user: { user_id: 'u1', username: 'test', email: 'test@test.com' },
+          tasks: [],
+          basket_items: [],
+          incomplete_task: null as any,
+          orders: [],
+          claimable_orders: [
+            createMockOrder({ quantity: 5, quantity_claimed: 1, claims: [] }),
+          ],
+          claims: [],
+        },
+      },
+    } as RootState
+
+    expect(selectVisibleOrders(state)).toHaveLength(1)
+  })
+
+  it('is memoized - same input returns same reference', () => {
+    const state = {
+      ...rootInitialState,
+      userInterfaceState: {
+        ...rootInitialState.userInterfaceState,
+        userInformation: {
+          user: { user_id: 'u1', username: 'test', email: 'test@test.com' },
+          tasks: [],
+          basket_items: [],
+          incomplete_task: null as any,
+          orders: [],
+          claimable_orders: [
+            createMockOrder({ quantity: 5, quantity_claimed: 0, claims: [] }),
+          ],
+          claims: [],
+        },
+      },
+    } as RootState
+
+    const result1 = selectVisibleOrders(state)
+    const result2 = selectVisibleOrders(state)
+    expect(result1).toBe(result2)
   })
 })

@@ -10,7 +10,7 @@ export function validateData(
 }
 
 export function calculateTotalBasketValue(basketItems: BasketInformation[]): number {
-  if (basketItems.length == 0) {
+  if (basketItems.length === 0) {
     return 0
   }
   const subtotal = basketItems.reduce((sum, item) => sum + item.quantity * item.price, 0)
@@ -19,7 +19,7 @@ export function calculateTotalBasketValue(basketItems: BasketInformation[]): num
 
 export function visibleOrders(user: UserInformation, claimable_orders: Order[]): Order[] {
   return claimable_orders.filter((order) => {
-    if (order.quantity_claimed == order.quantity) {
+    if (order.quantity_claimed === order.quantity) {
       return false
     }
     const alreadyClaimedByUser = order.claims?.some(

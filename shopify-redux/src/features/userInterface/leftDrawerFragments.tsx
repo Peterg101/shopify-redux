@@ -24,7 +24,7 @@ const formatRelativeTime = (dateString: string): string => {
   return date.toLocaleDateString();
 };
 
-export const LeftDrawerTask: React.FC<TaskInformation> = (task) => {
+export function LeftDrawerTask(task: TaskInformation) {
   const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
 
   const isTaskLoading =
@@ -74,7 +74,7 @@ export const LeftDrawerTask: React.FC<TaskInformation> = (task) => {
   );
 };
 
-export const LeftDrawerButtons: React.FC<TaskInformation> = (task) => {
+export function LeftDrawerButtons(task: TaskInformation) {
   const { setActualFile } = useFile();
   const dispatch = useDispatch();
 
@@ -125,7 +125,7 @@ export const LeftDrawerButtons: React.FC<TaskInformation> = (task) => {
   );
 };
 
-export const LeftDrawerTaskLoading: React.FC = () => {
+export function LeftDrawerTaskLoading() {
   const percentage = useSelector((state: RootState) => state.userInterfaceState.meshyLoadedPercentage);
 
   return (
@@ -152,7 +152,7 @@ export const LeftDrawerTaskLoading: React.FC = () => {
   );
 };
 
-export const LeftDrawerList: React.FC = () => {
+export function LeftDrawerList() {
   const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
   const tasks = userInterfaceState.userInformation?.tasks ?? [];
 

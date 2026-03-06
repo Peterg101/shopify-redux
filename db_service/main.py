@@ -69,7 +69,7 @@ app.add_middleware(
 )
 
 
-@app.post("/users", response_model=Dict[str, str])
+@app.post("/users", response_model=Dict[str, str], status_code=201)
 def create_user(
     user_information: UserInformation,
     db: Session = Depends(get_db),
@@ -123,7 +123,7 @@ def get_user_by_email(
 
 
 # Add a Task
-@app.post("/tasks")
+@app.post("/tasks", status_code=201)
 async def add_task(
     task_information: TaskInformation,
     db: Session = Depends(get_db),
@@ -694,8 +694,8 @@ async def update_claim_quantity(
     if claim.claimant_user_id != user_information.user_id:
         raise HTTPException(status_code=403, detail="Not authorized to update this claim")
 
-    if claim.status != "pending":
-        raise HTTPException(status_code=400, detail="Can only adjust quantity while claim is pending")
+    if claim.status not in ("pending", "in_progress"):
+        raise HTTPException(status_code=400, detail="Can only adjust quantity while claim is pending or in_progress")
 
     if quantity_update.quantity <= 0:
         raise HTTPException(status_code=400, detail="Quantity must be greater than 0")
@@ -779,8 +779,8 @@ def check_and_auto_resolve(dispute: Dispute, db: Session):
 
 
 ALLOWED_STATUS_TRANSITIONS = {
-    "pending": ["in_progress"],
-    "in_progress": ["printing"],
+    "pending": ["in_progress", "cancelled"],
+    "in_progress": ["printing", "cancelled"],
     "printing": ["qa_check"],
     "qa_check": ["shipped"],
     "shipped": ["delivered"],

@@ -28,7 +28,7 @@ interface MarketplaceListCardProps {
   order: Order
 }
 
-export const MarketplaceListCard: React.FC<MarketplaceListCardProps> = React.memo(({ order }) => {
+export const MarketplaceListCard = React.memo(({ order }: MarketplaceListCardProps) => {
   const dispatch = useDispatch()
   const { prepareOrderFile } = useOrderFileLoader()
   const [viewerOpen, setViewerOpen] = useState(false)

@@ -12,7 +12,7 @@ import { CircularProgress, Box } from "@mui/material";
 
 const selectSessionQuery = authApi.endpoints.getSession.select();
 
-const RootRedirect: React.FC = () => {
+function RootRedirect() {
   const isLoggedIn = useSelector((state: RootState) => state.userInterfaceState.isLoggedIn);
   const { isLoading } = useSelector(selectSessionQuery);
 
@@ -27,7 +27,7 @@ const RootRedirect: React.FC = () => {
   return <Navigate to={isLoggedIn ? "/generate" : "/login"} replace />;
 };
 
-const AppRouter: React.FC = () => {
+function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>

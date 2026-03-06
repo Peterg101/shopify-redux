@@ -9,6 +9,11 @@ import {
   Chip,
   IconButton,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions as MuiDialogActions,
+  CircularProgress,
 } from '@mui/material'
 import ViewInArIcon from '@mui/icons-material/ViewInAr'
 import { Add, Remove } from '@mui/icons-material'
@@ -17,7 +22,7 @@ import { Claim } from '../../app/utility/interfaces'
 import { setUpdateClaimedOrder } from '../../services/userInterfaceSlice'
 import { setUpdateClaimMode } from '../../services/dataSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
-import { patchClaimQuantity } from '../../services/fetchFileUtils'
+import { patchClaimQuantity, patchClaimStatus } from '../../services/fetchFileUtils'
 import { authApi } from '../../services/authApi'
 import ModelThumbnail from '../display/ModelThumbnail'
 import { monoFontFamily } from '../../theme'
@@ -44,7 +49,7 @@ const getPhaseColor = (status: string): string => {
   return colorMap[phase.color] || 'rgba(136, 153, 170, 0.6)'
 }
 
-const MiniStepper: React.FC<{ status: string }> = ({ status }) => {
+function MiniStepper({ status }: { status: string }) {
   const currentIdx = getPhaseIndex(status)
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0, my: 1 }}>
@@ -81,10 +86,12 @@ interface ClaimGridCardProps {
   claim: Claim
 }
 
-export const ClaimGridCard: React.FC<ClaimGridCardProps> = React.memo(({ claim }) => {
+export const ClaimGridCard = React.memo(({ claim }: ClaimGridCardProps) => {
   const dispatch = useDispatch()
   const { prepareOrderFile } = useOrderFileLoader()
   const [adjusting, setAdjusting] = useState(false)
+  const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false)
+  const [withdrawing, setWithdrawing] = useState(false)
 
   const order = claim.order
   const pricePerUnit = order.quantity > 0 ? order.price / order.quantity : 0
@@ -120,7 +127,23 @@ export const ClaimGridCard: React.FC<ClaimGridCardProps> = React.memo(({ claim }
     }
   }
 
+  const handleWithdraw = async () => {
+    setWithdrawing(true)
+    try {
+      await patchClaimStatus(claim.id, 'cancelled')
+      dispatch(authApi.util.invalidateTags(['sessionData']))
+    } catch (err) {
+      console.error('Error withdrawing claim:', err)
+    } finally {
+      setWithdrawing(false)
+      setWithdrawDialogOpen(false)
+    }
+  }
+
+  const canWithdraw = claim.status === 'pending' || claim.status === 'in_progress'
+
   return (
+    <>
     <Card
       sx={{
         display: 'flex',
@@ -245,8 +268,8 @@ export const ClaimGridCard: React.FC<ClaimGridCardProps> = React.memo(({ claim }
           </Tooltip>
         )}
 
-        {/* Quantity adjuster (pending only) */}
-        {claim.status === 'pending' && (
+        {/* Quantity adjuster (pending or in_progress) */}
+        {(claim.status === 'pending' || claim.status === 'in_progress') && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
             <IconButton
               size="small"
@@ -279,7 +302,42 @@ export const ClaimGridCard: React.FC<ClaimGridCardProps> = React.memo(({ claim }
         <Button size="small" variant="contained" onClick={handleUpdateClaim} sx={{ flex: 1 }}>
           Update Status
         </Button>
+        {canWithdraw && (
+          <Button
+            size="small"
+            variant="outlined"
+            color="error"
+            onClick={() => setWithdrawDialogOpen(true)}
+          >
+            Withdraw
+          </Button>
+        )}
       </CardActions>
     </Card>
+
+    <Dialog open={withdrawDialogOpen} onClose={() => !withdrawing && setWithdrawDialogOpen(false)}>
+      <DialogTitle>Withdraw Claim?</DialogTitle>
+      <DialogContent>
+        <Typography variant="body2">
+          Are you sure you want to withdraw this claim? {claim.quantity} units will be returned to
+          the marketplace.
+        </Typography>
+      </DialogContent>
+      <MuiDialogActions>
+        <Button onClick={() => setWithdrawDialogOpen(false)} disabled={withdrawing}>
+          Cancel
+        </Button>
+        <Button
+          onClick={handleWithdraw}
+          color="error"
+          variant="contained"
+          disabled={withdrawing}
+          startIcon={withdrawing ? <CircularProgress size={16} color="inherit" /> : undefined}
+        >
+          Withdraw
+        </Button>
+      </MuiDialogActions>
+    </Dialog>
+    </>
   )
 })

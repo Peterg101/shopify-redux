@@ -1,6 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, UniqueConstraint
-from sqlalchemy.orm import backref
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import backref, declarative_base
 from datetime import datetime
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, Mapped, mapped_column

@@ -5,6 +5,7 @@ import PrintIcon from '@mui/icons-material/Print'
 import LocalShippingIcon from '@mui/icons-material/LocalShipping'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import GavelIcon from '@mui/icons-material/Gavel'
+import CancelIcon from '@mui/icons-material/Cancel'
 import { Claim } from '../../app/utility/interfaces'
 import { monoFontFamily } from '../../theme'
 
@@ -15,6 +16,7 @@ export const STATUS_PHASES = [
   { label: 'Shipping', statuses: ['shipped', 'delivered'], color: 'primary' as const, icon: <LocalShippingIcon fontSize="small" /> },
   { label: 'Complete', statuses: ['accepted'], color: 'success' as const, icon: <CheckCircleIcon fontSize="small" /> },
   { label: 'Disputed', statuses: ['disputed', 'resolved_accepted', 'resolved_partial', 'resolved_rejected'], color: 'error' as const, icon: <GavelIcon fontSize="small" /> },
+  { label: 'Cancelled', statuses: ['cancelled'], color: 'default' as const, icon: <CancelIcon fontSize="small" /> },
 ]
 
 const COMPLETED_STATUSES = ['accepted', 'resolved_accepted', 'resolved_partial', 'resolved_rejected']
@@ -24,7 +26,7 @@ interface ClaimDashboardHeaderProps {
   onPhaseClick: (statuses: string[]) => void
 }
 
-export const ClaimDashboardHeader: React.FC<ClaimDashboardHeaderProps> = ({ claims, onPhaseClick }) => {
+export function ClaimDashboardHeader({ claims, onPhaseClick }: ClaimDashboardHeaderProps) {
   const totalClaims = claims.length
   const completedCount = claims.filter((c) => COMPLETED_STATUSES.includes(c.status)).length
   const progressPercent = totalClaims > 0 ? (completedCount / totalClaims) * 100 : 0

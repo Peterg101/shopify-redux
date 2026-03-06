@@ -332,7 +332,7 @@ interface ClaimTrackerProps {
   onRefresh: () => void
 }
 
-const ClaimTracker: React.FC<ClaimTrackerProps> = ({ claim, order, isOwner, onRefresh }) => {
+function ClaimTracker({ claim, order, isOwner, onRefresh }: ClaimTrackerProps) {
   const dispatch = useDispatch()
   const { userInformation } = useSelector((state: RootState) => state.userInterfaceState)
   const [showDispute, setShowDispute] = useState(false)
@@ -610,11 +610,11 @@ interface DisputeSectionProps {
   onResolve: (resolution: 'accepted' | 'partial' | 'rejected') => void
 }
 
-const DisputeSection: React.FC<DisputeSectionProps> = ({
+function DisputeSection({
   claim, dispute, isBuyer, isFulfiller,
   responseText, setResponseText, partialAmount, setPartialAmount,
   acting, onRespond, onResolve,
-}) => {
+}: DisputeSectionProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [evidenceFile, setEvidenceFile] = useState<File | null>(null)
   const [evidenceDesc, setEvidenceDesc] = useState('')

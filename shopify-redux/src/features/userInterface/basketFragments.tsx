@@ -78,7 +78,7 @@ export const BasketList = () => {
 };
 
 // Individual item card
-const BasketItemCard: React.FC<BasketInformation> = (item) => {
+function BasketItemCard(item: BasketInformation) {
   const [quantity, setQuantity] = useState(item.quantity);
   const [showDetails, setShowDetails] = useState(false);
   const [updateBasketQuantity] = useUpdateBasketQuantityMutation();
@@ -144,7 +144,7 @@ const BasketItemCard: React.FC<BasketInformation> = (item) => {
         {/* Quantity row */}
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <IconButton size="small" onClick={() => handleQuantityChange(-1)}>
+            <IconButton size="small" onClick={() => handleQuantityChange(-1)} aria-label="decrease quantity">
               <Remove sx={{ fontSize: 16 }} />
             </IconButton>
             <TextField
@@ -164,7 +164,7 @@ const BasketItemCard: React.FC<BasketInformation> = (item) => {
                 '& input[type=number]::-webkit-inner-spin-button': { WebkitAppearance: 'none', margin: 0 },
               }}
             />
-            <IconButton size="small" onClick={() => handleQuantityChange(1)}>
+            <IconButton size="small" onClick={() => handleQuantityChange(1)} aria-label="increase quantity">
               <Add sx={{ fontSize: 16 }} />
             </IconButton>
           </Box>
@@ -302,9 +302,9 @@ export const BasketSummary = () => {
         Proceed to Checkout
       </Button>
 
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Checkout Confirmation</DialogTitle>
-        <DialogContent>
+      <Dialog open={open} onClose={handleClose} aria-labelledby="checkout-dialog-title" aria-describedby="checkout-dialog-description">
+        <DialogTitle id="checkout-dialog-title">Checkout Confirmation</DialogTitle>
+        <DialogContent id="checkout-dialog-description">
           <Box display="flex" justifyContent="center" alignItems="center" gap={2}>
             <Button variant="contained" color="primary" onClick={handleCheckoutWithFitd}>
               Checkout with FITD

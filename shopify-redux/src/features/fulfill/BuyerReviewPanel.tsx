@@ -23,7 +23,7 @@ interface BuyerReviewPanelProps {
   onClose: () => void
 }
 
-export const BuyerReviewPanel: React.FC<BuyerReviewPanelProps> = ({ claim, onClose }) => {
+export function BuyerReviewPanel({ claim, onClose }: BuyerReviewPanelProps) {
   const dispatch = useDispatch()
   const [evidence, setEvidence] = useState<ClaimEvidence[]>([])
   const [error, setError] = useState('')

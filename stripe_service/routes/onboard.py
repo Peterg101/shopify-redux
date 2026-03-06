@@ -1,15 +1,7 @@
 # routes/onboard.py
-import os
-import stripe
-import asyncio
-from fastapi import APIRouter, Depends, HTTPException, Header, Request
-import requests
-from sqlalchemy.orm import Session
-from datetime import datetime
+from fastapi import APIRouter, Depends
 from api_calls import check_user_stripe_onboarded, generate_stripe_account_in_db
-from utils import cookie_verification_user_only, cookie_verification, generate_stripe_account, generate_account_link
-from fitd_schemas.fitd_db_schemas import UserStripeAccount
-from jwt_auth import generate_token
+from utils import cookie_verification_user_only, generate_stripe_account, generate_account_link
 
 
 

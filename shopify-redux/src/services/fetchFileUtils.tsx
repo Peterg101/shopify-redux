@@ -475,6 +475,10 @@ export async function updateFulfillerAddress(userId: string, address: FulfillerA
   }
 }
 
+export async function cancelClaim(claimId: string) {
+  return patchClaimStatus(claimId, 'cancelled')
+}
+
 export async function getFulfillerAddress(userId: string): Promise<FulfillerAddress | null> {
   const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/users/${userId}/fulfiller_address`, {
     method: "GET",

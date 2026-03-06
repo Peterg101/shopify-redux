@@ -41,7 +41,7 @@ function formatDeadline(deadline: string): string {
   return `${days}d ${hours}h remaining`
 }
 
-export const DisputePanel: React.FC<DisputePanelProps> = ({ claim, onClose }) => {
+export function DisputePanel({ claim, onClose }: DisputePanelProps) {
   const dispatch = useDispatch()
   const { userInformation } = useSelector((state: RootState) => state.userInterfaceState)
   const [dispute, setDispute] = useState<Dispute | null>(null)

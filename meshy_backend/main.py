@@ -59,7 +59,7 @@ async def get_redis():
 async def generate_meshy_task(payload: MeshyPayload):
     try:
         response = MeshyTaskGeneratedResponse(result=payload.prompt)
-        response = generate_text_to_3d_task(payload)
+        response = await generate_text_to_3d_task(payload)
         return response
     except ValidationError:
         raise HTTPException(status_code=500, detail="This is bad")

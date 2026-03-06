@@ -22,7 +22,7 @@ interface MarketplaceCompactCardProps {
   order: Order
 }
 
-export const MarketplaceCompactCard: React.FC<MarketplaceCompactCardProps> = React.memo(({ order }) => {
+export const MarketplaceCompactCard = React.memo(({ order }: MarketplaceCompactCardProps) => {
   const dispatch = useDispatch()
   const { prepareOrderFile } = useOrderFileLoader()
   const [snackbar, setSnackbar] = useState({ open: false, message: '' })

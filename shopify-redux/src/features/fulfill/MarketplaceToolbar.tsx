@@ -38,7 +38,7 @@ interface MarketplaceToolbarProps {
   resultCount: number
 }
 
-export const MarketplaceToolbar: React.FC<MarketplaceToolbarProps> = ({
+export function MarketplaceToolbar({
   orders,
   searchQuery,
   onSearchChange,
@@ -51,7 +51,7 @@ export const MarketplaceToolbar: React.FC<MarketplaceToolbarProps> = ({
   viewMode,
   onViewModeChange,
   resultCount,
-}) => {
+}: MarketplaceToolbarProps) {
   const [localSearch, setLocalSearch] = useState(searchQuery)
   const debounceRef = useRef<ReturnType<typeof setTimeout>>()
 

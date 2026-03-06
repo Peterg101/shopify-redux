@@ -1,8 +1,7 @@
 from unittest.mock import patch, AsyncMock, MagicMock
-import pytest
 
 
-@pytest.mark.asyncio
+
 @patch("routes.checkout.get_all_basket_items", new_callable=AsyncMock)
 @patch("routes.checkout.stripe")
 def test_checkout_creates_session(mock_stripe, mock_basket, client):
@@ -38,7 +37,7 @@ def test_checkout_creates_session(mock_stripe, mock_basket, client):
     assert call_kwargs["mode"] == "payment"
 
 
-@pytest.mark.asyncio
+
 @patch("routes.checkout.get_all_basket_items", new_callable=AsyncMock)
 def test_checkout_empty_basket_400(mock_basket, client):
     mock_basket.return_value = []
@@ -48,7 +47,7 @@ def test_checkout_empty_basket_400(mock_basket, client):
     assert "empty" in response.json()["detail"].lower()
 
 
-@pytest.mark.asyncio
+
 @patch("routes.checkout.get_all_basket_items", new_callable=AsyncMock)
 @patch("routes.checkout.stripe")
 def test_checkout_price_conversion(mock_stripe, mock_basket, client):
@@ -81,7 +80,7 @@ def test_checkout_price_conversion(mock_stripe, mock_basket, client):
     assert call_kwargs["line_items"][0]["price_data"]["currency"] == "gbp"
 
 
-@pytest.mark.asyncio
+
 @patch("routes.checkout.get_all_basket_items", new_callable=AsyncMock)
 @patch("routes.checkout.stripe")
 def test_checkout_includes_shipping_collection(mock_stripe, mock_basket, client):

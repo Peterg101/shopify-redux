@@ -12,7 +12,7 @@ interface ModelThumbnailProps {
   name: string;
 }
 
-const ModelThumbnail: React.FC<ModelThumbnailProps> = React.memo(({ taskId, fileType, colour, name }) => {
+const ModelThumbnail = React.memo(({ taskId, fileType, colour, name }: ModelThumbnailProps) => {
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);

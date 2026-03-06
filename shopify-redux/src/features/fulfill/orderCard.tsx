@@ -4,7 +4,7 @@ import { setClaimedOrder } from '../../services/userInterfaceSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
 import { OrderDetailCard } from '../shared/OrderDetailCard'
 
-export const OrderCard: React.FC<Order> = (order) => {
+export function OrderCard(order: Order) {
   const dispatch = useDispatch()
   const { prepareOrderFile } = useOrderFileLoader()
 

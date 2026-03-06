@@ -8,7 +8,6 @@ export const basketApi = createApi({
     baseUrl: process.env.REACT_APP_DB_SERVICE,
     credentials: 'include',
   }),
-  tagTypes: ['sessionData'],
   endpoints: (builder) => ({
     updateBasketQuantity: builder.mutation<void, BasketQuantityUpdate>({
       query: ({ task_id, quantity }) => ({
@@ -38,23 +37,25 @@ export const basketApi = createApi({
           patchResult.undo();  // Rollback if the mutation fails
         }
       },
-      // This triggers refetching of the session data to get the updated basket info
-      invalidatesTags: ['sessionData'],
     }),
     generateTasksFromBasket: builder.mutation<{ message: string; task_ids: string[] }, void>({
-    query: () => ({
-      url: `/tasks/from_basket`,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+      query: () => ({
+        url: `/tasks/from_basket`,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }),
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          // Invalidate authApi's session cache to refetch updated basket/task data
+          dispatch(authApi.util.invalidateTags(['sessionData']));
+        } catch {
+          // Mutation failed — no cache to rollback
+        }
       },
     }),
-    invalidatesTags: ['sessionData'],
-}),
-
-
-
-
   }),
 });
 

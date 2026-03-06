@@ -1,8 +1,7 @@
 from unittest.mock import patch, AsyncMock, MagicMock
-import pytest
 
 
-@pytest.mark.asyncio
+
 @patch("routes.shipping.update_claim_shipping", new_callable=AsyncMock)
 @patch("routes.shipping.create_shipping_label", new_callable=AsyncMock)
 @patch("routes.shipping.get_claim_detail", new_callable=AsyncMock)
@@ -60,7 +59,7 @@ def test_create_label_calls_shipengine(
     mock_update_shipping.assert_called_once()
 
 
-@pytest.mark.asyncio
+
 @patch("routes.shipping.get_claim_detail", new_callable=AsyncMock)
 @patch("routes.shipping.get_fulfiller_address", new_callable=AsyncMock)
 def test_create_label_missing_fulfiller_address(mock_fulfiller_addr, mock_claim_detail, client):
@@ -84,7 +83,7 @@ def test_create_label_missing_fulfiller_address(mock_fulfiller_addr, mock_claim_
     assert "address" in response.json()["detail"].lower()
 
 
-@pytest.mark.asyncio
+
 @patch("routes.shipping.get_claim_detail", new_callable=AsyncMock)
 def test_create_label_missing_buyer_address(mock_claim_detail, client):
     mock_claim_detail.return_value = {

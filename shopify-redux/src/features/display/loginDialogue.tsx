@@ -22,6 +22,7 @@ export default function LoginDialog() {
     <Dialog
       open={!userInterfaceState.isLoggedIn}
       aria-labelledby="login-dialog-title"
+      aria-describedby="login-dialog-description"
       PaperProps={{
         sx: {
           minWidth: 360,
@@ -41,7 +42,7 @@ export default function LoginDialog() {
           Distributed Manufacturing Marketplace
         </Typography>
       </DialogTitle>
-      <DialogContent>
+      <DialogContent id="login-dialog-description">
         <Box
           sx={{
             display: 'flex',

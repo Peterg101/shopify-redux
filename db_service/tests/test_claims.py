@@ -192,8 +192,8 @@ def test_update_claim_quantity_invalid(claimant_client, seed_order, seed_claiman
     assert response.status_code == 400
 
 
-def test_update_claim_quantity_not_pending(claimant_client, seed_order, seed_claimant_user, db_session):
-    """Cannot adjust quantity after claim moves past pending."""
+def test_update_claim_quantity_not_pending_or_in_progress(claimant_client, seed_order, seed_claimant_user, db_session):
+    """Cannot adjust quantity after claim moves past in_progress."""
     from conftest import set_auth_as_claimant
 
     set_auth_as_claimant()
@@ -205,6 +205,7 @@ def test_update_claim_quantity_not_pending(claimant_client, seed_order, seed_cla
     claim = db_session.query(Claim).first()
 
     claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "in_progress"})
+    claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "printing"})
     response = claimant_client.patch(f"/claims/{claim.id}/quantity", json={"quantity": 3})
     assert response.status_code == 400
 
@@ -291,3 +292,113 @@ def test_claim_response_includes_shipping(claimant_client, seed_order, seed_clai
     assert claim_data["tracking_number"] == "TRACK789"
     assert claim_data["label_url"] == "https://labels.test/label.pdf"
     assert claim_data["carrier_code"] == "royal_mail"
+
+
+def test_cancel_claim_from_pending(claimant_client, seed_order, seed_claimant_user, db_session):
+    """Fulfiller can cancel a claim that is still pending."""
+    from conftest import set_auth_as_claimant
+
+    set_auth_as_claimant()
+    claimant_client.post(
+        "/claims/claim_order",
+        json={"order_id": "order-001", "quantity": 2, "status": "pending"},
+    )
+    from fitd_schemas.fitd_db_schemas import Claim, ClaimStatusHistory
+    claim = db_session.query(Claim).first()
+
+    response = claimant_client.patch(
+        f"/claims/{claim.id}/status",
+        json={"status": "cancelled"},
+    )
+    assert response.status_code == 200
+    assert response.json()["new_status"] == "cancelled"
+
+    db_session.expire_all()
+    updated_claim = db_session.query(Claim).filter(Claim.id == claim.id).first()
+    assert updated_claim.status == "cancelled"
+
+    history = db_session.query(ClaimStatusHistory).filter(
+        ClaimStatusHistory.claim_id == claim.id
+    ).all()
+    assert len(history) == 1
+    assert history[0].previous_status == "pending"
+    assert history[0].new_status == "cancelled"
+
+
+def test_cancel_claim_from_in_progress(claimant_client, seed_order, seed_claimant_user, db_session):
+    """Fulfiller can cancel a claim that is in_progress."""
+    from conftest import set_auth_as_claimant
+
+    set_auth_as_claimant()
+    claimant_client.post(
+        "/claims/claim_order",
+        json={"order_id": "order-001", "quantity": 2, "status": "pending"},
+    )
+    from fitd_schemas.fitd_db_schemas import Claim, ClaimStatusHistory
+    claim = db_session.query(Claim).first()
+
+    claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "in_progress"})
+
+    response = claimant_client.patch(
+        f"/claims/{claim.id}/status",
+        json={"status": "cancelled"},
+    )
+    assert response.status_code == 200
+    assert response.json()["new_status"] == "cancelled"
+
+    db_session.expire_all()
+    updated_claim = db_session.query(Claim).filter(Claim.id == claim.id).first()
+    assert updated_claim.status == "cancelled"
+
+    history = db_session.query(ClaimStatusHistory).filter(
+        ClaimStatusHistory.claim_id == claim.id
+    ).order_by(ClaimStatusHistory.changed_at).all()
+    assert len(history) == 2
+    assert history[0].previous_status == "pending"
+    assert history[0].new_status == "in_progress"
+    assert history[1].previous_status == "in_progress"
+    assert history[1].new_status == "cancelled"
+
+
+def test_cancel_claim_from_printing_rejected(claimant_client, seed_order, seed_claimant_user, db_session):
+    """Cannot cancel a claim once it has reached printing status."""
+    from conftest import set_auth_as_claimant
+
+    set_auth_as_claimant()
+    claimant_client.post(
+        "/claims/claim_order",
+        json={"order_id": "order-001", "quantity": 2, "status": "pending"},
+    )
+    from fitd_schemas.fitd_db_schemas import Claim
+    claim = db_session.query(Claim).first()
+
+    claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "in_progress"})
+    claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "printing"})
+
+    response = claimant_client.patch(
+        f"/claims/{claim.id}/status",
+        json={"status": "cancelled"},
+    )
+    assert response.status_code == 400
+
+
+def test_update_claim_quantity_in_progress(claimant_client, seed_order, seed_claimant_user, db_session):
+    """Fulfiller can adjust quantity while claim is in_progress."""
+    from conftest import set_auth_as_claimant
+
+    set_auth_as_claimant()
+    claimant_client.post(
+        "/claims/claim_order",
+        json={"order_id": "order-001", "quantity": 2, "status": "pending"},
+    )
+    from fitd_schemas.fitd_db_schemas import Claim
+    claim = db_session.query(Claim).first()
+
+    claimant_client.patch(f"/claims/{claim.id}/status", json={"status": "in_progress"})
+
+    response = claimant_client.patch(
+        f"/claims/{claim.id}/quantity",
+        json={"quantity": 4},
+    )
+    assert response.status_code == 200
+    assert response.json()["new_quantity"] == 4

@@ -16,8 +16,8 @@ async def check_user_exists(user_id: str | None):
         "Content-Type": "application/json",
         "Authorization": f"Bearer {auth_token}",  # Add the auth token here
     }
-    with httpx.Client() as client:
-        response = client.get(url, headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
 
         if response.status_code == 200:
             # If the user was successfully found, return the response data
@@ -34,8 +34,8 @@ async def check_only_user_exists(user_id: str | None):
         "Content-Type": "application/json",
         "Authorization": f"Bearer {auth_token}",  # Add the auth token here
     }
-    with httpx.Client() as client:
-        response = client.get(url, headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
 
         if response.status_code == 200:
             # If the user was successfully found, return the response data
@@ -58,7 +58,7 @@ async def create_user(user_information: UserInformation):
     async with httpx.AsyncClient() as client:
         response = await client.post(url, json=user_information.dict(), headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code in (200, 201):
             return response.json()
         else:
             logger.error(f"Error: {response.status_code} - {response.text}")
@@ -86,8 +86,8 @@ async def get_user_by_email(email: str):
         "Authorization": f"Bearer {auth_token}",
     }
 
-    with httpx.Client() as client:
-        response = client.get(url, headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
         if response.status_code == 200:
             return response.json()
         else:

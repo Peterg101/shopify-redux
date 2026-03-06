@@ -8,12 +8,12 @@ interface ObjPopUpViewerProps {
 }
 
 // Loader component wrapped in Suspense boundary
-const ObjModel: React.FC<{ url: string }> = ({ url }) => {
+function ObjModel({ url }: { url: string }) {
   const obj = useLoader(OBJLoader, url);
   return <primitive object={obj} scale={0.01} />;
 };
 
-export const ObjPopUpViewer: React.FC<ObjPopUpViewerProps> = ({ url }) => {
+export function ObjPopUpViewer({ url }: ObjPopUpViewerProps) {
   return (
     <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
       <ambientLight intensity={0.5} />

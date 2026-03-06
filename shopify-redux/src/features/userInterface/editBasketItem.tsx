@@ -8,7 +8,7 @@ import {setLeftDrawerClosed } from '../../services/userInterfaceSlice';
 import { resetDataState } from "../../services/dataSlice";
 import { extractFileInfo, fetchFile } from "../../services/fetchFileUtils";
 
-const EditBasketItem: React.FC<{item: BasketInformation}> = ({item}) => {
+function EditBasketItem({ item }: { item: BasketInformation }) {
 const {actualFile, setActualFile} = useFile()
 const dispatch = useDispatch()
 

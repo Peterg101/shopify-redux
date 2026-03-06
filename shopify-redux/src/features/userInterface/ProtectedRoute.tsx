@@ -11,7 +11,7 @@ interface ProtectedRouteProps {
 
 const selectSessionQuery = authApi.endpoints.getSession.select();
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const isLoggedIn = useSelector((state: RootState) => state.userInterfaceState.isLoggedIn);
   const { isLoading } = useSelector(selectSessionQuery);
 

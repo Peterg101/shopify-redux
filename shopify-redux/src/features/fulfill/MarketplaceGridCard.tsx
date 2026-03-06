@@ -36,7 +36,7 @@ const isNewOrder = (createdAt: string) => {
   return now.getTime() - created.getTime() < 24 * 60 * 60 * 1000
 }
 
-export const MarketplaceGridCard: React.FC<MarketplaceGridCardProps> = React.memo(({ order }) => {
+export const MarketplaceGridCard = React.memo(({ order }: MarketplaceGridCardProps) => {
   const dispatch = useDispatch()
   const { prepareOrderFile } = useOrderFileLoader()
   const [viewerOpen, setViewerOpen] = useState(false)

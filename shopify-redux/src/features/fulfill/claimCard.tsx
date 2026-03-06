@@ -15,7 +15,7 @@ import { OrderDetailCard } from '../shared/OrderDetailCard'
 import { patchClaimQuantity } from '../../services/fetchFileUtils'
 import { authApi } from '../../services/authApi'
 
-export const ClaimCard: React.FC<{ claim: Claim }> = ({ claim }) => {
+export function ClaimCard({ claim }: { claim: Claim }) {
   const dispatch = useDispatch()
   const { prepareOrderFile } = useOrderFileLoader()
   const [adjusting, setAdjusting] = useState(false)

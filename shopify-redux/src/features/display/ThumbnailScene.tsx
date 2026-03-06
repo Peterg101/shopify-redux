@@ -10,7 +10,7 @@ interface ThumbnailSceneProps {
   colour: string;
 }
 
-const ThumbnailScene: React.FC<ThumbnailSceneProps> = ({ fileUrl, fileType, colour }) => {
+function ThumbnailScene({ fileUrl, fileType, colour }: ThumbnailSceneProps) {
   const [mesh, setMesh] = useState<THREE.Mesh | null>(null);
   const { camera, invalidate } = useThree();
 

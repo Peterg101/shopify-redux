@@ -26,12 +26,12 @@ interface OrderDetailCardProps {
   actionLabel: string
 }
 
-export const OrderDetailCard: React.FC<OrderDetailCardProps> = ({
+export function OrderDetailCard({
   order,
   variant,
   onAction,
   actionLabel,
-}) => {
+}: OrderDetailCardProps) {
   const dispatch = useDispatch()
   const { prepareOrderFile } = useOrderFileLoader()
   const [viewerOpen, setViewerOpen] = useState(false)

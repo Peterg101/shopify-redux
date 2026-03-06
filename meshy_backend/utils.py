@@ -26,7 +26,7 @@ from fitd_schemas.fitd_classes import (
 from jwt_auth import generate_token
 from redis.asyncio import Redis as AsyncRedis
 import os
-import requests
+import httpx
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ async def generate_task_and_check_for_response_decoupled_ws(
     try:
         task_generated = False
         task_posted = False
-        generated_task = generate_text_to_3d_task(request.meshy_payload)
+        generated_task = await generate_text_to_3d_task(request.meshy_payload)
 
         while not task_generated:
             await asyncio.sleep(1)
@@ -89,7 +89,7 @@ async def generate_image_to_3d_task_and_check_for_response_decoupled_ws(
     try:
         task_generated = False
         task_posted = False
-        generated_task = generate_image_to_3d_task(request.meshy_image_to_3d_payload)
+        generated_task = await generate_image_to_3d_task(request.meshy_image_to_3d_payload)
 
         while not task_generated:
             await asyncio.sleep(1)
@@ -159,7 +159,7 @@ async def add_file_response(
         # Ensure model_urls and obj are present
         if response.model_urls and response.model_urls.obj:
             # Retrieve the blob
-            obj_file_blob = get_obj_file_blob(response.model_urls.obj)
+            obj_file_blob = await get_obj_file_blob(response.model_urls.obj)
             # Encode the blob in Base64
             obj_file_base64 = base64.b64encode(obj_file_blob.getvalue()).decode("utf-8")
 
@@ -215,10 +215,11 @@ async def send_file_to_storage(
         "Content-Type": "application/json",
         "Authorization": f"Bearer {auth_token}",  # Add the auth token here
     }
-    response = requests.post(
-        server_url, json=complete_meshy_response.dict(), headers=headers
-    )
-    logger.info(f"Response from server: {response.json()}")
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            server_url, json=complete_meshy_response.dict(), headers=headers
+        )
+        logger.info(f"Response from server: {response.json()}")
 
 
 async def send_obj_from_image_to_file_to_storage(
@@ -230,10 +231,11 @@ async def send_obj_from_image_to_file_to_storage(
         "Content-Type": "application/json",
         "Authorization": f"Bearer {auth_token}",  # Add the auth token here
     }
-    response = requests.post(
-        server_url, json=complete_meshy_response.dict(), headers=headers
-    )
-    logger.info(f"Response from server: {response.json()}")
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            server_url, json=complete_meshy_response.dict(), headers=headers
+        )
+        logger.info(f"Response from server: {response.json()}")
 
 
 async def cookie_verification(request: Request):

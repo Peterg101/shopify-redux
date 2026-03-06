@@ -9506,3 +9506,1273 @@ webpack compiled with 2 warnings
 Files successfully emitted, waiting for typecheck results...
 Issues checking in progress...
 No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/fulfill/ClaimDashboardHeader.tsx
+  Line 8:8:  'CancelIcon' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/fulfill/ClaimDashboardHeader.tsx
+  Line 8:8:  'CancelIcon' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/fulfill/ClaimGridCard.tsx
+  Line 12:3:   'Dialog' is defined but never used            @typescript-eslint/no-unused-vars
+  Line 13:3:   'DialogTitle' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 14:3:   'DialogContent' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:20:  'MuiDialogActions' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 16:3:   'CircularProgress' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 25:30:  'patchClaimStatus' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/fulfill/ClaimGridCard.tsx
+  Line 12:3:   'Dialog' is defined but never used            @typescript-eslint/no-unused-vars
+  Line 13:3:   'DialogTitle' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 14:3:   'DialogContent' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:20:  'MuiDialogActions' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 16:3:   'CircularProgress' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 25:30:  'patchClaimStatus' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/fulfill/ClaimGridCard.tsx
+  Line 12:3:   'Dialog' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 13:3:   'DialogTitle' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 14:3:   'DialogContent' is defined but never used                   @typescript-eslint/no-unused-vars
+  Line 15:20:  'MuiDialogActions' is defined but never used                @typescript-eslint/no-unused-vars
+  Line 16:3:   'CircularProgress' is defined but never used                @typescript-eslint/no-unused-vars
+  Line 25:30:  'patchClaimStatus' is defined but never used                @typescript-eslint/no-unused-vars
+  Line 93:10:  'withdrawDialogOpen' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  Line 93:30:  'setWithdrawDialogOpen' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 94:10:  'withdrawing' is assigned a value but never used            @typescript-eslint/no-unused-vars
+  Line 94:23:  'setWithdrawing' is assigned a value but never used         @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/fulfill/ClaimGridCard.tsx
+  Line 12:3:   'Dialog' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 13:3:   'DialogTitle' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 14:3:   'DialogContent' is defined but never used                   @typescript-eslint/no-unused-vars
+  Line 15:20:  'MuiDialogActions' is defined but never used                @typescript-eslint/no-unused-vars
+  Line 16:3:   'CircularProgress' is defined but never used                @typescript-eslint/no-unused-vars
+  Line 25:30:  'patchClaimStatus' is defined but never used                @typescript-eslint/no-unused-vars
+  Line 93:10:  'withdrawDialogOpen' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  Line 93:30:  'setWithdrawDialogOpen' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 94:10:  'withdrawing' is assigned a value but never used            @typescript-eslint/no-unused-vars
+  Line 94:23:  'setWithdrawing' is assigned a value but never used         @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/fulfill/ClaimGridCard.tsx
+  Line 12:3:   'Dialog' is defined but never used                       @typescript-eslint/no-unused-vars
+  Line 13:3:   'DialogTitle' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 14:3:   'DialogContent' is defined but never used                @typescript-eslint/no-unused-vars
+  Line 15:20:  'MuiDialogActions' is defined but never used             @typescript-eslint/no-unused-vars
+  Line 16:3:   'CircularProgress' is defined but never used             @typescript-eslint/no-unused-vars
+  Line 93:10:  'withdrawDialogOpen' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 94:10:  'withdrawing' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  Line 130:9:  'handleWithdraw' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  Line 143:9:  'canWithdraw' is assigned a value but never used         @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/fulfill/ClaimGridCard.tsx
+  Line 12:3:   'Dialog' is defined but never used                       @typescript-eslint/no-unused-vars
+  Line 13:3:   'DialogTitle' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 14:3:   'DialogContent' is defined but never used                @typescript-eslint/no-unused-vars
+  Line 15:20:  'MuiDialogActions' is defined but never used             @typescript-eslint/no-unused-vars
+  Line 16:3:   'CircularProgress' is defined but never used             @typescript-eslint/no-unused-vars
+  Line 93:10:  'withdrawDialogOpen' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 94:10:  'withdrawing' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  Line 130:9:  'handleWithdraw' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  Line 143:9:  'canWithdraw' is assigned a value but never used         @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/fulfill/ClaimGridCard.tsx
+  Line 12:3:   'Dialog' is defined but never used                       @typescript-eslint/no-unused-vars
+  Line 13:3:   'DialogTitle' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 14:3:   'DialogContent' is defined but never used                @typescript-eslint/no-unused-vars
+  Line 15:20:  'MuiDialogActions' is defined but never used             @typescript-eslint/no-unused-vars
+  Line 16:3:   'CircularProgress' is defined but never used             @typescript-eslint/no-unused-vars
+  Line 93:10:  'withdrawDialogOpen' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 94:10:  'withdrawing' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  Line 130:9:  'handleWithdraw' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  Line 143:9:  'canWithdraw' is assigned a value but never used         @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/fulfill/ClaimGridCard.tsx
+  Line 12:3:   'Dialog' is defined but never used                       @typescript-eslint/no-unused-vars
+  Line 13:3:   'DialogTitle' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 14:3:   'DialogContent' is defined but never used                @typescript-eslint/no-unused-vars
+  Line 15:20:  'MuiDialogActions' is defined but never used             @typescript-eslint/no-unused-vars
+  Line 16:3:   'CircularProgress' is defined but never used             @typescript-eslint/no-unused-vars
+  Line 93:10:  'withdrawDialogOpen' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 94:10:  'withdrawing' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  Line 130:9:  'handleWithdraw' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  Line 143:9:  'canWithdraw' is assigned a value but never used         @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 2 warnings
+No issues found.
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/fulfill/ClaimGridCard.tsx
+Syntax error: Unexpected token. Did you mean `{'}'}` or `&rbrace;`? (342:undefined)
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+ERROR in ./src/features/fulfill/ClaimGridCard.tsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/src/features/fulfill/ClaimGridCard.tsx: Unterminated JSX contents. (340:11)
+
+  338 |         </MuiDialogActions>
+  339 |       </Dialog>
+> 340 |     </Card>
+      |            ^
+  341 |   )
+  342 | })
+  343 |
+    at constructor (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:359:19)
+    at TypeScriptParserMixin.raise (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:3327:19)
+    at TypeScriptParserMixin.jsxReadToken (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6621:20)
+    at TypeScriptParserMixin.getTokenFromCode (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6947:12)
+    at TypeScriptParserMixin.getTokenFromCode (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:9802:11)
+    at TypeScriptParserMixin.nextToken (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:2510:10)
+    at TypeScriptParserMixin.next (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:2423:10)
+    at TypeScriptParserMixin.eat (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:2427:12)
+    at TypeScriptParserMixin.expect (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:3656:15)
+    at TypeScriptParserMixin.jsxParseClosingElementAt (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6853:10)
+    at TypeScriptParserMixin.jsxParseElementAt (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6868:37)
+    at TypeScriptParserMixin.jsxParseElementAt (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6871:32)
+    at TypeScriptParserMixin.jsxParseElement (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6922:17)
+    at TypeScriptParserMixin.parseExprAtom (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6932:19)
+    at TypeScriptParserMixin.parseExprSubscripts (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10734:23)
+    at TypeScriptParserMixin.parseUpdate (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10719:21)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10699:23)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:9649:18)
+    at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10553:61)
+    at TypeScriptParserMixin.parseExprOps (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10558:23)
+    at TypeScriptParserMixin.parseMaybeConditional (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10535:23)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10498:21)
+    at /Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:9587:39
+    at TypeScriptParserMixin.tryParse (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:3665:20)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:9587:18)
+    at /Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10468:39
+    at TypeScriptParserMixin.allowInAnd (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:12069:12)
+    at TypeScriptParserMixin.parseMaybeAssignAllowIn (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10468:17)
+    at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:11328:28)
+    at TypeScriptParserMixin.parseExprAtom (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10982:23)
+    at TypeScriptParserMixin.parseExprAtom (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6937:20)
+    at TypeScriptParserMixin.parseExprSubscripts (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10734:23)
+    at TypeScriptParserMixin.parseUpdate (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10719:21)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10699:23)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:9649:18)
+    at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10553:61)
+    at TypeScriptParserMixin.parseExprOps (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10558:23)
+    at TypeScriptParserMixin.parseMaybeConditional (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10535:23)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10498:21)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:9598:20)
+    at TypeScriptParserMixin.parseExpressionBase (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10452:23)
+    at /Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10448:39
+    at TypeScriptParserMixin.allowInAnd (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:12064:16)
+    at TypeScriptParserMixin.parseExpression (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10448:17)
+    at TypeScriptParserMixin.parseReturnStatement (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:12755:28)
+    at TypeScriptParserMixin.parseStatementContent (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:12406:21)
+    at TypeScriptParserMixin.parseStatementContent (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:9321:18)
+    at TypeScriptParserMixin.parseStatementLike (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:12375:17)
+    at TypeScriptParserMixin.parseStatementListItem (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:12355:17)
+    at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:12929:61)
+
+ERROR in [eslint] 
+src/features/fulfill/ClaimGridCard.tsx
+  Line 342:  Parsing error: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+webpack compiled with 2 errors and 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+ERROR in src/features/fulfill/ClaimGridCard.tsx
+TS1005: '</' expected.
+
+ERROR in src/features/fulfill/ClaimGridCard.tsx:145:11
+TS17014: JSX fragment has no corresponding closing tag.
+    143 |   const canWithdraw = claim.status === 'pending' || claim.status === 'in_progress'
+    144 |
+  > 145 |   return (
+        |           ^
+  > 146 |     <>
+        | ^^^^^^^
+    147 |     <Card
+    148 |       sx={{
+    149 |         display: 'flex',
+
+ERROR in src/features/fulfill/ClaimGridCard.tsx:342:1
+TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+    340 |     </Card>
+    341 |   )
+  > 342 | })
+        | ^
+    343 |
+
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/fulfill/ClaimListCard.tsx
+  Line 11:3:   'Dialog' is defined but never used            @typescript-eslint/no-unused-vars
+  Line 12:3:   'DialogTitle' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 13:3:   'DialogContent' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 14:20:  'MuiDialogActions' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 15:3:   'CircularProgress' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 24:30:  'patchClaimStatus' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/fulfill/ClaimListCard.tsx
+  Line 11:3:   'Dialog' is defined but never used            @typescript-eslint/no-unused-vars
+  Line 12:3:   'DialogTitle' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 13:3:   'DialogContent' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 14:20:  'MuiDialogActions' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 15:3:   'CircularProgress' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 24:30:  'patchClaimStatus' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/fulfill/ClaimListCard.tsx
+  Line 11:3:   'Dialog' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 12:3:   'DialogTitle' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 13:3:   'DialogContent' is defined but never used                   @typescript-eslint/no-unused-vars
+  Line 14:20:  'MuiDialogActions' is defined but never used                @typescript-eslint/no-unused-vars
+  Line 15:3:   'CircularProgress' is defined but never used                @typescript-eslint/no-unused-vars
+  Line 24:30:  'patchClaimStatus' is defined but never used                @typescript-eslint/no-unused-vars
+  Line 90:10:  'withdrawDialogOpen' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  Line 90:30:  'setWithdrawDialogOpen' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 91:10:  'withdrawing' is assigned a value but never used            @typescript-eslint/no-unused-vars
+  Line 91:23:  'setWithdrawing' is assigned a value but never used         @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/fulfill/ClaimListCard.tsx
+  Line 11:3:   'Dialog' is defined but never used                          @typescript-eslint/no-unused-vars
+  Line 12:3:   'DialogTitle' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 13:3:   'DialogContent' is defined but never used                   @typescript-eslint/no-unused-vars
+  Line 14:20:  'MuiDialogActions' is defined but never used                @typescript-eslint/no-unused-vars
+  Line 15:3:   'CircularProgress' is defined but never used                @typescript-eslint/no-unused-vars
+  Line 24:30:  'patchClaimStatus' is defined but never used                @typescript-eslint/no-unused-vars
+  Line 90:10:  'withdrawDialogOpen' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  Line 90:30:  'setWithdrawDialogOpen' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 91:10:  'withdrawing' is assigned a value but never used            @typescript-eslint/no-unused-vars
+  Line 91:23:  'setWithdrawing' is assigned a value but never used         @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+No issues found.
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/fulfill/ClaimListCard.tsx
+Syntax error: Unexpected token. Did you mean `{'}'}` or `&rbrace;`? (280:undefined)
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+ERROR in ./src/features/fulfill/ClaimListCard.tsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/src/features/fulfill/ClaimListCard.tsx: Unterminated JSX contents. (278:11)
+
+  276 |         </Button>
+  277 |       </CardActions>
+> 278 |     </Card>
+      |            ^
+  279 |   )
+  280 | })
+  281 |
+    at constructor (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:359:19)
+    at TypeScriptParserMixin.raise (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:3327:19)
+    at TypeScriptParserMixin.jsxReadToken (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6621:20)
+    at TypeScriptParserMixin.getTokenFromCode (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6947:12)
+    at TypeScriptParserMixin.getTokenFromCode (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:9802:11)
+    at TypeScriptParserMixin.nextToken (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:2510:10)
+    at TypeScriptParserMixin.next (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:2423:10)
+    at TypeScriptParserMixin.eat (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:2427:12)
+    at TypeScriptParserMixin.expect (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:3656:15)
+    at TypeScriptParserMixin.jsxParseClosingElementAt (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6853:10)
+    at TypeScriptParserMixin.jsxParseElementAt (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6868:37)
+    at TypeScriptParserMixin.jsxParseElementAt (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6871:32)
+    at TypeScriptParserMixin.jsxParseElement (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6922:17)
+    at TypeScriptParserMixin.parseExprAtom (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6932:19)
+    at TypeScriptParserMixin.parseExprSubscripts (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10734:23)
+    at TypeScriptParserMixin.parseUpdate (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10719:21)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10699:23)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:9649:18)
+    at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10553:61)
+    at TypeScriptParserMixin.parseExprOps (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10558:23)
+    at TypeScriptParserMixin.parseMaybeConditional (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10535:23)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10498:21)
+    at /Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:9587:39
+    at TypeScriptParserMixin.tryParse (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:3665:20)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:9587:18)
+    at /Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10468:39
+    at TypeScriptParserMixin.allowInAnd (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:12069:12)
+    at TypeScriptParserMixin.parseMaybeAssignAllowIn (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10468:17)
+    at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:11328:28)
+    at TypeScriptParserMixin.parseExprAtom (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10982:23)
+    at TypeScriptParserMixin.parseExprAtom (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6937:20)
+    at TypeScriptParserMixin.parseExprSubscripts (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10734:23)
+    at TypeScriptParserMixin.parseUpdate (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10719:21)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10699:23)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:9649:18)
+    at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10553:61)
+    at TypeScriptParserMixin.parseExprOps (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10558:23)
+    at TypeScriptParserMixin.parseMaybeConditional (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10535:23)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10498:21)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:9598:20)
+    at TypeScriptParserMixin.parseExpressionBase (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10452:23)
+    at /Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10448:39
+    at TypeScriptParserMixin.allowInAnd (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:12064:16)
+    at TypeScriptParserMixin.parseExpression (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10448:17)
+    at TypeScriptParserMixin.parseReturnStatement (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:12755:28)
+    at TypeScriptParserMixin.parseStatementContent (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:12406:21)
+    at TypeScriptParserMixin.parseStatementContent (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:9321:18)
+    at TypeScriptParserMixin.parseStatementLike (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:12375:17)
+    at TypeScriptParserMixin.parseStatementListItem (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:12355:17)
+    at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:12929:61)
+
+ERROR in [eslint] 
+src/features/fulfill/ClaimListCard.tsx
+  Line 280:  Parsing error: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+webpack compiled with 2 errors and 2 warnings
+ERROR in src/features/fulfill/ClaimListCard.tsx
+TS1005: '</' expected.
+
+ERROR in src/features/fulfill/ClaimListCard.tsx:142:11
+TS17014: JSX fragment has no corresponding closing tag.
+    140 |   const canWithdraw = claim.status === 'pending' || claim.status === 'in_progress'
+    141 |
+  > 142 |   return (
+        |           ^
+  > 143 |     <>
+        | ^^^^^^^
+    144 |     <Card
+    145 |       sx={{
+    146 |         display: 'flex',
+
+ERROR in src/features/fulfill/ClaimListCard.tsx:280:1
+TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+    278 |     </Card>
+    279 |   )
+  > 280 | })
+        | ^
+    281 |
+
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/fulfill/ClaimListCard.tsx
+Syntax error: Unexpected token. Did you mean `{'}'}` or `&rbrace;`? (280:undefined)
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+ERROR in ./src/features/fulfill/ClaimListCard.tsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/src/features/fulfill/ClaimListCard.tsx: Unterminated JSX contents. (278:11)
+
+  276 |         </Button>
+  277 |       </CardActions>
+> 278 |     </Card>
+      |            ^
+  279 |   )
+  280 | })
+  281 |
+    at constructor (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:359:19)
+    at TypeScriptParserMixin.raise (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:3327:19)
+    at TypeScriptParserMixin.jsxReadToken (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6621:20)
+    at TypeScriptParserMixin.getTokenFromCode (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6947:12)
+    at TypeScriptParserMixin.getTokenFromCode (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:9802:11)
+    at TypeScriptParserMixin.nextToken (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:2510:10)
+    at TypeScriptParserMixin.next (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:2423:10)
+    at TypeScriptParserMixin.eat (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:2427:12)
+    at TypeScriptParserMixin.expect (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:3656:15)
+    at TypeScriptParserMixin.jsxParseClosingElementAt (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6853:10)
+    at TypeScriptParserMixin.jsxParseElementAt (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6868:37)
+    at TypeScriptParserMixin.jsxParseElementAt (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6871:32)
+    at TypeScriptParserMixin.jsxParseElement (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6922:17)
+    at TypeScriptParserMixin.parseExprAtom (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6932:19)
+    at TypeScriptParserMixin.parseExprSubscripts (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10734:23)
+    at TypeScriptParserMixin.parseUpdate (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10719:21)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10699:23)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:9649:18)
+    at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10553:61)
+    at TypeScriptParserMixin.parseExprOps (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10558:23)
+    at TypeScriptParserMixin.parseMaybeConditional (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10535:23)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10498:21)
+    at /Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:9587:39
+    at TypeScriptParserMixin.tryParse (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:3665:20)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:9587:18)
+    at /Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10468:39
+    at TypeScriptParserMixin.allowInAnd (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:12069:12)
+    at TypeScriptParserMixin.parseMaybeAssignAllowIn (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10468:17)
+    at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:11328:28)
+    at TypeScriptParserMixin.parseExprAtom (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10982:23)
+    at TypeScriptParserMixin.parseExprAtom (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:6937:20)
+    at TypeScriptParserMixin.parseExprSubscripts (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10734:23)
+    at TypeScriptParserMixin.parseUpdate (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10719:21)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10699:23)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:9649:18)
+    at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10553:61)
+    at TypeScriptParserMixin.parseExprOps (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10558:23)
+    at TypeScriptParserMixin.parseMaybeConditional (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10535:23)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10498:21)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:9598:20)
+    at TypeScriptParserMixin.parseExpressionBase (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10452:23)
+    at /Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10448:39
+    at TypeScriptParserMixin.allowInAnd (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:12064:16)
+    at TypeScriptParserMixin.parseExpression (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:10448:17)
+    at TypeScriptParserMixin.parseReturnStatement (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:12755:28)
+    at TypeScriptParserMixin.parseStatementContent (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:12406:21)
+    at TypeScriptParserMixin.parseStatementContent (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:9321:18)
+    at TypeScriptParserMixin.parseStatementLike (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:12375:17)
+    at TypeScriptParserMixin.parseStatementListItem (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:12355:17)
+    at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@babel/parser/lib/index.js:12929:61)
+
+ERROR in [eslint] 
+src/features/fulfill/ClaimListCard.tsx
+  Line 280:  Parsing error: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+webpack compiled with 2 errors and 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+ERROR in src/features/fulfill/ClaimListCard.tsx
+TS1005: '</' expected.
+
+ERROR in src/features/fulfill/ClaimListCard.tsx:142:11
+TS17014: JSX fragment has no corresponding closing tag.
+    140 |   const canWithdraw = claim.status === 'pending' || claim.status === 'in_progress'
+    141 |
+  > 142 |   return (
+        |           ^
+  > 143 |     <>
+        | ^^^^^^^
+    144 |     <Card
+    145 |       sx={{
+    146 |         display: 'flex',
+
+ERROR in src/features/fulfill/ClaimListCard.tsx:280:1
+TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+    278 |     </Card>
+    279 |   )
+  > 280 | })
+        | ^
+    281 |
+
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/fulfill/updateClaimStatus.tsx
+  Line 7:20:  'useRef' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/fulfill/updateClaimStatus.tsx
+  Line 7:20:  'useRef' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/fulfill/updateClaimStatus.tsx
+  Line 7:20:  'useRef' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/fulfill/updateClaimStatus.tsx
+  Line 7:20:  'useRef' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/fulfill/updateClaimStatus.tsx
+  Line 7:20:  'useRef' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/fulfill/updateClaimStatus.tsx
+  Line 7:20:  'useRef' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 66:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 36:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 56:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 76:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.

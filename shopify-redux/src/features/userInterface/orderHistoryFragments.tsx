@@ -80,7 +80,7 @@ export const OrderHistory = () => {
 
 const DISPUTE_STATUSES = ["disputed", "resolved_accepted", "resolved_partial", "resolved_rejected"];
 
-const ClaimStatusChip: React.FC<{ status: string }> = ({ status }) => {
+function ClaimStatusChip({ status }: { status: string }) {
   const colorMap: Record<string, "error" | "warning" | "success" | "default" | "info"> = {
     disputed: "error",
     resolved_accepted: "success",
@@ -101,7 +101,7 @@ const ClaimStatusChip: React.FC<{ status: string }> = ({ status }) => {
   );
 };
 
-const OrderedItemCard: React.FC<Order> = (item) => {
+function OrderedItemCard(item: Order) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [toggling, setToggling] = useState(false);
