@@ -19,9 +19,10 @@ const OBJSTLViewer = ({ hideOrientationControls = false }: OBJSTLViewerProps) =>
 
   return (
       <div className="App" style={{ width: '100%', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
         <ViewerErrorBoundary>
           <Canvas
-            style={{ flex: 1, minHeight: 0, background: 'radial-gradient(circle at center, #1a2230 0%, #0A0E14 100%)' }}
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'radial-gradient(circle at center, #1a2230 0%, #0A0E14 100%)' }}
             camera={{ fov: 100, near: 0.1, far: 1000, position: [100, 100, 100] }}
           >
             <Suspense fallback={null}>
@@ -46,6 +47,7 @@ const OBJSTLViewer = ({ hideOrientationControls = false }: OBJSTLViewerProps) =>
             </Suspense>
           </Canvas>
         </ViewerErrorBoundary>
+        </div>
         {!hideOrientationControls && <OrientationControls />}
       </div>
   );
