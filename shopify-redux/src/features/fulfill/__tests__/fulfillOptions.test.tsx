@@ -27,13 +27,15 @@ describe('FulfillOptions', () => {
       preloadedState: {
         userInterfaceState: {
           leftDrawerOpen: false,
-          drawerWidth: 400,
+
           selectedComponent: '',
           isLoggedIn: true,
           userInformation: sessionData,
           totalBasketValue: 0,
           claimedOrder: null as any,
-          updateClaimedOrder: null as any,
+          selectedClaim: null as any,
+          fulfillMode: false,
+          updateClaimMode: false,
         },
       },
     })
@@ -56,13 +58,15 @@ describe('FulfillOptions', () => {
       preloadedState: {
         userInterfaceState: {
           leftDrawerOpen: false,
-          drawerWidth: 400,
+
           selectedComponent: '',
           isLoggedIn: true,
           userInformation: sessionData,
           totalBasketValue: 0,
           claimedOrder: null as any,
-          updateClaimedOrder: null as any,
+          selectedClaim: null as any,
+          fulfillMode: false,
+          updateClaimMode: false,
         },
       },
     })
@@ -89,13 +93,15 @@ describe('FulfillOptions', () => {
       preloadedState: {
         userInterfaceState: {
           leftDrawerOpen: false,
-          drawerWidth: 400,
+
           selectedComponent: '',
           isLoggedIn: true,
           userInformation: sessionData,
           totalBasketValue: 0,
           claimedOrder: null as any,
-          updateClaimedOrder: null as any,
+          selectedClaim: null as any,
+          fulfillMode: false,
+          updateClaimMode: false,
         },
       },
     })

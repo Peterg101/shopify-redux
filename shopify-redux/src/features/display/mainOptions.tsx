@@ -5,12 +5,13 @@ import { ConfigurationPanel } from './ConfigurationPanel';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 import { useTheme } from '@mui/material/styles';
+import { DRAWER_WIDTH } from '../userInterface/uiComponents';
 
 export const MainOptions = () => {
   const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
   const theme = useTheme();
-  const drawerWidth = userInterfaceState.drawerWidth;
   const dataState = useSelector((state: RootState) => state.dataState);
+  const { fulfillMode } = userInterfaceState;
 
   const collapsedWidth = `calc(${theme.spacing(8)} + 1px)`;
   const has3DModel = dataState.fileDisplay && ['obj', 'stl', 'glb', 'fbx'].includes(dataState.selectedFileType.toLowerCase());
@@ -18,7 +19,7 @@ export const MainOptions = () => {
   return (
     <Box
       sx={{
-        marginLeft: userInterfaceState.leftDrawerOpen ? `${drawerWidth}px` : collapsedWidth,
+        marginLeft: userInterfaceState.leftDrawerOpen ? `${DRAWER_WIDTH}px` : collapsedWidth,
         transition: theme.transitions.create(['margin'], {
           easing: theme.transitions.easing.sharp,
           duration: theme.transitions.duration.enteringScreen,
@@ -32,7 +33,7 @@ export const MainOptions = () => {
               {has3DModel && <ToolBar />}
               <FileViewer />
             </Paper>
-            {has3DModel && !dataState.fulfillMode && <ConfigurationPanel />}
+            {has3DModel && !fulfillMode && <ConfigurationPanel />}
           </Grid>
         </Grid>
       </Container>

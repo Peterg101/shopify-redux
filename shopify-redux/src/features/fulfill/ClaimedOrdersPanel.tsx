@@ -17,8 +17,7 @@ import BuildIcon from '@mui/icons-material/Build'
 import GavelIcon from '@mui/icons-material/Gavel'
 import { RootState } from '../../app/store'
 import { Claim } from '../../app/utility/interfaces'
-import { setUpdateClaimedOrder } from '../../services/userInterfaceSlice'
-import { setUpdateClaimMode } from '../../services/dataSlice'
+import { setSelectedClaim, setUpdateClaimMode } from '../../services/userInterfaceSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
 import { FulfillerAddressForm } from './FulfillerAddressForm'
 
@@ -73,7 +72,7 @@ export const ClaimedOrdersPanel = () => {
   const handleOpenClaim = async (claim: Claim) => {
     await prepareOrderFile(claim.order)
     dispatch(setUpdateClaimMode({ updateClaimMode: true }))
-    dispatch(setUpdateClaimedOrder({ updateClaimedOrder: claim }))
+    dispatch(setSelectedClaim({ selectedClaim: claim }))
   }
 
   // Count claims per phase

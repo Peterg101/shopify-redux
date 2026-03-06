@@ -46,6 +46,7 @@ import { authApi } from '../../services/authApi'
 import { setLeftDrawerClosed, setSelectedComponent } from '../../services/userInterfaceSlice'
 import { HeaderBar } from '../userInterface/headerBar'
 import { UpdatedUserInterface } from '../userInterface/updatedUserInterface'
+import { DRAWER_WIDTH } from '../userInterface/uiComponents'
 
 const CLAIM_STEPS = [
   'pending',
@@ -139,7 +140,7 @@ export const OrderDetailPage = () => {
   }
 
   const contentMargin = userInterfaceState.leftDrawerOpen
-    ? `${userInterfaceState.drawerWidth}px`
+    ? `${DRAWER_WIDTH}px`
     : collapsedWidth
 
   if (loading) {

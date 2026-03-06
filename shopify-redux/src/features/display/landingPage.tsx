@@ -3,8 +3,8 @@ import { useEffect } from "react";
 import { useDispatch} from "react-redux";
 import { HeaderBar } from "../userInterface/headerBar";
 import { GenerateOrderOptions } from "./generateOrderOptions";
-import { resetDataState, setFulfillMode } from "../../services/dataSlice";
-import { setClaimedOrder, resetSidebar } from "../../services/userInterfaceSlice";
+import { resetDataState } from "../../services/dataSlice";
+import { setClaimedOrder, setFulfillMode, resetSidebar } from "../../services/userInterfaceSlice";
 
 export const LandingPage = () => {
     const dispatch = useDispatch()

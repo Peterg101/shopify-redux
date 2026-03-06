@@ -142,7 +142,6 @@ export const UpdatedUserInterface = () => {
       <Drawer
         variant="permanent"
         ref={drawerRef}
-        drawerWidth={userInterfaceState.drawerWidth}
         open={userInterfaceState.leftDrawerOpen}
       >
         {userInterfaceState.leftDrawerOpen && (

@@ -24,8 +24,8 @@ import {
   fetchClaimEvidence,
 } from '../../services/fetchFileUtils'
 import { authApi } from '../../services/authApi'
-import { setUpdateClaimedOrder } from '../../services/userInterfaceSlice'
-import { resetDataState, setUpdateClaimMode } from '../../services/dataSlice'
+import { setSelectedClaim, setUpdateClaimMode } from '../../services/userInterfaceSlice'
+import { resetDataState } from '../../services/dataSlice'
 
 interface DisputePanelProps {
   claim: Claim
@@ -86,7 +86,7 @@ export function DisputePanel({ claim, onClose }: DisputePanelProps) {
 
   const handleDone = () => {
     dispatch(authApi.util.invalidateTags(['sessionData']))
-    dispatch(setUpdateClaimedOrder({ updateClaimedOrder: null }))
+    dispatch(setSelectedClaim({ selectedClaim: null }))
     dispatch(setUpdateClaimMode({ updateClaimMode: false }))
     dispatch(resetDataState())
   }

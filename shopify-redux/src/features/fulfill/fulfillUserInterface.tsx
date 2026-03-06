@@ -87,7 +87,6 @@ export const FulfillUserInterface = () => {
       <Drawer
         variant="permanent"
         ref={drawerRef}
-        drawerWidth={userInterfaceState.drawerWidth}
         open={userInterfaceState.leftDrawerOpen}
       >
         {userInterfaceState.leftDrawerOpen && (

@@ -26,13 +26,15 @@ const claimedOrder = createMockOrder({
 
 const defaultUiState = {
   leftDrawerOpen: false,
-  drawerWidth: 400,
+
   selectedComponent: '',
   isLoggedIn: true,
   userInformation: null,
   totalBasketValue: 0,
   claimedOrder,
-  updateClaimedOrder: null as any,
+  selectedClaim: null as any,
+  fulfillMode: false,
+  updateClaimMode: false,
 }
 
 describe('ClaimMenu', () => {

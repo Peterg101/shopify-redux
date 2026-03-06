@@ -9,8 +9,7 @@ import {
 import { Add, Remove } from '@mui/icons-material'
 import { Claim } from '../../app/utility/interfaces'
 import logger from '../../app/utility/logger'
-import { setUpdateClaimedOrder } from '../../services/userInterfaceSlice'
-import { setUpdateClaimMode } from '../../services/dataSlice'
+import { setSelectedClaim, setUpdateClaimMode } from '../../services/userInterfaceSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
 import { OrderDetailCard } from '../shared/OrderDetailCard'
 import { patchClaimQuantity } from '../../services/fetchFileUtils'
@@ -24,7 +23,7 @@ export function ClaimCard({ claim }: { claim: Claim }) {
   const handleUpdateClaim = async () => {
     await prepareOrderFile(claim.order)
     dispatch(setUpdateClaimMode({ updateClaimMode: true }))
-    dispatch(setUpdateClaimedOrder({ updateClaimedOrder: claim }))
+    dispatch(setSelectedClaim({ selectedClaim: claim }))
   }
 
   const order = claim.order

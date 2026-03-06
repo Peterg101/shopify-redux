@@ -4,13 +4,14 @@ import { authApi } from "./authApi";
 
 const initialState: UserInterfaceState = {
     leftDrawerOpen: false,
-    drawerWidth: 400,
     selectedComponent: '',
     isLoggedIn: false,
     userInformation: null,
     totalBasketValue: 0,
     claimedOrder: null,
-    updateClaimedOrder: null,
+    selectedClaim: null,
+    fulfillMode: false,
+    updateClaimMode: false,
 }
 
 export const userInterfaceSlice = createSlice({
@@ -35,9 +36,16 @@ export const userInterfaceSlice = createSlice({
             const {claimedOrder} = action.payload
             state.claimedOrder = claimedOrder
         },
-        setUpdateClaimedOrder: (state, action: PayloadAction<{updateClaimedOrder: Claim | null}>) => {
-            const {updateClaimedOrder} = action.payload
-            state.updateClaimedOrder = updateClaimedOrder
+        setSelectedClaim: (state, action: PayloadAction<{selectedClaim: Claim | null}>) => {
+            state.selectedClaim = action.payload.selectedClaim
+        },
+        setFulfillMode: (state, action: PayloadAction<{fulfillMode: boolean}>) => {
+            const {fulfillMode} = action.payload
+            state.fulfillMode = fulfillMode
+        },
+        setUpdateClaimMode: (state, action: PayloadAction<{updateClaimMode: boolean}>) => {
+            const {updateClaimMode} = action.payload
+            state.updateClaimMode = updateClaimMode
         },
         resetSidebar: (state) => {
             state.leftDrawerOpen = false;
@@ -76,7 +84,9 @@ export const {
     setSelectedComponent,
     setTotalBasketCost,
     setClaimedOrder,
-    setUpdateClaimedOrder,
+    setSelectedClaim,
+    setFulfillMode,
+    setUpdateClaimMode,
     resetSidebar
 } = userInterfaceSlice.actions
 

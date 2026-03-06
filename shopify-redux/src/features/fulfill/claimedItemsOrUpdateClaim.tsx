@@ -4,9 +4,9 @@ import { ClaimedItems } from "./claimedItems"
 import { UpdateClaimStatus } from "./updateClaimStatus"
 
 export const ClaimedItemsOrUpdateClaim = () => {
-  const dataState = useSelector((state: RootState) => state.dataState);
+  const { updateClaimMode } = useSelector((state: RootState) => state.userInterfaceState);
 
-  return dataState.updateClaimMode
+  return updateClaimMode
     ? <UpdateClaimStatus />
     : <ClaimedItems />;
 };

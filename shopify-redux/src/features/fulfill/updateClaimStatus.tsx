@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../app/store'
-import { setUpdateClaimedOrder } from '../../services/userInterfaceSlice'
-import { resetDataState, setUpdateClaimMode } from '../../services/dataSlice'
+import { setSelectedClaim, setUpdateClaimMode } from '../../services/userInterfaceSlice'
+import { resetDataState } from '../../services/dataSlice'
 import { patchClaimStatus, uploadClaimEvidence, createShippingLabel } from '../../services/fetchFileUtils'
 import { authApi } from '../../services/authApi'
 import { useState, useCallback, useMemo } from 'react'
@@ -151,12 +151,12 @@ const MiniStepper = ({ currentStatus }: { currentStatus: string }) => {
 
 // ── Main Component ────────────────────────────────────────────────────
 export const UpdateClaimStatus = () => {
-  const { updateClaimedOrder, userInformation } = useSelector(
+  const { selectedClaim, userInformation } = useSelector(
     (state: RootState) => state.userInterfaceState
   )
   const dispatch = useDispatch()
 
-  const currentStatus = updateClaimedOrder?.status ?? 'pending'
+  const currentStatus = selectedClaim?.status ?? 'pending'
   const validNextStatuses = ALLOWED_TRANSITIONS[currentStatus] ?? []
   const canCancel = CANCELLABLE_STATUSES.includes(currentStatus)
 
@@ -186,16 +186,16 @@ export const UpdateClaimStatus = () => {
 
   // Use existing claim data for shipping label if available
   const existingLabel = useMemo(() => {
-    if (!updateClaimedOrder) return null
-    if (updateClaimedOrder.tracking_number && updateClaimedOrder.label_url) {
+    if (!selectedClaim) return null
+    if (selectedClaim.tracking_number && selectedClaim.label_url) {
       return {
-        label_url: updateClaimedOrder.label_url,
-        tracking_number: updateClaimedOrder.tracking_number,
-        carrier_code: updateClaimedOrder.carrier_code || 'Unknown',
+        label_url: selectedClaim.label_url,
+        tracking_number: selectedClaim.tracking_number,
+        carrier_code: selectedClaim.carrier_code || 'Unknown',
       }
     }
     return null
-  }, [updateClaimedOrder])
+  }, [selectedClaim])
 
   const shippingLabel = labelResult || existingLabel
 
@@ -264,10 +264,10 @@ export const UpdateClaimStatus = () => {
   }
 
   const handleConfirmClick = () => {
-    if (!updateClaimedOrder || !selectedStatus) return
+    if (!selectedClaim || !selectedStatus) return
     if (
       currentStatus === 'qa_check' &&
-      updateClaimedOrder.order.qa_level === 'high' &&
+      selectedClaim.order.qa_level === 'high' &&
       !evidenceFile
     ) {
       setSnackbar({
@@ -281,7 +281,7 @@ export const UpdateClaimStatus = () => {
   }
 
   const handleDialogConfirm = async () => {
-    if (!updateClaimedOrder || !selectedStatus) return
+    if (!selectedClaim || !selectedStatus) return
     setIsUpdating(true)
     setConfirmOpen(false)
 
@@ -293,7 +293,7 @@ export const UpdateClaimStatus = () => {
           reader.onload = async () => {
             const base64 = (reader.result as string).split(',')[1]
             await uploadClaimEvidence(
-              updateClaimedOrder.id,
+              selectedClaim.id,
               base64,
               evidenceDescription || undefined
             )
@@ -307,7 +307,7 @@ export const UpdateClaimStatus = () => {
       if (selectedStatus === 'shipped') {
         setLabelError('')
         try {
-          const result = await createShippingLabel(updateClaimedOrder.id)
+          const result = await createShippingLabel(selectedClaim.id)
           setLabelResult(result)
         } catch (err: any) {
           setLabelError(
@@ -318,11 +318,11 @@ export const UpdateClaimStatus = () => {
       }
 
       await patchClaimStatus(
-        updateClaimedOrder.id,
+        selectedClaim.id,
         selectedStatus
       )
       dispatch(authApi.util.invalidateTags(['sessionData']))
-      dispatch(setUpdateClaimedOrder({ updateClaimedOrder: null }))
+      dispatch(setSelectedClaim({ selectedClaim: null }))
       dispatch(setUpdateClaimMode({ updateClaimMode: false }))
       dispatch(resetDataState())
     } catch (err: any) {
@@ -337,23 +337,23 @@ export const UpdateClaimStatus = () => {
   }
 
   const handleCancel = () => {
-    dispatch(setUpdateClaimedOrder({ updateClaimedOrder: null }))
+    dispatch(setSelectedClaim({ selectedClaim: null }))
     dispatch(resetDataState())
     dispatch(setUpdateClaimMode({ updateClaimMode: false }))
   }
 
-  if (!updateClaimedOrder) return null
-  const order = updateClaimedOrder.order
+  if (!selectedClaim) return null
+  const order = selectedClaim.order
 
   // If claim is delivered and current user is the buyer, show buyer review panel
   const isBuyer = userInformation?.user?.user_id === order.user_id
   if (currentStatus === 'delivered' && isBuyer) {
-    return <BuyerReviewPanel claim={updateClaimedOrder} onClose={handleCancel} />
+    return <BuyerReviewPanel claim={selectedClaim} onClose={handleCancel} />
   }
 
   // If claim is disputed or resolved, show dispute panel
   if (currentStatus === 'disputed' || currentStatus.startsWith('resolved_')) {
-    return <DisputePanel claim={updateClaimedOrder} onClose={handleCancel} />
+    return <DisputePanel claim={selectedClaim} onClose={handleCancel} />
   }
 
   // All dropdown options: valid transitions + cancel if allowed
@@ -451,7 +451,7 @@ export const UpdateClaimStatus = () => {
                   <strong>Quantity:</strong>
                 </Typography>
                 <Chip
-                  label={`${updateClaimedOrder.quantity} units`}
+                  label={`${selectedClaim.quantity} units`}
                   size="small"
                   sx={{
                     backgroundColor: 'rgba(0, 229, 255, 0.12)',

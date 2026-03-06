@@ -7,13 +7,14 @@ import { UserInterfaceState } from '../../app/utility/interfaces'
 
 const initialState: UserInterfaceState = {
   leftDrawerOpen: false,
-  drawerWidth: 400,
   selectedComponent: '',
   isLoggedIn: false,
   userInformation: null,
   totalBasketValue: 0,
   claimedOrder: null as any,
-  updateClaimedOrder: null as any,
+  selectedClaim: null as any,
+  fulfillMode: false,
+  updateClaimMode: false,
 }
 
 describe('userInterfaceSlice', () => {

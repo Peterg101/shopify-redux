@@ -16,8 +16,8 @@ import { Claim, ClaimEvidence } from '../../app/utility/interfaces'
 import logger from '../../app/utility/logger'
 import { patchClaimStatus, fetchClaimEvidence } from '../../services/fetchFileUtils'
 import { authApi } from '../../services/authApi'
-import { setUpdateClaimedOrder } from '../../services/userInterfaceSlice'
-import { resetDataState, setUpdateClaimMode } from '../../services/dataSlice'
+import { setSelectedClaim, setUpdateClaimMode } from '../../services/userInterfaceSlice'
+import { resetDataState } from '../../services/dataSlice'
 
 interface BuyerReviewPanelProps {
   claim: Claim
@@ -39,7 +39,7 @@ export function BuyerReviewPanel({ claim, onClose }: BuyerReviewPanelProps) {
     try {
       await patchClaimStatus(claim.id, 'accepted')
       dispatch(authApi.util.invalidateTags(['sessionData']))
-      dispatch(setUpdateClaimedOrder({ updateClaimedOrder: null }))
+      dispatch(setSelectedClaim({ selectedClaim: null }))
       dispatch(setUpdateClaimMode({ updateClaimMode: false }))
       dispatch(resetDataState())
     } catch (err) {
@@ -53,7 +53,7 @@ export function BuyerReviewPanel({ claim, onClose }: BuyerReviewPanelProps) {
     try {
       await patchClaimStatus(claim.id, 'disputed', disputeReason)
       dispatch(authApi.util.invalidateTags(['sessionData']))
-      dispatch(setUpdateClaimedOrder({ updateClaimedOrder: null }))
+      dispatch(setSelectedClaim({ selectedClaim: null }))
       dispatch(setUpdateClaimMode({ updateClaimMode: false }))
       dispatch(resetDataState())
     } catch (err) {

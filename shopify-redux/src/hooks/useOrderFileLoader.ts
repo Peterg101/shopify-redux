@@ -2,6 +2,7 @@ import { useDispatch } from 'react-redux'
 import { useFile } from '../services/fileProvider'
 import { fetchFile, extractFileInfo } from '../services/fetchFileUtils'
 import { setSelectedFile, setFulfillFileViewProperties } from '../services/dataSlice'
+import { setFulfillMode } from '../services/userInterfaceSlice'
 import { Order } from '../app/utility/interfaces'
 
 export const useOrderFileLoader = () => {
@@ -18,6 +19,7 @@ export const useOrderFileLoader = () => {
     setActualFile(fileInfo.file)
     dispatch(setSelectedFile({ selectedFile: fileInfo.fileUrl }))
     dispatch(setFulfillFileViewProperties({ order, fileInformation: fileInfo }))
+    dispatch(setFulfillMode({ fulfillMode: true }))
 
     return fileInfo
   }

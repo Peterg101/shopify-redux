@@ -44,14 +44,15 @@ export interface MeshyState {
 }
 
 export interface UserInterfaceState {
-    leftDrawerOpen: boolean,
-    drawerWidth: number
-    selectedComponent: string,
+    leftDrawerOpen: boolean
+    selectedComponent: string
     isLoggedIn: boolean,
     userInformation: UserAndTasksAndBasketAndIncompleteAndOrders | null,
     totalBasketValue: number,
     claimedOrder: Order,
-    updateClaimedOrder: Claim | null
+    selectedClaim: Claim | null,
+    fulfillMode: boolean,
+    updateClaimMode: boolean,
 }
 
 export interface DataState {
@@ -75,8 +76,6 @@ export interface DataState {
    displayObjectConfig: boolean,
    materialCost: number,
    totalCost: number,
-   fulfillMode: boolean,
-   updateClaimMode: boolean,
    qaLevel: "standard" | "high"
 }
 

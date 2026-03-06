@@ -17,7 +17,6 @@ export const HeaderBar = () => {
     <AppBar
       position="fixed"
       open={userInterfaceState.leftDrawerOpen}
-      drawerWidth={userInterfaceState.drawerWidth}
     >
       <Toolbar sx={{ display: "flex", gap: 3 }}>
         <Typography

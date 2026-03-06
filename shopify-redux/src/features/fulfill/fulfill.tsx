@@ -3,6 +3,7 @@ import { Box, useTheme } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../app/store";
 import { resetSidebar } from "../../services/userInterfaceSlice";
+import { DRAWER_WIDTH } from "../userInterface/uiComponents";
 import { HeaderBar } from "../userInterface/headerBar";
 import { FulfillUserInterface } from "./fulfillUserInterface";
 import { FulfillOrClaimed } from "./fulfilledOrClaimed";
@@ -24,7 +25,7 @@ export const Fulfill = () => {
             <Box
                 sx={{
                     marginLeft: userInterfaceState.leftDrawerOpen
-                        ? `${userInterfaceState.drawerWidth}px`
+                        ? `${DRAWER_WIDTH}px`
                         : collapsedWidth,
                     marginTop: `${theme.mixins.toolbar.minHeight}px`,
                     transition: theme.transitions.create(["margin"], {

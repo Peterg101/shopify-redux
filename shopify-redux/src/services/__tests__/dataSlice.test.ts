@@ -28,8 +28,6 @@ const initialState: DataState = {
   displayObjectConfig: false,
   materialCost: 0.00005,
   totalCost: 0,
-  fulfillMode: false,
-  updateClaimMode: false,
   qaLevel: 'standard',
 }
 
@@ -129,7 +127,6 @@ describe('dataSlice', () => {
       expect(state.modelColour).toBe('blue')
       expect(state.selectedFile).toBe('blob://fulfill-file')
       expect(state.selectedFileType).toBe('stl')
-      expect(state.fulfillMode).toBe(true)
       expect(state.fileDisplay).toBe(true)
     })
   })

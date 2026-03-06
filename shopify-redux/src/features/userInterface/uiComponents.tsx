@@ -2,8 +2,10 @@ import { styled, Theme, CSSObject } from "@mui/material/styles"
 import MuiDrawer, { DrawerProps as MuiDrawerProps } from "@mui/material/Drawer"
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar"
 
-export const openedMixin = (theme: Theme, drawerWidth: number): CSSObject => ({
-  width: drawerWidth,
+export const DRAWER_WIDTH = 400;
+
+export const openedMixin = (theme: Theme): CSSObject => ({
+  width: DRAWER_WIDTH,
   transition: theme.transitions.create("width", {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.enteringScreen,
@@ -41,25 +43,23 @@ export const DrawerHeader = styled("div")(({ theme }) => ({
 
 export interface AppBarProps extends MuiAppBarProps {
   open?: boolean
-  drawerWidth: number
 }
 
 export interface StyledDrawerProps extends MuiDrawerProps {
   open?: boolean
-  drawerWidth: number
 }
 
 export const AppBar = styled(MuiAppBar, {
   shouldForwardProp: prop => prop !== "open",
-})<AppBarProps>(({ theme, open, drawerWidth }) => ({
+})<AppBarProps>(({ theme, open }) => ({
   zIndex: theme.zIndex.drawer + 1,
   transition: theme.transitions.create(["width", "margin"], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
   ...(open && {
-    marginLeft: drawerWidth,
-    width: `calc(100% - ${drawerWidth}px)`,
+    marginLeft: DRAWER_WIDTH,
+    width: `calc(100% - ${DRAWER_WIDTH}px)`,
     transition: theme.transitions.create(["width", "margin"], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -68,15 +68,15 @@ export const AppBar = styled(MuiAppBar, {
 }))
 
 export const Drawer = styled(MuiDrawer, {
-  shouldForwardProp: prop => prop !== "drawerWidth",
-})<StyledDrawerProps>(({ theme, open, drawerWidth }) => ({
-  width: drawerWidth,
+  shouldForwardProp: prop => prop !== "open",
+})<StyledDrawerProps>(({ theme, open }) => ({
+  width: DRAWER_WIDTH,
   flexShrink: 0,
   whiteSpace: open ? "normal" : "nowrap",
   boxSizing: "border-box",
   ...(open && {
-    ...openedMixin(theme, drawerWidth),
-    "& .MuiDrawer-paper": openedMixin(theme, drawerWidth),
+    ...openedMixin(theme),
+    "& .MuiDrawer-paper": openedMixin(theme),
   }),
   ...(!open && {
     ...closedMixin(theme),

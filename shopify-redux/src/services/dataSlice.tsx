@@ -30,8 +30,6 @@ const initialState: DataState = {
     displayObjectConfig: false,
     materialCost: 0.00005,
     totalCost: 0,
-    fulfillMode: false,
-    updateClaimMode: false,
     qaLevel: 'standard'
 }
 
@@ -42,14 +40,6 @@ export const dataSlice = createSlice({
         setModelColour: (state, action: PayloadAction<{modelColour: string}>) => {
             const {modelColour} = action.payload
             state.modelColour = modelColour
-        },
-        setFulfillMode: (state, action: PayloadAction<{fulfillMode: boolean}>) => {
-            const {fulfillMode} = action.payload
-            state.fulfillMode = fulfillMode
-        },
-        setUpdateClaimMode: (state, action: PayloadAction<{updateClaimMode: boolean}>) => {
-            const {updateClaimMode} = action.payload
-            state.updateClaimMode = updateClaimMode
         },
         setSelectedFile: (state, action: PayloadAction<{selectedFile: string}>) => {
             const {selectedFile} = action.payload
@@ -168,7 +158,6 @@ export const dataSlice = createSlice({
             state.fileDisplay = true
             state.displayObjectConfig = true
             state.materialCost = getPrice(order.material, config)
-            state.fulfillMode = true
             state.fromMeshyOrHistory = true
 
         },
@@ -230,8 +219,6 @@ export const {
     setDisplayObjectConfig,
     setTotalCost,
     setFulfillFileViewProperties,
-    setFulfillMode,
-    setUpdateClaimMode,
     setQALevel
 
  } = dataSlice.actions

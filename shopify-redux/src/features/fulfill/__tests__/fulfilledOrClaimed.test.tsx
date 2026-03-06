@@ -12,12 +12,14 @@ jest.mock('../../display/objStlViewer', () => ({
 
 const defaultUiState = {
   leftDrawerOpen: false,
-  drawerWidth: 400,
+
   selectedComponent: '',
   isLoggedIn: true,
   totalBasketValue: 0,
   claimedOrder: null as any,
-  updateClaimedOrder: null as any,
+  selectedClaim: null as any,
+  fulfillMode: false,
+  updateClaimMode: false,
 }
 
 describe('FulfillOrClaimed', () => {

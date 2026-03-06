@@ -19,8 +19,7 @@ import { Add, Remove } from '@mui/icons-material'
 import { useDispatch } from 'react-redux'
 import { Claim } from '../../app/utility/interfaces'
 import logger from '../../app/utility/logger'
-import { setUpdateClaimedOrder } from '../../services/userInterfaceSlice'
-import { setUpdateClaimMode } from '../../services/dataSlice'
+import { setSelectedClaim, setUpdateClaimMode } from '../../services/userInterfaceSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
 import { patchClaimQuantity, patchClaimStatus } from '../../services/fetchFileUtils'
 import { authApi } from '../../services/authApi'
@@ -108,7 +107,7 @@ export const ClaimListCard = React.memo(({ claim }: ClaimListCardProps) => {
   const handleUpdateClaim = async () => {
     await prepareOrderFile(claim.order)
     dispatch(setUpdateClaimMode({ updateClaimMode: true }))
-    dispatch(setUpdateClaimedOrder({ updateClaimedOrder: claim }))
+    dispatch(setSelectedClaim({ selectedClaim: claim }))
   }
 
   const handleQuantityChange = async (delta: number) => {
