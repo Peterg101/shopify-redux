@@ -24,12 +24,12 @@ describe('ProtectedRoute', () => {
     renderWithProviders(<TestRoutes />, {
       preloadedState: {
         userInterfaceState: {
-          isLoggedIn: true,
+
           userInformation: createMockSessionData(),
           leftDrawerOpen: false,
 
           selectedComponent: '',
-          totalBasketValue: 0,
+
           claimedOrder: null as any,
           selectedClaim: null,
           fulfillMode: false,
@@ -45,12 +45,12 @@ describe('ProtectedRoute', () => {
     renderWithProviders(<TestRoutes />, {
       preloadedState: {
         userInterfaceState: {
-          isLoggedIn: false,
+
           userInformation: null,
           leftDrawerOpen: false,
 
           selectedComponent: '',
-          totalBasketValue: 0,
+
           claimedOrder: null as any,
           selectedClaim: null,
           fulfillMode: false,

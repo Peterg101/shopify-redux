@@ -5,14 +5,12 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import { Box, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
-import { RootState } from "../../app/store";
+import { selectIsLoggedIn } from '../../services/selectors';
 import GoogleButton from 'react-google-button';
 import { monoFontFamily } from '../../theme';
 
 export default function LoginDialog() {
-  const userInterfaceState = useSelector(
-    (state: RootState) => state.userInterfaceState
-  );
+  const isLoggedIn = useSelector(selectIsLoggedIn);
 
   const handleLogin = () => {
     window.location.href = `${process.env.REACT_APP_AUTH_SERVICE}/auth/google`;
@@ -20,7 +18,7 @@ export default function LoginDialog() {
 
   return (
     <Dialog
-      open={!userInterfaceState.isLoggedIn}
+      open={!isLoggedIn}
       aria-labelledby="login-dialog-title"
       aria-describedby="login-dialog-description"
       PaperProps={{

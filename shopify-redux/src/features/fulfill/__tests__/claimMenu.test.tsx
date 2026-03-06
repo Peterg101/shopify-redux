@@ -28,9 +28,7 @@ const defaultUiState = {
   leftDrawerOpen: false,
 
   selectedComponent: '',
-  isLoggedIn: true,
   userInformation: null,
-  totalBasketValue: 0,
   claimedOrder,
   selectedClaim: null as any,
   fulfillMode: false,

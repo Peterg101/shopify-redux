@@ -25,9 +25,7 @@ const initialState: DataState = {
   xFlip: 0,
   yFlip: 0,
   zFlip: 0,
-  displayObjectConfig: false,
   materialCost: 0.00005,
-  totalCost: 0,
   qaLevel: 'standard',
 }
 
@@ -66,7 +64,6 @@ describe('dataSlice', () => {
         selectedFile: 'some-file',
         selectedFileType: 'stl',
         modelColour: 'red',
-        totalCost: 100,
       }
       const state = dataSliceReducer(modifiedState, resetDataState())
       expect(state).toEqual(initialState)
@@ -87,7 +84,6 @@ describe('dataSlice', () => {
       expect(state.selectedFile).toBe('blob://file')
       expect(state.selectedFileType).toBe('stl')
       expect(state.fileDisplay).toBe(true)
-      expect(state.displayObjectConfig).toBe(true)
     })
   })
 

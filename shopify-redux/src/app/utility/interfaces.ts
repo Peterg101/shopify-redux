@@ -46,36 +46,32 @@ export interface MeshyState {
 export interface UserInterfaceState {
     leftDrawerOpen: boolean
     selectedComponent: string
-    isLoggedIn: boolean,
-    userInformation: UserAndTasksAndBasketAndIncompleteAndOrders | null,
-    totalBasketValue: number,
-    claimedOrder: Order,
-    selectedClaim: Claim | null,
-    fulfillMode: boolean,
-    updateClaimMode: boolean,
+    userInformation: UserAndTasksAndBasketAndIncompleteAndOrders | null
+    claimedOrder: Order
+    selectedClaim: Claim | null
+    fulfillMode: boolean
+    updateClaimMode: boolean
 }
 
 export interface DataState {
-   taskId: string,
-   modelColour: string,
-   selectedFile: string,
-   selectedFileType: string,
-   printTechnique: string,
-   printMaterial: string,
-   modelVolume: number,
-   modelDimensions: VectorState,
-   multiplierValue: number,
-   maxScale: number,
-   minScale: number,
-   fileNameBoxValue: string,
-   fileDisplay: boolean,
-   fromMeshyOrHistory: boolean,
-   xFlip: number,
-   yFlip: number,
-   zFlip: number,
-   displayObjectConfig: boolean,
-   materialCost: number,
-   totalCost: number,
+   taskId: string
+   modelColour: string
+   selectedFile: string
+   selectedFileType: string
+   printTechnique: string
+   printMaterial: string
+   modelVolume: number
+   modelDimensions: VectorState
+   multiplierValue: number
+   maxScale: number
+   minScale: number
+   fileNameBoxValue: string
+   fileDisplay: boolean
+   fromMeshyOrHistory: boolean
+   xFlip: number
+   yFlip: number
+   zFlip: number
+   materialCost: number
    qaLevel: "standard" | "high"
 }
 

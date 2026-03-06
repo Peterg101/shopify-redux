@@ -5,9 +5,7 @@ import { authApi } from "./authApi";
 const initialState: UserInterfaceState = {
     leftDrawerOpen: false,
     selectedComponent: '',
-    isLoggedIn: false,
     userInformation: null,
-    totalBasketValue: 0,
     claimedOrder: null,
     selectedClaim: null,
     fulfillMode: false,
@@ -27,10 +25,6 @@ export const userInterfaceSlice = createSlice({
         setSelectedComponent: (state, action: PayloadAction<{selectedComponent: string}>) => {
             const {selectedComponent} = action.payload
             state.selectedComponent = selectedComponent
-        },
-        setTotalBasketCost: (state, action: PayloadAction<{totalBasketCost: number}>) => {
-            const {totalBasketCost} = action.payload
-            state.totalBasketValue = totalBasketCost
         },
         setClaimedOrder: (state, action: PayloadAction<{claimedOrder: Order}>) => {
             const {claimedOrder} = action.payload
@@ -57,21 +51,18 @@ export const userInterfaceSlice = createSlice({
           .addMatcher(
             authApi.endpoints.getSession.matchFulfilled,
             (state, { payload }) => {
-              state.isLoggedIn = true;
               state.userInformation = payload
             }
           )
           .addMatcher(
             authApi.endpoints.getSession.matchRejected,
-            (state, action) => {
-                state.isLoggedIn = false;
+            (state) => {
                 state.userInformation = null;
               }
           )
           .addMatcher(
             authApi.endpoints.logOut.matchFulfilled,
-            (state, action) => {
-                state.isLoggedIn = false;
+            (state) => {
                 state.userInformation = null;
               }
           );
@@ -82,7 +73,6 @@ export const {
     setLeftDrawerOpen,
     setLeftDrawerClosed,
     setSelectedComponent,
-    setTotalBasketCost,
     setClaimedOrder,
     setSelectedClaim,
     setFulfillMode,

@@ -27,9 +27,7 @@ const initialState: DataState = {
     xFlip: 0,
     yFlip: 0,
     zFlip: 0,
-    displayObjectConfig: false,
     materialCost: 0.00005,
-    totalCost: 0,
     qaLevel: 'standard'
 }
 
@@ -96,7 +94,6 @@ export const dataSlice = createSlice({
             state.selectedFile = selectedFile
             state.selectedFileType = selectedFileType
             state.fileDisplay= true
-            state.displayObjectConfig = true
         },
         setScales: (
             state,
@@ -136,7 +133,7 @@ export const dataSlice = createSlice({
             state.selectedFile= fileInformation.fileUrl
             state.selectedFileType=basketItem.selectedFileType
             state.fileDisplay = true
-            state.displayObjectConfig = true
+
             state.materialCost = getPrice(basketItem.material, config)
         },
         setFulfillFileViewProperties: (
@@ -156,7 +153,7 @@ export const dataSlice = createSlice({
             state.selectedFile= fileInformation.fileUrl
             state.selectedFileType=order.selectedFileType
             state.fileDisplay = true
-            state.displayObjectConfig = true
+
             state.materialCost = getPrice(order.material, config)
             state.fromMeshyOrHistory = true
 
@@ -180,14 +177,6 @@ export const dataSlice = createSlice({
          setClearFileDisplay: (state) => {
             state.fileDisplay = false
          },
-         setDisplayObjectConfig: (state, action: PayloadAction<{displayObjectConfig: boolean}>) => {
-            const {displayObjectConfig} = action.payload
-            state.displayObjectConfig = displayObjectConfig
-        },
-        setTotalCost: (state, action: PayloadAction<{totalCost: number}>) => {
-            const {totalCost} = action.payload
-            state.totalCost = totalCost
-        },
         setQALevel: (state, action: PayloadAction<{qaLevel: "standard" | "high"}>) => {
             const {qaLevel} = action.payload
             state.qaLevel = qaLevel
@@ -216,8 +205,6 @@ export const {
     setZFLip,
     setFromMeshyOrHistory,
     setClearFileDisplay,
-    setDisplayObjectConfig,
-    setTotalCost,
     setFulfillFileViewProperties,
     setQALevel
 

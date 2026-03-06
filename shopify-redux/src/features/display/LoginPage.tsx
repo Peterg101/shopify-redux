@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../../app/store';
+import { selectIsLoggedIn } from '../../services/selectors';
 import { authApi } from '../../services/authApi';
 import { registerWithEmail, loginWithEmail } from '../../services/fetchFileUtils';
 import GoogleButton from 'react-google-button';
@@ -21,7 +21,7 @@ import { monoFontFamily } from '../../theme';
 export function LoginPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const isLoggedIn = useSelector((state: RootState) => state.userInterfaceState.isLoggedIn);
+  const isLoggedIn = useSelector(selectIsLoggedIn);
 
   const [tab, setTab] = useState(0);
   const [error, setError] = useState('');

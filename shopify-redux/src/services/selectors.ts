@@ -4,6 +4,8 @@ import { recalculateTotalCost, calculateTotalBasketValue, visibleOrders } from '
 
 const selectDataState = (state: RootState) => state.dataState
 
+export const selectIsLoggedIn = (state: RootState) => state.userInterfaceState.userInformation !== null
+
 export const selectTotalCost = createSelector(
   [
     (state: RootState) => selectDataState(state).modelVolume,

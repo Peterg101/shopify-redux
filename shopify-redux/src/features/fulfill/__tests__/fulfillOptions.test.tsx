@@ -29,9 +29,7 @@ describe('FulfillOptions', () => {
           leftDrawerOpen: false,
 
           selectedComponent: '',
-          isLoggedIn: true,
           userInformation: sessionData,
-          totalBasketValue: 0,
           claimedOrder: null as any,
           selectedClaim: null as any,
           fulfillMode: false,
@@ -60,9 +58,7 @@ describe('FulfillOptions', () => {
           leftDrawerOpen: false,
 
           selectedComponent: '',
-          isLoggedIn: true,
           userInformation: sessionData,
-          totalBasketValue: 0,
           claimedOrder: null as any,
           selectedClaim: null as any,
           fulfillMode: false,
@@ -95,9 +91,7 @@ describe('FulfillOptions', () => {
           leftDrawerOpen: false,
 
           selectedComponent: '',
-          isLoggedIn: true,
           userInformation: sessionData,
-          totalBasketValue: 0,
           claimedOrder: null as any,
           selectedClaim: null as any,
           fulfillMode: false,

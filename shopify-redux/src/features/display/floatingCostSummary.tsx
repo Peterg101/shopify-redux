@@ -7,7 +7,7 @@ import { monoFontFamily } from "../../theme";
 
 export const FloatingCostSummary = () => {
   const {
-    displayObjectConfig,
+    fileDisplay,
     selectedFile,
     printMaterial,
     materialCost,
@@ -17,7 +17,7 @@ export const FloatingCostSummary = () => {
 
   const totalCost = useSelector(selectTotalCost);
 
-  if (!displayObjectConfig || !selectedFile) return null;
+  if (!fileDisplay || !selectedFile) return null;
 
   return (
     <Box

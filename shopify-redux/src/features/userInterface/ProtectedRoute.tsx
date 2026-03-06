@@ -1,8 +1,8 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../app/store';
 import { authApi } from '../../services/authApi';
+import { selectIsLoggedIn } from '../../services/selectors';
 import { CircularProgress, Box } from '@mui/material';
 
 interface ProtectedRouteProps {
@@ -12,7 +12,7 @@ interface ProtectedRouteProps {
 const selectSessionQuery = authApi.endpoints.getSession.select();
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const isLoggedIn = useSelector((state: RootState) => state.userInterfaceState.isLoggedIn);
+  const isLoggedIn = useSelector(selectIsLoggedIn);
   const { isLoading } = useSelector(selectSessionQuery);
 
   if (isLoading && !isLoggedIn) {

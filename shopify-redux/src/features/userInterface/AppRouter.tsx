@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { RootState } from "../../app/store";
+import { selectIsLoggedIn } from "../../services/selectors";
 import { LandingPage } from "../display/landingPage";
 import { Fulfill } from "../fulfill/fulfill";
 import { LoginPage } from "../display/LoginPage";
@@ -13,7 +13,7 @@ import { CircularProgress, Box } from "@mui/material";
 const selectSessionQuery = authApi.endpoints.getSession.select();
 
 function RootRedirect() {
-  const isLoggedIn = useSelector((state: RootState) => state.userInterfaceState.isLoggedIn);
+  const isLoggedIn = useSelector(selectIsLoggedIn);
   const { isLoading } = useSelector(selectSessionQuery);
 
   if (isLoading) {

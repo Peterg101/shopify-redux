@@ -8,9 +8,7 @@ import { UserInterfaceState } from '../../app/utility/interfaces'
 const initialState: UserInterfaceState = {
   leftDrawerOpen: false,
   selectedComponent: '',
-  isLoggedIn: false,
   userInformation: null,
-  totalBasketValue: 0,
   claimedOrder: null as any,
   selectedClaim: null as any,
   fulfillMode: false,
