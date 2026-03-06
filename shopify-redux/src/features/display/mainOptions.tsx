@@ -31,7 +31,7 @@ export const MainOptions = () => {
               {dataState.fileDisplay && <ToolBar />}
               <FileViewer />
             </Paper>
-            {dataState.fileDisplay && <ConfigurationPanel />}
+            {dataState.fileDisplay && !dataState.fulfillMode && <ConfigurationPanel />}
           </Grid>
         </Grid>
       </Container>

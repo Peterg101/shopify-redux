@@ -5,23 +5,19 @@ import OBJScene from './objScene';
 import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import STLScene from './stlScene';
-import OptionTabs from '../userInterface/optionTabs';
 import { ViewerErrorBoundary } from '../shared/ViewerErrorBoundary';
+import { OrientationControls } from './OrientationControls';
 
 const OBJSTLViewer = () => {
     const dataState = useSelector(
         (state: RootState) => state.dataState
     )
 
-    const userInterfaceState = useSelector(
-      (state: RootState) => state.userInterfaceState
-    )
-
   return (
       <div className="App">
         <ViewerErrorBoundary>
           <Canvas
-            style={{ width: '100%', height: '500px' }}
+            style={{ width: '100%', height: '500px', background: '#0A0E14' }}
             camera={{ fov: 100, near: 0.1, far: 1000, position: [100, 100, 100] }}
           >
             <Suspense fallback={null}>
@@ -40,13 +36,13 @@ const OBJSTLViewer = () => {
                 rotateSpeed={0.5}
                 target={[0, 0, 0]}
               />
-              <Environment files="HdrSkyOvercast001_HDR_2K.exr" backgroundBlurriness={1.0} backgroundIntensity={100} background />
+              <Environment files="HdrSkyOvercast001_HDR_2K.exr" />
               <ambientLight intensity={0.5} />
               <directionalLight position={[10, 10, 10]} intensity={0.5} />
             </Suspense>
           </Canvas>
         </ViewerErrorBoundary>
-        {!dataState.fulfillMode && userInterfaceState.claimedOrder === null && <OptionTabs />}
+        <OrientationControls />
       </div>
   );
 };

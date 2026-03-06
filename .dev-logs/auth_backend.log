@@ -365,3 +365,200 @@ INFO:     127.0.0.1:56127 - "GET /get_session HTTP/1.1" 200 OK
 INFO:     127.0.0.1:56760 - "GET /get_session HTTP/1.1" 200 OK
 2026-03-05 20:26:06,421 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
 INFO:     127.0.0.1:56816 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-05 20:28:05,766 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:57330 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-05 20:31:13,755 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:58121 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-05 20:33:10,936 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:58658 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-05 20:34:21,749 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:58988 - "GET /get_session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60299 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61606 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:62926 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:64250 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:49172 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:50489 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:51792 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:53113 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54425 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:55748 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:57042 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:58375 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:59691 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:60998 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:62296 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:63599 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:64896 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:49834 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:51137 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:52444 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:53743 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:55053 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:56352 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:57689 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:58979 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:60272 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61569 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:62869 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:64158 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:65516 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:50438 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:51738 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:53036 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54347 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:55635 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:56964 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:58265 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:59563 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:60854 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:62154 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:63441 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:64762 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:49678 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:50984 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:52290 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:53603 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54899 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:56231 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:57533 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:58826 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:60118 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61425 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:62707 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:64021 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:65324 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:50239 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:51544 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:52848 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54127 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:55438 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:56734 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:58026 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:59315 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:60614 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61902 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:63202 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:64520 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:49424 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:50729 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:52033 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:53322 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54645 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:55963 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:57260 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:58558 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:59877 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61178 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:62489 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:63787 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:65074 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:49994 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:51297 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:52606 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:53924 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:55233 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:56538 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:57812 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:59120 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:60405 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61699 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:63012 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:64296 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:49211 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:50512 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:51803 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:53152 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54451 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:55734 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:57025 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:58331 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:59617 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:60917 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:62215 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:63500 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:64805 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:49720 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:51018 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:52312 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:53623 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54917 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:56199 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:57495 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:58790 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:60093 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61398 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:62694 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:63992 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:65287 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:50219 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:51532 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:52827 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54125 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:55417 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:56716 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:57999 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:59321 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:60611 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61899 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:63206 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:64515 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:49445 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:50781 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:52076 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:53375 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54677 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:55977 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:57267 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:58584 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:59887 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61180 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:62494 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:63361 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:63361 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:64725 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:49729 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:51093 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:52402 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:53309 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:53335 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:53335 - "GET /auth/google HTTP/1.1" 307 Temporary Redirect
+2026-03-06 08:48:39,245 [httpx] INFO: HTTP Request: POST https://oauth2.googleapis.com/token "HTTP/1.1 200 OK"
+2026-03-06 08:48:39,434 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:53361 - "GET /auth/google/callback?iss=https%3A%2F%2Faccounts.google.com&code=4%2F0AfrIepAPCYvzGp_vhq-nZF0IljnmjCOhPh2Ajj01XlY1nlRMFPMQPi38ASYSGoGGlBWtCQ&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&authuser=0&prompt=none HTTP/1.1" 307 Temporary Redirect
+2026-03-06 08:48:39,956 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:53361 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 08:48:48,074 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:53415 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 08:53:48,844 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:54772 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 08:58:49,835 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:56085 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:03:50,829 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:57421 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:08:51,829 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:58728 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:13:33,359 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:59947 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:13:43,498 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:59996 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:15:09,675 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:60399 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:15:10,168 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:60399 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:15:20,170 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:60456 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:15:20,744 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:60456 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:18:43,556 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:61327 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:18:44,047 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:61327 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:19:46,264 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:61602 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:19:46,848 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:61602 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:22:13,048 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62238 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:22:13,556 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62238 - "GET /get_session HTTP/1.1" 200 OK

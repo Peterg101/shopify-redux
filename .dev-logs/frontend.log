@@ -1431,3 +1431,944 @@ webpack compiled with 2 warnings
 Files successfully emitted, waiting for typecheck results...
 Issues checking in progress...
 No issues found.
+Compiling...
+Failed to compile.
+
+Module not found: Error: Can't resolve './OrientationControls' in '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/src/features/display'
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+ERROR in ./src/features/display/objStlViewer.tsx 12:0-60
+Module not found: Error: Can't resolve './OrientationControls' in '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/src/features/display'
+
+webpack compiled with 1 error and 2 warnings
+ERROR in src/features/display/objStlViewer.tsx:9:37
+TS2307: Cannot find module './OrientationControls' or its corresponding type declarations.
+     7 | import STLScene from './stlScene';
+     8 | import { ViewerErrorBoundary } from '../shared/ViewerErrorBoundary';
+  >  9 | import { OrientationControls } from './OrientationControls';
+       |                                     ^^^^^^^^^^^^^^^^^^^^^^^
+    10 |
+    11 | const OBJSTLViewer = () => {
+    12 |     const dataState = useSelector(
+
+Compiling...
+Failed to compile.
+
+Module not found: Error: Can't resolve './OrientationControls' in '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/src/features/display'
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+ERROR in ./src/features/display/objStlViewer.tsx 12:0-60
+Module not found: Error: Can't resolve './OrientationControls' in '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/src/features/display'
+
+webpack compiled with 1 error and 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+ERROR in src/features/display/objStlViewer.tsx:9:37
+TS2307: Cannot find module './OrientationControls' or its corresponding type declarations.
+     7 | import STLScene from './stlScene';
+     8 | import { ViewerErrorBoundary } from '../shared/ViewerErrorBoundary';
+  >  9 | import { OrientationControls } from './OrientationControls';
+       |                                     ^^^^^^^^^^^^^^^^^^^^^^^
+    10 |
+    11 | const OBJSTLViewer = () => {
+    12 |     const dataState = useSelector(
+
+Compiling...
+Failed to compile.
+
+Module not found: Error: Can't resolve './OrientationControls' in '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/src/features/display'
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+ERROR in ./src/features/display/objStlViewer.tsx 12:0-60
+Module not found: Error: Can't resolve './OrientationControls' in '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/src/features/display'
+
+ERROR in [eslint] 
+src/features/display/ConfigurationPanel.tsx
+  Line 356:16:  'ThreeDRotation' is not defined  react/jsx-no-undef
+
+Search for the keywords to learn more about each error.
+
+webpack compiled with 2 errors and 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+ERROR in src/features/display/ConfigurationPanel.tsx:69:31
+TS2304: Cannot find name 'useState'.
+    67 |   const dispatch = useDispatch();
+    68 |   const dataState = useSelector((state: RootState) => state.dataState);
+  > 69 |   const [xValue, setXValue] = useState(0);
+       |                               ^^^^^^^^
+    70 |   const [yValue, setYValue] = useState(0);
+    71 |   const [zValue, setZValue] = useState(0);
+    72 |
+
+ERROR in src/features/display/ConfigurationPanel.tsx:70:31
+TS2304: Cannot find name 'useState'.
+    68 |   const dataState = useSelector((state: RootState) => state.dataState);
+    69 |   const [xValue, setXValue] = useState(0);
+  > 70 |   const [yValue, setYValue] = useState(0);
+       |                               ^^^^^^^^
+    71 |   const [zValue, setZValue] = useState(0);
+    72 |
+    73 |   const { techniques, materials } = config;
+
+ERROR in src/features/display/ConfigurationPanel.tsx:71:31
+TS2304: Cannot find name 'useState'.
+    69 |   const [xValue, setXValue] = useState(0);
+    70 |   const [yValue, setYValue] = useState(0);
+  > 71 |   const [zValue, setZValue] = useState(0);
+       |                               ^^^^^^^^
+    72 |
+    73 |   const { techniques, materials } = config;
+    74 |
+
+ERROR in src/features/display/ConfigurationPanel.tsx:116:43
+TS2304: Cannot find name 'setXFLip'.
+    114 |   // Orientation handlers
+    115 |   const handleXChange = (_e: Event, v: number | number[]) => {
+  > 116 |     if (typeof v === 'number') { dispatch(setXFLip({ xFlip: degreesToRadians(v) })); setXValue(v); }
+        |                                           ^^^^^^^^
+    117 |   };
+    118 |   const handleYChange = (_e: Event, v: number | number[]) => {
+    119 |     if (typeof v === 'number') { dispatch(setYFLip({ yFlip: degreesToRadians(v) })); setYValue(v); }
+
+ERROR in src/features/display/ConfigurationPanel.tsx:116:61
+TS2304: Cannot find name 'degreesToRadians'.
+    114 |   // Orientation handlers
+    115 |   const handleXChange = (_e: Event, v: number | number[]) => {
+  > 116 |     if (typeof v === 'number') { dispatch(setXFLip({ xFlip: degreesToRadians(v) })); setXValue(v); }
+        |                                                             ^^^^^^^^^^^^^^^^
+    117 |   };
+    118 |   const handleYChange = (_e: Event, v: number | number[]) => {
+    119 |     if (typeof v === 'number') { dispatch(setYFLip({ yFlip: degreesToRadians(v) })); setYValue(v); }
+
+ERROR in src/features/display/ConfigurationPanel.tsx:119:43
+TS2304: Cannot find name 'setYFLip'.
+    117 |   };
+    118 |   const handleYChange = (_e: Event, v: number | number[]) => {
+  > 119 |     if (typeof v === 'number') { dispatch(setYFLip({ yFlip: degreesToRadians(v) })); setYValue(v); }
+        |                                           ^^^^^^^^
+    120 |   };
+    121 |   const handleZChange = (_e: Event, v: number | number[]) => {
+    122 |     if (typeof v === 'number') { dispatch(setZFLip({ zFlip: degreesToRadians(v) })); setZValue(v); }
+
+ERROR in src/features/display/ConfigurationPanel.tsx:119:61
+TS2304: Cannot find name 'degreesToRadians'.
+    117 |   };
+    118 |   const handleYChange = (_e: Event, v: number | number[]) => {
+  > 119 |     if (typeof v === 'number') { dispatch(setYFLip({ yFlip: degreesToRadians(v) })); setYValue(v); }
+        |                                                             ^^^^^^^^^^^^^^^^
+    120 |   };
+    121 |   const handleZChange = (_e: Event, v: number | number[]) => {
+    122 |     if (typeof v === 'number') { dispatch(setZFLip({ zFlip: degreesToRadians(v) })); setZValue(v); }
+
+ERROR in src/features/display/ConfigurationPanel.tsx:122:43
+TS2304: Cannot find name 'setZFLip'.
+    120 |   };
+    121 |   const handleZChange = (_e: Event, v: number | number[]) => {
+  > 122 |     if (typeof v === 'number') { dispatch(setZFLip({ zFlip: degreesToRadians(v) })); setZValue(v); }
+        |                                           ^^^^^^^^
+    123 |   };
+    124 |
+    125 |   const marks = [
+
+ERROR in src/features/display/ConfigurationPanel.tsx:122:61
+TS2304: Cannot find name 'degreesToRadians'.
+    120 |   };
+    121 |   const handleZChange = (_e: Event, v: number | number[]) => {
+  > 122 |     if (typeof v === 'number') { dispatch(setZFLip({ zFlip: degreesToRadians(v) })); setZValue(v); }
+        |                                                             ^^^^^^^^^^^^^^^^
+    123 |   };
+    124 |
+    125 |   const marks = [
+
+ERROR in src/features/display/ConfigurationPanel.tsx:356:16
+TS2304: Cannot find name 'ThreeDRotation'.
+    354 |           <AccordionSummary expandIcon={<ExpandMore />}>
+    355 |             <Box sx={summaryLabelSx}>
+  > 356 |               <ThreeDRotation sx={{ color: 'primary.main', fontSize: 18 }} />
+        |                ^^^^^^^^^^^^^^
+    357 |               <Typography variant="body1" fontWeight={500}>Orientation</Typography>
+    358 |             </Box>
+    359 |           </AccordionSummary>
+
+ERROR in src/features/display/objStlViewer.tsx:9:37
+TS2307: Cannot find module './OrientationControls' or its corresponding type declarations.
+     7 | import STLScene from './stlScene';
+     8 | import { ViewerErrorBoundary } from '../shared/ViewerErrorBoundary';
+  >  9 | import { OrientationControls } from './OrientationControls';
+       |                                     ^^^^^^^^^^^^^^^^^^^^^^^
+    10 |
+    11 | const OBJSTLViewer = () => {
+    12 |     const dataState = useSelector(
+
+Compiling...
+Failed to compile.
+
+Module not found: Error: Can't resolve './OrientationControls' in '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/src/features/display'
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+ERROR in ./src/features/display/objStlViewer.tsx 12:0-60
+Module not found: Error: Can't resolve './OrientationControls' in '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/src/features/display'
+
+ERROR in [eslint] 
+src/features/display/ConfigurationPanel.tsx
+  Line 353:16:  'ThreeDRotation' is not defined  react/jsx-no-undef
+
+Search for the keywords to learn more about each error.
+
+webpack compiled with 2 errors and 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+ERROR in src/features/display/ConfigurationPanel.tsx:113:43
+TS2304: Cannot find name 'setXFLip'.
+    111 |   // Orientation handlers
+    112 |   const handleXChange = (_e: Event, v: number | number[]) => {
+  > 113 |     if (typeof v === 'number') { dispatch(setXFLip({ xFlip: degreesToRadians(v) })); setXValue(v); }
+        |                                           ^^^^^^^^
+    114 |   };
+    115 |   const handleYChange = (_e: Event, v: number | number[]) => {
+    116 |     if (typeof v === 'number') { dispatch(setYFLip({ yFlip: degreesToRadians(v) })); setYValue(v); }
+
+ERROR in src/features/display/ConfigurationPanel.tsx:113:61
+TS2304: Cannot find name 'degreesToRadians'.
+    111 |   // Orientation handlers
+    112 |   const handleXChange = (_e: Event, v: number | number[]) => {
+  > 113 |     if (typeof v === 'number') { dispatch(setXFLip({ xFlip: degreesToRadians(v) })); setXValue(v); }
+        |                                                             ^^^^^^^^^^^^^^^^
+    114 |   };
+    115 |   const handleYChange = (_e: Event, v: number | number[]) => {
+    116 |     if (typeof v === 'number') { dispatch(setYFLip({ yFlip: degreesToRadians(v) })); setYValue(v); }
+
+ERROR in src/features/display/ConfigurationPanel.tsx:113:86
+TS2304: Cannot find name 'setXValue'.
+    111 |   // Orientation handlers
+    112 |   const handleXChange = (_e: Event, v: number | number[]) => {
+  > 113 |     if (typeof v === 'number') { dispatch(setXFLip({ xFlip: degreesToRadians(v) })); setXValue(v); }
+        |                                                                                      ^^^^^^^^^
+    114 |   };
+    115 |   const handleYChange = (_e: Event, v: number | number[]) => {
+    116 |     if (typeof v === 'number') { dispatch(setYFLip({ yFlip: degreesToRadians(v) })); setYValue(v); }
+
+ERROR in src/features/display/ConfigurationPanel.tsx:116:43
+TS2304: Cannot find name 'setYFLip'.
+    114 |   };
+    115 |   const handleYChange = (_e: Event, v: number | number[]) => {
+  > 116 |     if (typeof v === 'number') { dispatch(setYFLip({ yFlip: degreesToRadians(v) })); setYValue(v); }
+        |                                           ^^^^^^^^
+    117 |   };
+    118 |   const handleZChange = (_e: Event, v: number | number[]) => {
+    119 |     if (typeof v === 'number') { dispatch(setZFLip({ zFlip: degreesToRadians(v) })); setZValue(v); }
+
+ERROR in src/features/display/ConfigurationPanel.tsx:116:61
+TS2304: Cannot find name 'degreesToRadians'.
+    114 |   };
+    115 |   const handleYChange = (_e: Event, v: number | number[]) => {
+  > 116 |     if (typeof v === 'number') { dispatch(setYFLip({ yFlip: degreesToRadians(v) })); setYValue(v); }
+        |                                                             ^^^^^^^^^^^^^^^^
+    117 |   };
+    118 |   const handleZChange = (_e: Event, v: number | number[]) => {
+    119 |     if (typeof v === 'number') { dispatch(setZFLip({ zFlip: degreesToRadians(v) })); setZValue(v); }
+
+ERROR in src/features/display/ConfigurationPanel.tsx:116:86
+TS2304: Cannot find name 'setYValue'.
+    114 |   };
+    115 |   const handleYChange = (_e: Event, v: number | number[]) => {
+  > 116 |     if (typeof v === 'number') { dispatch(setYFLip({ yFlip: degreesToRadians(v) })); setYValue(v); }
+        |                                                                                      ^^^^^^^^^
+    117 |   };
+    118 |   const handleZChange = (_e: Event, v: number | number[]) => {
+    119 |     if (typeof v === 'number') { dispatch(setZFLip({ zFlip: degreesToRadians(v) })); setZValue(v); }
+
+ERROR in src/features/display/ConfigurationPanel.tsx:119:43
+TS2304: Cannot find name 'setZFLip'.
+    117 |   };
+    118 |   const handleZChange = (_e: Event, v: number | number[]) => {
+  > 119 |     if (typeof v === 'number') { dispatch(setZFLip({ zFlip: degreesToRadians(v) })); setZValue(v); }
+        |                                           ^^^^^^^^
+    120 |   };
+    121 |
+    122 |   const marks = [
+
+ERROR in src/features/display/ConfigurationPanel.tsx:119:61
+TS2304: Cannot find name 'degreesToRadians'.
+    117 |   };
+    118 |   const handleZChange = (_e: Event, v: number | number[]) => {
+  > 119 |     if (typeof v === 'number') { dispatch(setZFLip({ zFlip: degreesToRadians(v) })); setZValue(v); }
+        |                                                             ^^^^^^^^^^^^^^^^
+    120 |   };
+    121 |
+    122 |   const marks = [
+
+ERROR in src/features/display/ConfigurationPanel.tsx:119:86
+TS2304: Cannot find name 'setZValue'.
+    117 |   };
+    118 |   const handleZChange = (_e: Event, v: number | number[]) => {
+  > 119 |     if (typeof v === 'number') { dispatch(setZFLip({ zFlip: degreesToRadians(v) })); setZValue(v); }
+        |                                                                                      ^^^^^^^^^
+    120 |   };
+    121 |
+    122 |   const marks = [
+
+ERROR in src/features/display/ConfigurationPanel.tsx:353:16
+TS2304: Cannot find name 'ThreeDRotation'.
+    351 |           <AccordionSummary expandIcon={<ExpandMore />}>
+    352 |             <Box sx={summaryLabelSx}>
+  > 353 |               <ThreeDRotation sx={{ color: 'primary.main', fontSize: 18 }} />
+        |                ^^^^^^^^^^^^^^
+    354 |               <Typography variant="body1" fontWeight={500}>Orientation</Typography>
+    355 |             </Box>
+    356 |           </AccordionSummary>
+
+ERROR in src/features/display/ConfigurationPanel.tsx:361:23
+TS2304: Cannot find name 'xValue'.
+    359 |               <Grid item xs={12} sm={4}>
+    360 |                 <Typography variant="body2" color="text.secondary" gutterBottom>
+  > 361 |                   X: {xValue}\u00b0
+        |                       ^^^^^^
+    362 |                 </Typography>
+    363 |                 <Slider
+    364 |                   aria-label="X axis rotation"
+
+ERROR in src/features/display/ConfigurationPanel.tsx:365:26
+TS2304: Cannot find name 'xValue'.
+    363 |                 <Slider
+    364 |                   aria-label="X axis rotation"
+  > 365 |                   value={xValue}
+        |                          ^^^^^^
+    366 |                   onChange={handleXChange}
+    367 |                   min={-180} step={1} max={180}
+    368 |                   size="small"
+
+ERROR in src/features/display/ConfigurationPanel.tsx:373:23
+TS2304: Cannot find name 'yValue'.
+    371 |               <Grid item xs={12} sm={4}>
+    372 |                 <Typography variant="body2" color="text.secondary" gutterBottom>
+  > 373 |                   Y: {yValue}\u00b0
+        |                       ^^^^^^
+    374 |                 </Typography>
+    375 |                 <Slider
+    376 |                   aria-label="Y axis rotation"
+
+ERROR in src/features/display/ConfigurationPanel.tsx:377:26
+TS2304: Cannot find name 'yValue'.
+    375 |                 <Slider
+    376 |                   aria-label="Y axis rotation"
+  > 377 |                   value={yValue}
+        |                          ^^^^^^
+    378 |                   onChange={handleYChange}
+    379 |                   min={-180} step={1} max={180}
+    380 |                   size="small"
+
+ERROR in src/features/display/ConfigurationPanel.tsx:385:23
+TS2304: Cannot find name 'zValue'.
+    383 |               <Grid item xs={12} sm={4}>
+    384 |                 <Typography variant="body2" color="text.secondary" gutterBottom>
+  > 385 |                   Z: {zValue}\u00b0
+        |                       ^^^^^^
+    386 |                 </Typography>
+    387 |                 <Slider
+    388 |                   aria-label="Z axis rotation"
+
+ERROR in src/features/display/ConfigurationPanel.tsx:389:26
+TS2304: Cannot find name 'zValue'.
+    387 |                 <Slider
+    388 |                   aria-label="Z axis rotation"
+  > 389 |                   value={zValue}
+        |                          ^^^^^^
+    390 |                   onChange={handleZChange}
+    391 |                   min={-180} step={1} max={180}
+    392 |                   size="small"
+
+ERROR in src/features/display/objStlViewer.tsx:9:37
+TS2307: Cannot find module './OrientationControls' or its corresponding type declarations.
+     7 | import STLScene from './stlScene';
+     8 | import { ViewerErrorBoundary } from '../shared/ViewerErrorBoundary';
+  >  9 | import { OrientationControls } from './OrientationControls';
+       |                                     ^^^^^^^^^^^^^^^^^^^^^^^
+    10 |
+    11 | const OBJSTLViewer = () => {
+    12 |     const dataState = useSelector(
+
+Compiling...
+Failed to compile.
+
+Module not found: Error: Can't resolve './OrientationControls' in '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/src/features/display'
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+ERROR in ./src/features/display/objStlViewer.tsx 12:0-60
+Module not found: Error: Can't resolve './OrientationControls' in '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/src/features/display'
+
+ERROR in [eslint] 
+src/features/display/ConfigurationPanel.tsx
+  Line 342:16:  'ThreeDRotation' is not defined  react/jsx-no-undef
+
+Search for the keywords to learn more about each error.
+
+webpack compiled with 2 errors and 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+ERROR in src/features/display/ConfigurationPanel.tsx:342:16
+TS2304: Cannot find name 'ThreeDRotation'.
+    340 |           <AccordionSummary expandIcon={<ExpandMore />}>
+    341 |             <Box sx={summaryLabelSx}>
+  > 342 |               <ThreeDRotation sx={{ color: 'primary.main', fontSize: 18 }} />
+        |                ^^^^^^^^^^^^^^
+    343 |               <Typography variant="body1" fontWeight={500}>Orientation</Typography>
+    344 |             </Box>
+    345 |           </AccordionSummary>
+
+ERROR in src/features/display/ConfigurationPanel.tsx:350:23
+TS2304: Cannot find name 'xValue'.
+    348 |               <Grid item xs={12} sm={4}>
+    349 |                 <Typography variant="body2" color="text.secondary" gutterBottom>
+  > 350 |                   X: {xValue}\u00b0
+        |                       ^^^^^^
+    351 |                 </Typography>
+    352 |                 <Slider
+    353 |                   aria-label="X axis rotation"
+
+ERROR in src/features/display/ConfigurationPanel.tsx:354:26
+TS2304: Cannot find name 'xValue'.
+    352 |                 <Slider
+    353 |                   aria-label="X axis rotation"
+  > 354 |                   value={xValue}
+        |                          ^^^^^^
+    355 |                   onChange={handleXChange}
+    356 |                   min={-180} step={1} max={180}
+    357 |                   size="small"
+
+ERROR in src/features/display/ConfigurationPanel.tsx:355:29
+TS2552: Cannot find name 'handleXChange'. Did you mean 'handleQAChange'?
+    353 |                   aria-label="X axis rotation"
+    354 |                   value={xValue}
+  > 355 |                   onChange={handleXChange}
+        |                             ^^^^^^^^^^^^^
+    356 |                   min={-180} step={1} max={180}
+    357 |                   size="small"
+    358 |                 />
+
+ERROR in src/features/display/ConfigurationPanel.tsx:362:23
+TS2304: Cannot find name 'yValue'.
+    360 |               <Grid item xs={12} sm={4}>
+    361 |                 <Typography variant="body2" color="text.secondary" gutterBottom>
+  > 362 |                   Y: {yValue}\u00b0
+        |                       ^^^^^^
+    363 |                 </Typography>
+    364 |                 <Slider
+    365 |                   aria-label="Y axis rotation"
+
+ERROR in src/features/display/ConfigurationPanel.tsx:366:26
+TS2304: Cannot find name 'yValue'.
+    364 |                 <Slider
+    365 |                   aria-label="Y axis rotation"
+  > 366 |                   value={yValue}
+        |                          ^^^^^^
+    367 |                   onChange={handleYChange}
+    368 |                   min={-180} step={1} max={180}
+    369 |                   size="small"
+
+ERROR in src/features/display/ConfigurationPanel.tsx:367:29
+TS2552: Cannot find name 'handleYChange'. Did you mean 'handleQAChange'?
+    365 |                   aria-label="Y axis rotation"
+    366 |                   value={yValue}
+  > 367 |                   onChange={handleYChange}
+        |                             ^^^^^^^^^^^^^
+    368 |                   min={-180} step={1} max={180}
+    369 |                   size="small"
+    370 |                 />
+
+ERROR in src/features/display/ConfigurationPanel.tsx:374:23
+TS2304: Cannot find name 'zValue'.
+    372 |               <Grid item xs={12} sm={4}>
+    373 |                 <Typography variant="body2" color="text.secondary" gutterBottom>
+  > 374 |                   Z: {zValue}\u00b0
+        |                       ^^^^^^
+    375 |                 </Typography>
+    376 |                 <Slider
+    377 |                   aria-label="Z axis rotation"
+
+ERROR in src/features/display/ConfigurationPanel.tsx:378:26
+TS2304: Cannot find name 'zValue'.
+    376 |                 <Slider
+    377 |                   aria-label="Z axis rotation"
+  > 378 |                   value={zValue}
+        |                          ^^^^^^
+    379 |                   onChange={handleZChange}
+    380 |                   min={-180} step={1} max={180}
+    381 |                   size="small"
+
+ERROR in src/features/display/ConfigurationPanel.tsx:379:29
+TS2552: Cannot find name 'handleZChange'. Did you mean 'handleQAChange'?
+    377 |                   aria-label="Z axis rotation"
+    378 |                   value={zValue}
+  > 379 |                   onChange={handleZChange}
+        |                             ^^^^^^^^^^^^^
+    380 |                   min={-180} step={1} max={180}
+    381 |                   size="small"
+    382 |                 />
+
+ERROR in src/features/display/objStlViewer.tsx:9:37
+TS2307: Cannot find module './OrientationControls' or its corresponding type declarations.
+     7 | import STLScene from './stlScene';
+     8 | import { ViewerErrorBoundary } from '../shared/ViewerErrorBoundary';
+  >  9 | import { OrientationControls } from './OrientationControls';
+       |                                     ^^^^^^^^^^^^^^^^^^^^^^^
+    10 |
+    11 | const OBJSTLViewer = () => {
+    12 |     const dataState = useSelector(
+
+Compiling...
+Failed to compile.
+
+Module not found: Error: Can't resolve './OrientationControls' in '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/src/features/display'
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+ERROR in ./src/features/display/objStlViewer.tsx 12:0-60
+Module not found: Error: Can't resolve './OrientationControls' in '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/src/features/display'
+
+webpack compiled with 1 error and 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+ERROR in src/features/display/objStlViewer.tsx:9:37
+TS2307: Cannot find module './OrientationControls' or its corresponding type declarations.
+     7 | import STLScene from './stlScene';
+     8 | import { ViewerErrorBoundary } from '../shared/ViewerErrorBoundary';
+  >  9 | import { OrientationControls } from './OrientationControls';
+       |                                     ^^^^^^^^^^^^^^^^^^^^^^^
+    10 |
+    11 | const OBJSTLViewer = () => {
+    12 |     const dataState = useSelector(
+
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 2 warnings
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 2 warnings
+No issues found.
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+[eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle.mjs
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map' file: Error: ENOENT: no such file or directory, open '/Users/petergoon/Documents/Development/Shopify App with Redux/shopify-redux/node_modules/@react-three/drei/node_modules/@mediapipe/tasks-vision/vision_bundle_mjs.js.map'
+
+WARNING in [eslint] 
+src/features/display/jpgObjStlViewer.tsx
+  Line 14:36:  Expected '===' and instead saw '=='  eqeqeq
+
+src/features/display/objScene.tsx
+  Line 13:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+  Line 62:14:  React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/features/display/stlScene.tsx
+  Line 14:37:  'setIsMultiplierInitialized' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  Line 31:8:   React Hook useEffect has a missing dependency: 'dataState.modelColour'. Either include it or remove the dependency array                                        react-hooks/exhaustive-deps
+  Line 51:8:   React Hook useEffect has a missing dependency: 'dataState.fromMeshyOrHistory'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+  Line 71:4:   React Hook useEffect has missing dependencies: 'dataState.xFlip', 'dataState.yFlip', and 'dataState.zFlip'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 2 warnings
+No issues found.

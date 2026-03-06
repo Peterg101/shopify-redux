@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Box,
   Typography,
@@ -27,7 +27,6 @@ import {
   Palette,
   Straighten,
   HighQuality,
-  ThreeDRotation,
   Build,
 } from '@mui/icons-material';
 import { SelectChangeEvent } from '@mui/material/Select';
@@ -39,13 +38,10 @@ import {
   setModelColour,
   setMultiplierValue,
   setQALevel,
-  setXFLip,
-  setYFLip,
-  setZFLip,
 } from '../../services/dataSlice';
 import { PricingConfig } from '../../app/utility/interfaces';
 import pricingConfig from '../../config/pricingConfig.json';
-import { getPrice, degreesToRadians } from '../../app/utility/utils';
+import { getPrice } from '../../app/utility/utils';
 import { monoFontFamily } from '../../theme';
 
 const config: PricingConfig = pricingConfig;
@@ -70,9 +66,6 @@ const summaryLabelSx = {
 export const ConfigurationPanel = () => {
   const dispatch = useDispatch();
   const dataState = useSelector((state: RootState) => state.dataState);
-  const [xValue, setXValue] = useState(0);
-  const [yValue, setYValue] = useState(0);
-  const [zValue, setZValue] = useState(0);
 
   const { techniques, materials } = config;
 
@@ -113,17 +106,6 @@ export const ConfigurationPanel = () => {
   // QA handler
   const handleQAChange = (event: SelectChangeEvent) => {
     dispatch(setQALevel({ qaLevel: event.target.value as 'standard' | 'high' }));
-  };
-
-  // Orientation handlers
-  const handleXChange = (_e: Event, v: number | number[]) => {
-    if (typeof v === 'number') { dispatch(setXFLip({ xFlip: degreesToRadians(v) })); setXValue(v); }
-  };
-  const handleYChange = (_e: Event, v: number | number[]) => {
-    if (typeof v === 'number') { dispatch(setYFLip({ yFlip: degreesToRadians(v) })); setYValue(v); }
-  };
-  const handleZChange = (_e: Event, v: number | number[]) => {
-    if (typeof v === 'number') { dispatch(setZFLip({ zFlip: degreesToRadians(v) })); setZValue(v); }
   };
 
   const marks = [
@@ -289,7 +271,7 @@ export const ConfigurationPanel = () => {
                   <Table size="small">
                     <TableHead>
                       <TableRow>
-                        <TableCell sx={{ fontFamily: monoFontFamily, fontSize: '0.75rem' }}>Vol (cm\u00b3)</TableCell>
+                        <TableCell sx={{ fontFamily: monoFontFamily, fontSize: '0.75rem' }}>Vol (cm³)</TableCell>
                         <TableCell align="right" sx={{ fontFamily: monoFontFamily, fontSize: '0.75rem' }}>X</TableCell>
                         <TableCell align="right" sx={{ fontFamily: monoFontFamily, fontSize: '0.75rem' }}>Y</TableCell>
                         <TableCell align="right" sx={{ fontFamily: monoFontFamily, fontSize: '0.75rem' }}>Z</TableCell>
@@ -353,55 +335,6 @@ export const ConfigurationPanel = () => {
           </AccordionDetails>
         </Accordion>
 
-        {/* Orientation */}
-        <Accordion sx={sectionSx}>
-          <AccordionSummary expandIcon={<ExpandMore />}>
-            <Box sx={summaryLabelSx}>
-              <ThreeDRotation sx={{ color: 'primary.main', fontSize: 18 }} />
-              <Typography variant="body1" fontWeight={500}>Orientation</Typography>
-            </Box>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Grid container spacing={3}>
-              <Grid item xs={12} sm={4}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  X: {xValue}\u00b0
-                </Typography>
-                <Slider
-                  aria-label="X axis rotation"
-                  value={xValue}
-                  onChange={handleXChange}
-                  min={-180} step={1} max={180}
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Y: {yValue}\u00b0
-                </Typography>
-                <Slider
-                  aria-label="Y axis rotation"
-                  value={yValue}
-                  onChange={handleYChange}
-                  min={-180} step={1} max={180}
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Z: {zValue}\u00b0
-                </Typography>
-                <Slider
-                  aria-label="Z axis rotation"
-                  value={zValue}
-                  onChange={handleZChange}
-                  min={-180} step={1} max={180}
-                  size="small"
-                />
-              </Grid>
-            </Grid>
-          </AccordionDetails>
-        </Accordion>
       </Box>
     </Box>
   );
