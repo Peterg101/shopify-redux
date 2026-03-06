@@ -12,8 +12,6 @@ jest.mock('../../display/objStlViewer', () => ({
 
 const defaultUiState = {
   leftDrawerOpen: false,
-  rightDrawerOpen: false,
-  basketItems: [],
   drawerWidth: 400,
   selectedComponent: '',
   meshyLoading: false,

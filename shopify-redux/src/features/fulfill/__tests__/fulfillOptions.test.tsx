@@ -27,8 +27,6 @@ describe('FulfillOptions', () => {
       preloadedState: {
         userInterfaceState: {
           leftDrawerOpen: false,
-          rightDrawerOpen: false,
-          basketItems: [],
           drawerWidth: 400,
           selectedComponent: '',
           meshyLoading: false,
@@ -76,8 +74,6 @@ describe('FulfillOptions', () => {
       preloadedState: {
         userInterfaceState: {
           leftDrawerOpen: false,
-          rightDrawerOpen: false,
-          basketItems: [],
           drawerWidth: 400,
           selectedComponent: '',
           meshyLoading: false,
@@ -129,8 +125,6 @@ describe('FulfillOptions', () => {
       preloadedState: {
         userInterfaceState: {
           leftDrawerOpen: false,
-          rightDrawerOpen: false,
-          basketItems: [],
           drawerWidth: 400,
           selectedComponent: '',
           meshyLoading: false,

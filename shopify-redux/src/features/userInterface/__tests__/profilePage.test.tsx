@@ -6,8 +6,6 @@ import { createMockSessionData } from '../../../test-utils/mockData'
 
 const defaultUiState = {
   leftDrawerOpen: false,
-  rightDrawerOpen: false,
-  basketItems: [],
   drawerWidth: 400,
   selectedComponent: '',
   meshyLoading: false,

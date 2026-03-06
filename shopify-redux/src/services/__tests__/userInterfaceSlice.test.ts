@@ -1,22 +1,13 @@
 import userInterfaceReducer, {
   setLeftDrawerOpen,
-  setRightDrawerOpen,
   setLeftDrawerClosed,
-  setRightDrawerClosed,
-  setBasketItems,
-  clearBasketItems,
-  deleteBasketItem,
   setMeshyLoading,
   setSelectedComponent,
 } from '../userInterfaceSlice'
 import { UserInterfaceState } from '../../app/utility/interfaces'
-import { createMockBasketItem } from '../../test-utils/mockData'
-import { UUID } from 'crypto'
 
 const initialState: UserInterfaceState = {
   leftDrawerOpen: false,
-  rightDrawerOpen: false,
-  basketItems: [],
   drawerWidth: 400,
   selectedComponent: '',
   meshyLoading: false,
@@ -50,58 +41,15 @@ describe('userInterfaceSlice', () => {
   })
 
   describe('drawer toggles', () => {
-    it('toggles left drawer and closes right', () => {
-      const stateWithRight = { ...initialState, rightDrawerOpen: true }
-      const state = userInterfaceReducer(stateWithRight, setLeftDrawerOpen())
+    it('toggles left drawer', () => {
+      const state = userInterfaceReducer(initialState, setLeftDrawerOpen())
       expect(state.leftDrawerOpen).toBe(true)
-      expect(state.rightDrawerOpen).toBe(false)
-    })
-
-    it('toggles right drawer and closes left', () => {
-      const stateWithLeft = { ...initialState, leftDrawerOpen: true }
-      const state = userInterfaceReducer(stateWithLeft, setRightDrawerOpen())
-      expect(state.rightDrawerOpen).toBe(true)
-      expect(state.leftDrawerOpen).toBe(false)
     })
 
     it('closes left drawer', () => {
       const openState = { ...initialState, leftDrawerOpen: true }
       const state = userInterfaceReducer(openState, setLeftDrawerClosed())
       expect(state.leftDrawerOpen).toBe(false)
-    })
-
-    it('closes right drawer', () => {
-      const openState = { ...initialState, rightDrawerOpen: true }
-      const state = userInterfaceReducer(openState, setRightDrawerClosed())
-      expect(state.rightDrawerOpen).toBe(false)
-    })
-  })
-
-  describe('basket operations', () => {
-    it('adds a basket item', () => {
-      const item = createMockBasketItem({ id: 'a-b-c-d-e' })
-      const state = userInterfaceReducer(initialState, setBasketItems({ newBasketItem: item }))
-      expect(state.basketItems).toHaveLength(1)
-      expect(state.basketItems[0].name).toBe('Test Item')
-    })
-
-    it('clears all basket items', () => {
-      const stateWithItems = {
-        ...initialState,
-        basketItems: [createMockBasketItem()],
-      }
-      const state = userInterfaceReducer(stateWithItems, clearBasketItems())
-      expect(state.basketItems).toHaveLength(0)
-    })
-
-    it('deletes a specific basket item', () => {
-      const item = createMockBasketItem({ id: 'del-me-a-b-c' })
-      const stateWithItems = { ...initialState, basketItems: [item] }
-      const state = userInterfaceReducer(
-        stateWithItems,
-        deleteBasketItem({ uuidToDelete: 'del-me-a-b-c' as UUID })
-      )
-      expect(state.basketItems).toHaveLength(0)
     })
   })
 

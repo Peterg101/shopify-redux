@@ -1,4 +1,4 @@
-import { FileInformation, FileResponse, BasketInformationAndFile, BasketQuantityUpdate, ClaimOrder, FulfillerAddress, MeshyGenerationSettings } from "../app/utility/interfaces"
+import { FileInformation, FileResponse, BasketInformationAndFile, ClaimOrder, FulfillerAddress, MeshyGenerationSettings } from "../app/utility/interfaces"
 import {convertFileToDataURI } from "../app/utility/utils";
 import { MeshyPayload, MeshyImageTo3DPayload, MeshyRefinePayload } from "../services/meshyApi";
 import logger from '../app/utility/logger';
@@ -155,30 +155,6 @@ export const startImageTo3DTask = async (image_file: File, userId: string, portI
   }
 };
 
-export const updateBasketQuantity = async (basketQuantityUpdate: BasketQuantityUpdate): Promise<void> => {
-
-  try {
-    const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/basket_item_quantity`, {
-        method: "POST",
-        credentials: "include", // Include cookies in the request
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(basketQuantityUpdate),
-    });
-
-    if (!response.ok) {
-        const errorDetails = await response.json();
-        logger.error("Failed to update basket item:", errorDetails);
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-    }
-
-} catch (error) {
-    logger.error("Error deleting basket item:", error);
-    throw error; // Propagate the error
-}
-
-}
 
 export async function createStripeCheckoutAndRedirect() {
   try {

@@ -5,7 +5,7 @@ import { useFile } from '../../services/fileProvider';
 import { createFileBlob, extractFileType } from '../../app/utility/utils';
 import { useDispatch } from 'react-redux';
 import {setFileProperties, setFromMeshyOrHistory} from '../../services/dataSlice';
-import { setLeftDrawerClosed, setRightDrawerClosed } from '../../services/userInterfaceSlice';
+import { setLeftDrawerClosed } from '../../services/userInterfaceSlice';
 import { Box, Typography } from '@mui/material';
 
 export const DropArea = () => {
@@ -13,7 +13,6 @@ export const DropArea = () => {
     const dispatch = useDispatch()
 
     const handleProcessFile = useCallback((file: File): void => {
-        dispatch(setRightDrawerClosed())
         dispatch(setLeftDrawerClosed())
         const fileBlob = createFileBlob(file)
         const fileExtension = extractFileType(file)

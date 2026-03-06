@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { BasketInformation, DataState, FileInformation, VectorState } from "../app/utility/interfaces";
 import * as THREE from "three";
-import { getMidPoint } from "../app/utility/utils";
 import { PricingConfig, Order } from '../app/utility/interfaces';
 import pricingConfig from "./../config/pricingConfig.json"
 import { getPrice } from '../app/utility/utils';
@@ -120,12 +119,6 @@ export const dataSlice = createSlice({
             state.minScale = minScale
             state.maxScale = maxScale
         },
-        setMultiplierMidpoint: (state) => {
-            const midpoint = getMidPoint(state.minScale, state.maxScale)
-            state.multiplierValue = midpoint
-            
-            
-        },
         setModelDimensions: (
             state,
             action: PayloadAction<{
@@ -229,7 +222,6 @@ export const {
     setScales,
     setModelDimensions,
     setUploadedFileEditProperties,
-    setMultiplierMidpoint,
     setXFLip,
     setYFLip,
     setZFLip,
