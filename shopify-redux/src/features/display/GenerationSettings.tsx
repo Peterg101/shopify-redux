@@ -22,7 +22,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import TuneIcon from '@mui/icons-material/Tune';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../app/store';
-import { setMeshyGenerationSettings } from '../../services/userInterfaceSlice';
+import { setMeshyGenerationSettings } from '../../services/meshySlice';
 
 interface GenerationSettingsProps {
   mode: 'text' | 'image';
@@ -48,7 +48,7 @@ const summaryLabelSx = {
 export const GenerationSettings: React.FC<GenerationSettingsProps> = ({ mode }) => {
   const dispatch = useDispatch();
   const settings = useSelector(
-    (state: RootState) => state.userInterfaceState.meshyGenerationSettings
+    (state: RootState) => state.meshyState.meshyGenerationSettings
   );
 
   return (

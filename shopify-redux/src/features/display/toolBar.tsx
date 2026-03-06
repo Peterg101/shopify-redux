@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 import { ChangeEvent } from 'react';
 import { setFileNameBoxValue, resetDataState } from '../../services/dataSlice';
-import { setMeshyRefining, setMeshyPending, setMeshyPreviewTaskId } from '../../services/userInterfaceSlice';
+import { setMeshyRefining, setMeshyPending, setMeshyPreviewTaskId } from '../../services/meshySlice';
 import { startRefineTask } from '../../services/fetchFileUtils';
 import { createWebsocketConnection } from '../../services/meshyWebsocket';
 import { useFile } from '../../services/fileProvider';
@@ -17,10 +17,11 @@ import { AddToBasket } from '../userInterface/addToBasket';
 export const ToolBar = () => {
   const dispatch = useDispatch();
   const dataState = useSelector((state: RootState) => state.dataState);
-  const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
+  const userInformation = useSelector((state: RootState) => state.userInterfaceState.userInformation);
+  const meshyState = useSelector((state: RootState) => state.meshyState);
   const totalCost = useSelector(selectTotalCost);
-  const meshyPreviewTaskId = userInterfaceState.meshyPreviewTaskId;
-  const meshyRefining = userInterfaceState.meshyRefining;
+  const meshyPreviewTaskId = meshyState.meshyPreviewTaskId;
+  const meshyRefining = meshyState.meshyRefining;
   const { setActualFile } = useFile();
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -32,12 +33,12 @@ export const ToolBar = () => {
   };
 
   const handleRefine = async () => {
-    if (!meshyPreviewTaskId || !userInterfaceState.userInformation) return;
+    if (!meshyPreviewTaskId || !userInformation) return;
     const portId = generateUuid();
     dispatch(setMeshyRefining({ meshyRefining: true }));
     dispatch(setMeshyPending({ meshyPending: true }));
     dispatch(setMeshyPreviewTaskId({ meshyPreviewTaskId: null }));
-    await startRefineTask(meshyPreviewTaskId, userInterfaceState.userInformation.user.user_id, portId);
+    await startRefineTask(meshyPreviewTaskId, userInformation.user.user_id, portId);
     createWebsocketConnection(portId, dispatch, setActualFile);
   };
 

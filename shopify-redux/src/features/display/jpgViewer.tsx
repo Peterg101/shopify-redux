@@ -11,7 +11,7 @@ import { useDispatch } from 'react-redux';
 import { useRef, useState } from "react";
 import { Box, Button, Collapse } from "@mui/material";
 import { resetDataState, setClearFileDisplay, setSelectedFile, setSelectedFileType } from "../../services/dataSlice";
-import { setMeshyLoadedPercentage, setMeshyLoading, setMeshyPending, setMeshyQueueItems } from "../../services/userInterfaceSlice";
+import { setMeshyPending } from "../../services/meshySlice";
 import { startImageTo3DTask } from "../../services/fetchFileUtils";
 import { generateUuid } from "../../app/utility/utils";
 import { generateUUID } from "three/src/math/MathUtils";
@@ -24,8 +24,11 @@ export const JpgViewer = () => {
     const dataState = useSelector(
         (state: RootState) => state.dataState
     )
-    const userInterfaceState = useSelector(
-      (state: RootState) => state.userInterfaceState
+    const userInformation = useSelector(
+      (state: RootState) => state.userInterfaceState.userInformation
+    )
+    const meshyGenerationSettings = useSelector(
+      (state: RootState) => state.meshyState.meshyGenerationSettings
     )
     const dispatch = useDispatch()
     const {actualFile, setActualFile} = useFile()
@@ -58,10 +61,10 @@ export const JpgViewer = () => {
       setCropData("")
       const portId = generateUUID()
       dispatch(setMeshyPending({meshyPending: true}))
-      const settings = userInterfaceState.meshyGenerationSettings;
+      const settings = meshyGenerationSettings;
       await startImageTo3DTask(
         actualFile,
-        userInterfaceState.userInformation?.user.user_id,
+        userInformation?.user.user_id,
         portId,
         dataState.fileNameBoxValue,
         settings

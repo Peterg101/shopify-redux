@@ -3,6 +3,7 @@ import { combineSlices, configureStore } from "@reduxjs/toolkit";
 import {setupListeners} from "@reduxjs/toolkit/query"
 import { userInterfaceSlice } from "../services/userInterfaceSlice";
 import {dataSlice} from "../services/dataSlice";
+import { meshySlice } from "../services/meshySlice";
 import { meshyApi } from "../services/meshyApi";
 import { authApi } from "../services/authApi";
 import { basketApi } from "../services/basketItemApi";
@@ -10,6 +11,7 @@ import { basketApi } from "../services/basketItemApi";
 const rootReducer = combineSlices({
   [userInterfaceSlice.reducerPath]: userInterfaceSlice.reducer,
   [dataSlice.reducerPath]: dataSlice.reducer,
+  [meshySlice.reducerPath]: meshySlice.reducer,
   [meshyApi.reducerPath]: meshyApi.reducer,
   [authApi.reducerPath]: authApi.reducer,
   [basketApi.reducerPath]: basketApi.reducer

@@ -6,11 +6,11 @@ import { RootState } from '../../app/store';
 import MeshyLoading from './meshyLoading';
 
 export const Dropzone = () => {
-  const userInterfaceState = useSelector(
-    (state: RootState) => state.userInterfaceState
+  const meshyState = useSelector(
+    (state: RootState) => state.meshyState
   );
 
-  const isGenerating = userInterfaceState.meshyPending || userInterfaceState.meshyLoading;
+  const isGenerating = meshyState.meshyPending || meshyState.meshyLoading;
 
   return (
     <Box

@@ -33,22 +33,25 @@ export interface MeshyGenerationSettings {
     texture_prompt: string;
 }
 
+export interface MeshyState {
+    meshyLoading: boolean;
+    meshyLoadedPercentage: number;
+    meshyPending: boolean;
+    meshyQueueItems: number;
+    meshyGenerationSettings: MeshyGenerationSettings;
+    meshyPreviewTaskId: string | null;
+    meshyRefining: boolean;
+}
+
 export interface UserInterfaceState {
     leftDrawerOpen: boolean,
     drawerWidth: number
     selectedComponent: string,
-    meshyLoading: boolean,
-    meshyLoadedPercentage: number,
-    meshyPending: boolean,
-    meshyQueueItems: number,
     isLoggedIn: boolean,
     userInformation: UserAndTasksAndBasketAndIncompleteAndOrders | null,
     totalBasketValue: number,
     claimedOrder: Order,
     updateClaimedOrder: Claim | null
-    meshyGenerationSettings: MeshyGenerationSettings;
-    meshyPreviewTaskId: string | null;
-    meshyRefining: boolean;
 }
 
 export interface DataState {

@@ -126,7 +126,7 @@ export function LeftDrawerButtons(task: TaskInformation) {
 };
 
 export function LeftDrawerTaskLoading() {
-  const percentage = useSelector((state: RootState) => state.userInterfaceState.meshyLoadedPercentage);
+  const percentage = useSelector((state: RootState) => state.meshyState.meshyLoadedPercentage);
 
   return (
     <Box sx={{ mt: 2, px: 1 }}>

@@ -9,21 +9,22 @@ import { generateUUID } from 'three/src/math/MathUtils';
 import { useFile } from '../../services/fileProvider';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
-import { setMeshyPending } from '../../services/userInterfaceSlice';
+import { setMeshyPending } from '../../services/meshySlice';
 import { authApi } from '../../services/authApi';
 import { createWebsocketConnection } from '../../services/meshyWebsocket';
 import { startTask } from '../../services/fetchFileUtils';
 import { GenerationSettings } from './GenerationSettings';
 
 const AiTextPrompt = () => {
-  const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
+  const userInformation = useSelector((state: RootState) => state.userInterfaceState.userInformation);
+  const meshyState = useSelector((state: RootState) => state.meshyState);
   const { setActualFile } = useFile();
   const dispatch = useDispatch();
   const [disabledField, setDisabledField] = useState(false);
   const textFieldRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState('');
 
-  const isGenerating = userInterfaceState.meshyPending || userInterfaceState.meshyLoading;
+  const isGenerating = meshyState.meshyPending || meshyState.meshyLoading;
 
   const handleKeyPress = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Enter' && !event.shiftKey && value.trim()) {
@@ -37,11 +38,11 @@ const AiTextPrompt = () => {
   };
 
   const handleSubmit = async () => {
-    if (userInterfaceState.userInformation && value.trim()) {
+    if (userInformation && value.trim()) {
       const portId = generateUUID();
       setDisabledField(true);
       dispatch(setMeshyPending({ meshyPending: true }));
-      await startTask(value, userInterfaceState.userInformation?.user.user_id, portId, userInterfaceState.meshyGenerationSettings);
+      await startTask(value, userInformation.user.user_id, portId, meshyState.meshyGenerationSettings);
       dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
       createWebsocketConnection(portId, dispatch, setActualFile);
     }

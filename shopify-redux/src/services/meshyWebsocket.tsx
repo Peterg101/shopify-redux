@@ -2,7 +2,7 @@ import { AppDispatch } from "../app/store";
 import { authApi } from "./authApi";
 import { MeshyTaskStatusResponse } from "./meshyApi";
 import logger from '../app/utility/logger';
-import { setMeshyLoadedPercentage, setMeshyLoading, setMeshyPending, setMeshyQueueItems, setMeshyPreviewTaskId, setMeshyRefining } from "./userInterfaceSlice";
+import { setMeshyLoadedPercentage, setMeshyLoading, setMeshyPending, setMeshyQueueItems, setMeshyPreviewTaskId } from "./meshySlice";
 import { extractFileInfo, fetchFile } from "./fetchFileUtils";
 import { setFileProperties, setFromMeshyOrHistory } from "./dataSlice";
 

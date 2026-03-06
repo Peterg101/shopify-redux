@@ -13,11 +13,11 @@ const pulseGlow = keyframes`
 `;
 
 const MeshyLoading = () => {
-  const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
+  const meshyState = useSelector((state: RootState) => state.meshyState);
 
-  const isLoading = userInterfaceState.meshyLoading;
-  const isPending = userInterfaceState.meshyPending;
-  const percentage = userInterfaceState.meshyLoadedPercentage;
+  const isLoading = meshyState.meshyLoading;
+  const isPending = meshyState.meshyPending;
+  const percentage = meshyState.meshyLoadedPercentage;
 
   return (
     <Box
@@ -51,7 +51,7 @@ const MeshyLoading = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <HourglassEmptyIcon sx={{ color: 'text.secondary', fontSize: 18 }} />
           <Typography variant="body2" color="text.secondary">
-            Position in queue: {userInterfaceState.meshyQueueItems}
+            Position in queue: {meshyState.meshyQueueItems}
           </Typography>
         </Box>
       )}
