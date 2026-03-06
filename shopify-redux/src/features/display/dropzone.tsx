@@ -1,7 +1,6 @@
 import { Box, Typography, Divider } from '@mui/material';
 import { DropArea } from './dropArea';
 import AiTextPrompt from './aiTextPrompt';
-import { GenerationSettings } from './GenerationSettings';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 import MeshyLoading from './meshyLoading';
@@ -43,7 +42,6 @@ export const Dropzone = () => {
       {/* AI Prompt Area */}
       <Box sx={{ p: 3 }}>
         <AiTextPrompt />
-        <GenerationSettings mode="text" />
       </Box>
     </Box>
   );

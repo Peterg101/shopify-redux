@@ -9,7 +9,7 @@ import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { useDispatch } from 'react-redux';
 import { useRef, useState } from "react";
-import { Box, Button } from "@mui/material";
+import { Box, Button, Collapse } from "@mui/material";
 import { resetDataState, setClearFileDisplay, setSelectedFile, setSelectedFileType } from "../../services/dataSlice";
 import { setMeshyLoadedPercentage, setMeshyLoading, setMeshyPending, setMeshyQueueItems } from "../../services/userInterfaceSlice";
 import { startImageTo3DTask } from "../../services/fetchFileUtils";
@@ -161,9 +161,11 @@ export const JpgViewer = () => {
   </Button>
 </Box>
 
-<Box sx={{ px: 2, pb: 2 }}>
-  <GenerationSettings mode="image" />
-</Box>
+<Collapse in={!!cropData}>
+  <Box sx={{ px: 2, pb: 2 }}>
+    <GenerationSettings mode="image" />
+  </Box>
+</Collapse>
 
     </div>
     

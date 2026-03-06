@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
+import Collapse from '@mui/material/Collapse';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import React, { useState, ChangeEvent, KeyboardEvent, useRef } from 'react';
 import { generateUUID } from 'three/src/math/MathUtils';
@@ -12,6 +13,7 @@ import { setMeshyPending } from '../../services/userInterfaceSlice';
 import { authApi } from '../../services/authApi';
 import { createWebsocketConnection } from '../../services/meshyWebsocket';
 import { startTask } from '../../services/fetchFileUtils';
+import { GenerationSettings } from './GenerationSettings';
 
 const AiTextPrompt = () => {
   const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
@@ -93,6 +95,11 @@ const AiTextPrompt = () => {
       >
         {value.length}/600
       </Typography>
+      <Collapse in={value.length > 0}>
+        <Box sx={{ mt: 1.5 }}>
+          <GenerationSettings mode="text" />
+        </Box>
+      </Collapse>
     </Box>
   );
 };
