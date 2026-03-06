@@ -13,6 +13,7 @@ export const MainOptions = () => {
   const dataState = useSelector((state: RootState) => state.dataState);
 
   const collapsedWidth = `calc(${theme.spacing(8)} + 1px)`;
+  const has3DModel = dataState.fileDisplay && ['obj', 'stl', 'glb', 'fbx'].includes(dataState.selectedFileType.toLowerCase());
 
   return (
     <Box
@@ -28,10 +29,10 @@ export const MainOptions = () => {
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', minHeight: '70vh' }}>
-              {dataState.fileDisplay && <ToolBar />}
+              {has3DModel && <ToolBar />}
               <FileViewer />
             </Paper>
-            {dataState.fileDisplay && !dataState.fulfillMode && <ConfigurationPanel />}
+            {has3DModel && !dataState.fulfillMode && <ConfigurationPanel />}
           </Grid>
         </Grid>
       </Container>
