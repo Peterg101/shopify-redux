@@ -36,33 +36,30 @@ export const OrientationControls = () => {
     <Box
       sx={{
         display: 'flex',
-        flexDirection: 'column',
+        alignItems: 'center',
         gap: 2,
-        px: 3,
-        py: 2.5,
+        px: 2,
+        py: 1,
         backgroundColor: 'rgba(0, 229, 255, 0.04)',
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <ThreeDRotation sx={{ color: 'primary.main', fontSize: 24 }} />
-        <Typography variant="caption" sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>
-          Orientation
-        </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+        <ThreeDRotation sx={{ color: 'primary.main', fontSize: 18 }} />
       </Box>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flex: 1 }}>
         <Typography variant="caption" sx={labelSx}>X: {xValue}°</Typography>
-        <Slider aria-label="X axis rotation" value={xValue} onChange={handleX} min={-180} max={180} step={1} size="medium" sx={{ flex: 1 }} />
+        <Slider aria-label="X axis rotation" value={xValue} onChange={handleX} min={-180} max={180} step={1} size="small" sx={{ flex: 1 }} />
       </Box>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flex: 1 }}>
         <Typography variant="caption" sx={labelSx}>Y: {yValue}°</Typography>
-        <Slider aria-label="Y axis rotation" value={yValue} onChange={handleY} min={-180} max={180} step={1} size="medium" sx={{ flex: 1 }} />
+        <Slider aria-label="Y axis rotation" value={yValue} onChange={handleY} min={-180} max={180} step={1} size="small" sx={{ flex: 1 }} />
       </Box>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flex: 1 }}>
         <Typography variant="caption" sx={labelSx}>Z: {zValue}°</Typography>
-        <Slider aria-label="Z axis rotation" value={zValue} onChange={handleZ} min={-180} max={180} step={1} size="medium" sx={{ flex: 1 }} />
+        <Slider aria-label="Z axis rotation" value={zValue} onChange={handleZ} min={-180} max={180} step={1} size="small" sx={{ flex: 1 }} />
       </Box>
     </Box>
   );
