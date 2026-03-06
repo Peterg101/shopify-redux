@@ -129,7 +129,7 @@ export function OrderDetailCard({
 
       <Dialog open={viewerOpen} onClose={handleCloseViewer} maxWidth="lg" fullWidth>
         <DialogTitle>{order.name}</DialogTitle>
-        <Box>
+        <Box sx={{ height: '60vh' }}>
           <OBJSTLViewer />
         </Box>
         <MuiDialogActions>

@@ -201,7 +201,7 @@ export function ClaimPanel({
 
       <Dialog open={viewerOpen} onClose={() => setViewerOpen(false)} maxWidth="lg" fullWidth>
         <DialogTitle>{order.name}</DialogTitle>
-        <Box>
+        <Box sx={{ height: '60vh' }}>
           <OBJSTLViewer />
         </Box>
         <DialogActions>

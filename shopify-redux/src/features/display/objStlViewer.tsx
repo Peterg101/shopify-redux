@@ -18,7 +18,7 @@ const OBJSTLViewer = ({ hideOrientationControls = false }: OBJSTLViewerProps) =>
     )
 
   return (
-      <div className="App" style={{ width: '100%', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <div className="App" style={{ width: '100%', height: '100%', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
         <ViewerErrorBoundary>
           <Canvas
