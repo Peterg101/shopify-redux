@@ -18,6 +18,7 @@ import { generateUUID } from "three/src/math/MathUtils";
 import { useFile } from '../../services/fileProvider';
 import { authApi } from '../../services/authApi';
 import { createWebsocketConnection } from "../../services/meshyWebsocket";
+import { GenerationSettings } from './GenerationSettings';
 
 export const JpgViewer = () => {
     const dataState = useSelector(
@@ -57,11 +58,13 @@ export const JpgViewer = () => {
       setCropData("")
       const portId = generateUUID()
       dispatch(setMeshyPending({meshyPending: true}))
+      const settings = userInterfaceState.meshyGenerationSettings;
       await startImageTo3DTask(
-        actualFile, 
-        userInterfaceState.userInformation?.user.user_id, 
-        portId, 
-        dataState.fileNameBoxValue
+        actualFile,
+        userInterfaceState.userInformation?.user.user_id,
+        portId,
+        dataState.fileNameBoxValue,
+        settings
       )
       setImage("")
       dispatch(setClearFileDisplay())
@@ -156,6 +159,10 @@ export const JpgViewer = () => {
   <Button variant="contained" disabled = {!cropData} onClick={generate3DModelFromImage} endIcon={<AutoAwesomeIcon/>}>
   Generate 3D Model
   </Button>
+</Box>
+
+<Box sx={{ px: 2, pb: 2 }}>
+  <GenerationSettings mode="image" />
 </Box>
 
     </div>

@@ -1,6 +1,6 @@
-import { FileInformation, FileResponse, BasketInformationAndFile, BasketQuantityUpdate, ClaimOrder, FulfillerAddress } from "../app/utility/interfaces"
+import { FileInformation, FileResponse, BasketInformationAndFile, BasketQuantityUpdate, ClaimOrder, FulfillerAddress, MeshyGenerationSettings } from "../app/utility/interfaces"
 import {convertFileToDataURI } from "../app/utility/utils";
-import { MeshyPayload, MeshyImageTo3DPayload } from "../services/meshyApi";
+import { MeshyPayload, MeshyImageTo3DPayload, MeshyRefinePayload } from "../services/meshyApi";
 
 export const fetchFile = async (fileId: string): Promise<FileResponse> => {
     try {
@@ -83,14 +83,17 @@ export const deleteBasketItem = async (fileId: string): Promise<void> => {
   }
 }
 
-export const startTask = async (prompt: string, userId: string, portId: string) => {
+export const startTask = async (prompt: string, userId: string, portId: string, settings?: MeshyGenerationSettings) => {
   try {
     const payload: MeshyPayload = {
       mode: 'preview',
       prompt: prompt,
-      art_style: 'realistic',
-      negative_prompt: 'low quality, low resolution, low poly, ugly',
-      ai_model: 'meshy-5'
+      art_style: settings?.art_style ?? 'realistic',
+      negative_prompt: settings?.negative_prompt ?? 'low quality, low resolution, low poly, ugly',
+      ai_model: settings?.ai_model ?? 'meshy-5',
+      ...(settings?.topology && { topology: settings.topology }),
+      ...(settings?.target_polycount && { target_polycount: settings.target_polycount }),
+      ...(settings?.symmetry_mode && { symmetry_mode: settings.symmetry_mode }),
     };
 
     const response = await fetch(`${process.env.REACT_APP_MESHY_SERVICE}/start_task/`, {
@@ -114,15 +117,19 @@ export const startTask = async (prompt: string, userId: string, portId: string) 
   }
 };
 
-export const startImageTo3DTask = async (image_file: File, userId: string, portId: string, fileName: string) => {
+export const startImageTo3DTask = async (image_file: File, userId: string, portId: string, fileName: string, settings?: MeshyGenerationSettings) => {
   try {
     const image_bytes = await convertFileToDataURI(image_file)
     const payload: MeshyImageTo3DPayload = {
       image_url: image_bytes,
-      enable_pbr: true,
-      should_remesh: true,
-      should_texture: true,
-      ai_model: "meshy-5"
+      enable_pbr: settings?.enable_pbr ?? true,
+      should_remesh: settings?.should_remesh ?? true,
+      should_texture: settings?.should_texture ?? true,
+      ai_model: settings?.ai_model ?? "meshy-5",
+      ...(settings?.topology && { topology: settings.topology }),
+      ...(settings?.target_polycount && { target_polycount: settings.target_polycount }),
+      ...(settings?.symmetry_mode && { symmetry_mode: settings.symmetry_mode }),
+      ...(settings?.texture_prompt && { texture_prompt: settings.texture_prompt }),
     };
 
     const response = await fetch(`${process.env.REACT_APP_MESHY_SERVICE}/start_image_to_3d_task/`, {
@@ -491,4 +498,23 @@ export async function getFulfillerAddress(userId: string): Promise<FulfillerAddr
   }
   return await response.json();
 }
+
+export const startRefineTask = async (
+    previewTaskId: string, userId: string, portId: string,
+    options?: { enable_pbr?: boolean; texture_prompt?: string; remove_lighting?: boolean }
+) => {
+    const payload: MeshyRefinePayload = {
+        mode: 'refine',
+        preview_task_id: previewTaskId,
+        ...options,
+    };
+    const response = await fetch(`${process.env.REACT_APP_MESHY_SERVICE}/start_refine_task/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ port_id: portId, user_id: userId, meshy_refine_payload: payload }),
+    });
+    if (!response.ok) throw new Error(`Refine failed: ${response.statusText}`);
+    return response.json();
+};
 

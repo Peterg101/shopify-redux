@@ -20,6 +20,7 @@ from fitd_schemas.fitd_classes import (
     MeshyPayload,
     TaskRequest,
     ImageTo3DTaskRequest,
+    RefineTaskRequest,
 )
 
 from api_calls import (
@@ -29,6 +30,8 @@ from api_calls import (
 from utils import (
     generate_image_to_3d_task_and_check_for_response_decoupled_ws,
     generate_task_and_check_for_response_decoupled_ws,
+    generate_refine_task_and_stream,
+    validate_session,
     cookie_verification,
 )
 
@@ -94,17 +97,29 @@ async def start_image_to_3d_task(
     # return {"message": "Task started!", "task_id": request.port_id}
 
 
+@app.post("/start_refine_task/")
+async def start_refine_task(
+    request: RefineTaskRequest,
+    background_tasks: BackgroundTasks,
+    redis: AsyncRedis = Depends(get_redis),
+    _: None = Depends(cookie_verification),
+):
+    background_tasks.add_task(generate_refine_task_and_stream, request, redis)
+    return {"message": "Refine task started!", "task_id": request.port_id}
+
+
 @app.websocket("/ws/{port_id}")
 async def websocket_endpoint(
     websocket: WebSocket, port_id: str, redis: AsyncRedis = Depends(get_redis)
 ):
-    await websocket.accept()
+    ws_auth_enabled = os.getenv("WS_AUTH_ENABLED", "true").lower() == "true"
+    if ws_auth_enabled:
+        session_valid, user_id = await validate_session(websocket)
+        if not session_valid:
+            await websocket.close(code=1008, reason="Invalid session")
+            return
 
-    # # Authenticate session outside the try block
-    # session_valid, user_id = await validate_session(websocket)0
-    # if not session_valid:
-    #     await websocket.close(code=1008, reason="Invalid session")
-    #     return
+    await websocket.accept()
 
     try:
         # Subscribe to the task's progress channel

@@ -114,6 +114,9 @@ class MeshyPayload:
     art_style: str
     negative_prompt: str
     ai_model: str
+    topology: Optional[str] = None          # 'quad' | 'triangle'
+    target_polycount: Optional[int] = None   # 100-300000
+    symmetry_mode: Optional[str] = None      # 'off' | 'auto' | 'on'
 
 
 @dataclass
@@ -123,6 +126,10 @@ class MeshyImageTo3DPayload:
     should_remesh: bool
     should_texture: bool
     ai_model: str
+    topology: Optional[str] = None
+    target_polycount: Optional[int] = None
+    symmetry_mode: Optional[str] = None
+    texture_prompt: Optional[str] = None
 
 
 @dataclass
@@ -139,6 +146,9 @@ class MeshyTaskStatus:
 class MeshyRefinedPayload:
     mode: Optional[str]
     preview_task_id: str
+    enable_pbr: Optional[bool] = None
+    texture_prompt: Optional[str] = None
+    remove_lighting: Optional[bool] = None
 
 
 class TaskRequest(BaseModel):
@@ -152,6 +162,12 @@ class ImageTo3DTaskRequest(BaseModel):
     user_id: str
     meshy_image_to_3d_payload: MeshyImageTo3DPayload
     filename: str
+
+
+class RefineTaskRequest(BaseModel):
+    port_id: str
+    user_id: str
+    meshy_refine_payload: MeshyRefinedPayload
 
 
 class TaskError(BaseModel):

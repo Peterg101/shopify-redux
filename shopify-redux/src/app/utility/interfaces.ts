@@ -20,6 +20,19 @@ export interface UploadedFile {
     file: File
 }
 
+export interface MeshyGenerationSettings {
+    ai_model: string;
+    art_style: string;
+    negative_prompt: string;
+    topology: 'quad' | 'triangle';
+    target_polycount: number;
+    symmetry_mode: 'off' | 'auto' | 'on';
+    enable_pbr: boolean;
+    should_remesh: boolean;
+    should_texture: boolean;
+    texture_prompt: string;
+}
+
 export interface UserInterfaceState {
     leftDrawerOpen: boolean,
     rightDrawerOpen: boolean,
@@ -35,6 +48,9 @@ export interface UserInterfaceState {
     totalBasketValue: number,
     claimedOrder: Order,
     updateClaimedOrder: Claim | null
+    meshyGenerationSettings: MeshyGenerationSettings;
+    meshyPreviewTaskId: string | null;
+    meshyRefining: boolean;
 }
 
 export interface DataState {

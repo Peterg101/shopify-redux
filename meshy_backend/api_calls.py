@@ -1,8 +1,9 @@
 import os
 import logging
+import json
 from io import BytesIO
 import httpx
-import json
+from httpx_sse import aconnect_sse
 from jwt_auth import generate_token
 from fitd_schemas.fitd_classes import (
     MeshyRefinedPayload,
@@ -97,7 +98,7 @@ async def generate_meshy_refine_task(
 
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            "https://api.meshy.ai/v2/text-to-3d",
+            "https://api.meshy.ai/openapi/v2/text-to-3d",
             headers=headers,
             json=payload.__dict__,
         )
@@ -105,6 +106,40 @@ async def generate_meshy_refine_task(
 
         result = MeshyTaskGeneratedResponse(**response.json())
         return result
+
+
+async def stream_text_to_3d_progress(task_id: str):
+    """Async generator yielding SSE events from Meshy text-to-3D stream."""
+    headers = {"Authorization": f"Bearer {MESHY_API_KEY}"}
+    async with httpx.AsyncClient(timeout=httpx.Timeout(300.0)) as client:
+        async with aconnect_sse(
+            client, "GET",
+            f"https://api.meshy.ai/openapi/v2/text-to-3d/{task_id}/stream",
+            headers=headers
+        ) as event_source:
+            event_source.response.raise_for_status()
+            async for sse in event_source.aiter_sse():
+                if sse.event == "error":
+                    yield {"_error": True, **json.loads(sse.data)}
+                    return
+                yield json.loads(sse.data)
+
+
+async def stream_image_to_3d_progress(task_id: str):
+    """Async generator yielding SSE events from Meshy image-to-3D stream."""
+    headers = {"Authorization": f"Bearer {MESHY_API_KEY}"}
+    async with httpx.AsyncClient(timeout=httpx.Timeout(300.0)) as client:
+        async with aconnect_sse(
+            client, "GET",
+            f"https://api.meshy.ai/openapi/v1/image-to-3d/{task_id}/stream",
+            headers=headers
+        ) as event_source:
+            event_source.response.raise_for_status()
+            async for sse in event_source.aiter_sse():
+                if sse.event == "error":
+                    yield {"_error": True, **json.loads(sse.data)}
+                    return
+                yield json.loads(sse.data)
 
 
 async def get_obj_file_blob(url: str) -> BytesIO:

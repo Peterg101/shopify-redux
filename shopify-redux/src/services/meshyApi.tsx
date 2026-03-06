@@ -10,16 +10,23 @@ export interface MeshyPayload {
     prompt: string;
     art_style: string;
     negative_prompt: string;
-    ai_model: string
+    ai_model: string;
+    topology?: string;
+    target_polycount?: number;
+    symmetry_mode?: string;
   }
 
 
 export interface MeshyImageTo3DPayload {
-  image_url: string,
-  enable_pbr: boolean,
-  should_remesh: boolean,
-  should_texture: boolean
-  ai_model: string
+  image_url: string;
+  enable_pbr: boolean;
+  should_remesh: boolean;
+  should_texture: boolean;
+  ai_model: string;
+  topology?: string;
+  target_polycount?: number;
+  symmetry_mode?: string;
+  texture_prompt?: string;
 }
   
 export interface MeshyTaskGeneratedResponse {
@@ -62,8 +69,11 @@ export interface MeshyTaskStatusResponse {
 };
 
 export interface MeshyRefinePayload {
-    mode?: string;
-    preview_task_id: string
+    mode: 'refine';
+    preview_task_id: string;
+    enable_pbr?: boolean;
+    texture_prompt?: string;
+    remove_lighting?: boolean;
 }
 
 export const meshyApi = createApi({

@@ -3,6 +3,6 @@ uvicorn
 aiohttp
 redis[async]
 httpx
-requests
+httpx-sse
 python-dotenv
 pytest

@@ -39,7 +39,7 @@ const AiTextPrompt = () => {
       const portId = generateUUID();
       setDisabledField(true);
       dispatch(setMeshyPending({ meshyPending: true }));
-      await startTask(value, userInterfaceState.userInformation?.user.user_id, portId);
+      await startTask(value, userInterfaceState.userInformation?.user.user_id, portId, userInterfaceState.meshyGenerationSettings);
       dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
       createWebsocketConnection(portId, dispatch, setActualFile);
     }
@@ -60,7 +60,7 @@ const AiTextPrompt = () => {
           inputRef={textFieldRef}
           minRows={2}
           maxRows={4}
-          inputProps={{ maxLength: 300 }}
+          inputProps={{ maxLength: 600 }}
           sx={{
             '& .MuiOutlinedInput-root': {
               '&.Mui-focused fieldset': {
@@ -91,7 +91,7 @@ const AiTextPrompt = () => {
         color="text.secondary"
         sx={{ mt: 0.5, display: 'block', textAlign: 'right', opacity: 0.5 }}
       >
-        {value.length}/300
+        {value.length}/600
       </Typography>
     </Box>
   );

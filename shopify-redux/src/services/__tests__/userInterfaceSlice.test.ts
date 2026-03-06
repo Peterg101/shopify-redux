@@ -28,6 +28,20 @@ const initialState: UserInterfaceState = {
   totalBasketValue: 0,
   claimedOrder: null as any,
   updateClaimedOrder: null as any,
+  meshyGenerationSettings: {
+    ai_model: 'meshy-5',
+    art_style: 'realistic',
+    negative_prompt: 'low quality, low resolution, low poly, ugly',
+    topology: 'triangle' as const,
+    target_polycount: 30000,
+    symmetry_mode: 'auto' as const,
+    enable_pbr: true,
+    should_remesh: true,
+    should_texture: true,
+    texture_prompt: '',
+  },
+  meshyPreviewTaskId: null,
+  meshyRefining: false,
 }
 
 describe('userInterfaceSlice', () => {

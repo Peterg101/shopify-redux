@@ -1,10 +1,15 @@
-import { Box, TextField, Typography, Button } from '@mui/material';
+import { Box, TextField, Typography, Button, CircularProgress, Chip } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
-import ShoppingBasketIcon from '@mui/icons-material/ShoppingBasket';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 import { ChangeEvent } from 'react';
 import { setFileNameBoxValue, resetDataState } from '../../services/dataSlice';
+import { setMeshyRefining, setMeshyPending, setMeshyPreviewTaskId } from '../../services/userInterfaceSlice';
+import { startRefineTask } from '../../services/fetchFileUtils';
+import { createWebsocketConnection } from '../../services/meshyWebsocket';
+import { useFile } from '../../services/fileProvider';
+import { generateUuid } from '../../app/utility/collectionUtils';
 import { selectTotalCost } from '../../services/selectors';
 import { monoFontFamily } from '../../theme';
 import { AddToBasket } from '../userInterface/addToBasket';
@@ -12,7 +17,11 @@ import { AddToBasket } from '../userInterface/addToBasket';
 export const ToolBar = () => {
   const dispatch = useDispatch();
   const dataState = useSelector((state: RootState) => state.dataState);
+  const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
   const totalCost = useSelector(selectTotalCost);
+  const meshyPreviewTaskId = userInterfaceState.meshyPreviewTaskId;
+  const meshyRefining = userInterfaceState.meshyRefining;
+  const { setActualFile } = useFile();
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     dispatch(setFileNameBoxValue({ fileNameBoxValue: event.target.value }));
@@ -20,6 +29,16 @@ export const ToolBar = () => {
 
   const handleClear = () => {
     dispatch(resetDataState());
+  };
+
+  const handleRefine = async () => {
+    if (!meshyPreviewTaskId || !userInterfaceState.userInformation) return;
+    const portId = generateUuid();
+    dispatch(setMeshyRefining({ meshyRefining: true }));
+    dispatch(setMeshyPending({ meshyPending: true }));
+    dispatch(setMeshyPreviewTaskId({ meshyPreviewTaskId: null }));
+    await startRefineTask(meshyPreviewTaskId, userInterfaceState.userInformation.user.user_id, portId);
+    createWebsocketConnection(portId, dispatch, setActualFile);
   };
 
   return (
@@ -88,6 +107,34 @@ export const ToolBar = () => {
           {'\u00a3'}{totalCost.toFixed(2)}
         </Typography>
       </Box>
+
+      {/* Refine Button */}
+      {meshyPreviewTaskId && !meshyRefining && (
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={<AutoFixHighIcon />}
+          onClick={handleRefine}
+          sx={{
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              borderColor: 'primary.main',
+              boxShadow: '0 0 12px rgba(0, 229, 255, 0.15)',
+            },
+          }}
+        >
+          Refine
+        </Button>
+      )}
+      {meshyRefining && (
+        <Chip
+          label="Refining..."
+          size="small"
+          icon={<CircularProgress size={14} />}
+          sx={{ borderColor: 'primary.main' }}
+          variant="outlined"
+        />
+      )}
 
       {/* Add to Basket */}
       <AddToBasket />

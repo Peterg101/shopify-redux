@@ -1,7 +1,7 @@
 import { AppDispatch } from "../app/store";
 import { authApi } from "./authApi";
 import { MeshyTaskStatusResponse } from "./meshyApi";
-import { setMeshyLoadedPercentage, setMeshyLoading, setMeshyPending, setMeshyQueueItems } from "./userInterfaceSlice";
+import { setMeshyLoadedPercentage, setMeshyLoading, setMeshyPending, setMeshyQueueItems, setMeshyPreviewTaskId, setMeshyRefining } from "./userInterfaceSlice";
 import { extractFileInfo, fetchFile } from "./fetchFileUtils";
 import { setFileProperties, setFromMeshyOrHistory } from "./dataSlice";
 
@@ -64,6 +64,7 @@ export const createWebsocketConnection = (
         }
         ws.close();
         dispatch(setMeshyLoading({ meshyLoading: false }));
+        dispatch(setMeshyPreviewTaskId({ meshyPreviewTaskId: taskId }));
       }
     };
 
