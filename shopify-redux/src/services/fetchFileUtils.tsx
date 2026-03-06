@@ -221,7 +221,6 @@ export async function callStripeService() {
     }
 
     const data = await response.json();
-    console.log(data)
     if (data.onboarding_url) {
     window.location.href = data.onboarding_url;}
 

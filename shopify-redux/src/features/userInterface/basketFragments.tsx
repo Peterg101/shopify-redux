@@ -233,7 +233,7 @@ export const BasketSummary = () => {
   };
 
   const handleCheckoutWithCommunity = () => {
-    console.log("HERE WE GOOOOOOOOOO");
+    // TODO: implement community checkout flow
   };
 
   return (

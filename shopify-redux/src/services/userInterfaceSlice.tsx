@@ -133,7 +133,6 @@ export const userInterfaceSlice = createSlice({
             (state, { payload }) => {
               state.isLoggedIn = true;
               state.userInformation = payload
-              console.log('user definitely logged in')
             }
           )
           .addMatcher(
