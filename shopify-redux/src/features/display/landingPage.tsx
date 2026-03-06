@@ -4,12 +4,13 @@ import { useDispatch} from "react-redux";
 import { HeaderBar } from "../userInterface/headerBar";
 import { GenerateOrderOptions } from "./generateOrderOptions";
 import { resetDataState, setFulfillMode } from "../../services/dataSlice";
-import { setClaimedOrder } from "../../services/userInterfaceSlice";
+import { setClaimedOrder, resetSidebar } from "../../services/userInterfaceSlice";
 
 export const LandingPage = () => {
     const dispatch = useDispatch()
 
     useEffect(() => {
+        dispatch(resetSidebar());
         return () => {
           dispatch(resetDataState());
           dispatch(setClaimedOrder({claimedOrder: null}))

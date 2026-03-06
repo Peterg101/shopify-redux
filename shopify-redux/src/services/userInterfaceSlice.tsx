@@ -124,6 +124,10 @@ export const userInterfaceSlice = createSlice({
         setMeshyRefining: (state, action: PayloadAction<{meshyRefining: boolean}>) => {
             state.meshyRefining = action.payload.meshyRefining;
         },
+        resetSidebar: (state) => {
+            state.leftDrawerOpen = false;
+            state.selectedComponent = '';
+        },
 
     },
     extraReducers: (builder) => {
@@ -172,7 +176,8 @@ export const {
     setMeshyGenerationSettings,
     resetMeshyGenerationSettings,
     setMeshyPreviewTaskId,
-    setMeshyRefining
+    setMeshyRefining,
+    resetSidebar
 } = userInterfaceSlice.actions
 
 export default userInterfaceSlice.reducer
