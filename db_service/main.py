@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, Order, UserStripeAccount, Claim, Disbursement, ClaimEvidence, ClaimStatusHistory, Dispute
-from fitd_schemas.fitd_classes import UserHydrationResponse, ClaimWithOrderResponse, OrderResponse, OrderDetailResponse, ClaimDetailResponse, DisputeFulfillerResponse, DisputeResolveRequest, DisputeResponse, ClaimEvidenceResponse, ClaimStatusHistoryResponse
+from fitd_schemas.fitd_classes import UserHydrationResponse, ClaimWithOrderResponse, OrderResponse, OrderDetailResponse, ClaimDetailResponse, DisputeFulfillerResponse, DisputeResolveRequest, DisputeResponse, ClaimEvidenceResponse, ClaimStatusHistoryResponse, MarkDisbursementPaidRequest
 from datetime import datetime, timedelta
 import uuid
 from db_setup import engine, get_db
@@ -998,7 +998,7 @@ async def get_pending_disbursement(
 @app.patch("/disbursements/{disbursement_id}/paid")
 async def mark_disbursement_paid(
     disbursement_id: str,
-    payload: dict,
+    payload: MarkDisbursementPaidRequest,
     db: Session = Depends(get_db),
     _: dict = Depends(verify_jwt_token),
 ):
@@ -1006,10 +1006,7 @@ async def mark_disbursement_paid(
     if not disbursement:
         raise HTTPException(status_code=404, detail="Disbursement not found")
 
-    stripe_transfer_id = payload.get("stripe_transfer_id")
-    if not stripe_transfer_id:
-        raise HTTPException(status_code=400, detail="Missing stripe_transfer_id")
-
+    disbursement.stripe_transfer_id = payload.stripe_transfer_id
     disbursement.status = "paid"
     db.commit()
 

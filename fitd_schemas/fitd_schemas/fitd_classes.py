@@ -267,6 +267,10 @@ class ClaimQuantityUpdate(BaseModel):
     quantity: int
 
 
+class MarkDisbursementPaidRequest(BaseModel):
+    stripe_transfer_id: str
+
+
 class DisputeFulfillerResponse(BaseModel):
     response_text: str
 

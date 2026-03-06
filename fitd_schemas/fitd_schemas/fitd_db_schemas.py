@@ -145,6 +145,7 @@ class Disbursement(Base):
     amount_cents: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String, default="pending", nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    stripe_transfer_id: Mapped[str | None] = mapped_column(String, nullable=True)
 
     claim: Mapped["Claim"] = relationship("Claim", back_populates="disbursements")
 
@@ -166,19 +167,6 @@ class UserStripeAccount(Base):
     address_city: Mapped[str | None] = mapped_column(String, nullable=True)
     address_postal_code: Mapped[str | None] = mapped_column(String, nullable=True)
     address_country: Mapped[str | None] = mapped_column(String, nullable=True)
-
-
-class PayoutRecord(Base):
-    __tablename__ = "payouts"
-    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
-    claim_id: Mapped[str] = mapped_column(String, nullable=True)
-    user_id: Mapped[str] = mapped_column(String, nullable=False)
-    stripe_transfer_id: Mapped[str] = mapped_column(String, nullable=True)
-    amount_cents: Mapped[int] = mapped_column(Integer, nullable=False)
-    currency: Mapped[str] = mapped_column(String, default="gbp")
-    status: Mapped[str] = mapped_column(String, default="pending")
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class ClaimEvidence(Base):
