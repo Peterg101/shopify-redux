@@ -19,11 +19,12 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelna
 logger = logging.getLogger(__name__)
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+IS_PRODUCTION = os.getenv("ENV", "development") == "production"
 
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL, "http://localhost:1234", "http://localhost:369", "http://localhost:100"],
+    allow_origins=[FRONTEND_URL, "http://localhost:1234", "http://localhost:100"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -113,7 +114,7 @@ async def auth_callback(code: str, request: Request):
             str(session_id),
             max_age=3600,  # Session duration in seconds
             httponly=True,  # Prevent JavaScript from accessing the cookie
-            secure=True,  # Set to True for HTTPS environments
+            secure=IS_PRODUCTION,  # Set to True for HTTPS environments
             samesite="Lax",  # Prevents CSRF attacks by restricting cross-site requests
         )
         return response
@@ -152,7 +153,7 @@ async def email_register(register_request: EmailRegisterRequest):
         str(session_id),
         max_age=3600,
         httponly=True,
-        secure=True,
+        secure=IS_PRODUCTION,
         samesite="Lax",
     )
     return resp
@@ -183,7 +184,7 @@ async def email_login(login_request: EmailLoginRequest):
         str(session_id),
         max_age=3600,
         httponly=True,
-        secure=True,
+        secure=IS_PRODUCTION,
         samesite="Lax",
     )
     return resp

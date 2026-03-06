@@ -11,20 +11,12 @@ from fastapi import (
     Depends,
 )
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import ValidationError
-
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 from fitd_schemas.fitd_classes import (
-    MeshyTaskGeneratedResponse,
-    MeshyPayload,
     TaskRequest,
     ImageTo3DTaskRequest,
     RefineTaskRequest,
-)
-
-from api_calls import (
-    generate_text_to_3d_task,
 )
 
 from utils import (
@@ -58,16 +50,6 @@ async def get_redis():
     return redis
 
 
-@app.post("/api/meshy_request")
-async def generate_meshy_task(payload: MeshyPayload):
-    try:
-        response = MeshyTaskGeneratedResponse(result=payload.prompt)
-        response = await generate_text_to_3d_task(payload)
-        return response
-    except ValidationError:
-        raise HTTPException(status_code=500, detail="This is bad")
-
-
 @app.post("/start_task/")
 async def start_task(
     request: TaskRequest,
@@ -94,7 +76,7 @@ async def start_image_to_3d_task(
         generate_image_to_3d_task_and_check_for_response_decoupled_ws, request, redis
     )
     logger.info("background task successfully added")
-    # return {"message": "Task started!", "task_id": request.port_id}
+    return {"message": "Task started!", "task_id": request.port_id}
 
 
 @app.post("/start_refine_task/")
