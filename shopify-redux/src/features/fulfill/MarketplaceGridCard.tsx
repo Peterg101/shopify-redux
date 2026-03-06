@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import {
   Card,
   CardContent,
@@ -22,17 +22,12 @@ import { setClaimedOrder } from '../../services/userInterfaceSlice'
 import { resetDataState, setFulfillMode } from '../../services/dataSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
 import OBJSTLViewer from '../display/objStlViewer'
+import ModelThumbnail from '../display/ModelThumbnail'
 import { monoFontFamily } from '../../theme'
+import { getScarcityColor } from '../../app/utility/fulfillUtils'
 
 interface MarketplaceGridCardProps {
   order: Order
-}
-
-const getScarcityColor = (remaining: number, total: number) => {
-  const ratio = remaining / total
-  if (ratio <= 0.25 || remaining <= 3) return '#FF5252'
-  if (ratio <= 0.5) return '#FF9100'
-  return '#00E5FF'
 }
 
 const isNewOrder = (createdAt: string) => {
@@ -41,7 +36,7 @@ const isNewOrder = (createdAt: string) => {
   return now.getTime() - created.getTime() < 24 * 60 * 60 * 1000
 }
 
-export const MarketplaceGridCard: React.FC<MarketplaceGridCardProps> = ({ order }) => {
+export const MarketplaceGridCard: React.FC<MarketplaceGridCardProps> = React.memo(({ order }) => {
   const dispatch = useDispatch()
   const { prepareOrderFile } = useOrderFileLoader()
   const [viewerOpen, setViewerOpen] = useState(false)
@@ -123,6 +118,13 @@ export const MarketplaceGridCard: React.FC<MarketplaceGridCardProps> = ({ order 
                   height: '100%',
                   objectFit: 'cover',
                 }}
+              />
+            ) : is3D && order.task_id ? (
+              <ModelThumbnail
+                taskId={order.task_id}
+                fileType={order.selectedFileType}
+                colour={order.colour}
+                name={order.name}
               />
             ) : (
               <ViewInArIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.4 }} />
@@ -255,4 +257,4 @@ export const MarketplaceGridCard: React.FC<MarketplaceGridCardProps> = ({ order 
       </Snackbar>
     </>
   )
-}
+})

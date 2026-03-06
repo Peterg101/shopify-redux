@@ -24,6 +24,10 @@ const OBJScene = () => {
                 loadedObj.traverse((child) => {
                     if (child instanceof THREE.Mesh) {
                         child.geometry.dispose()
+                        child.geometry.computeBoundingBox();
+                        const center = new THREE.Vector3();
+                        child.geometry.boundingBox!.getCenter(center);
+                        child.geometry.translate(-center.x, -center.y, -center.z);
                         setObj(child);
                     }
                 });

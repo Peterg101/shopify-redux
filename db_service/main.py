@@ -1095,6 +1095,12 @@ async def resolve_dispute(
     elif payload.resolution == "partial":
         if not payload.partial_amount_cents or payload.partial_amount_cents <= 0:
             raise HTTPException(status_code=400, detail="partial_amount_cents is required for partial resolution")
+        max_amount = round(order.price * claim.quantity / order.quantity * 100)
+        if payload.partial_amount_cents > max_amount:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Partial amount ({payload.partial_amount_cents}) exceeds claim value ({max_amount} cents)"
+            )
         if disbursement:
             disbursement.amount_cents = payload.partial_amount_cents
             disbursement.status = "pending"

@@ -17,6 +17,8 @@ import {
   FormControl,
   InputLabel,
   TextField,
+  Snackbar,
+  Alert,
 } from '@mui/material'
 import OBJSTLViewer from '../display/objStlViewer'
 import { BuyerReviewPanel } from './BuyerReviewPanel'
@@ -48,15 +50,30 @@ export const UpdateClaimStatus = () => {
   const [labelError, setLabelError] = useState('')
   const [creatingLabel, setCreatingLabel] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'error' as 'error' | 'warning' })
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setEvidenceFile(e.target.files[0])
+      const file = e.target.files[0]
+      if (file.size > 5 * 1024 * 1024) {
+        setSnackbar({ open: true, message: 'File too large — maximum 5MB', severity: 'error' })
+        return
+      }
+      if (!file.type.startsWith('image/')) {
+        setSnackbar({ open: true, message: 'Only image files are accepted', severity: 'error' })
+        return
+      }
+      setEvidenceFile(file)
     }
   }
 
   const confirmUpdate = async () => {
     if (!updateClaimedOrder || !selectedStatus) return
+
+    if (currentStatus === 'qa_check' && updateClaimedOrder.order.qa_level === 'high' && !evidenceFile) {
+      setSnackbar({ open: true, message: 'Evidence photo required for high-QA orders before shipping', severity: 'error' })
+      return
+    }
 
     // Upload evidence before status patch if file selected
     if (evidenceFile) {
@@ -79,9 +96,8 @@ export const UpdateClaimStatus = () => {
         const result = await createShippingLabel(updateClaimedOrder.id)
         setLabelResult(result)
       } catch (err: any) {
-        setLabelError(err.message || 'Failed to create shipping label')
-        setCreatingLabel(false)
-        return
+        setLabelError(err.message || 'Failed to create shipping label. You can create it manually later.')
+        // Don't return — allow status update to proceed
       }
       setCreatingLabel(false)
     }
@@ -280,6 +296,16 @@ export const UpdateClaimStatus = () => {
           </Paper>
         </Grid>
       </Grid>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert severity={snackbar.severity} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }

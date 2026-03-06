@@ -20,6 +20,11 @@ const STLScene = (
     useEffect(() => {
         const loader = new STLLoader();
         loader.load(dataState.selectedFile, (geometry) => {
+            // Center geometry on origin so model appears where camera is looking
+            geometry.computeBoundingBox();
+            const center = new THREE.Vector3();
+            geometry.boundingBox!.getCenter(center);
+            geometry.translate(-center.x, -center.y, -center.z);
             // Create a Mesh from the loaded geometry
             const material = new THREE.MeshStandardMaterial({ color: dataState.modelColour, wireframeLinewidth: 2 });
             const loadedStl = new THREE.Mesh(geometry, material);

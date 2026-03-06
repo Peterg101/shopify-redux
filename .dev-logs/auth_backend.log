@@ -562,3 +562,537 @@ INFO:     127.0.0.1:61602 - "GET /get_session HTTP/1.1" 200 OK
 INFO:     127.0.0.1:62238 - "GET /get_session HTTP/1.1" 200 OK
 2026-03-06 09:22:13,556 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
 INFO:     127.0.0.1:62238 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:26:04,094 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63272 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:26:04,573 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63272 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:27:26,812 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63653 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:27:27,323 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63653 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:27:32,916 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63688 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:27:33,537 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63688 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:27:53,006 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63782 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:27:53,576 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63782 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:27:56,468 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63810 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:32:53,845 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:65252 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:37:54,825 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50540 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:42:55,880 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:51921 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 09:47:56,849 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:53325 - "GET /get_session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54720 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:56151 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:56181 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:57829 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:59220 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:60590 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:62045 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:63357 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:64701 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:64822 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:64822 - "GET /auth/google HTTP/1.1" 307 Temporary Redirect
+2026-03-06 10:28:42,716 [httpx] INFO: HTTP Request: POST https://oauth2.googleapis.com/token "HTTP/1.1 200 OK"
+2026-03-06 10:28:42,910 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:64850 - "GET /auth/google/callback?iss=https%3A%2F%2Faccounts.google.com&code=4%2F0AfrIepAiSbsEJp-jC3ofcI7VcN0DJXcg-2o8FePXWQTt34wOunYeuCrmmOJ9_4Tq54RU8A&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&authuser=0&prompt=none HTTP/1.1" 307 Temporary Redirect
+2026-03-06 10:28:43,513 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:64850 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 10:29:14,463 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:65008 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 10:31:01,071 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:65477 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 10:34:14,826 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50016 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 10:39:15,873 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:51398 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 10:44:16,849 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:52748 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 10:49:17,878 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:54172 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 10:53:27,024 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:55298 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 10:53:47,449 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:55390 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 10:56:23,590 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:56082 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 10:57:54,644 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:56501 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 10:57:55,001 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:56501 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 10:58:53,719 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:56785 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 10:58:54,257 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:56785 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:03:54,858 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:58081 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:08:55,803 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:59373 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:09:56,478 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:59632 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:10:01,098 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:59661 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:10:01,176 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:59667 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:10:04,246 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:59693 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:10:04,337 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:59699 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:10:04,390 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:59710 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:10:04,443 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:59698 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:10:04,497 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:59702 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:10:04,548 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:59701 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:10:04,601 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:59700 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:10:04,684 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:59716 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:10:04,749 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:59724 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:10:04,801 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:59720 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:10:04,840 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:59728 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:10:04,883 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:59732 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:10:04,924 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:59736 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:10:04,963 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:59740 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:12:44,926 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:60439 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:12:45,508 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:60439 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:12:48,011 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:60463 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:12:48,133 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:60469 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:12:51,070 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:60487 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:17:45,883 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:61740 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:19:20,197 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62169 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:21:20,463 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62671 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:21:24,132 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62671 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:21:24,662 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62671 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:21:32,340 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62739 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:21:50,159 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62845 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:22:03,903 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62909 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:22:10,450 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62948 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:22:10,560 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62955 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:22:13,598 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62971 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:22:25,054 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63031 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:22:25,121 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63037 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:34,263 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63350 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:34,319 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63351 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:34,386 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63356 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:34,439 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63357 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:34,491 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63359 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:34,543 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63358 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:34,607 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63365 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:34,658 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63373 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:34,713 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63377 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:34,771 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63381 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:34,807 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63385 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:34,848 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63389 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:34,891 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63393 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:34,927 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63397 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:47,864 [httpx] INFO: HTTP Request: GET http://localhost:8000/only_user/103968401714276034667 "HTTP/1.1 200 OK"
+2026-03-06 11:23:47,864 [api_calls] INFO: User details: {'password_hash': None, 'auth_provider': 'google', 'email': 'pete.goon@googlemail.com', 'user_id': '103968401714276034667', 'username': 'Peter Goon'}
+INFO:     127.0.0.1:63468 - "GET /get_just_user_details HTTP/1.1" 200 OK
+2026-03-06 11:23:47,916 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63472 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:49,049 [httpx] INFO: HTTP Request: GET http://localhost:8000/only_user/103968401714276034667 "HTTP/1.1 200 OK"
+2026-03-06 11:23:49,049 [api_calls] INFO: User details: {'password_hash': None, 'auth_provider': 'google', 'email': 'pete.goon@googlemail.com', 'user_id': '103968401714276034667', 'username': 'Peter Goon'}
+INFO:     127.0.0.1:63481 - "GET /get_just_user_details HTTP/1.1" 200 OK
+2026-03-06 11:23:49,114 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63472 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:50,055 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63491 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:59,169 [httpx] INFO: HTTP Request: GET http://localhost:8000/only_user/103968401714276034667 "HTTP/1.1 200 OK"
+2026-03-06 11:23:59,170 [api_calls] INFO: User details: {'password_hash': None, 'auth_provider': 'google', 'email': 'pete.goon@googlemail.com', 'user_id': '103968401714276034667', 'username': 'Peter Goon'}
+INFO:     127.0.0.1:63537 - "GET /get_just_user_details HTTP/1.1" 200 OK
+2026-03-06 11:23:59,213 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63541 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:59,437 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63557 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:59,499 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63563 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:59,547 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63564 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:59,595 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63565 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:59,648 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63566 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:59,697 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63567 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:59,749 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63577 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:59,806 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63585 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:59,860 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63581 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:59,906 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63589 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:59,942 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63593 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:23:59,985 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63597 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:00,035 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63601 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:00,077 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63605 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:01,171 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63621 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:06,977 [httpx] INFO: HTTP Request: GET http://localhost:8000/only_user/103968401714276034667 "HTTP/1.1 200 OK"
+2026-03-06 11:24:06,977 [api_calls] INFO: User details: {'password_hash': None, 'auth_provider': 'google', 'email': 'pete.goon@googlemail.com', 'user_id': '103968401714276034667', 'username': 'Peter Goon'}
+INFO:     127.0.0.1:63651 - "GET /get_just_user_details HTTP/1.1" 200 OK
+2026-03-06 11:24:07,020 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63655 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:07,180 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63671 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:07,297 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63677 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:07,371 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63678 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:07,420 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63679 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:07,470 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63680 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:07,520 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63681 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:07,570 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63687 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:07,630 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63695 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:07,682 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63691 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:07,727 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63703 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:07,762 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63707 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:07,805 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63711 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:07,848 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63719 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:07,885 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63715 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:09,249 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63735 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:13,391 [httpx] INFO: HTTP Request: GET http://localhost:8000/only_user/103968401714276034667 "HTTP/1.1 200 OK"
+2026-03-06 11:24:13,392 [api_calls] INFO: User details: {'password_hash': None, 'auth_provider': 'google', 'email': 'pete.goon@googlemail.com', 'user_id': '103968401714276034667', 'username': 'Peter Goon'}
+INFO:     127.0.0.1:63757 - "GET /get_just_user_details HTTP/1.1" 200 OK
+2026-03-06 11:24:13,434 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63761 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:13,594 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63781 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:13,656 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63783 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:13,769 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63788 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:13,855 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63789 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:13,910 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63790 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:13,959 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63791 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:14,010 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63797 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:14,066 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63801 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:14,117 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63805 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:14,183 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63809 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:14,223 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63813 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:14,268 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63817 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:14,305 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63821 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:14,342 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63825 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:16,268 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63847 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:24:22,591 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63876 - "GET /get_session HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65135 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:50019 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:50019 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:50019 - "GET /auth/google HTTP/1.1" 307 Temporary Redirect
+2026-03-06 11:34:09,580 [httpx] INFO: HTTP Request: POST https://oauth2.googleapis.com/token "HTTP/1.1 200 OK"
+2026-03-06 11:34:09,761 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50019 - "GET /auth/google/callback?iss=https%3A%2F%2Faccounts.google.com&code=4%2F0AfrIepBfal9HE3N6Wz9I1rqgVa1ezp5yLtvw_0iRk2anNggTpvXgYMqEKL08vvRLKl5Sdg&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+openid&authuser=0&prompt=none HTTP/1.1" 307 Temporary Redirect
+2026-03-06 11:34:10,309 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50019 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:12,521 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50068 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:12,595 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50074 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:15,184 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50091 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:22,933 [httpx] INFO: HTTP Request: GET http://localhost:8000/only_user/103968401714276034667 "HTTP/1.1 200 OK"
+2026-03-06 11:34:22,933 [api_calls] INFO: User details: {'password_hash': None, 'auth_provider': 'google', 'email': 'pete.goon@googlemail.com', 'user_id': '103968401714276034667', 'username': 'Peter Goon'}
+INFO:     127.0.0.1:50133 - "GET /get_just_user_details HTTP/1.1" 200 OK
+2026-03-06 11:34:22,997 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50031 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:23,034 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50139 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:23,102 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50145 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:25,677 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50167 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:25,727 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50168 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:25,779 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50173 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:25,831 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50174 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:25,896 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50175 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:25,952 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50176 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:26,006 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50182 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:26,060 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50186 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:26,113 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50194 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:26,166 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50198 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:26,223 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50202 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:26,280 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50206 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:26,325 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50210 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:26,360 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50214 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:26,401 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50218 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:26,443 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50222 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:29,091 [httpx] INFO: HTTP Request: GET http://localhost:8000/only_user/103968401714276034667 "HTTP/1.1 200 OK"
+2026-03-06 11:34:29,091 [api_calls] INFO: User details: {'password_hash': None, 'auth_provider': 'google', 'email': 'pete.goon@googlemail.com', 'user_id': '103968401714276034667', 'username': 'Peter Goon'}
+INFO:     127.0.0.1:50250 - "GET /get_just_user_details HTTP/1.1" 200 OK
+2026-03-06 11:34:29,133 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50254 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:33,875 [httpx] INFO: HTTP Request: GET http://localhost:8000/only_user/103968401714276034667 "HTTP/1.1 200 OK"
+2026-03-06 11:34:33,875 [api_calls] INFO: User details: {'password_hash': None, 'auth_provider': 'google', 'email': 'pete.goon@googlemail.com', 'user_id': '103968401714276034667', 'username': 'Peter Goon'}
+INFO:     127.0.0.1:50278 - "GET /get_just_user_details HTTP/1.1" 200 OK
+2026-03-06 11:34:33,918 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50254 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:34,034 [httpx] INFO: HTTP Request: GET http://localhost:8000/only_user/103968401714276034667 "HTTP/1.1 200 OK"
+2026-03-06 11:34:34,035 [api_calls] INFO: User details: {'password_hash': None, 'auth_provider': 'google', 'email': 'pete.goon@googlemail.com', 'user_id': '103968401714276034667', 'username': 'Peter Goon'}
+INFO:     127.0.0.1:50284 - "GET /get_just_user_details HTTP/1.1" 200 OK
+2026-03-06 11:34:34,071 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50254 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:36,376 [httpx] INFO: HTTP Request: GET http://localhost:8000/only_user/103968401714276034667 "HTTP/1.1 200 OK"
+2026-03-06 11:34:36,376 [api_calls] INFO: User details: {'password_hash': None, 'auth_provider': 'google', 'email': 'pete.goon@googlemail.com', 'user_id': '103968401714276034667', 'username': 'Peter Goon'}
+INFO:     127.0.0.1:50298 - "GET /get_just_user_details HTTP/1.1" 200 OK
+2026-03-06 11:34:36,419 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50254 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:37,527 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50308 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:44,031 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50336 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:48,426 [httpx] INFO: HTTP Request: GET http://localhost:8000/only_user/103968401714276034667 "HTTP/1.1 200 OK"
+2026-03-06 11:34:48,427 [api_calls] INFO: User details: {'password_hash': None, 'auth_provider': 'google', 'email': 'pete.goon@googlemail.com', 'user_id': '103968401714276034667', 'username': 'Peter Goon'}
+INFO:     127.0.0.1:50364 - "GET /get_just_user_details HTTP/1.1" 200 OK
+2026-03-06 11:34:48,472 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50336 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:48,655 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50382 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:48,759 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50388 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:48,837 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50389 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:48,898 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50390 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:48,951 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50391 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:49,005 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50392 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:49,064 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50398 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:49,119 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50402 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:49,173 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50406 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:49,233 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50410 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:49,290 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50414 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:49,328 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50422 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:49,374 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50426 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:49,408 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50430 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:49,446 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50434 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:49,494 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50438 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:59,291 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50491 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:34:59,916 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50491 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:20,704 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50584 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:24,694 [httpx] INFO: HTTP Request: GET http://localhost:8000/only_user/103968401714276034667 "HTTP/1.1 200 OK"
+2026-03-06 11:35:24,694 [api_calls] INFO: User details: {'password_hash': None, 'auth_provider': 'google', 'email': 'pete.goon@googlemail.com', 'user_id': '103968401714276034667', 'username': 'Peter Goon'}
+INFO:     127.0.0.1:50606 - "GET /get_just_user_details HTTP/1.1" 200 OK
+2026-03-06 11:35:24,737 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50610 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:24,926 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50628 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:25,032 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50632 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:25,086 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50633 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:25,138 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50634 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:25,199 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50635 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:25,250 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50636 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:25,306 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50642 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:25,363 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50647 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:25,416 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50655 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:25,480 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50659 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:25,538 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50663 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:25,578 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50667 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:25,629 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50671 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:25,683 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50675 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:25,724 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50679 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:25,770 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50683 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:28,298 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50707 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:31,301 [httpx] INFO: HTTP Request: GET http://localhost:8000/only_user/103968401714276034667 "HTTP/1.1 200 OK"
+2026-03-06 11:35:31,301 [api_calls] INFO: User details: {'password_hash': None, 'auth_provider': 'google', 'email': 'pete.goon@googlemail.com', 'user_id': '103968401714276034667', 'username': 'Peter Goon'}
+INFO:     127.0.0.1:50724 - "GET /get_just_user_details HTTP/1.1" 200 OK
+2026-03-06 11:35:31,361 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50728 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:31,534 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50744 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:31,697 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50750 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:31,761 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50751 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:31,823 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50752 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:31,875 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50753 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:31,930 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50754 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:31,992 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50760 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:32,051 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50764 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:32,107 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50768 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:32,164 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50772 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:32,242 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50776 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:32,279 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50780 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:32,326 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50784 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:32,367 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50788 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:32,406 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50796 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:32,459 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50800 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:32,497 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50812 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:35,497 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50829 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:35,548 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50830 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:35,599 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50835 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:35,651 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50836 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:35,706 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50837 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:35,758 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50838 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:35,808 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50844 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:35,858 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50848 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:35,910 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50852 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:35,959 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50856 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:36,015 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50860 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:36,055 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50864 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:36,113 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50868 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:36,155 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50876 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:36,197 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50872 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:36,243 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50880 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:36,480 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50896 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:35:50,407 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:50955 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:36:39,077 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:51169 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:36:39,647 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:51169 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:36:52,351 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:51229 - "GET /get_session HTTP/1.1" 200 OK
+2026-03-06 11:41:52,829 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:52512 - "GET /get_session HTTP/1.1" 200 OK

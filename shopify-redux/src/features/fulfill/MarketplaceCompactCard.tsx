@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import {
   Card,
   CardActionArea,
@@ -14,20 +14,15 @@ import { useDispatch } from 'react-redux'
 import { Order } from '../../app/utility/interfaces'
 import { setClaimedOrder } from '../../services/userInterfaceSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
+import ModelThumbnail from '../display/ModelThumbnail'
 import { monoFontFamily } from '../../theme'
+import { getScarcityColor } from '../../app/utility/fulfillUtils'
 
 interface MarketplaceCompactCardProps {
   order: Order
 }
 
-const getScarcityColor = (remaining: number, total: number) => {
-  const ratio = remaining / total
-  if (ratio <= 0.25 || remaining <= 3) return '#FF5252'
-  if (ratio <= 0.5) return '#FF9100'
-  return '#00E5FF'
-}
-
-export const MarketplaceCompactCard: React.FC<MarketplaceCompactCardProps> = ({ order }) => {
+export const MarketplaceCompactCard: React.FC<MarketplaceCompactCardProps> = React.memo(({ order }) => {
   const dispatch = useDispatch()
   const { prepareOrderFile } = useOrderFileLoader()
   const [snackbar, setSnackbar] = useState({ open: false, message: '' })
@@ -37,6 +32,7 @@ export const MarketplaceCompactCard: React.FC<MarketplaceCompactCardProps> = ({ 
   const progressPercent = (order.quantity_claimed / order.quantity) * 100
   const scarcityColor = getScarcityColor(remaining, order.quantity)
   const isImage = order.selectedFileType?.startsWith('image')
+  const is3D = order.selectedFileType?.includes('obj') || order.selectedFileType?.includes('stl')
 
   const handleClick = async () => {
     try {
@@ -83,6 +79,13 @@ export const MarketplaceCompactCard: React.FC<MarketplaceCompactCardProps> = ({ 
                   src={order.selectedFile}
                   alt={order.name}
                   sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : is3D && order.task_id ? (
+                <ModelThumbnail
+                  taskId={order.task_id}
+                  fileType={order.selectedFileType}
+                  colour={order.colour}
+                  name={order.name}
                 />
               ) : (
                 <ViewInArIcon sx={{ fontSize: 48, color: 'text.secondary', opacity: 0.4 }} />
@@ -195,4 +198,4 @@ export const MarketplaceCompactCard: React.FC<MarketplaceCompactCardProps> = ({ 
       </Snackbar>
     </>
   )
-}
+})

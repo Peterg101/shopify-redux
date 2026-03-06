@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import {
   Card,
   CardActions,
@@ -18,6 +18,7 @@ import { setUpdateClaimMode } from '../../services/dataSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
 import { patchClaimQuantity } from '../../services/fetchFileUtils'
 import { authApi } from '../../services/authApi'
+import ModelThumbnail from '../display/ModelThumbnail'
 import { monoFontFamily } from '../../theme'
 import { STATUS_PHASES } from './ClaimDashboardHeader'
 
@@ -77,7 +78,7 @@ interface ClaimListCardProps {
   claim: Claim
 }
 
-export const ClaimListCard: React.FC<ClaimListCardProps> = ({ claim }) => {
+export const ClaimListCard: React.FC<ClaimListCardProps> = React.memo(({ claim }) => {
   const dispatch = useDispatch()
   const { prepareOrderFile } = useOrderFileLoader()
   const [adjusting, setAdjusting] = useState(false)
@@ -86,6 +87,7 @@ export const ClaimListCard: React.FC<ClaimListCardProps> = ({ claim }) => {
   const pricePerUnit = order.quantity > 0 ? order.price / order.quantity : 0
   const totalValue = pricePerUnit * claim.quantity
   const isImage = order.selectedFileType?.startsWith('image')
+  const is3D = order.selectedFileType?.includes('obj') || order.selectedFileType?.includes('stl')
 
   const otherClaimed = (order.claims || [])
     .filter((c) => c.id !== claim.id)
@@ -150,6 +152,13 @@ export const ClaimListCard: React.FC<ClaimListCardProps> = ({ claim }) => {
             src={order.selectedFile}
             alt={order.name}
             sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        ) : is3D && order.task_id ? (
+          <ModelThumbnail
+            taskId={order.task_id}
+            fileType={order.selectedFileType}
+            colour={order.colour}
+            name={order.name}
           />
         ) : (
           <ViewInArIcon sx={{ fontSize: 32, color: 'text.secondary', opacity: 0.4 }} />
@@ -245,4 +254,4 @@ export const ClaimListCard: React.FC<ClaimListCardProps> = ({ claim }) => {
       </CardActions>
     </Card>
   )
-}
+})

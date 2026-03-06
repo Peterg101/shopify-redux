@@ -63,6 +63,20 @@ export const DisputePanel: React.FC<DisputePanelProps> = ({ claim, onClose }) =>
   const isBuyer = userInformation?.user?.user_id === claim.order?.user_id
   const isFulfiller = userInformation?.user?.user_id === claim.claimant_user_id
 
+  const handleEvidenceFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 5 * 1024 * 1024) {
+      setError('File too large — maximum 5MB')
+      return
+    }
+    if (!file.type.startsWith('image/')) {
+      setError('Only image files are accepted')
+      return
+    }
+    setEvidenceFile(file)
+  }
+
   useEffect(() => {
     fetchDispute(claim.id).then(setDispute).catch(() => setError('Failed to load dispute'))
     fetchClaimEvidence(claim.id).then(setEvidence).catch(console.error)
@@ -110,6 +124,14 @@ export const DisputePanel: React.FC<DisputePanelProps> = ({ claim, onClose }) =>
       if (resolution === 'partial' && (!partial || partial <= 0)) {
         setError('Enter a valid partial amount in cents')
         return
+      }
+      if (resolution === 'partial' && partial) {
+        const order = claim.order
+        const maxCents = Math.round(order.price * claim.quantity / order.quantity * 100)
+        if (partial > maxCents) {
+          setError(`Partial amount cannot exceed claim value (${maxCents} cents / $${(maxCents / 100).toFixed(2)})`)
+          return
+        }
       }
       await resolveDispute(dispute.id, resolution, partial)
       handleDone()
@@ -250,7 +272,7 @@ export const DisputePanel: React.FC<DisputePanelProps> = ({ claim, onClose }) =>
                   type="file"
                   accept="image/*"
                   ref={fileInputRef}
-                  onChange={(e) => e.target.files?.[0] && setEvidenceFile(e.target.files[0])}
+                  onChange={handleEvidenceFileSelect}
                   style={{ display: 'none' }}
                 />
                 <Button variant="outlined" size="small" onClick={() => fileInputRef.current?.click()} sx={{ mr: 1 }}>

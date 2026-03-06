@@ -10,6 +10,7 @@ import {
   TextField,
   ImageList,
   ImageListItem,
+  Alert,
 } from '@mui/material'
 import { Claim, ClaimEvidence } from '../../app/utility/interfaces'
 import { patchClaimStatus, fetchClaimEvidence } from '../../services/fetchFileUtils'
@@ -25,6 +26,7 @@ interface BuyerReviewPanelProps {
 export const BuyerReviewPanel: React.FC<BuyerReviewPanelProps> = ({ claim, onClose }) => {
   const dispatch = useDispatch()
   const [evidence, setEvidence] = useState<ClaimEvidence[]>([])
+  const [error, setError] = useState('')
   const [showDispute, setShowDispute] = useState(false)
   const [disputeReason, setDisputeReason] = useState('')
 
@@ -33,20 +35,30 @@ export const BuyerReviewPanel: React.FC<BuyerReviewPanelProps> = ({ claim, onClo
   }, [claim.id])
 
   const handleAccept = async () => {
-    await patchClaimStatus(claim.id, 'accepted')
-    dispatch(authApi.util.invalidateTags(['sessionData']))
-    dispatch(setUpdateClaimedOrder({ updateClaimedOrder: null }))
-    dispatch(setUpdateClaimMode({ updateClaimMode: false }))
-    dispatch(resetDataState())
+    try {
+      await patchClaimStatus(claim.id, 'accepted')
+      dispatch(authApi.util.invalidateTags(['sessionData']))
+      dispatch(setUpdateClaimedOrder({ updateClaimedOrder: null }))
+      dispatch(setUpdateClaimMode({ updateClaimMode: false }))
+      dispatch(resetDataState())
+    } catch (err) {
+      console.error('Error accepting claim:', err)
+      setError('Failed to accept claim. Please try again.')
+    }
   }
 
   const handleDispute = async () => {
     if (!disputeReason.trim()) return
-    await patchClaimStatus(claim.id, 'disputed', disputeReason)
-    dispatch(authApi.util.invalidateTags(['sessionData']))
-    dispatch(setUpdateClaimedOrder({ updateClaimedOrder: null }))
-    dispatch(setUpdateClaimMode({ updateClaimMode: false }))
-    dispatch(resetDataState())
+    try {
+      await patchClaimStatus(claim.id, 'disputed', disputeReason)
+      dispatch(authApi.util.invalidateTags(['sessionData']))
+      dispatch(setUpdateClaimedOrder({ updateClaimedOrder: null }))
+      dispatch(setUpdateClaimMode({ updateClaimMode: false }))
+      dispatch(resetDataState())
+    } catch (err) {
+      console.error('Error disputing claim:', err)
+      setError('Failed to submit dispute. Please try again.')
+    }
   }
 
   const order = claim.order
@@ -76,9 +88,23 @@ export const BuyerReviewPanel: React.FC<BuyerReviewPanelProps> = ({ claim, onClo
               <Typography variant="body1"><strong>Technique:</strong> {order.technique}</Typography>
               <Typography variant="body1"><strong>Colour:</strong> {order.colour}</Typography>
               <Typography variant="body1"><strong>Quantity:</strong> {claim.quantity}</Typography>
+              {claim.tracking_number && (
+                <>
+                  <Typography variant="body1"><strong>Tracking:</strong> {claim.tracking_number}</Typography>
+                  {claim.carrier_code && (
+                    <Typography variant="body1"><strong>Carrier:</strong> {claim.carrier_code}</Typography>
+                  )}
+                </>
+              )}
             </Box>
           </Paper>
         </Grid>
+
+        {error && (
+          <Grid item xs={12}>
+            <Alert severity="error" onClose={() => setError('')}>{error}</Alert>
+          </Grid>
+        )}
 
         {evidence.length > 0 && (
           <Grid item xs={12}>

@@ -176,6 +176,7 @@ export const dataSlice = createSlice({
             state.displayObjectConfig = true
             state.materialCost = getPrice(order.material, config)
             state.fulfillMode = true
+            state.fromMeshyOrHistory = true
 
         },
         setXFLip: (state, action: PayloadAction<{xFlip: number}>) => {

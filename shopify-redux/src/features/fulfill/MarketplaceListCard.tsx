@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import {
   Card,
   CardActions,
@@ -20,20 +20,15 @@ import { setClaimedOrder } from '../../services/userInterfaceSlice'
 import { resetDataState, setFulfillMode } from '../../services/dataSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
 import OBJSTLViewer from '../display/objStlViewer'
+import ModelThumbnail from '../display/ModelThumbnail'
 import { monoFontFamily } from '../../theme'
+import { getScarcityColor } from '../../app/utility/fulfillUtils'
 
 interface MarketplaceListCardProps {
   order: Order
 }
 
-const getScarcityColor = (remaining: number, total: number) => {
-  const ratio = remaining / total
-  if (ratio <= 0.25 || remaining <= 3) return '#FF5252'
-  if (ratio <= 0.5) return '#FF9100'
-  return '#00E5FF'
-}
-
-export const MarketplaceListCard: React.FC<MarketplaceListCardProps> = ({ order }) => {
+export const MarketplaceListCard: React.FC<MarketplaceListCardProps> = React.memo(({ order }) => {
   const dispatch = useDispatch()
   const { prepareOrderFile } = useOrderFileLoader()
   const [viewerOpen, setViewerOpen] = useState(false)
@@ -108,6 +103,13 @@ export const MarketplaceListCard: React.FC<MarketplaceListCardProps> = ({ order 
               src={order.selectedFile}
               alt={order.name}
               sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : is3D && order.task_id ? (
+            <ModelThumbnail
+              taskId={order.task_id}
+              fileType={order.selectedFileType}
+              colour={order.colour}
+              name={order.name}
             />
           ) : (
             <ViewInArIcon sx={{ fontSize: 40, color: 'text.secondary', opacity: 0.4 }} />
@@ -203,4 +205,4 @@ export const MarketplaceListCard: React.FC<MarketplaceListCardProps> = ({ order 
       </Snackbar>
     </>
   )
-}
+})
