@@ -18,6 +18,7 @@ import ViewInArIcon from '@mui/icons-material/ViewInAr'
 import { Add, Remove } from '@mui/icons-material'
 import { useDispatch } from 'react-redux'
 import { Claim } from '../../app/utility/interfaces'
+import logger from '../../app/utility/logger'
 import { setUpdateClaimedOrder } from '../../services/userInterfaceSlice'
 import { setUpdateClaimMode } from '../../services/dataSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
@@ -118,7 +119,7 @@ export const ClaimListCard = React.memo(({ claim }: ClaimListCardProps) => {
       await patchClaimQuantity(claim.id, newQuantity)
       dispatch(authApi.util.invalidateTags(['sessionData']))
     } catch (err) {
-      console.error('Error adjusting quantity:', err)
+      logger.error('Error adjusting quantity:', err)
     } finally {
       setAdjusting(false)
     }
@@ -130,7 +131,7 @@ export const ClaimListCard = React.memo(({ claim }: ClaimListCardProps) => {
       await patchClaimStatus(claim.id, 'cancelled')
       dispatch(authApi.util.invalidateTags(['sessionData']))
     } catch (err) {
-      console.error('Error withdrawing claim:', err)
+      logger.error('Error withdrawing claim:', err)
     } finally {
       setWithdrawing(false)
       setWithdrawDialogOpen(false)

@@ -34,8 +34,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[FRONTEND_URL],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 # Redis Configuration
@@ -128,5 +128,10 @@ async def websocket_endpoint(
         logger.info(f"WebSocket connection for task {port_id} closed.")
 
 
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=1234)
+    uvicorn.run(app, host=os.getenv("HOST", "127.0.0.1"), port=1234)

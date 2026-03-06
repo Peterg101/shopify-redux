@@ -3,8 +3,12 @@ from dotenv import load_dotenv
 load_dotenv()
 import logging
 from fastapi import FastAPI, Depends, HTTPException, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 from redis.asyncio import Redis as AsyncRedis
 import uvicorn
 from fitd_schemas.fitd_classes import SessionData, UserInformation, EmailRegisterRequest, EmailLoginRequest
@@ -13,7 +17,7 @@ import bcrypt
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from utils import create_session, delete_session, cookie_verification
-from api_calls import check_user_exists, create_user, check_only_user_exists, register_email_user, get_user_by_email
+from api_calls import check_user_exists, create_user, check_only_user_exists, register_email_user, get_user_by_email, verify_user_password
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -21,14 +25,26 @@ logger = logging.getLogger(__name__)
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 IS_PRODUCTION = os.getenv("ENV", "development") == "production"
 
+limiter = Limiter(key_func=get_remote_address)
+
 app = FastAPI()
+app.state.limiter = limiter
+app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[FRONTEND_URL, "http://localhost:1234", "http://localhost:100"],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
+
+
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429,
+        content={"detail": "Too many requests. Please try again later."}
+    )
 
 # Redis Configuration
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
@@ -47,7 +63,8 @@ GOOGLE_CERTS_URL = "https://www.googleapis.com/oauth2/v3/certs"
 
 
 @app.get("/auth/google")
-def auth_google():
+@limiter.limit("10/minute")
+def auth_google(request: Request):
     google_auth_url = (
         f"{GOOGLE_AUTH_URL}"
         f"?client_id={GOOGLE_CLIENT_ID}"
@@ -119,12 +136,14 @@ async def auth_callback(code: str, request: Request):
         )
         return response
 
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=f"Invalid id_token: {str(e)}")
+    except ValueError:
+        logger.exception("Google token verification failed")
+        raise HTTPException(status_code=400, detail="Invalid or expired Google token")
 
 
 @app.post("/auth/register")
-async def email_register(register_request: EmailRegisterRequest):
+@limiter.limit("3/minute")
+async def email_register(request: Request, register_request: EmailRegisterRequest):
     hashed = bcrypt.hashpw(register_request.password.encode("utf-8"), bcrypt.gensalt())
 
     import uuid
@@ -160,25 +179,27 @@ async def email_register(register_request: EmailRegisterRequest):
 
 
 @app.post("/auth/login")
-async def email_login(login_request: EmailLoginRequest):
-    user_data = await get_user_by_email(login_request.email)
-    if not user_data:
+@limiter.limit("5/minute")
+async def email_login(request: Request, login_request: EmailLoginRequest):
+    try:
+        result = await verify_user_password(login_request.email, login_request.password)
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == 404:
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        elif e.response.status_code == 400:
+            raise HTTPException(status_code=400, detail="This account uses Google sign-in")
+        else:
+            logger.exception("Password verification request failed")
+            raise HTTPException(status_code=500, detail="Authentication service error")
+
+    if not result.get("verified"):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    if user_data.get("auth_provider") != "email":
-        raise HTTPException(status_code=400, detail="This account uses Google sign-in")
-
-    stored_hash = user_data.get("password_hash")
-    if not stored_hash or not bcrypt.checkpw(
-        login_request.password.encode("utf-8"), stored_hash.encode("utf-8")
-    ):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-
-    session_data = SessionData(user_id=user_data["user_id"])
+    session_data = SessionData(user_id=result["user_id"])
     session_id = await create_session(redis_session, session_data)
 
     from fastapi.responses import JSONResponse
-    resp = JSONResponse(content={"message": "Login successful", "user_id": user_data["user_id"]})
+    resp = JSONResponse(content={"message": "Login successful", "user_id": result["user_id"]})
     resp.set_cookie(
         "fitd_session_data",
         str(session_id),
@@ -231,5 +252,14 @@ async def user_details(request: Request):
         )
 
 
+@app.get("/health")
+async def health_check():
+    try:
+        await redis_session.ping()
+        return {"status": "ok", "redis": "connected"}
+    except Exception:
+        raise HTTPException(status_code=503, detail={"status": "error", "redis": "disconnected"})
+
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=2468)
+    uvicorn.run(app, host=os.getenv("HOST", "127.0.0.1"), port=2468)

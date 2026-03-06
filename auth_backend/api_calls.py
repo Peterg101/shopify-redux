@@ -92,3 +92,16 @@ async def get_user_by_email(email: str):
             return response.json()
         else:
             return None
+
+
+async def verify_user_password(email: str, password: str) -> dict:
+    """Verify password via db_service instead of fetching hash."""
+    token = generate_token("auth_backend")
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{DB_SERVICE_URL}/auth/verify_password",
+            json={"email": email, "password": password},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        response.raise_for_status()
+        return response.json()

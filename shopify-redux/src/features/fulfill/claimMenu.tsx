@@ -4,6 +4,7 @@ import { RootState } from '../../app/store'
 import { setClaimedOrder } from '../../services/userInterfaceSlice'
 import { resetDataState, setFulfillMode } from '../../services/dataSlice'
 import { ClaimOrder } from '../../app/utility/interfaces'
+import logger from '../../app/utility/logger'
 import { postClaimOrder } from '../../services/fetchFileUtils'
 import { authApi } from '../../services/authApi'
 import { Snackbar, Alert } from '@mui/material'
@@ -27,7 +28,7 @@ export function ClaimMenu() {
       dispatch(authApi.util.invalidateTags(['sessionData']))
       dispatch(setClaimedOrder({ claimedOrder: null }))
     } catch (err) {
-      console.error('Error claiming order:', err)
+      logger.error('Error claiming order:', err)
       setSnackbar({ open: true, message: 'Failed to claim order. Please try again.' })
     }
   }

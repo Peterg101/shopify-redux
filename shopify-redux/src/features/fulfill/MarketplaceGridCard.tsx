@@ -18,6 +18,7 @@ import ViewInArIcon from '@mui/icons-material/ViewInAr'
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
 import { useDispatch } from 'react-redux'
 import { Order } from '../../app/utility/interfaces'
+import logger from '../../app/utility/logger'
 import { setClaimedOrder } from '../../services/userInterfaceSlice'
 import { resetDataState, setFulfillMode } from '../../services/dataSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
@@ -56,7 +57,7 @@ export const MarketplaceGridCard = React.memo(({ order }: MarketplaceGridCardPro
       await prepareOrderFile(order)
       dispatch(setClaimedOrder({ claimedOrder: order }))
     } catch (err) {
-      console.error('Error claiming order:', err)
+      logger.error('Error claiming order:', err)
       setSnackbar({ open: true, message: 'Failed to load order file.' })
     }
   }
@@ -67,7 +68,7 @@ export const MarketplaceGridCard = React.memo(({ order }: MarketplaceGridCardPro
       dispatch(setFulfillMode({ fulfillMode: true }))
       setViewerOpen(true)
     } catch (err) {
-      console.error('Error loading 3D viewer:', err)
+      logger.error('Error loading 3D viewer:', err)
       setSnackbar({ open: true, message: 'Sorry, this file could not be loaded.' })
     }
   }

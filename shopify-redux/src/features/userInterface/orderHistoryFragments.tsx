@@ -27,6 +27,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { RootState } from "../../app/store";
 import { Order } from "../../app/utility/interfaces";
+import logger from "../../app/utility/logger";
 import { toggleOrderVisibility } from "../../services/fetchFileUtils";
 import { authApi } from "../../services/authApi";
 import { monoFontFamily } from "../../theme";
@@ -114,7 +115,7 @@ function OrderedItemCard(item: Order) {
       await toggleOrderVisibility(item.order_id);
       dispatch(authApi.util.invalidateTags(["sessionData"]));
     } catch (err) {
-      console.error("Error toggling visibility:", err);
+      logger.error("Error toggling visibility:", err);
     } finally {
       setToggling(false);
     }

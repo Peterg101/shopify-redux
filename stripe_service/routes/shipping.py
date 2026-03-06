@@ -38,9 +38,9 @@ async def create_label_for_claim(
             ship_from=ship_from,
             ship_to=ship_to,
         )
-    except Exception as e:
-        logger.error(f"ShipEngine label creation failed: {e}")
-        raise HTTPException(status_code=502, detail=f"Failed to create shipping label: {str(e)}")
+    except Exception:
+        logger.exception("ShipEngine label creation failed")
+        raise HTTPException(status_code=502, detail="Failed to create shipping label")
 
     # 4. Save shipping info back to claim
     await update_claim_shipping(claim_id, {

@@ -1,6 +1,7 @@
 import { AppDispatch } from "../app/store";
 import { authApi } from "./authApi";
 import { MeshyTaskStatusResponse } from "./meshyApi";
+import logger from '../app/utility/logger';
 import { setMeshyLoadedPercentage, setMeshyLoading, setMeshyPending, setMeshyQueueItems, setMeshyPreviewTaskId, setMeshyRefining } from "./userInterfaceSlice";
 import { extractFileInfo, fetchFile } from "./fetchFileUtils";
 import { setFileProperties, setFromMeshyOrHistory } from "./dataSlice";
@@ -30,7 +31,7 @@ export const createWebsocketConnection = (
 
       const parts = event.data.split(",");
       if (parts.length !== 3) {
-        console.warn("Unexpected WebSocket message format:", event.data);
+        logger.warn("Unexpected WebSocket message format:", event.data);
         return;
       }
 
@@ -39,7 +40,7 @@ export const createWebsocketConnection = (
       const fileName = parts[2];
 
       if (isNaN(percentageComplete) || !taskId || !fileName) {
-        console.warn("Invalid WebSocket message data:", event.data);
+        logger.warn("Invalid WebSocket message data:", event.data);
         return;
       }
 
@@ -60,7 +61,7 @@ export const createWebsocketConnection = (
             fileNameBoxValue: fileName,
           }));
         } catch (err) {
-          console.error("Error fetching completed file:", err);
+          logger.error("Error fetching completed file:", err);
         }
         ws.close();
         dispatch(setMeshyLoading({ meshyLoading: false }));
@@ -69,7 +70,7 @@ export const createWebsocketConnection = (
     };
 
     ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
+      logger.error("WebSocket error:", error);
     };
 
     ws.onclose = (event) => {
@@ -80,7 +81,7 @@ export const createWebsocketConnection = (
       if (!event.wasClean && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
         const delay = BASE_RECONNECT_DELAY * Math.pow(2, reconnectAttempts);
         reconnectAttempts++;
-        console.warn(`WebSocket closed unexpectedly. Reconnecting in ${delay}ms (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
+        logger.warn(`WebSocket closed unexpectedly. Reconnecting in ${delay}ms (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
         setTimeout(() => connect(), delay);
       }
     };

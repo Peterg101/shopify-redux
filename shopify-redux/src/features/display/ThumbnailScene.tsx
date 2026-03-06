@@ -3,6 +3,7 @@ import { useThree } from '@react-three/fiber';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader';
 import * as THREE from 'three';
+import logger from '../../app/utility/logger';
 
 interface ThumbnailSceneProps {
   fileUrl: string;
@@ -27,7 +28,7 @@ function ThumbnailScene({ fileUrl, fileType, colour }: ThumbnailSceneProps) {
           });
         },
         undefined,
-        (error) => console.error('[ThumbnailScene] OBJ load error:', error)
+        (error) => logger.error('[ThumbnailScene] OBJ load error:', error)
       );
     } else {
       const loader = new STLLoader();
@@ -39,7 +40,7 @@ function ThumbnailScene({ fileUrl, fileType, colour }: ThumbnailSceneProps) {
           setMesh(loadedMesh);
         },
         undefined,
-        (error) => console.error('[ThumbnailScene] STL load error:', error)
+        (error) => logger.error('[ThumbnailScene] STL load error:', error)
       );
     }
   }, [fileUrl, fileType, colour]);

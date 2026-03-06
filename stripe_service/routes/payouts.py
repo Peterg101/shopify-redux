@@ -1,9 +1,12 @@
+import logging
 from fastapi import APIRouter, HTTPException, Depends
 from utils import cookie_verification_user_only
 from jwt_auth import generate_token
 import httpx
 import stripe
 import os
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/stripe", tags=["stripe"])
 
@@ -50,8 +53,9 @@ async def process_payout(claim_id: str, user=Depends(cookie_verification_user_on
                 destination=stripe_info["stripe_account_id"],
                 description=f"Payout for claim {claim_id}",
             )
-        except stripe.error.StripeError as e:
-            raise HTTPException(status_code=500, detail=f"Stripe transfer failed: {str(e)}")
+        except stripe.error.StripeError:
+            logger.exception("Stripe transfer failed")
+            raise HTTPException(status_code=500, detail="Payment transfer failed")
 
         # Mark disbursement as paid
         paid_response = await client.patch(

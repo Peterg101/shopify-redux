@@ -13,6 +13,7 @@ import {
   Alert,
 } from '@mui/material'
 import { Claim, ClaimEvidence } from '../../app/utility/interfaces'
+import logger from '../../app/utility/logger'
 import { patchClaimStatus, fetchClaimEvidence } from '../../services/fetchFileUtils'
 import { authApi } from '../../services/authApi'
 import { setUpdateClaimedOrder } from '../../services/userInterfaceSlice'
@@ -31,7 +32,7 @@ export function BuyerReviewPanel({ claim, onClose }: BuyerReviewPanelProps) {
   const [disputeReason, setDisputeReason] = useState('')
 
   useEffect(() => {
-    fetchClaimEvidence(claim.id).then(setEvidence).catch(console.error)
+    fetchClaimEvidence(claim.id).then(setEvidence).catch(logger.error)
   }, [claim.id])
 
   const handleAccept = async () => {
@@ -42,7 +43,7 @@ export function BuyerReviewPanel({ claim, onClose }: BuyerReviewPanelProps) {
       dispatch(setUpdateClaimMode({ updateClaimMode: false }))
       dispatch(resetDataState())
     } catch (err) {
-      console.error('Error accepting claim:', err)
+      logger.error('Error accepting claim:', err)
       setError('Failed to accept claim. Please try again.')
     }
   }
@@ -56,7 +57,7 @@ export function BuyerReviewPanel({ claim, onClose }: BuyerReviewPanelProps) {
       dispatch(setUpdateClaimMode({ updateClaimMode: false }))
       dispatch(resetDataState())
     } catch (err) {
-      console.error('Error disputing claim:', err)
+      logger.error('Error disputing claim:', err)
       setError('Failed to submit dispute. Please try again.')
     }
   }

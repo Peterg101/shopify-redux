@@ -183,9 +183,9 @@ def test_update_claim_quantity_invalid(claimant_client, seed_order, seed_claiman
     from fitd_schemas.fitd_db_schemas import Claim
     claim = db_session.query(Claim).first()
 
-    # quantity <= 0
+    # quantity <= 0 — Pydantic validator rejects this with 422
     response = claimant_client.patch(f"/claims/{claim.id}/quantity", json={"quantity": 0})
-    assert response.status_code == 400
+    assert response.status_code == 422
 
     # exceeds available
     response = claimant_client.patch(f"/claims/{claim.id}/quantity", json={"quantity": 100})

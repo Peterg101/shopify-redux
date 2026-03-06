@@ -14,6 +14,7 @@ import {
 } from '@mui/material'
 import { useDispatch } from 'react-redux'
 import { Order } from '../../app/utility/interfaces'
+import logger from '../../app/utility/logger'
 import { resetDataState, setFulfillMode } from '../../services/dataSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
 import OBJSTLViewer from '../display/objStlViewer'
@@ -43,7 +44,7 @@ export function OrderDetailCard({
       dispatch(setFulfillMode({ fulfillMode: true }))
       setViewerOpen(true)
     } catch (err) {
-      console.error('Error loading file:', err)
+      logger.error('Error loading file:', err)
       setSnackbar({ open: true, message: 'Sorry, this file could not be loaded.' })
     }
   }
@@ -52,7 +53,7 @@ export function OrderDetailCard({
     try {
       await onAction(order)
     } catch (err) {
-      console.error('Error performing action:', err)
+      logger.error('Error performing action:', err)
       setSnackbar({ open: true, message: 'An error occurred. Please try again.' })
     }
   }

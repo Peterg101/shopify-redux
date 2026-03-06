@@ -45,6 +45,7 @@ from fitd_schemas.fitd_classes import(
     ClaimQuantityUpdate,
     FulfillerAddressUpdate,
     ClaimShippingUpdate,
+    PasswordVerifyRequest,
 )
 import uvicorn
 from typing import Optional, Dict
@@ -52,9 +53,15 @@ from jwt_auth import verify_jwt_token
 import base64
 from pathlib import Path
 import re
+from sqlalchemy import text
 
 UPLOAD_DIR = Path("./uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
+
+MAX_FILE_SIZE_MB = 50
+MAX_FILE_SIZE_B64 = MAX_FILE_SIZE_MB * 1024 * 1024 * 4 // 3  # base64 overhead
+MAX_EVIDENCE_SIZE_MB = 10
+MAX_EVIDENCE_SIZE_B64 = MAX_EVIDENCE_SIZE_MB * 1024 * 1024 * 4 // 3
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
@@ -64,8 +71,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[FRONTEND_URL, "http://localhost:1234", "http://localhost:100"],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 
@@ -117,9 +124,27 @@ def get_user_by_email(
         "user_id": user.user_id,
         "username": user.username,
         "email": user.email,
-        "password_hash": user.password_hash,
         "auth_provider": user.auth_provider,
     }
+
+
+@app.post("/auth/verify_password")
+def verify_password(
+    payload: PasswordVerifyRequest,
+    db: Session = Depends(get_db),
+    authorization: str = Depends(verify_jwt_token),
+):
+    user = db.query(User).filter(User.email == payload.email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if not user.password_hash:
+        raise HTTPException(status_code=400, detail="No password set for this account")
+    import bcrypt
+    is_valid = bcrypt.checkpw(payload.password.encode("utf-8"), user.password_hash.encode("utf-8"))
+    if not is_valid:
+        return {"verified": False}
+    return {"verified": True, "user_id": user.user_id, "username": user.username,
+            "email": user.email, "auth_provider": user.auth_provider}
 
 
 # Add a Task
@@ -287,6 +312,8 @@ async def receive_meshy_task(
     db: Session = Depends(get_db),
 ):
     if response.obj_file_blob:
+        if len(response.obj_file_blob) > MAX_FILE_SIZE_B64:
+            raise HTTPException(status_code=413, detail=f"File exceeds {MAX_FILE_SIZE_MB}MB limit")
         # Decode the Base64 blob
         file_data = base64.b64decode(response.obj_file_blob)
         file_path = UPLOAD_DIR / f"{response.id}.obj"
@@ -311,6 +338,8 @@ async def receive_meshy_task_from_image_generator(
     db: Session = Depends(get_db),
 ):
     if response.obj_file_blob:
+        if len(response.obj_file_blob) > MAX_FILE_SIZE_B64:
+            raise HTTPException(status_code=413, detail=f"File exceeds {MAX_FILE_SIZE_MB}MB limit")
         # Decode the Base64 blob
         file_data = base64.b64decode(response.obj_file_blob)
         file_path = UPLOAD_DIR / f"{response.id}.obj"
@@ -379,12 +408,16 @@ async def post_basket_item_to_storage(
     if not basket_item.file_blob:
         raise HTTPException(status_code=400, detail="File blob not provided")
 
+    if len(basket_item.file_blob) > MAX_FILE_SIZE_B64:
+        raise HTTPException(status_code=413, detail=f"File exceeds {MAX_FILE_SIZE_MB}MB limit")
+
     # Decode the file and save to the specified directory
     try:
         decode_file(basket_item.file_blob, basket_item.task_id, UPLOAD_DIR)
         add_or_update_basket_item_in_db(db, basket_item)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"File decoding failed: {str(e)}")
+        logger.exception("File decoding failed")
+        raise HTTPException(status_code=500, detail="File decoding failed")
     return {"message": "File successfully saved"}
 
 
@@ -438,7 +471,8 @@ async def delete_basket_item(
         raise  # Re-raise HTTP exceptions
     except Exception as e:
         db.rollback()  # Rollback in case of an error
-        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+        logger.exception("An unexpected error occurred while deleting basket item")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred")
 
 
 @app.get("/all_basket_items")
@@ -637,7 +671,8 @@ async def update_order(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error updating orders: {str(e)}")
+        logger.exception("Error updating orders")
+        raise HTTPException(status_code=500, detail="Error updating orders")
 
 
 @app.post("/stripe/confirm_onboarding/{stripe_account_id}")
@@ -678,7 +713,8 @@ async def claim_order(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error claiming order: {str(e)}")
+        logger.exception("Error claiming order")
+        raise HTTPException(status_code=500, detail="Error claiming order")
 
 @app.patch("/claims/{claim_id}/quantity")
 async def update_claim_quantity(
@@ -901,6 +937,9 @@ async def upload_claim_evidence(
     image_data = payload.get("image_data")
     if not image_data:
         raise HTTPException(status_code=400, detail="Missing image_data")
+
+    if len(image_data) > MAX_EVIDENCE_SIZE_B64:
+        raise HTTPException(status_code=413, detail=f"File exceeds {MAX_EVIDENCE_SIZE_MB}MB limit")
 
     file_id = str(uuid.uuid4())
     file_path = UPLOAD_DIR / f"evidence_{file_id}.jpg"
@@ -1143,6 +1182,9 @@ async def upload_dispute_evidence(
     if not image_data:
         raise HTTPException(status_code=400, detail="Missing image_data")
 
+    if len(image_data) > MAX_EVIDENCE_SIZE_B64:
+        raise HTTPException(status_code=413, detail=f"File exceeds {MAX_EVIDENCE_SIZE_MB}MB limit")
+
     file_id = str(uuid.uuid4())
     file_path = UPLOAD_DIR / f"evidence_{file_id}.jpg"
     file_bytes = base64.b64decode(image_data)
@@ -1265,5 +1307,14 @@ async def update_claim_shipping(
     return {"message": "Shipping info updated", "claim_id": claim_id}
 
 
+@app.get("/health")
+def health_check(db: Session = Depends(get_db)):
+    try:
+        db.execute(text("SELECT 1"))
+        return {"status": "ok", "database": "connected"}
+    except Exception:
+        raise HTTPException(status_code=503, detail={"status": "error", "database": "disconnected"})
+
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=os.getenv("HOST", "127.0.0.1"), port=8000)

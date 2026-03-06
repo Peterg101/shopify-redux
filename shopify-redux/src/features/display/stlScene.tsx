@@ -2,6 +2,7 @@ import { STLLoader } from 'three/examples/jsm/loaders/STLLoader'
 import * as THREE from "three";
 import React, { useEffect, useState} from 'react';
 import { calculateSize, calculateThreeVolume, calculateMaxScaling, calculateMinScaling} from "../../app/utility/utils";
+import logger from '../../app/utility/logger';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { setFromMeshyOrHistory, setModelDimensions, setModelVolume, setMultiplierValue, setScales } from '../../services/dataSlice';
@@ -31,7 +32,7 @@ const STLScene = (
             setStl(loadedStl); // Set the Mesh object
 
         }, undefined, (error) => {
-            console.error("[STLScene] Error loading STL file:", error);
+            logger.error("[STLScene] Error loading STL file:", error);
         });
     }, [dataState.selectedFile, dataState.multiplierValue]);
 
@@ -51,7 +52,7 @@ const STLScene = (
                 dispatch(setFromMeshyOrHistory({fromMeshyOrHistory: false}))
             }
         }, undefined, (error) => {
-            console.error("Error loading STL file:", error);
+            logger.error("Error loading STL file:", error);
         });
     }, [dataState.selectedFile, dataState.modelColour, dataState.multiplierValue, isMultiplierInitialized, dispatch]);
     

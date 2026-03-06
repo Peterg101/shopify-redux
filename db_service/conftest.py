@@ -1,3 +1,6 @@
+import os
+os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key-for-unit-tests")
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine

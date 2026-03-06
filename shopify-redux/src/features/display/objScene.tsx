@@ -3,6 +3,7 @@ import * as THREE from "three";
 import React, { useRef, useState, useEffect } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
+import logger from '../../app/utility/logger';
 import { calculateThreeVolume, calculateSize, calculateMaxScaling, calculateMinScaling } from "../../app/utility/utils";
 import { setFromMeshyOrHistory, setModelDimensions, setModelVolume, setMultiplierValue, setScales } from "../../services/dataSlice";
 
@@ -34,7 +35,7 @@ const OBJScene = () => {
             },
             undefined,
             (error) => {
-                console.error("[OBJScene] Error loading OBJ file:", error);
+                logger.error("[OBJScene] Error loading OBJ file:", error);
             }
         );
     }, [dataState.selectedFile, dispatch]);
@@ -61,7 +62,7 @@ const OBJScene = () => {
             },
             undefined,
             (error) => {
-                console.error('Error loading OBJ file:', error);
+                logger.error('Error loading OBJ file:', error);
             }
         ); },[dataState.selectedFile, dataState.multiplierValue, dataState.modelColour, dispatch, isMultiplierInitialized])
     

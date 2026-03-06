@@ -15,6 +15,7 @@ import {
 } from '@mui/material'
 import { RootState } from '../../app/store'
 import { Claim, Dispute, ClaimEvidence } from '../../app/utility/interfaces'
+import logger from '../../app/utility/logger'
 import {
   fetchDispute,
   submitDisputeResponse,
@@ -79,7 +80,7 @@ export function DisputePanel({ claim, onClose }: DisputePanelProps) {
 
   useEffect(() => {
     fetchDispute(claim.id).then(setDispute).catch(() => setError('Failed to load dispute'))
-    fetchClaimEvidence(claim.id).then(setEvidence).catch(console.error)
+    fetchClaimEvidence(claim.id).then(setEvidence).catch(logger.error)
     setLoading(false)
   }, [claim.id])
 

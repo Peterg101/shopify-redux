@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react'
 import { Box, Typography, Button } from '@mui/material'
 import ViewInArIcon from '@mui/icons-material/ViewInAr'
+import logger from '../../app/utility/logger'
 
 interface Props {
   children: ReactNode
@@ -21,7 +22,7 @@ export class ViewerErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('3D Viewer error:', error, errorInfo)
+    logger.error('3D Viewer error:', error, errorInfo)
   }
 
   handleRetry = () => {

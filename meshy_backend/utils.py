@@ -88,9 +88,9 @@ async def generate_task_and_check_for_response_decoupled_ws(
                 )
                 return None
 
-    except Exception as e:
-        logger.error(f"SSE error for task {request.port_id}: {e}")
-        await redis.publish(f"task_progress:{request.port_id}", f"Task Failed,,{e}")
+    except Exception:
+        logger.exception(f"SSE error for task {request.port_id}")
+        await redis.publish(f"task_progress:{request.port_id}", "Task Failed,,An error occurred during processing")
         return None
 
 
@@ -147,9 +147,9 @@ async def generate_image_to_3d_task_and_check_for_response_decoupled_ws(
                 )
                 return None
 
-    except Exception as e:
-        logger.error(f"SSE error for image task {request.port_id}: {e}")
-        await redis.publish(f"task_progress:{request.port_id}", f"Task Failed,,{e}")
+    except Exception:
+        logger.exception(f"SSE error for image task {request.port_id}")
+        await redis.publish(f"task_progress:{request.port_id}", "Task Failed,,An error occurred during processing")
         return None
 
 
@@ -199,9 +199,9 @@ async def generate_refine_task_and_stream(
                 )
                 return None
 
-    except Exception as e:
-        logger.error(f"SSE error for refine task {request.port_id}: {e}")
-        await redis.publish(f"task_progress:{request.port_id}", f"Task Failed,,{e}")
+    except Exception:
+        logger.exception(f"SSE error for refine task {request.port_id}")
+        await redis.publish(f"task_progress:{request.port_id}", "Task Failed,,An error occurred during processing")
         return None
 
 

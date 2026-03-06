@@ -2,6 +2,13 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl, validator
 from typing import Optional, List, Union, Any
 from datetime import datetime
 from dataclasses import dataclass
+import re
+
+
+def validate_email_format(v):
+    if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', v):
+        raise ValueError('Invalid email format')
+    return v.lower().strip()
 
 
 class UserInformation(BaseModel):
@@ -11,16 +18,53 @@ class UserInformation(BaseModel):
     password_hash: Optional[str] = None
     auth_provider: Optional[str] = "google"
 
+    @validator('username')
+    def validate_username_length(cls, v):
+        if v is not None and len(v) > 100:
+            raise ValueError('Username must be at most 100 characters')
+        return v
+
+    @validator('email')
+    def validate_email_length(cls, v):
+        if v is not None and len(v) > 255:
+            raise ValueError('Email must be at most 255 characters')
+        return v
+
+
+class PasswordVerifyRequest(BaseModel):
+    email: str
+    password: str
+
 
 class EmailRegisterRequest(BaseModel):
     username: str
     email: str
     password: str
 
+    @validator('email')
+    def validate_email(cls, v):
+        return validate_email_format(v)
+
+    @validator('username')
+    def validate_username(cls, v):
+        if len(v) < 2 or len(v) > 50:
+            raise ValueError('Username must be between 2 and 50 characters')
+        return v
+
+    @validator('password')
+    def validate_password(cls, v):
+        if len(v) < 8:
+            raise ValueError('Password must be at least 8 characters')
+        return v
+
 
 class EmailLoginRequest(BaseModel):
     email: str
     password: str
+
+    @validator('email')
+    def validate_email(cls, v):
+        return validate_email_format(v)
 
 
 class TaskInformation(BaseModel):
@@ -93,6 +137,12 @@ class BasketItemInformation(BaseModel):
 class BasketQuantityUpdate(BaseModel):
     task_id: str
     quantity: int
+
+    @validator('quantity')
+    def validate_quantity(cls, v):
+        if v < 1:
+            raise ValueError('Quantity must be at least 1')
+        return v
 
 
 class Token(BaseModel):
@@ -262,9 +312,21 @@ class ClaimOrder(BaseModel):
     quantity: int
     status: str
 
+    @validator('quantity')
+    def validate_quantity(cls, v):
+        if v < 1:
+            raise ValueError('Quantity must be at least 1')
+        return v
+
 
 class ClaimQuantityUpdate(BaseModel):
     quantity: int
+
+    @validator('quantity')
+    def validate_quantity(cls, v):
+        if v < 1:
+            raise ValueError('Quantity must be at least 1')
+        return v
 
 
 class MarkDisbursementPaidRequest(BaseModel):

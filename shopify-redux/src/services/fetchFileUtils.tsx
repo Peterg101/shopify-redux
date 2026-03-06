@@ -1,6 +1,8 @@
 import { FileInformation, FileResponse, BasketInformationAndFile, BasketQuantityUpdate, ClaimOrder, FulfillerAddress, MeshyGenerationSettings } from "../app/utility/interfaces"
 import {convertFileToDataURI } from "../app/utility/utils";
 import { MeshyPayload, MeshyImageTo3DPayload, MeshyRefinePayload } from "../services/meshyApi";
+import logger from '../app/utility/logger';
+import { safeRedirect } from '../app/utility/urlValidation';
 
 export const fetchFile = async (fileId: string): Promise<FileResponse> => {
     try {
@@ -16,7 +18,7 @@ export const fetchFile = async (fileId: string): Promise<FileResponse> => {
       const data: FileResponse = await response.json();
       return data;
     } catch (error) {
-      console.error("Error fetching file:", error);
+      logger.error("Error fetching file:", error);
       throw error;
     }
   };
@@ -54,7 +56,7 @@ export const postFile = async (basketInformationAndFile: BasketInformationAndFil
     }
 
   } catch (error) {
-    console.error("Error fetching file:", error);
+    logger.error("Error fetching file:", error);
     throw error;
   }
 };
@@ -73,12 +75,12 @@ export const deleteBasketItem = async (fileId: string): Promise<void> => {
 
       if (!response.ok) {
           const errorDetails = await response.json();
-          console.error("Failed to delete basket item:", errorDetails);
+          logger.error("Failed to delete basket item:", errorDetails);
           throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
 
   } catch (error) {
-      console.error("Error deleting basket item:", error);
+      logger.error("Error deleting basket item:", error);
       throw error; // Propagate the error
   }
 }
@@ -112,7 +114,7 @@ export const startTask = async (prompt: string, userId: string, portId: string, 
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error starting task:", error);
+    logger.error("Error starting task:", error);
     throw error;
   }
 };
@@ -148,7 +150,7 @@ export const startImageTo3DTask = async (image_file: File, userId: string, portI
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error starting image-to-3D task:", error);
+    logger.error("Error starting image-to-3D task:", error);
     throw error;
   }
 };
@@ -167,12 +169,12 @@ export const updateBasketQuantity = async (basketQuantityUpdate: BasketQuantityU
 
     if (!response.ok) {
         const errorDetails = await response.json();
-        console.error("Failed to update basket item:", errorDetails);
+        logger.error("Failed to update basket item:", errorDetails);
         throw new Error(`Error ${response.status}: ${response.statusText}`);
     }
 
 } catch (error) {
-    console.error("Error deleting basket item:", error);
+    logger.error("Error deleting basket item:", error);
     throw error; // Propagate the error
 }
 
@@ -196,10 +198,10 @@ export async function createStripeCheckoutAndRedirect() {
 
     const data = await response.json();
     const checkoutUrl = data.checkout_url;
-    window.location.href = checkoutUrl;
+    safeRedirect(checkoutUrl);
 
   } catch (error) {
-    console.error("Error creating checkout:", error);
+    logger.error("Error creating checkout:", error);
     alert("There was a problem creating the checkout. Please try again.");
   }
 }
@@ -222,10 +224,10 @@ export async function callStripeService() {
 
     const data = await response.json();
     if (data.onboarding_url) {
-    window.location.href = data.onboarding_url;}
+    safeRedirect(data.onboarding_url);}
 
   } catch (error) {
-    console.error("Error creating checkout:", error);
+    logger.error("Error creating checkout:", error);
     alert("There was a problem creating the checkout. Please try again.");
   }
 }
@@ -243,12 +245,12 @@ export async function postClaimOrder(claimedOrder: ClaimOrder) {
 
     if (!response.ok) {
         const errorDetails = await response.json();
-        console.error("Failed to update claimed order:", errorDetails);
+        logger.error("Failed to update claimed order:", errorDetails);
         throw new Error(`Error ${response.status}: ${response.statusText}`);
     }
 
 } catch (error) {
-    console.error("Error claiming order", error);
+    logger.error("Error claiming order", error);
     throw error;
 }
 }
@@ -314,13 +316,13 @@ export async function patchClaimStatus(claimId: string, status: string, reason?:
 
     if (!response.ok) {
         const errorDetails = await response.json();
-        console.error("Failed to update claim status:", errorDetails);
+        logger.error("Failed to update claim status:", errorDetails);
         throw new Error(`Error ${response.status}: ${response.statusText}`);
     }
 
     return await response.json();
   } catch (error) {
-    console.error("Error updating claim status", error);
+    logger.error("Error updating claim status", error);
     throw error;
   }
 }

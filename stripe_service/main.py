@@ -15,8 +15,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[FRONTEND_URL],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 # Register routes
@@ -26,5 +26,10 @@ app.include_router(payouts.router)
 app.include_router(checkout.router)
 app.include_router(shipping.router)
 
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=100)
+    uvicorn.run(app, host=os.getenv("HOST", "127.0.0.1"), port=100)

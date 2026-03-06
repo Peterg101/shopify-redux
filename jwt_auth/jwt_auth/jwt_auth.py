@@ -3,7 +3,12 @@ from fastapi import HTTPException, Header
 import jwt
 import datetime
 
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key")
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError(
+        "JWT_SECRET_KEY environment variable is not set. "
+        "Set it in your .env file or start-dev.sh before starting any service."
+    )
 ALGORITHM = "HS256"  # JWT signing algorithm
 
 
