@@ -2,8 +2,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../app/store'
 import { setSelectedClaim, setUpdateClaimMode } from '../../services/userInterfaceSlice'
 import { resetDataState } from '../../services/dataSlice'
-import { patchClaimStatus, uploadClaimEvidence, createShippingLabel } from '../../services/fetchFileUtils'
-import { authApi } from '../../services/authApi'
+import { createShippingLabel } from '../../services/fetchFileUtils'
+import { useUpdateClaimStatusMutation, useUploadClaimEvidenceMutation } from '../../services/dbApi'
 import { useState, useCallback, useMemo } from 'react'
 import { useDropzone } from 'react-dropzone'
 import {
@@ -155,6 +155,8 @@ export const UpdateClaimStatus = () => {
     (state: RootState) => state.userInterfaceState
   )
   const dispatch = useDispatch()
+  const [updateStatus] = useUpdateClaimStatusMutation()
+  const [uploadEvidence] = useUploadClaimEvidenceMutation()
 
   const currentStatus = selectedClaim?.status ?? 'pending'
   const validNextStatuses = ALLOWED_TRANSITIONS[currentStatus] ?? []
@@ -292,11 +294,11 @@ export const UpdateClaimStatus = () => {
         await new Promise<void>((resolve) => {
           reader.onload = async () => {
             const base64 = (reader.result as string).split(',')[1]
-            await uploadClaimEvidence(
-              selectedClaim.id,
-              base64,
-              evidenceDescription || undefined
-            )
+            await uploadEvidence({
+              claimId: selectedClaim.id,
+              imageData: base64,
+              description: evidenceDescription || undefined,
+            }).unwrap()
             resolve()
           }
           reader.readAsDataURL(evidenceFile)
@@ -317,11 +319,10 @@ export const UpdateClaimStatus = () => {
         }
       }
 
-      await patchClaimStatus(
-        selectedClaim.id,
-        selectedStatus
-      )
-      dispatch(authApi.util.invalidateTags(['sessionData']))
+      await updateStatus({
+        claimId: selectedClaim.id,
+        status: selectedStatus,
+      }).unwrap()
       dispatch(setSelectedClaim({ selectedClaim: null }))
       dispatch(setUpdateClaimMode({ updateClaimMode: false }))
       dispatch(resetDataState())

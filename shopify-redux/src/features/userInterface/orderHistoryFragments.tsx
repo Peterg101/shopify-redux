@@ -23,13 +23,11 @@ import {
 } from "@mui/icons-material";
 
 import { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { RootState } from "../../app/store";
 import { Order } from "../../app/utility/interfaces";
-import logger from "../../app/utility/logger";
-import { toggleOrderVisibility } from "../../services/fetchFileUtils";
-import { authApi } from "../../services/authApi";
+import { useToggleOrderVisibilityMutation } from "../../services/dbApi";
 import { monoFontFamily } from "../../theme";
 
 export const EmptyOrderHistory = () => (
@@ -103,22 +101,13 @@ function ClaimStatusChip({ status }: { status: string }) {
 };
 
 function OrderedItemCard(item: Order) {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [toggling, setToggling] = useState(false);
+  const [toggleVisibility, { isLoading: toggling }] = useToggleOrderVisibilityMutation();
   const [showDetails, setShowDetails] = useState(false);
 
   const handleToggleVisibility = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    setToggling(true);
-    try {
-      await toggleOrderVisibility(item.order_id);
-      dispatch(authApi.util.invalidateTags(["sessionData"]));
-    } catch (err) {
-      logger.error("Error toggling visibility:", err);
-    } finally {
-      setToggling(false);
-    }
+    await toggleVisibility(item.order_id);
   };
 
   const disputeClaims = (item.claims || []).filter(

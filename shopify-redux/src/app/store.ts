@@ -7,6 +7,7 @@ import { meshySlice } from "../services/meshySlice";
 import { meshyApi } from "../services/meshyApi";
 import { authApi } from "../services/authApi";
 import { basketApi } from "../services/basketItemApi";
+import { dbApi } from "../services/dbApi";
 
 const rootReducer = combineSlices({
   [userInterfaceSlice.reducerPath]: userInterfaceSlice.reducer,
@@ -14,7 +15,8 @@ const rootReducer = combineSlices({
   [meshySlice.reducerPath]: meshySlice.reducer,
   [meshyApi.reducerPath]: meshyApi.reducer,
   [authApi.reducerPath]: authApi.reducer,
-  [basketApi.reducerPath]: basketApi.reducer
+  [basketApi.reducerPath]: basketApi.reducer,
+  [dbApi.reducerPath]: dbApi.reducer,
 })
 
 export type RootState = ReturnType<typeof rootReducer>
@@ -23,7 +25,7 @@ export const makeStore = (preloadedState?: Partial<RootState>) => {
   const store = configureStore({
     reducer: rootReducer,
     middleware: getDefaultMiddleware => {
-      return getDefaultMiddleware().concat(meshyApi.middleware).concat(authApi.middleware).concat(basketApi.middleware)
+      return getDefaultMiddleware().concat(meshyApi.middleware).concat(authApi.middleware).concat(basketApi.middleware).concat(dbApi.middleware)
     },
     preloadedState
   })

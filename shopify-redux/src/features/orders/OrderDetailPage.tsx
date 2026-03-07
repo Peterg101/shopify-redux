@@ -2,6 +2,14 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import {
+  useGetOrderDetailQuery,
+  useToggleOrderVisibilityMutation,
+  useUpdateClaimStatusMutation,
+  useRespondToDisputeMutation,
+  useResolveDisputeMutation,
+  useUploadDisputeEvidenceMutation,
+} from '../../services/dbApi'
+import {
   Box,
   Typography,
   Paper,
@@ -31,18 +39,7 @@ import {
 } from '@mui/icons-material'
 import { useTheme } from '@mui/material/styles'
 import { RootState } from '../../app/store'
-import { OrderDetail, ClaimDetail, Dispute, ClaimEvidence } from '../../app/utility/interfaces'
-import {
-  fetchOrderDetail,
-  toggleOrderVisibility,
-  patchClaimStatus,
-  fetchDispute,
-  submitDisputeResponse,
-  resolveDispute,
-  uploadDisputeEvidence,
-  fetchClaimEvidence,
-} from '../../services/fetchFileUtils'
-import { authApi } from '../../services/authApi'
+import { ClaimDetail, Dispute } from '../../app/utility/interfaces'
 import { setLeftDrawerClosed, setSelectedComponent } from '../../services/userInterfaceSlice'
 import { HeaderBar } from '../userInterface/headerBar'
 import { UpdatedUserInterface } from '../userInterface/updatedUserInterface'
@@ -95,10 +92,9 @@ export const OrderDetailPage = () => {
   const { userInformation } = userInterfaceState
   const collapsedWidth = `calc(${theme.spacing(8)} + 1px)`
 
-  const [order, setOrder] = useState<OrderDetail | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [toggling, setToggling] = useState(false)
+  const { data: order, isLoading: loading, error: queryError } = useGetOrderDetailQuery(orderId!, { skip: !orderId })
+  const [toggleVisibility, { isLoading: toggling }] = useToggleOrderVisibilityMutation()
+  const error = queryError ? 'Failed to load order' : ''
 
   const isOwner = userInformation?.user?.user_id === order?.user_id
 
@@ -108,35 +104,9 @@ export const OrderDetailPage = () => {
     dispatch(setSelectedComponent({ selectedComponent: '' }))
   }, [])
 
-  const loadOrder = async () => {
-    if (!orderId) return
-    try {
-      setLoading(true)
-      const data = await fetchOrderDetail(orderId)
-      setOrder(data)
-    } catch (e: any) {
-      setError(e.message || 'Failed to load order')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    loadOrder()
-  }, [orderId])
-
   const handleToggleVisibility = async () => {
     if (!order) return
-    setToggling(true)
-    try {
-      await toggleOrderVisibility(order.order_id)
-      dispatch(authApi.util.invalidateTags(['sessionData']))
-      await loadOrder()
-    } catch (e: any) {
-      setError(e.message)
-    } finally {
-      setToggling(false)
-    }
+    await toggleVisibility(order.order_id)
   }
 
   const contentMargin = userInterfaceState.leftDrawerOpen
@@ -315,7 +285,6 @@ export const OrderDetailPage = () => {
               claim={claim}
               order={order}
               isOwner={isOwner}
-              onRefresh={loadOrder}
             />
           ))
         )}
@@ -328,20 +297,21 @@ export const OrderDetailPage = () => {
 
 interface ClaimTrackerProps {
   claim: ClaimDetail
-  order: OrderDetail
+  order: { user_id: string; price: number; quantity: number; is_collaborative: boolean }
   isOwner: boolean
-  onRefresh: () => void
 }
 
-function ClaimTracker({ claim, order, isOwner, onRefresh }: ClaimTrackerProps) {
-  const dispatch = useDispatch()
+function ClaimTracker({ claim, order, isOwner }: ClaimTrackerProps) {
   const { userInformation } = useSelector((state: RootState) => state.userInterfaceState)
+  const [updateStatus, { isLoading: statusLoading }] = useUpdateClaimStatusMutation()
+  const [respondToDispute, { isLoading: respondLoading }] = useRespondToDisputeMutation()
+  const [resolveDisputeMutation, { isLoading: resolveLoading }] = useResolveDisputeMutation()
   const [showDispute, setShowDispute] = useState(false)
   const [disputeReason, setDisputeReason] = useState('')
   const [responseText, setResponseText] = useState('')
   const [partialAmount, setPartialAmount] = useState('')
   const [actionError, setActionError] = useState('')
-  const [acting, setActing] = useState(false)
+  const acting = statusLoading || respondLoading || resolveLoading
 
   const isBuyer = userInformation?.user?.user_id === order.user_id
   const isFulfiller = userInformation?.user?.user_id === claim.claimant_user_id
@@ -357,63 +327,42 @@ function ClaimTracker({ claim, order, isOwner, onRefresh }: ClaimTrackerProps) {
   })
 
   const handleAccept = async () => {
-    setActing(true)
     try {
-      await patchClaimStatus(claim.id, 'accepted')
-      dispatch(authApi.util.invalidateTags(['sessionData']))
-      onRefresh()
+      await updateStatus({ claimId: claim.id, status: 'accepted' }).unwrap()
     } catch (e: any) {
-      setActionError(e.message)
-    } finally {
-      setActing(false)
+      setActionError(e.data?.detail || e.message)
     }
   }
 
   const handleDisputeSubmit = async () => {
     if (!disputeReason.trim()) return
-    setActing(true)
     try {
-      await patchClaimStatus(claim.id, 'disputed', disputeReason)
-      dispatch(authApi.util.invalidateTags(['sessionData']))
-      onRefresh()
+      await updateStatus({ claimId: claim.id, status: 'disputed', reason: disputeReason }).unwrap()
     } catch (e: any) {
-      setActionError(e.message)
-    } finally {
-      setActing(false)
+      setActionError(e.data?.detail || e.message)
     }
   }
 
   const handleRespond = async () => {
     if (!claim.dispute || !responseText.trim()) return
-    setActing(true)
     try {
-      await submitDisputeResponse(claim.dispute.id, responseText)
-      dispatch(authApi.util.invalidateTags(['sessionData']))
-      onRefresh()
+      await respondToDispute({ disputeId: claim.dispute.id, responseText }).unwrap()
     } catch (e: any) {
-      setActionError(e.message)
-    } finally {
-      setActing(false)
+      setActionError(e.data?.detail || e.message)
     }
   }
 
   const handleResolve = async (resolution: 'accepted' | 'partial' | 'rejected') => {
     if (!claim.dispute) return
-    setActing(true)
     try {
       const partial = resolution === 'partial' ? parseInt(partialAmount, 10) : undefined
       if (resolution === 'partial' && (!partial || partial <= 0)) {
         setActionError('Enter a valid partial amount in cents')
-        setActing(false)
         return
       }
-      await resolveDispute(claim.dispute.id, resolution, partial)
-      dispatch(authApi.util.invalidateTags(['sessionData']))
-      onRefresh()
+      await resolveDisputeMutation({ disputeId: claim.dispute.id, resolution, partialAmountCents: partial }).unwrap()
     } catch (e: any) {
-      setActionError(e.message)
-    } finally {
-      setActing(false)
+      setActionError(e.data?.detail || e.message)
     }
   }
 
@@ -619,6 +568,7 @@ function DisputeSection({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [evidenceFile, setEvidenceFile] = useState<File | null>(null)
   const [evidenceDesc, setEvidenceDesc] = useState('')
+  const [uploadEvidence] = useUploadDisputeEvidenceMutation()
 
   const handleUploadEvidence = async () => {
     if (!evidenceFile) return
@@ -626,7 +576,11 @@ function DisputeSection({
     await new Promise<void>((resolve) => {
       reader.onload = async () => {
         const base64 = (reader.result as string).split(',')[1]
-        await uploadDisputeEvidence(dispute.id, base64, evidenceDesc || undefined)
+        await uploadEvidence({
+          disputeId: dispute.id,
+          imageData: base64,
+          description: evidenceDesc || undefined,
+        }).unwrap()
         setEvidenceFile(null)
         setEvidenceDesc('')
         resolve()

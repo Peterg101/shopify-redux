@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import {
   Box,
@@ -12,10 +12,9 @@ import {
   ImageListItem,
   Alert,
 } from '@mui/material'
-import { Claim, ClaimEvidence } from '../../app/utility/interfaces'
+import { Claim } from '../../app/utility/interfaces'
 import logger from '../../app/utility/logger'
-import { patchClaimStatus, fetchClaimEvidence } from '../../services/fetchFileUtils'
-import { authApi } from '../../services/authApi'
+import { useGetClaimEvidenceQuery, useUpdateClaimStatusMutation } from '../../services/dbApi'
 import { setSelectedClaim, setUpdateClaimMode } from '../../services/userInterfaceSlice'
 import { resetDataState } from '../../services/dataSlice'
 
@@ -26,19 +25,15 @@ interface BuyerReviewPanelProps {
 
 export function BuyerReviewPanel({ claim, onClose }: BuyerReviewPanelProps) {
   const dispatch = useDispatch()
-  const [evidence, setEvidence] = useState<ClaimEvidence[]>([])
+  const { data: evidence = [] } = useGetClaimEvidenceQuery(claim.id)
+  const [updateStatus] = useUpdateClaimStatusMutation()
   const [error, setError] = useState('')
   const [showDispute, setShowDispute] = useState(false)
   const [disputeReason, setDisputeReason] = useState('')
 
-  useEffect(() => {
-    fetchClaimEvidence(claim.id).then(setEvidence).catch(logger.error)
-  }, [claim.id])
-
   const handleAccept = async () => {
     try {
-      await patchClaimStatus(claim.id, 'accepted')
-      dispatch(authApi.util.invalidateTags(['sessionData']))
+      await updateStatus({ claimId: claim.id, status: 'accepted' }).unwrap()
       dispatch(setSelectedClaim({ selectedClaim: null }))
       dispatch(setUpdateClaimMode({ updateClaimMode: false }))
       dispatch(resetDataState())
@@ -51,8 +46,7 @@ export function BuyerReviewPanel({ claim, onClose }: BuyerReviewPanelProps) {
   const handleDispute = async () => {
     if (!disputeReason.trim()) return
     try {
-      await patchClaimStatus(claim.id, 'disputed', disputeReason)
-      dispatch(authApi.util.invalidateTags(['sessionData']))
+      await updateStatus({ claimId: claim.id, status: 'disputed', reason: disputeReason }).unwrap()
       dispatch(setSelectedClaim({ selectedClaim: null }))
       dispatch(setUpdateClaimMode({ updateClaimMode: false }))
       dispatch(resetDataState())

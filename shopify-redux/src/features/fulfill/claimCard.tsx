@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import {
   Box,
@@ -8,17 +7,15 @@ import {
 } from '@mui/material'
 import { Add, Remove } from '@mui/icons-material'
 import { Claim } from '../../app/utility/interfaces'
-import logger from '../../app/utility/logger'
 import { setSelectedClaim, setUpdateClaimMode } from '../../services/userInterfaceSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
 import { OrderDetailCard } from '../shared/OrderDetailCard'
-import { patchClaimQuantity } from '../../services/fetchFileUtils'
-import { authApi } from '../../services/authApi'
+import { useUpdateClaimQuantityMutation } from '../../services/dbApi'
 
 export function ClaimCard({ claim }: { claim: Claim }) {
   const dispatch = useDispatch()
   const { prepareOrderFile } = useOrderFileLoader()
-  const [adjusting, setAdjusting] = useState(false)
+  const [updateQuantity, { isLoading: adjusting }] = useUpdateClaimQuantityMutation()
 
   const handleUpdateClaim = async () => {
     await prepareOrderFile(claim.order)
@@ -35,15 +32,7 @@ export function ClaimCard({ claim }: { claim: Claim }) {
   const handleQuantityChange = async (delta: number) => {
     const newQuantity = claim.quantity + delta
     if (newQuantity < 1 || newQuantity > maxAvailable) return
-    setAdjusting(true)
-    try {
-      await patchClaimQuantity(claim.id, newQuantity)
-      dispatch(authApi.util.invalidateTags(['sessionData']))
-    } catch (err) {
-      logger.error('Error adjusting quantity:', err)
-    } finally {
-      setAdjusting(false)
-    }
+    await updateQuantity({ claimId: claim.id, quantity: newQuantity })
   }
 
   return (

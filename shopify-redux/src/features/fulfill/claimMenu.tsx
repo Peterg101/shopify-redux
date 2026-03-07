@@ -5,8 +5,7 @@ import { setClaimedOrder, setFulfillMode } from '../../services/userInterfaceSli
 import { resetDataState } from '../../services/dataSlice'
 import { ClaimOrder } from '../../app/utility/interfaces'
 import logger from '../../app/utility/logger'
-import { postClaimOrder } from '../../services/fetchFileUtils'
-import { authApi } from '../../services/authApi'
+import { useClaimOrderMutation } from '../../services/dbApi'
 import { Snackbar, Alert } from '@mui/material'
 import { ClaimPanel } from '../shared/ClaimPanel'
 
@@ -15,17 +14,17 @@ export function ClaimMenu() {
     (state: RootState) => state.userInterfaceState
   )
   const dispatch = useDispatch()
+  const [claimOrder] = useClaimOrderMutation()
   const [snackbar, setSnackbar] = useState({ open: false, message: '' })
 
   const confirmClaim = async (quantity: number) => {
-    const claimOrder: ClaimOrder = {
+    const claim: ClaimOrder = {
       order_id: claimedOrder.order_id,
       quantity,
       status: 'pending',
     }
     try {
-      await postClaimOrder(claimOrder)
-      dispatch(authApi.util.invalidateTags(['sessionData']))
+      await claimOrder(claim).unwrap()
       dispatch(setClaimedOrder({ claimedOrder: null }))
     } catch (err) {
       logger.error('Error claiming order:', err)

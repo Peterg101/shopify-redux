@@ -9,12 +9,15 @@ import {
   Alert,
 } from '@mui/material'
 import { RootState } from '../../app/store'
-import { updateFulfillerAddress, getFulfillerAddress } from '../../services/fetchFileUtils'
+import { useGetFulfillerAddressQuery, useUpdateFulfillerAddressMutation } from '../../services/dbApi'
 import { FulfillerAddress } from '../../app/utility/interfaces'
 
 export const FulfillerAddressForm = () => {
   const { userInformation } = useSelector((state: RootState) => state.userInterfaceState)
   const userId = userInformation?.user?.user_id
+
+  const { data: existingAddress, isLoading } = useGetFulfillerAddressQuery(userId!, { skip: !userId })
+  const [saveAddress, { isLoading: saving }] = useUpdateFulfillerAddressMutation()
 
   const [address, setAddress] = useState<FulfillerAddress>({
     name: '',
@@ -24,39 +27,28 @@ export const FulfillerAddressForm = () => {
     postal_code: '',
     country: 'GB',
   })
-  const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
-  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
-    if (!userId) return
-    getFulfillerAddress(userId)
-      .then((existing) => {
-        if (existing) {
-          setAddress(existing)
-        }
-        setLoaded(true)
-      })
-      .catch(() => setLoaded(true))
-  }, [userId])
+    if (existingAddress) {
+      setAddress(existingAddress)
+    }
+  }, [existingAddress])
 
   const handleSave = async () => {
     if (!userId) return
-    setSaving(true)
     setError('')
     setSuccess(false)
     try {
-      await updateFulfillerAddress(userId, address)
+      await saveAddress({ userId, address }).unwrap()
       setSuccess(true)
     } catch (e: any) {
-      setError(e.message || 'Failed to save address')
-    } finally {
-      setSaving(false)
+      setError(e.data?.detail || e.message || 'Failed to save address')
     }
   }
 
-  if (!loaded) return null
+  if (isLoading) return null
 
   return (
     <Paper elevation={2} sx={{ p: 3, borderRadius: 3, maxWidth: 500 }}>

@@ -19,11 +19,9 @@ import ViewInArIcon from '@mui/icons-material/ViewInAr'
 import { Add, Remove } from '@mui/icons-material'
 import { useDispatch } from 'react-redux'
 import { Claim } from '../../app/utility/interfaces'
-import logger from '../../app/utility/logger'
 import { setSelectedClaim, setUpdateClaimMode } from '../../services/userInterfaceSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
-import { patchClaimQuantity, patchClaimStatus } from '../../services/fetchFileUtils'
-import { authApi } from '../../services/authApi'
+import { useUpdateClaimQuantityMutation, useUpdateClaimStatusMutation } from '../../services/dbApi'
 import ModelThumbnail from '../display/ModelThumbnail'
 import { monoFontFamily } from '../../theme'
 import { STATUS_PHASES } from './ClaimDashboardHeader'
@@ -89,9 +87,9 @@ interface ClaimGridCardProps {
 export const ClaimGridCard = React.memo(({ claim }: ClaimGridCardProps) => {
   const dispatch = useDispatch()
   const { prepareOrderFile } = useOrderFileLoader()
-  const [adjusting, setAdjusting] = useState(false)
+  const [updateQuantity, { isLoading: adjusting }] = useUpdateClaimQuantityMutation()
+  const [updateStatus, { isLoading: withdrawing }] = useUpdateClaimStatusMutation()
   const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false)
-  const [withdrawing, setWithdrawing] = useState(false)
 
   const order = claim.order
   const pricePerUnit = order.quantity > 0 ? order.price / order.quantity : 0
@@ -116,26 +114,13 @@ export const ClaimGridCard = React.memo(({ claim }: ClaimGridCardProps) => {
   const handleQuantityChange = async (delta: number) => {
     const newQuantity = claim.quantity + delta
     if (newQuantity < 1 || newQuantity > maxAvailable) return
-    setAdjusting(true)
-    try {
-      await patchClaimQuantity(claim.id, newQuantity)
-      dispatch(authApi.util.invalidateTags(['sessionData']))
-    } catch (err) {
-      logger.error('Error adjusting quantity:', err)
-    } finally {
-      setAdjusting(false)
-    }
+    await updateQuantity({ claimId: claim.id, quantity: newQuantity })
   }
 
   const handleWithdraw = async () => {
-    setWithdrawing(true)
     try {
-      await patchClaimStatus(claim.id, 'cancelled')
-      dispatch(authApi.util.invalidateTags(['sessionData']))
-    } catch (err) {
-      logger.error('Error withdrawing claim:', err)
+      await updateStatus({ claimId: claim.id, status: 'cancelled' }).unwrap()
     } finally {
-      setWithdrawing(false)
       setWithdrawDialogOpen(false)
     }
   }

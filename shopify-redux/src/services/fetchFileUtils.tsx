@@ -1,4 +1,4 @@
-import { FileInformation, FileResponse, BasketInformationAndFile, ClaimOrder, FulfillerAddress, MeshyGenerationSettings } from "../app/utility/interfaces"
+import { FileInformation, FileResponse, MeshyGenerationSettings } from "../app/utility/interfaces"
 import {convertFileToDataURI } from "../app/utility/utils";
 import { MeshyPayload, MeshyImageTo3DPayload, MeshyRefinePayload } from "../services/meshyApi";
 import logger from '../app/utility/logger';
@@ -10,11 +10,11 @@ export const fetchFile = async (fileId: string): Promise<FileResponse> => {
         method: 'GET',
         credentials: 'include'
       });
-  
+
       if (!response.ok) {
         throw new Error(`Failed to fetch file with ID ${fileId}: ${response.statusText}`);
       }
-  
+
       const data: FileResponse = await response.json();
       return data;
     } catch (error) {
@@ -35,54 +35,10 @@ export const extractFileInfo = (fileResponse: FileResponse, filename: string): F
         file: file,
         fileBlob: blob,
         fileUrl: fileURL,
-    };  
+    };
 
     return fileInfo
-    
-}
 
-export const postFile = async (basketInformationAndFile: BasketInformationAndFile) => {
-  try {
-    const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/file_storage`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(basketInformationAndFile),
-    });
-    if (!response.ok) {
-      throw new Error(`Failed to post file ${basketInformationAndFile.name}: ${response.statusText}`);
-    }
-
-  } catch (error) {
-    logger.error("Error fetching file:", error);
-    throw error;
-  }
-};
-
-
-export const deleteBasketItem = async (fileId: string): Promise<void> => {
-  
-  try {
-      const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/file_storage/${fileId}`, {
-          method: "DELETE",
-          credentials: "include", // Include cookies in the request
-          headers: {
-              "Content-Type": "application/json",
-          },
-      });
-
-      if (!response.ok) {
-          const errorDetails = await response.json();
-          logger.error("Failed to delete basket item:", errorDetails);
-          throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-
-  } catch (error) {
-      logger.error("Error deleting basket item:", error);
-      throw error; // Propagate the error
-  }
 }
 
 export const startTask = async (prompt: string, userId: string, portId: string, settings?: MeshyGenerationSettings) => {
@@ -208,29 +164,6 @@ export async function callStripeService() {
   }
 }
 
-export async function postClaimOrder(claimedOrder: ClaimOrder) {
-  try {
-    const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/claims/claim_order`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(claimedOrder),
-    });
-
-    if (!response.ok) {
-        const errorDetails = await response.json();
-        logger.error("Failed to update claimed order:", errorDetails);
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-    }
-
-} catch (error) {
-    logger.error("Error claiming order", error);
-    throw error;
-}
-}
-
 export async function registerWithEmail(username: string, email: string, password: string) {
   const response = await fetch(`${process.env.REACT_APP_AUTH_SERVICE}/auth/register`, {
     method: "POST",
@@ -261,173 +194,6 @@ export async function loginWithEmail(email: string, password: string) {
   return await response.json();
 }
 
-export async function patchClaimQuantity(claimId: string, quantity: number) {
-  const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/claims/${claimId}/quantity`, {
-    method: "PATCH",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ quantity }),
-  });
-
-  if (!response.ok) {
-    const errorDetails = await response.json();
-    throw new Error(errorDetails.detail || `Error ${response.status}`);
-  }
-  return await response.json();
-}
-
-export async function patchClaimStatus(claimId: string, status: string, reason?: string) {
-  try {
-    const body: Record<string, string> = { status };
-    if (reason) body.reason = reason;
-
-    const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/claims/${claimId}/status`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-    });
-
-    if (!response.ok) {
-        const errorDetails = await response.json();
-        logger.error("Failed to update claim status:", errorDetails);
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    logger.error("Error updating claim status", error);
-    throw error;
-  }
-}
-
-export async function uploadClaimEvidence(claimId: string, imageData: string, description?: string) {
-  const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/claims/${claimId}/evidence`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ image_data: imageData, description }),
-  });
-
-  if (!response.ok) {
-    const errorDetails = await response.json();
-    throw new Error(errorDetails.detail || `Error ${response.status}`);
-  }
-  return await response.json();
-}
-
-export async function fetchClaimEvidence(claimId: string) {
-  const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/claims/${claimId}/evidence`, {
-    method: "GET",
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    throw new Error(`Error ${response.status}: ${response.statusText}`);
-  }
-  return await response.json();
-}
-
-export async function fetchClaimHistory(claimId: string) {
-  const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/claims/${claimId}/history`, {
-    method: "GET",
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    throw new Error(`Error ${response.status}: ${response.statusText}`);
-  }
-  return await response.json();
-}
-
-export async function fetchDispute(claimId: string) {
-  const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/disputes/${claimId}`, {
-    method: "GET",
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    throw new Error(`Error ${response.status}: ${response.statusText}`);
-  }
-  return await response.json();
-}
-
-export async function submitDisputeResponse(disputeId: string, responseText: string) {
-  const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/disputes/${disputeId}/respond`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ response_text: responseText }),
-  });
-
-  if (!response.ok) {
-    const errorDetails = await response.json();
-    throw new Error(errorDetails.detail || `Error ${response.status}`);
-  }
-  return await response.json();
-}
-
-export async function resolveDispute(disputeId: string, resolution: string, partialAmountCents?: number) {
-  const body: Record<string, any> = { resolution };
-  if (partialAmountCents !== undefined) body.partial_amount_cents = partialAmountCents;
-
-  const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/disputes/${disputeId}/resolve`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    const errorDetails = await response.json();
-    throw new Error(errorDetails.detail || `Error ${response.status}`);
-  }
-  return await response.json();
-}
-
-export async function fetchOrderDetail(orderId: string) {
-  const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/orders/${orderId}/detail`, {
-    method: "GET",
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    throw new Error(`Error ${response.status}: ${response.statusText}`);
-  }
-  return await response.json();
-}
-
-export async function toggleOrderVisibility(orderId: string) {
-  const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/orders/${orderId}/visibility`, {
-    method: "PATCH",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-  });
-
-  if (!response.ok) {
-    const errorDetails = await response.json();
-    throw new Error(errorDetails.detail || `Error ${response.status}`);
-  }
-  return await response.json();
-}
-
-export async function uploadDisputeEvidence(disputeId: string, imageData: string, description?: string) {
-  const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/disputes/${disputeId}/evidence`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ image_data: imageData, description }),
-  });
-
-  if (!response.ok) {
-    const errorDetails = await response.json();
-    throw new Error(errorDetails.detail || `Error ${response.status}`);
-  }
-  return await response.json();
-}
-
 export async function createShippingLabel(claimId: string): Promise<{
   label_url: string;
   tracking_number: string;
@@ -441,37 +207,6 @@ export async function createShippingLabel(claimId: string): Promise<{
   if (!response.ok) {
     const errorDetails = await response.json();
     throw new Error(errorDetails.detail || `Error ${response.status}`);
-  }
-  return await response.json();
-}
-
-export async function updateFulfillerAddress(userId: string, address: FulfillerAddress): Promise<void> {
-  const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/users/${userId}/fulfiller_address`, {
-    method: "PUT",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(address),
-  });
-
-  if (!response.ok) {
-    const errorDetails = await response.json();
-    throw new Error(errorDetails.detail || `Error ${response.status}`);
-  }
-}
-
-export async function cancelClaim(claimId: string) {
-  return patchClaimStatus(claimId, 'cancelled')
-}
-
-export async function getFulfillerAddress(userId: string): Promise<FulfillerAddress | null> {
-  const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/users/${userId}/fulfiller_address`, {
-    method: "GET",
-    credentials: "include",
-  });
-
-  if (response.status === 404) return null;
-  if (!response.ok) {
-    throw new Error(`Error ${response.status}: ${response.statusText}`);
   }
   return await response.json();
 }
@@ -494,4 +229,3 @@ export const startRefineTask = async (
     if (!response.ok) throw new Error(`Refine failed: ${response.statusText}`);
     return response.json();
 };
-

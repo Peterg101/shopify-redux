@@ -6,8 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { useFile } from '../../services/fileProvider';
 import { resetDataState } from "../../services/dataSlice";
-import { postFile } from "../../services/fetchFileUtils";
-import { authApi } from "../../services/authApi";
+import { useUploadFileMutation } from "../../services/dbApi";
 import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
 import { useState } from "react";
 import { selectTotalCost } from "../../services/selectors";
@@ -22,6 +21,7 @@ export const AddToBasket = () => {
   )
   const totalCost = useSelector(selectTotalCost)
   const {actualFile} = useFile()
+  const [uploadFile] = useUploadFileMutation()
 
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
 
@@ -58,9 +58,8 @@ const handleAddToBasket = async () => {
         file_blob: base64String,
         price: totalCost,
       };
-      await postFile(basketInformationAndFile);
+      await uploadFile(basketInformationAndFile).unwrap();
       dispatch(resetDataState());
-      dispatch(authApi.util.invalidateTags([{ type: "sessionData" }]));
       dispatch(setLeftDrawerClosed());
 
       showSnackbar("Item successfully added to basket!", "success");

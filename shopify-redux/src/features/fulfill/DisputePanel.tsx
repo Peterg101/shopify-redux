@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   Box,
@@ -14,16 +14,14 @@ import {
   Alert,
 } from '@mui/material'
 import { RootState } from '../../app/store'
-import { Claim, Dispute, ClaimEvidence } from '../../app/utility/interfaces'
-import logger from '../../app/utility/logger'
+import { Claim } from '../../app/utility/interfaces'
 import {
-  fetchDispute,
-  submitDisputeResponse,
-  resolveDispute,
-  uploadDisputeEvidence,
-  fetchClaimEvidence,
-} from '../../services/fetchFileUtils'
-import { authApi } from '../../services/authApi'
+  useGetDisputeQuery,
+  useGetClaimEvidenceQuery,
+  useRespondToDisputeMutation,
+  useResolveDisputeMutation,
+  useUploadDisputeEvidenceMutation,
+} from '../../services/dbApi'
 import { setSelectedClaim, setUpdateClaimMode } from '../../services/userInterfaceSlice'
 import { resetDataState } from '../../services/dataSlice'
 
@@ -45,9 +43,13 @@ function formatDeadline(deadline: string): string {
 export function DisputePanel({ claim, onClose }: DisputePanelProps) {
   const dispatch = useDispatch()
   const { userInformation } = useSelector((state: RootState) => state.userInterfaceState)
-  const [dispute, setDispute] = useState<Dispute | null>(null)
-  const [evidence, setEvidence] = useState<ClaimEvidence[]>([])
-  const [loading, setLoading] = useState(true)
+
+  const { data: dispute, isLoading: loadingDispute } = useGetDisputeQuery(claim.id)
+  const { data: evidence = [] } = useGetClaimEvidenceQuery(claim.id)
+  const [respondToDispute] = useRespondToDisputeMutation()
+  const [resolveDisputeMutation] = useResolveDisputeMutation()
+  const [uploadEvidence] = useUploadDisputeEvidenceMutation()
+
   const [error, setError] = useState('')
 
   // Fulfiller response state
@@ -78,14 +80,7 @@ export function DisputePanel({ claim, onClose }: DisputePanelProps) {
     setEvidenceFile(file)
   }
 
-  useEffect(() => {
-    fetchDispute(claim.id).then(setDispute).catch(() => setError('Failed to load dispute'))
-    fetchClaimEvidence(claim.id).then(setEvidence).catch(logger.error)
-    setLoading(false)
-  }, [claim.id])
-
   const handleDone = () => {
-    dispatch(authApi.util.invalidateTags(['sessionData']))
     dispatch(setSelectedClaim({ selectedClaim: null }))
     dispatch(setUpdateClaimMode({ updateClaimMode: false }))
     dispatch(resetDataState())
@@ -94,10 +89,10 @@ export function DisputePanel({ claim, onClose }: DisputePanelProps) {
   const handleRespond = async () => {
     if (!dispute || !responseText.trim()) return
     try {
-      await submitDisputeResponse(dispute.id, responseText)
+      await respondToDispute({ disputeId: dispute.id, responseText }).unwrap()
       handleDone()
     } catch (e: any) {
-      setError(e.message)
+      setError(e.data?.detail || e.message)
     }
   }
 
@@ -107,9 +102,11 @@ export function DisputePanel({ claim, onClose }: DisputePanelProps) {
     await new Promise<void>((resolve) => {
       reader.onload = async () => {
         const base64 = (reader.result as string).split(',')[1]
-        await uploadDisputeEvidence(dispute.id, base64, evidenceDescription || undefined)
-        const updated = await fetchClaimEvidence(claim.id)
-        setEvidence(updated)
+        await uploadEvidence({
+          disputeId: dispute.id,
+          imageData: base64,
+          description: evidenceDescription || undefined,
+        }).unwrap()
         setEvidenceFile(null)
         setEvidenceDescription('')
         resolve()
@@ -134,14 +131,14 @@ export function DisputePanel({ claim, onClose }: DisputePanelProps) {
           return
         }
       }
-      await resolveDispute(dispute.id, resolution, partial)
+      await resolveDisputeMutation({ disputeId: dispute.id, resolution, partialAmountCents: partial }).unwrap()
       handleDone()
     } catch (e: any) {
-      setError(e.message)
+      setError(e.data?.detail || e.message)
     }
   }
 
-  if (loading || !dispute) {
+  if (loadingDispute || !dispute) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
         <Typography>Loading dispute...</Typography>
