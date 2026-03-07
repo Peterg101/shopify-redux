@@ -4,7 +4,6 @@ import {setupListeners} from "@reduxjs/toolkit/query"
 import { userInterfaceSlice } from "../services/userInterfaceSlice";
 import {dataSlice} from "../services/dataSlice";
 import { meshySlice } from "../services/meshySlice";
-import { meshyApi } from "../services/meshyApi";
 import { authApi } from "../services/authApi";
 import { basketApi } from "../services/basketItemApi";
 import { dbApi } from "../services/dbApi";
@@ -13,7 +12,6 @@ const rootReducer = combineSlices({
   [userInterfaceSlice.reducerPath]: userInterfaceSlice.reducer,
   [dataSlice.reducerPath]: dataSlice.reducer,
   [meshySlice.reducerPath]: meshySlice.reducer,
-  [meshyApi.reducerPath]: meshyApi.reducer,
   [authApi.reducerPath]: authApi.reducer,
   [basketApi.reducerPath]: basketApi.reducer,
   [dbApi.reducerPath]: dbApi.reducer,
@@ -25,7 +23,7 @@ export const makeStore = (preloadedState?: Partial<RootState>) => {
   const store = configureStore({
     reducer: rootReducer,
     middleware: getDefaultMiddleware => {
-      return getDefaultMiddleware().concat(meshyApi.middleware).concat(authApi.middleware).concat(basketApi.middleware).concat(dbApi.middleware)
+      return getDefaultMiddleware().concat(authApi.middleware).concat(basketApi.middleware).concat(dbApi.middleware)
     },
     preloadedState
   })

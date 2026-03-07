@@ -1,6 +1,5 @@
-import { FileInformation, FileResponse, MeshyGenerationSettings } from "../app/utility/interfaces"
+import { FileInformation, FileResponse, MeshyGenerationSettings, MeshyPayload, MeshyImageTo3DPayload, MeshyRefinePayload } from "../app/utility/interfaces"
 import {convertFileToDataURI } from "../app/utility/utils";
-import { MeshyPayload, MeshyImageTo3DPayload, MeshyRefinePayload } from "../services/meshyApi";
 import logger from '../app/utility/logger';
 import { safeRedirect } from '../app/utility/urlValidation';
 

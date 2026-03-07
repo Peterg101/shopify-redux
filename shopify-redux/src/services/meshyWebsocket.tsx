@@ -1,6 +1,6 @@
 import { AppDispatch } from "../app/store";
 import { authApi } from "./authApi";
-import { MeshyTaskStatusResponse } from "./meshyApi";
+import { MeshyTaskStatusResponse } from "../app/utility/interfaces";
 import logger from '../app/utility/logger';
 import { setMeshyLoadedPercentage, setMeshyLoading, setMeshyPending, setMeshyQueueItems, setMeshyPreviewTaskId } from "./meshySlice";
 import { extractFileInfo, fetchFile } from "./fetchFileUtils";
