@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Boolean, Text, UniqueConstraint
 from sqlalchemy.orm import backref, declarative_base
 from datetime import datetime
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -208,3 +208,55 @@ class Dispute(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
     resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     claim = relationship("Claim", backref=backref("dispute", uselist=False))
+
+
+class ManufacturingProcess(Base):
+    __tablename__ = "manufacturing_processes"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
+    family: Mapped[str] = mapped_column(String, nullable=False)  # 3d_printing, cnc, sheet_metal, casting, injection_molding
+    name: Mapped[str] = mapped_column(String, unique=True, nullable=False)  # e.g. "FDM", "3-axis CNC"
+    display_name: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class ManufacturingMaterial(Base):
+    __tablename__ = "manufacturing_materials"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
+    category: Mapped[str] = mapped_column(String, nullable=False)  # e.g. "thermoplastic", "metal"
+    name: Mapped[str] = mapped_column(String, unique=True, nullable=False)  # e.g. "PLA", "Aluminum 6061"
+    process_family: Mapped[str] = mapped_column(String, nullable=False)  # links to ManufacturingProcess.family
+
+
+class FulfillerProfile(Base):
+    __tablename__ = "fulfiller_profiles"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.user_id"), nullable=False, unique=True)
+    business_name: Mapped[str] = mapped_column(String, nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    max_build_volume_x: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    max_build_volume_y: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    max_build_volume_z: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    min_tolerance_mm: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    lead_time_days_min: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    lead_time_days_max: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    certifications: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON string array
+    post_processing: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON string array
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    capabilities: Mapped[list["FulfillerCapability"]] = relationship(
+        "FulfillerCapability", back_populates="profile", cascade="all, delete-orphan", lazy="selectin"
+    )
+    user = relationship("User", backref=backref("fulfiller_profile", uselist=False))
+
+
+class FulfillerCapability(Base):
+    __tablename__ = "fulfiller_capabilities"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
+    profile_id: Mapped[str] = mapped_column(String, ForeignKey("fulfiller_profiles.id"), nullable=False)
+    process_id: Mapped[str] = mapped_column(String, ForeignKey("manufacturing_processes.id"), nullable=False)
+    materials: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON array of material IDs
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    profile: Mapped["FulfillerProfile"] = relationship("FulfillerProfile", back_populates="capabilities")
+    process: Mapped["ManufacturingProcess"] = relationship("ManufacturingProcess", lazy="selectin")

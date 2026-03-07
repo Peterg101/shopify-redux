@@ -559,6 +559,107 @@ class IncompleteTaskResponse(BaseModel):
         orm_mode = True
 
 
+class ManufacturingProcessResponse(BaseModel):
+    id: str
+    family: str
+    name: str
+    display_name: str
+
+    class Config:
+        orm_mode = True
+
+
+class ManufacturingMaterialResponse(BaseModel):
+    id: str
+    category: str
+    name: str
+    process_family: str
+
+    class Config:
+        orm_mode = True
+
+
+class FulfillerCapabilityCreate(BaseModel):
+    process_id: str
+    materials: Optional[List[str]] = None  # list of material IDs
+    notes: Optional[str] = None
+
+
+class FulfillerCapabilityResponse(BaseModel):
+    id: str
+    process_id: str
+    process: ManufacturingProcessResponse
+    materials: Optional[List[str]] = None
+    notes: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+    @validator('materials', pre=True)
+    def parse_materials_json(cls, v):
+        if isinstance(v, str):
+            import json
+            try:
+                return json.loads(v)
+            except (json.JSONDecodeError, TypeError):
+                return []
+        return v
+
+
+class FulfillerProfileCreate(BaseModel):
+    business_name: str
+    description: Optional[str] = None
+    max_build_volume_x: Optional[float] = None
+    max_build_volume_y: Optional[float] = None
+    max_build_volume_z: Optional[float] = None
+    min_tolerance_mm: Optional[float] = None
+    lead_time_days_min: Optional[int] = None
+    lead_time_days_max: Optional[int] = None
+    certifications: Optional[List[str]] = None
+    post_processing: Optional[List[str]] = None
+    capabilities: List[FulfillerCapabilityCreate] = []
+
+
+class FulfillerProfileResponse(BaseModel):
+    id: str
+    user_id: str
+    business_name: str
+    description: Optional[str] = None
+    max_build_volume_x: Optional[float] = None
+    max_build_volume_y: Optional[float] = None
+    max_build_volume_z: Optional[float] = None
+    min_tolerance_mm: Optional[float] = None
+    lead_time_days_min: Optional[int] = None
+    lead_time_days_max: Optional[int] = None
+    certifications: Optional[List[str]] = None
+    post_processing: Optional[List[str]] = None
+    is_active: bool = True
+    capabilities: List[FulfillerCapabilityResponse] = []
+
+    class Config:
+        orm_mode = True
+
+    @validator('certifications', pre=True)
+    def parse_certifications_json(cls, v):
+        if isinstance(v, str):
+            import json
+            try:
+                return json.loads(v)
+            except (json.JSONDecodeError, TypeError):
+                return []
+        return v
+
+    @validator('post_processing', pre=True)
+    def parse_post_processing_json(cls, v):
+        if isinstance(v, str):
+            import json
+            try:
+                return json.loads(v)
+            except (json.JSONDecodeError, TypeError):
+                return []
+        return v
+
+
 class UserHydrationResponse(BaseModel):
     user: UserResponse
     tasks: List[TaskResponse]
@@ -568,6 +669,7 @@ class UserHydrationResponse(BaseModel):
     orders: List[OrderResponse]
     claims: List[ClaimWithOrderResponse]
     stripe_onboarded: bool = False
+    fulfiller_profile: Optional[FulfillerProfileResponse] = None
 
     class Config:
         orm_mode = True

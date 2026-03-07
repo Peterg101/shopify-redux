@@ -9,8 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
-from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, Order, UserStripeAccount, Claim, Disbursement, ClaimEvidence, ClaimStatusHistory, Dispute
-from fitd_schemas.fitd_classes import UserHydrationResponse, ClaimWithOrderResponse, OrderResponse, OrderDetailResponse, ClaimDetailResponse, DisputeFulfillerResponse, DisputeResolveRequest, DisputeResponse, ClaimEvidenceResponse, ClaimStatusHistoryResponse, MarkDisbursementPaidRequest
+from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, Order, UserStripeAccount, Claim, Disbursement, ClaimEvidence, ClaimStatusHistory, Dispute, ManufacturingProcess, ManufacturingMaterial, FulfillerProfile, FulfillerCapability
+from fitd_schemas.fitd_classes import UserHydrationResponse, ClaimWithOrderResponse, OrderResponse, OrderDetailResponse, ClaimDetailResponse, DisputeFulfillerResponse, DisputeResolveRequest, DisputeResponse, ClaimEvidenceResponse, ClaimStatusHistoryResponse, MarkDisbursementPaidRequest, ManufacturingProcessResponse, ManufacturingMaterialResponse, FulfillerProfileCreate, FulfillerProfileResponse
 from datetime import datetime, timedelta
 import uuid
 from db_setup import engine, get_db
@@ -217,6 +217,12 @@ async def get_user(
     ).first()
     stripe_onboarded = bool(user_stripe and user_stripe.onboarding_complete)
 
+    # Fulfiller manufacturing profile
+    fulfiller_profile = db.query(FulfillerProfile).filter(
+        FulfillerProfile.user_id == user_id
+    ).first()
+    fulfiller_profile_response = FulfillerProfileResponse.from_orm(fulfiller_profile) if fulfiller_profile else None
+
     return {
         "user": user,
         "tasks": tasks,
@@ -226,6 +232,7 @@ async def get_user(
         "orders": orders_response,
         "claims": claims_response,
         "stripe_onboarded": stripe_onboarded,
+        "fulfiller_profile": fulfiller_profile_response,
     }
 
 
@@ -1305,6 +1312,129 @@ async def update_claim_shipping(
     db.commit()
 
     return {"message": "Shipping info updated", "claim_id": claim_id}
+
+
+## ── Manufacturing & Fulfiller Profile Endpoints ──────────────────────
+
+@app.get("/manufacturing/processes", response_model=List[ManufacturingProcessResponse])
+async def list_manufacturing_processes(
+    db: Session = Depends(get_db),
+    _: None = Depends(cookie_verification),
+):
+    return db.query(ManufacturingProcess).order_by(ManufacturingProcess.family, ManufacturingProcess.name).all()
+
+
+@app.get("/manufacturing/materials", response_model=List[ManufacturingMaterialResponse])
+async def list_manufacturing_materials(
+    process_family: Optional[str] = None,
+    db: Session = Depends(get_db),
+    _: None = Depends(cookie_verification),
+):
+    query = db.query(ManufacturingMaterial)
+    if process_family:
+        query = query.filter(ManufacturingMaterial.process_family == process_family)
+    return query.order_by(ManufacturingMaterial.category, ManufacturingMaterial.name).all()
+
+
+@app.get("/fulfiller_profile/{user_id}", response_model=FulfillerProfileResponse)
+async def get_fulfiller_profile(
+    user_id: str,
+    db: Session = Depends(get_db),
+    _: None = Depends(cookie_verification),
+):
+    profile = db.query(FulfillerProfile).filter(FulfillerProfile.user_id == user_id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Fulfiller profile not found")
+    return profile
+
+
+@app.post("/fulfiller_profile", response_model=FulfillerProfileResponse, status_code=201)
+async def create_fulfiller_profile(
+    profile_data: FulfillerProfileCreate,
+    db: Session = Depends(get_db),
+    user_information=Depends(cookie_verification_user_only),
+):
+    existing = db.query(FulfillerProfile).filter(
+        FulfillerProfile.user_id == user_information.user_id
+    ).first()
+    if existing:
+        raise HTTPException(status_code=409, detail="Fulfiller profile already exists. Use PUT to update.")
+
+    import json
+    profile = FulfillerProfile(
+        user_id=user_information.user_id,
+        business_name=profile_data.business_name,
+        description=profile_data.description,
+        max_build_volume_x=profile_data.max_build_volume_x,
+        max_build_volume_y=profile_data.max_build_volume_y,
+        max_build_volume_z=profile_data.max_build_volume_z,
+        min_tolerance_mm=profile_data.min_tolerance_mm,
+        lead_time_days_min=profile_data.lead_time_days_min,
+        lead_time_days_max=profile_data.lead_time_days_max,
+        certifications=json.dumps(profile_data.certifications) if profile_data.certifications else None,
+        post_processing=json.dumps(profile_data.post_processing) if profile_data.post_processing else None,
+    )
+    db.add(profile)
+    db.flush()
+
+    for cap in profile_data.capabilities:
+        process = db.query(ManufacturingProcess).filter(ManufacturingProcess.id == cap.process_id).first()
+        if not process:
+            raise HTTPException(status_code=400, detail=f"Invalid process_id: {cap.process_id}")
+        capability = FulfillerCapability(
+            profile_id=profile.id,
+            process_id=cap.process_id,
+            materials=json.dumps(cap.materials) if cap.materials else None,
+            notes=cap.notes,
+        )
+        db.add(capability)
+
+    db.commit()
+    db.refresh(profile)
+    return profile
+
+
+@app.put("/fulfiller_profile", response_model=FulfillerProfileResponse)
+async def update_fulfiller_profile(
+    profile_data: FulfillerProfileCreate,
+    db: Session = Depends(get_db),
+    user_information=Depends(cookie_verification_user_only),
+):
+    profile = db.query(FulfillerProfile).filter(
+        FulfillerProfile.user_id == user_information.user_id
+    ).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Fulfiller profile not found. Use POST to create.")
+
+    import json
+    profile.business_name = profile_data.business_name
+    profile.description = profile_data.description
+    profile.max_build_volume_x = profile_data.max_build_volume_x
+    profile.max_build_volume_y = profile_data.max_build_volume_y
+    profile.max_build_volume_z = profile_data.max_build_volume_z
+    profile.min_tolerance_mm = profile_data.min_tolerance_mm
+    profile.lead_time_days_min = profile_data.lead_time_days_min
+    profile.lead_time_days_max = profile_data.lead_time_days_max
+    profile.certifications = json.dumps(profile_data.certifications) if profile_data.certifications else None
+    profile.post_processing = json.dumps(profile_data.post_processing) if profile_data.post_processing else None
+
+    # Replace capabilities: delete old, add new
+    db.query(FulfillerCapability).filter(FulfillerCapability.profile_id == profile.id).delete()
+    for cap in profile_data.capabilities:
+        process = db.query(ManufacturingProcess).filter(ManufacturingProcess.id == cap.process_id).first()
+        if not process:
+            raise HTTPException(status_code=400, detail=f"Invalid process_id: {cap.process_id}")
+        capability = FulfillerCapability(
+            profile_id=profile.id,
+            process_id=cap.process_id,
+            materials=json.dumps(cap.materials) if cap.materials else None,
+            notes=cap.notes,
+        )
+        db.add(capability)
+
+    db.commit()
+    db.refresh(profile)
+    return profile
 
 
 @app.get("/health")

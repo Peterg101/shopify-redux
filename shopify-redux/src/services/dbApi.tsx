@@ -7,6 +7,10 @@ import {
   FulfillerAddress,
   BasketInformationAndFile,
   ClaimOrder,
+  ManufacturingProcess,
+  ManufacturingMaterial,
+  FulfillerProfile,
+  FulfillerProfileCreate,
 } from '../app/utility/interfaces';
 import { authApi } from './authApi';
 
@@ -16,7 +20,7 @@ export const dbApi = createApi({
     baseUrl: process.env.REACT_APP_DB_SERVICE,
     credentials: 'include',
   }),
-  tagTypes: ['OrderDetail', 'ClaimEvidence', 'ClaimHistory', 'Dispute', 'FulfillerAddress'],
+  tagTypes: ['OrderDetail', 'ClaimEvidence', 'ClaimHistory', 'Dispute', 'FulfillerAddress', 'FulfillerProfile', 'ManufacturingProcesses', 'ManufacturingMaterials'],
   endpoints: (builder) => ({
     // ── Queries ──────────────────────────────────────────────
     getOrderDetail: builder.query<OrderDetail, string>({
@@ -197,6 +201,62 @@ export const dbApi = createApi({
       }),
       invalidatesTags: (_result, _error, { userId }) => [{ type: 'FulfillerAddress', id: userId }],
     }),
+
+    // ── Manufacturing & Fulfiller Profile ──────────────────────────
+    getManufacturingProcesses: builder.query<ManufacturingProcess[], void>({
+      query: () => '/manufacturing/processes',
+      providesTags: ['ManufacturingProcesses'],
+    }),
+
+    getManufacturingMaterials: builder.query<ManufacturingMaterial[], string | void>({
+      query: (processFamily) =>
+        processFamily
+          ? `/manufacturing/materials?process_family=${processFamily}`
+          : '/manufacturing/materials',
+      providesTags: ['ManufacturingMaterials'],
+    }),
+
+    getFulfillerProfile: builder.query<FulfillerProfile | null, string>({
+      queryFn: async (userId, _queryApi, _extraOptions, baseQuery) => {
+        const result = await baseQuery(`/fulfiller_profile/${userId}`);
+        if (result.error) {
+          if (result.error.status === 404) return { data: null };
+          return { error: result.error };
+        }
+        return { data: result.data as FulfillerProfile };
+      },
+      providesTags: (_result, _error, userId) => [{ type: 'FulfillerProfile', id: userId }],
+    }),
+
+    createFulfillerProfile: builder.mutation<FulfillerProfile, FulfillerProfileCreate>({
+      query: (body) => ({
+        url: '/fulfiller_profile',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['FulfillerProfile'],
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(authApi.util.invalidateTags(['sessionData']));
+        } catch { /* mutation failed */ }
+      },
+    }),
+
+    updateFulfillerProfile: builder.mutation<FulfillerProfile, FulfillerProfileCreate>({
+      query: (body) => ({
+        url: '/fulfiller_profile',
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: ['FulfillerProfile'],
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(authApi.util.invalidateTags(['sessionData']));
+        } catch { /* mutation failed */ }
+      },
+    }),
   }),
 });
 
@@ -217,4 +277,9 @@ export const {
   useResolveDisputeMutation,
   useUploadDisputeEvidenceMutation,
   useUpdateFulfillerAddressMutation,
+  useGetManufacturingProcessesQuery,
+  useGetManufacturingMaterialsQuery,
+  useGetFulfillerProfileQuery,
+  useCreateFulfillerProfileMutation,
+  useUpdateFulfillerProfileMutation,
 } = dbApi;

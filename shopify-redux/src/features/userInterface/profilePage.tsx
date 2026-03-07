@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLogOutMutation } from "../../services/authApi";
 import { Box, Button, Typography, Card, CardContent, Grid, Avatar, Chip } from "@mui/material";
 import { useSelector } from "react-redux";
@@ -8,7 +9,10 @@ import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PaymentIcon from "@mui/icons-material/Payment";
+import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing";
 import { callStripeService } from "../../services/fetchFileUtils";
+import { FulfillerCapabilityForm } from "../fulfill/FulfillerCapabilityForm";
+import { FulfillerCapabilityDisplay } from "../fulfill/FulfillerCapabilityDisplay";
 
 export const ProfilePage = () => {
   const userInfo = useSelector(
@@ -16,6 +20,9 @@ export const ProfilePage = () => {
   );
 
   const [logOut] = useLogOutMutation();
+  const [showCapabilityForm, setShowCapabilityForm] = useState(false);
+
+  const fulfillerProfile = userInfo?.fulfiller_profile;
 
   const handleLogOut = () => {
     logOut();
@@ -116,6 +123,48 @@ export const ProfilePage = () => {
               </Button>
             )}
           </Box>
+        </CardContent>
+      </Card>
+
+      {/* Manufacturing Capabilities */}
+      <Card variant="outlined">
+        <CardContent sx={{ py: 1.5, "&:last-child": { pb: 1.5 } }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1.5 }}>
+            <Box sx={{ color: "primary.main" }}>
+              <PrecisionManufacturingIcon />
+            </Box>
+            <Box sx={{ flexGrow: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                Manufacturing Capabilities
+              </Typography>
+            </Box>
+            {fulfillerProfile && !showCapabilityForm && (
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => setShowCapabilityForm(true)}
+              >
+                Edit
+              </Button>
+            )}
+          </Box>
+
+          {showCapabilityForm ? (
+            <FulfillerCapabilityForm
+              existingProfile={fulfillerProfile}
+              onComplete={() => setShowCapabilityForm(false)}
+            />
+          ) : fulfillerProfile ? (
+            <FulfillerCapabilityDisplay profile={fulfillerProfile} />
+          ) : (
+            <Button
+              variant="contained"
+              size="small"
+              onClick={() => setShowCapabilityForm(true)}
+            >
+              Set Up Manufacturing Profile
+            </Button>
+          )}
         </CardContent>
       </Card>
 

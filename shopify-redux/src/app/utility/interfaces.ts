@@ -264,6 +264,67 @@ export interface FulfillerAddress {
   country: string;
 }
 
+// ── Manufacturing & Fulfiller Profile Interfaces ─────────────────────
+
+export interface ManufacturingProcess {
+  id: string;
+  family: string;
+  name: string;
+  display_name: string;
+}
+
+export interface ManufacturingMaterial {
+  id: string;
+  category: string;
+  name: string;
+  process_family: string;
+}
+
+export interface FulfillerCapability {
+  id: string;
+  process_id: string;
+  process: ManufacturingProcess;
+  materials?: string[];
+  notes?: string;
+}
+
+export interface FulfillerCapabilityCreate {
+  process_id: string;
+  materials?: string[];
+  notes?: string;
+}
+
+export interface FulfillerProfileCreate {
+  business_name: string;
+  description?: string;
+  max_build_volume_x?: number;
+  max_build_volume_y?: number;
+  max_build_volume_z?: number;
+  min_tolerance_mm?: number;
+  lead_time_days_min?: number;
+  lead_time_days_max?: number;
+  certifications?: string[];
+  post_processing?: string[];
+  capabilities: FulfillerCapabilityCreate[];
+}
+
+export interface FulfillerProfile {
+  id: string;
+  user_id: string;
+  business_name: string;
+  description?: string;
+  max_build_volume_x?: number;
+  max_build_volume_y?: number;
+  max_build_volume_z?: number;
+  min_tolerance_mm?: number;
+  lead_time_days_min?: number;
+  lead_time_days_max?: number;
+  certifications?: string[];
+  post_processing?: string[];
+  is_active: boolean;
+  capabilities: FulfillerCapability[];
+}
+
 export interface UserAndTasksAndBasketAndIncompleteAndOrders{
   user: UserInformation
   tasks: TaskInformation[]
@@ -273,6 +334,7 @@ export interface UserAndTasksAndBasketAndIncompleteAndOrders{
   claimable_orders: Order[]
   claims: Claim[]
   stripe_onboarded?: boolean
+  fulfiller_profile?: FulfillerProfile | null
 }
 
 export interface FileResponse {
