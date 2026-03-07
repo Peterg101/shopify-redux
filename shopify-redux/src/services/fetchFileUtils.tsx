@@ -164,36 +164,6 @@ export async function callStripeService() {
   }
 }
 
-export async function registerWithEmail(username: string, email: string, password: string) {
-  const response = await fetch(`${process.env.REACT_APP_AUTH_SERVICE}/auth/register`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, email, password }),
-  });
-
-  if (!response.ok) {
-    const errorDetails = await response.json();
-    throw new Error(errorDetails.detail || `Error ${response.status}`);
-  }
-  return await response.json();
-}
-
-export async function loginWithEmail(email: string, password: string) {
-  const response = await fetch(`${process.env.REACT_APP_AUTH_SERVICE}/auth/login`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-
-  if (!response.ok) {
-    const errorDetails = await response.json();
-    throw new Error(errorDetails.detail || `Error ${response.status}`);
-  }
-  return await response.json();
-}
-
 export async function createShippingLabel(claimId: string): Promise<{
   label_url: string;
   tracking_number: string;

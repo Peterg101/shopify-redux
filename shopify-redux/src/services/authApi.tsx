@@ -26,9 +26,24 @@ export const authApi = createApi({
         method: 'GET',
       }),
     }),
-  
+    login: builder.mutation<any, { email: string; password: string }>({
+      query: (body) => ({
+        url: '/auth/login',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['sessionData'],
+    }),
+    register: builder.mutation<any, { username: string; email: string; password: string }>({
+      query: (body) => ({
+        url: '/auth/register',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['sessionData'],
+    }),
   }),
 });
 
 // Export hooks for the queries
-export const { useGetSessionQuery, useLogOutMutation } = authApi;
+export const { useGetSessionQuery, useLogOutMutation, useLoginMutation, useRegisterMutation } = authApi;

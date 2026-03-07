@@ -11,17 +11,17 @@ import {
   Alert,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { selectIsLoggedIn } from '../../services/selectors';
-import { authApi } from '../../services/authApi';
-import { registerWithEmail, loginWithEmail } from '../../services/fetchFileUtils';
+import { useLoginMutation, useRegisterMutation } from '../../services/authApi';
 import GoogleButton from 'react-google-button';
 import { monoFontFamily } from '../../theme';
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const isLoggedIn = useSelector(selectIsLoggedIn);
+  const [login] = useLoginMutation();
+  const [register] = useRegisterMutation();
 
   const [tab, setTab] = useState(0);
   const [error, setError] = useState('');
@@ -53,11 +53,10 @@ export function LoginPage() {
       return;
     }
     try {
-      await loginWithEmail(loginEmail, loginPassword);
-      dispatch(authApi.util.invalidateTags(['sessionData']));
+      await login({ email: loginEmail, password: loginPassword }).unwrap();
       navigate('/generate');
     } catch (err: any) {
-      setError(err.message || 'Login failed');
+      setError(err.data?.detail || err.message || 'Login failed');
     }
   };
 
@@ -76,11 +75,10 @@ export function LoginPage() {
       return;
     }
     try {
-      await registerWithEmail(regUsername, regEmail, regPassword);
-      dispatch(authApi.util.invalidateTags(['sessionData']));
+      await register({ username: regUsername, email: regEmail, password: regPassword }).unwrap();
       navigate('/generate');
     } catch (err: any) {
-      setError(err.message || 'Registration failed');
+      setError(err.data?.detail || err.message || 'Registration failed');
     }
   };
 
