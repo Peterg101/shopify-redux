@@ -660,6 +660,102 @@ class FulfillerProfileResponse(BaseModel):
         return v
 
 
+class PartCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    category: Optional[str] = None
+    tags: Optional[List[str]] = None
+    task_id: str
+    file_type: str
+    thumbnail_url: Optional[str] = None
+    bounding_box_x: Optional[float] = None
+    bounding_box_y: Optional[float] = None
+    bounding_box_z: Optional[float] = None
+    volume_cm3: Optional[float] = None
+    surface_area_cm2: Optional[float] = None
+    recommended_process: Optional[str] = None
+    recommended_material: Optional[str] = None
+    status: str = "published"
+
+    @validator('file_type')
+    def validate_file_type(cls, v):
+        if v not in ('stl', 'obj', 'step'):
+            raise ValueError('file_type must be stl, obj, or step')
+        return v
+
+    @validator('status')
+    def validate_status(cls, v):
+        if v not in ('draft', 'published', 'archived'):
+            raise ValueError('status must be draft, published, or archived')
+        return v
+
+
+class PartUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    tags: Optional[List[str]] = None
+    thumbnail_url: Optional[str] = None
+    bounding_box_x: Optional[float] = None
+    bounding_box_y: Optional[float] = None
+    bounding_box_z: Optional[float] = None
+    volume_cm3: Optional[float] = None
+    surface_area_cm2: Optional[float] = None
+    recommended_process: Optional[str] = None
+    recommended_material: Optional[str] = None
+    status: Optional[str] = None
+
+    @validator('status', pre=True)
+    def validate_status(cls, v):
+        if v is not None and v not in ('draft', 'published', 'archived'):
+            raise ValueError('status must be draft, published, or archived')
+        return v
+
+
+class PartResponse(BaseModel):
+    id: str
+    publisher_user_id: str
+    name: str
+    description: Optional[str] = None
+    category: Optional[str] = None
+    tags: Optional[List[str]] = None
+    task_id: str
+    file_type: str
+    thumbnail_url: Optional[str] = None
+    bounding_box_x: Optional[float] = None
+    bounding_box_y: Optional[float] = None
+    bounding_box_z: Optional[float] = None
+    volume_cm3: Optional[float] = None
+    surface_area_cm2: Optional[float] = None
+    recommended_process: Optional[str] = None
+    recommended_material: Optional[str] = None
+    status: str
+    is_public: bool
+    download_count: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        orm_mode = True
+
+    @validator('tags', pre=True)
+    def parse_tags_json(cls, v):
+        if isinstance(v, str):
+            import json
+            try:
+                return json.loads(v)
+            except (json.JSONDecodeError, TypeError):
+                return []
+        return v
+
+
+class PartListResponse(BaseModel):
+    parts: List[PartResponse]
+    total: int
+    page: int
+    page_size: int
+
+
 class UserHydrationResponse(BaseModel):
     user: UserResponse
     tasks: List[TaskResponse]

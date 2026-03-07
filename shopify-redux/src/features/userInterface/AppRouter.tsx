@@ -6,6 +6,8 @@ import { LandingPage } from "../display/landingPage";
 import { Fulfill } from "../fulfill/fulfill";
 import { LoginPage } from "../display/LoginPage";
 import { OrderDetailPage } from "../orders/OrderDetailPage";
+import { CatalogPage } from "../catalog/CatalogPage";
+import { PartDetailPage } from "../catalog/PartDetailPage";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { authApi } from "../../services/authApi";
 import { CircularProgress, Box } from "@mui/material";
@@ -36,6 +38,8 @@ function AppRouter() {
         <Route path="/generate" element={<ProtectedRoute><LandingPage /></ProtectedRoute>} />
         <Route path="/fulfill" element={<ProtectedRoute><Fulfill /></ProtectedRoute>} />
         <Route path="/orders/:orderId" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />
+        <Route path="/catalog" element={<ProtectedRoute><CatalogPage /></ProtectedRoute>} />
+        <Route path="/catalog/:partId" element={<ProtectedRoute><PartDetailPage /></ProtectedRoute>} />
         <Route path="*" element={<h1>404 - Page Not Found</h1>} />
       </Routes>
     </BrowserRouter>

@@ -325,6 +325,76 @@ export interface FulfillerProfile {
   capabilities: FulfillerCapability[];
 }
 
+// ── Parts Catalog Interfaces ─────────────────────────────────────────
+
+export interface Part {
+  id: string;
+  publisher_user_id: string;
+  name: string;
+  description?: string;
+  category?: string;
+  tags?: string[];
+  task_id: string;
+  file_type: string;
+  thumbnail_url?: string;
+  bounding_box_x?: number;
+  bounding_box_y?: number;
+  bounding_box_z?: number;
+  volume_cm3?: number;
+  surface_area_cm2?: number;
+  recommended_process?: string;
+  recommended_material?: string;
+  status: "draft" | "published" | "archived";
+  is_public: boolean;
+  download_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PartCreate {
+  name: string;
+  description?: string;
+  category?: string;
+  tags?: string[];
+  task_id: string;
+  file_type: string;
+  thumbnail_url?: string;
+  bounding_box_x?: number;
+  bounding_box_y?: number;
+  bounding_box_z?: number;
+  volume_cm3?: number;
+  surface_area_cm2?: number;
+  recommended_process?: string;
+  recommended_material?: string;
+  status?: string;
+}
+
+export interface PartUpdate {
+  name?: string;
+  description?: string;
+  category?: string;
+  tags?: string[];
+  recommended_process?: string;
+  recommended_material?: string;
+  status?: string;
+}
+
+export interface PartListResponse {
+  parts: Part[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+export interface PartOrderConfig {
+  material?: string;
+  technique?: string;
+  quantity?: number;
+  sizing?: number;
+  colour?: string;
+  price?: number;
+}
+
 export interface UserAndTasksAndBasketAndIncompleteAndOrders{
   user: UserInformation
   tasks: TaskInformation[]

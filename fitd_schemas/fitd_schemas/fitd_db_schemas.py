@@ -260,3 +260,31 @@ class FulfillerCapability(Base):
 
     profile: Mapped["FulfillerProfile"] = relationship("FulfillerProfile", back_populates="capabilities")
     process: Mapped["ManufacturingProcess"] = relationship("ManufacturingProcess", lazy="selectin")
+
+
+class Part(Base):
+    __tablename__ = "parts"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
+    publisher_user_id: Mapped[str] = mapped_column(String, ForeignKey("users.user_id"), nullable=False)
+    name: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    category: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    tags: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON array
+    task_id: Mapped[str] = mapped_column(String, ForeignKey("tasks.task_id"), nullable=False)
+    file_type: Mapped[str] = mapped_column(String, nullable=False)  # stl/obj/step
+    thumbnail_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    bounding_box_x: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    bounding_box_y: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    bounding_box_z: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    volume_cm3: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    surface_area_cm2: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    recommended_process: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    recommended_material: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    status: Mapped[str] = mapped_column(String, default="draft")  # draft/published/archived
+    is_public: Mapped[bool] = mapped_column(Boolean, default=True)
+    download_count: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    publisher = relationship("User", backref="published_parts")
+    task = relationship("Task", backref=backref("part", uselist=False))

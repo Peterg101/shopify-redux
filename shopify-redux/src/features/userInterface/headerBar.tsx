@@ -75,6 +75,27 @@ export const HeaderBar = () => {
           >
             Fulfill
           </Button>
+          <Button
+            component={Link}
+            to="/catalog"
+            sx={{
+              textTransform: "none",
+              fontWeight: isActive("/catalog") ? "bold" : "normal",
+              borderBottom: isActive("/catalog")
+                ? "2px solid"
+                : "2px solid transparent",
+              borderBottomColor: isActive("/catalog")
+                ? "primary.main"
+                : "transparent",
+              borderRadius: 0,
+              color: isActive("/catalog") ? "primary.main" : "inherit",
+              textShadow: isActive("/catalog")
+                ? "0 0 8px rgba(0, 229, 255, 0.5)"
+                : "none",
+            }}
+          >
+            Catalog
+          </Button>
         </Box>
 
         <Box sx={{ flexGrow: 1 }} />
