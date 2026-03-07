@@ -660,6 +660,30 @@ class FulfillerProfileResponse(BaseModel):
         return v
 
 
+class FileAssetResponse(BaseModel):
+    id: str
+    task_id: Optional[str] = None
+    user_id: str
+    file_type: str
+    storage_backend: str
+    storage_key: str
+    original_filename: Optional[str] = None
+    file_size_bytes: Optional[int] = None
+    content_type: Optional[str] = None
+    processing_status: str
+    bounding_box_x: Optional[float] = None
+    bounding_box_y: Optional[float] = None
+    bounding_box_z: Optional[float] = None
+    volume_mm3: Optional[float] = None
+    surface_area_mm2: Optional[float] = None
+    preview_asset_id: Optional[str] = None
+    thumbnail_asset_id: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
 class PartCreate(BaseModel):
     name: str
     description: Optional[str] = None

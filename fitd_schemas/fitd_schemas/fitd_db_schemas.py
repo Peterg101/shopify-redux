@@ -288,3 +288,29 @@ class Part(Base):
 
     publisher = relationship("User", backref="published_parts")
     task = relationship("Task", backref=backref("part", uselist=False))
+
+
+class FileAsset(Base):
+    __tablename__ = "file_assets"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
+    task_id: Mapped[Optional[str]] = mapped_column(String, ForeignKey("tasks.task_id"), nullable=True)
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.user_id"), nullable=False)
+    file_type: Mapped[str] = mapped_column(String, nullable=False)  # step/stl/obj/gltf/thumbnail
+    storage_backend: Mapped[str] = mapped_column(String, nullable=False, default="local")  # local/s3
+    storage_key: Mapped[str] = mapped_column(String, nullable=False)  # local path or S3 key
+    original_filename: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    file_size_bytes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    content_type: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    processing_status: Mapped[str] = mapped_column(String, default="pending")  # pending/processing/complete/failed
+    bounding_box_x: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    bounding_box_y: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    bounding_box_z: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    volume_mm3: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    surface_area_mm2: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    preview_asset_id: Mapped[Optional[str]] = mapped_column(String, ForeignKey("file_assets.id"), nullable=True)
+    thumbnail_asset_id: Mapped[Optional[str]] = mapped_column(String, ForeignKey("file_assets.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+
+    user = relationship("User", backref="file_assets")
+    preview_asset = relationship("FileAsset", foreign_keys=[preview_asset_id], remote_side="FileAsset.id")
+    thumbnail_asset = relationship("FileAsset", foreign_keys=[thumbnail_asset_id], remote_side="FileAsset.id")

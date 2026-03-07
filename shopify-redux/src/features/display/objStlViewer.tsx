@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment } from '@react-three/drei';
 import OBJScene from './objScene';
@@ -7,6 +7,8 @@ import { RootState } from "../../app/store";
 import STLScene from './stlScene';
 import { ViewerErrorBoundary } from '../shared/ViewerErrorBoundary';
 import { OrientationControls } from './OrientationControls';
+
+const GLTFScene = lazy(() => import('./gltfScene'));
 
 interface OBJSTLViewerProps {
   hideOrientationControls?: boolean;
@@ -28,6 +30,8 @@ const OBJSTLViewer = ({ hideOrientationControls = false }: OBJSTLViewerProps) =>
             <Suspense fallback={null}>
               {dataState.selectedFileType.includes("obj") ? (
                 <OBJScene />
+              ) : dataState.selectedFileType === "glb" || dataState.selectedFileType === "gltf" ? (
+                <GLTFScene />
               ) : (
                 <STLScene />
               )}

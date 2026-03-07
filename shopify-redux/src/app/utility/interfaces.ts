@@ -53,6 +53,16 @@ export interface UserInterfaceState {
     updateClaimMode: boolean
 }
 
+export interface StepMetadata {
+  jobId?: string;
+  processingStatus?: "pending" | "processing" | "complete" | "failed";
+  progress?: number;
+  previewUrl?: string;
+  boundingBox?: { x: number; y: number; z: number };
+  volumeMm3?: number;
+  surfaceAreaMm2?: number;
+}
+
 export interface DataState {
    taskId: string
    modelColour: string
@@ -73,6 +83,7 @@ export interface DataState {
    zFlip: number
    materialCost: number
    qaLevel: "standard" | "high"
+   stepMetadata?: StepMetadata
 }
 
 export interface FileAndItem {

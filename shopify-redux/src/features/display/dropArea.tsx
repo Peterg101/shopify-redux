@@ -61,7 +61,7 @@ export const DropArea = () => {
                 Click or drag an image or 3D model file
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ mt: 1, opacity: 0.5 }}>
-                Supports: .obj .stl .jpg .png
+                Supports: .obj .stl .step .stp .jpg .png
             </Typography>
         </Box>
     )

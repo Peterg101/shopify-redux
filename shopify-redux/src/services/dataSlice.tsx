@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { BasketInformation, DataState, FileInformation, VectorState } from "../app/utility/interfaces";
+import { BasketInformation, DataState, FileInformation, StepMetadata, VectorState } from "../app/utility/interfaces";
 import * as THREE from "three";
 import { PricingConfig, Order } from '../app/utility/interfaces';
 import pricingConfig from "./../config/pricingConfig.json"
@@ -180,6 +180,9 @@ export const dataSlice = createSlice({
         setQALevel: (state, action: PayloadAction<{qaLevel: "standard" | "high"}>) => {
             const {qaLevel} = action.payload
             state.qaLevel = qaLevel
+        },
+        setStepMetadata: (state, action: PayloadAction<StepMetadata>) => {
+            state.stepMetadata = action.payload
         }
     }
 })
@@ -206,7 +209,8 @@ export const {
     setFromMeshyOrHistory,
     setClearFileDisplay,
     setFulfillFileViewProperties,
-    setQALevel
+    setQALevel,
+    setStepMetadata
 
  } = dataSlice.actions
 
