@@ -15,22 +15,28 @@ depends_on = None
 
 def upgrade():
     # Orders — manufacturing specification columns
-    op.add_column('orders', sa.Column('process_id', sa.String(), sa.ForeignKey('manufacturing_processes.id'), nullable=True))
-    op.add_column('orders', sa.Column('material_id', sa.String(), sa.ForeignKey('manufacturing_materials.id'), nullable=True))
-    op.add_column('orders', sa.Column('tolerance_mm', sa.Float(), nullable=True))
-    op.add_column('orders', sa.Column('surface_finish', sa.String(), nullable=True))
-    op.add_column('orders', sa.Column('special_requirements', sa.Text(), nullable=True))
+    # Use batch mode for SQLite compatibility (no ALTER ADD CONSTRAINT support)
+    with op.batch_alter_table('orders') as batch_op:
+        batch_op.add_column(sa.Column('process_id', sa.String(), nullable=True))
+        batch_op.add_column(sa.Column('material_id', sa.String(), nullable=True))
+        batch_op.add_column(sa.Column('tolerance_mm', sa.Float(), nullable=True))
+        batch_op.add_column(sa.Column('surface_finish', sa.String(), nullable=True))
+        batch_op.add_column(sa.Column('special_requirements', sa.Text(), nullable=True))
 
     # Basket items — manufacturing taxonomy links
-    op.add_column('basket_items', sa.Column('process_id', sa.String(), sa.ForeignKey('manufacturing_processes.id'), nullable=True))
-    op.add_column('basket_items', sa.Column('material_id', sa.String(), sa.ForeignKey('manufacturing_materials.id'), nullable=True))
+    with op.batch_alter_table('basket_items') as batch_op:
+        batch_op.add_column(sa.Column('process_id', sa.String(), nullable=True))
+        batch_op.add_column(sa.Column('material_id', sa.String(), nullable=True))
 
 
 def downgrade():
-    op.drop_column('basket_items', 'material_id')
-    op.drop_column('basket_items', 'process_id')
-    op.drop_column('orders', 'special_requirements')
-    op.drop_column('orders', 'surface_finish')
-    op.drop_column('orders', 'tolerance_mm')
-    op.drop_column('orders', 'material_id')
-    op.drop_column('orders', 'process_id')
+    with op.batch_alter_table('basket_items') as batch_op:
+        batch_op.drop_column('material_id')
+        batch_op.drop_column('process_id')
+
+    with op.batch_alter_table('orders') as batch_op:
+        batch_op.drop_column('special_requirements')
+        batch_op.drop_column('surface_finish')
+        batch_op.drop_column('tolerance_mm')
+        batch_op.drop_column('material_id')
+        batch_op.drop_column('process_id')
