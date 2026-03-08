@@ -1,4 +1,4 @@
-import { FileInformation, FileResponse, MeshyGenerationSettings, MeshyPayload, MeshyImageTo3DPayload, MeshyRefinePayload } from "../app/utility/interfaces"
+import { FileInformation, FileResponse, MeshyGenerationSettings, MeshyPayload, MeshyImageTo3DPayload, MeshyRefinePayload, CadGenerationSettings } from "../app/utility/interfaces"
 import {convertFileToDataURI } from "../app/utility/utils";
 import logger from '../app/utility/logger';
 import { safeRedirect } from '../app/utility/urlValidation';
@@ -197,4 +197,35 @@ export const startRefineTask = async (
     });
     if (!response.ok) throw new Error(`Refine failed: ${response.statusText}`);
     return response.json();
+};
+
+export const startCadTask = async (
+  prompt: string,
+  userId: string,
+  portId: string,
+  settings?: CadGenerationSettings
+) => {
+  try {
+    const payload = {
+      port_id: portId,
+      user_id: userId,
+      prompt,
+      ...(settings && { settings }),
+    };
+
+    const response = await fetch(`${process.env.REACT_APP_CAD_SERVICE}/start_cad_task/`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) throw new Error(`CAD task failed: ${response.statusText}`);
+    return response.json();
+  } catch (error) {
+    logger.error("Error starting CAD task:", error);
+    throw error;
+  }
 };

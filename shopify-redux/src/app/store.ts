@@ -4,6 +4,7 @@ import {setupListeners} from "@reduxjs/toolkit/query"
 import { userInterfaceSlice } from "../services/userInterfaceSlice";
 import {dataSlice} from "../services/dataSlice";
 import { meshySlice } from "../services/meshySlice";
+import { cadSlice } from "../services/cadSlice";
 import { authApi } from "../services/authApi";
 import { basketApi } from "../services/basketItemApi";
 import { dbApi } from "../services/dbApi";
@@ -13,6 +14,7 @@ const rootReducer = combineSlices({
   [userInterfaceSlice.reducerPath]: userInterfaceSlice.reducer,
   [dataSlice.reducerPath]: dataSlice.reducer,
   [meshySlice.reducerPath]: meshySlice.reducer,
+  [cadSlice.reducerPath]: cadSlice.reducer,
   [authApi.reducerPath]: authApi.reducer,
   [basketApi.reducerPath]: basketApi.reducer,
   [dbApi.reducerPath]: dbApi.reducer,

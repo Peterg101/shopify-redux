@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+redis[async]
+httpx
+python-dotenv
+anthropic
+cadquery
