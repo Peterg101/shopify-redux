@@ -156,30 +156,35 @@ async def upload_step_file(file_path: str, user_id: str, task_id: str) -> bool:
     return False
 
 
-async def validate_session(websocket) -> tuple[bool, str | None]:
-    """Validate session from WebSocket cookies."""
-    cookies = websocket.cookies
-    session_id = cookies.get("session_id")
-    if not session_id:
-        return False, None
-
+async def http_session_exists(session_id: str):
+    """Check if a session exists via the auth service (HTTP)."""
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.get(
                 f"{AUTH_SERVICE_URL}/get_session",
-                cookies={"session_id": session_id},
+                cookies={"fitd_session_data": session_id},
             )
             if resp.status_code == 200:
-                data = resp.json()
-                return True, data.get("user_id")
+                return resp.json()
     except Exception as e:
-        logger.error(f"Session validation error: {e}")
+        logger.error(f"Session check error: {e}")
+    return None
 
+
+async def validate_session(websocket) -> tuple[bool, str | None]:
+    """Validate session from WebSocket cookies."""
+    session_id = websocket.cookies.get("fitd_session_data")
+    if not session_id:
+        return False, None
+
+    data = await http_session_exists(session_id)
+    if data:
+        return True, data.get("user_id")
     return False, None
 
 
 async def cookie_verification(request: Request):
     """Verify session cookie for HTTP endpoints."""
-    from fitd_schemas.auth_utils import cookie_verification_user_only
+    from fitd_schemas.auth_utils import cookie_verification as _cookie_verification
 
-    return await cookie_verification_user_only(request)
+    return await _cookie_verification(request, http_session_exists)
