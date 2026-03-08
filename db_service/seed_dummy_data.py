@@ -333,6 +333,216 @@ def main():
     # Make Marta's "a really scary bird" order collaborative
     c.execute("UPDATE orders SET is_collaborative = 1 WHERE name = 'a really scary bird'")
 
+    # ====================================================================
+    # PARTS CATALOG — seed published parts from existing tasks
+    # ====================================================================
+
+    # Clear any existing parts first (idempotent re-runs)
+    c.execute("DELETE FROM parts")
+
+    parts = [
+        # ── Peter's parts (linked to his existing tasks) ──
+        {
+            "id": uid(), "publisher_user_id": PETER,
+            "name": "Shrek Figurine",
+            "description": "Highly detailed Shrek figurine with layered textures. Great for display or painting.",
+            "category": "figurine",
+            "tags": '["character", "movie", "ogre", "display"]',
+            "task_id": SRC_FILES.get("paddington", "01945071-9eda-77c0-a811-6f239f0642cb"),
+            "file_type": "obj",
+            "bounding_box_x": 45.0, "bounding_box_y": 40.0, "bounding_box_z": 85.0,
+            "volume_cm3": 120.5, "surface_area_cm2": 380.0,
+            "recommended_process": "FDM", "recommended_material": "PLA",
+            "status": "published", "is_public": 1, "download_count": 12,
+            "created_at": ts(60), "updated_at": ts(5),
+        },
+        {
+            "id": uid(), "publisher_user_id": PETER,
+            "name": "Donkey (Shrek)",
+            "description": "Animated donkey companion. Optimised for FDM with minimal supports needed.",
+            "category": "figurine",
+            "tags": '["character", "movie", "animal"]',
+            "task_id": "01945074-1f42-77c0-a0e6-e2652fe71d56",
+            "file_type": "obj",
+            "bounding_box_x": 60.0, "bounding_box_y": 25.0, "bounding_box_z": 55.0,
+            "volume_cm3": 65.3, "surface_area_cm2": 290.0,
+            "recommended_process": "FDM", "recommended_material": "PLA",
+            "status": "published", "is_public": 1, "download_count": 8,
+            "created_at": ts(55), "updated_at": ts(10),
+        },
+        {
+            "id": uid(), "publisher_user_id": PETER,
+            "name": "Princess Fiona",
+            "description": "Princess Fiona in warrior pose. Fine details best printed with resin.",
+            "category": "figurine",
+            "tags": '["character", "movie", "fantasy", "princess"]',
+            "task_id": "019a7cd5-fa1c-7472-a805-e54fb23236d5",
+            "file_type": "obj",
+            "bounding_box_x": 35.0, "bounding_box_y": 35.0, "bounding_box_z": 90.0,
+            "volume_cm3": 88.7, "surface_area_cm2": 420.0,
+            "recommended_process": "SLA", "recommended_material": "Tough Resin",
+            "status": "published", "is_public": 1, "download_count": 15,
+            "created_at": ts(50), "updated_at": ts(3),
+        },
+        {
+            "id": uid(), "publisher_user_id": PETER,
+            "name": "Mini Cooper S Scale Model",
+            "description": "1:24 scale Mini Cooper S with opening bonnet. Snap-fit assembly, no glue required.",
+            "category": "automotive",
+            "tags": '["car", "scale-model", "snap-fit", "mini"]',
+            "task_id": "019a9bf1-fe8f-7cff-9cf0-15b43f335a0d",
+            "file_type": "obj",
+            "bounding_box_x": 170.0, "bounding_box_y": 75.0, "bounding_box_z": 65.0,
+            "volume_cm3": 210.0, "surface_area_cm2": 850.0,
+            "recommended_process": "FDM", "recommended_material": "PETG",
+            "status": "published", "is_public": 1, "download_count": 22,
+            "created_at": ts(45), "updated_at": ts(7),
+        },
+        {
+            "id": uid(), "publisher_user_id": PETER,
+            "name": "Desktop Monitor Stand",
+            "description": "Adjustable monitor riser with cable management channels. Functional print.",
+            "category": "hardware",
+            "tags": '["desk", "organiser", "functional", "cable-management"]',
+            "task_id": "019a104d-66fa-76ed-9157-1ca815bd1fa8",
+            "file_type": "obj",
+            "bounding_box_x": 250.0, "bounding_box_y": 200.0, "bounding_box_z": 80.0,
+            "volume_cm3": 350.0, "surface_area_cm2": 1200.0,
+            "recommended_process": "FDM", "recommended_material": "PETG",
+            "status": "published", "is_public": 1, "download_count": 31,
+            "created_at": ts(40), "updated_at": ts(2),
+        },
+        {
+            "id": uid(), "publisher_user_id": PETER,
+            "name": "Baby Phoebe Ornament",
+            "description": "Delicate baby figurine for nursery decoration. Resin recommended for fine detail.",
+            "category": "figurine",
+            "tags": '["baby", "ornament", "gift", "nursery"]',
+            "task_id": "019a30fe-9ed5-71d4-9f5a-a82de5f7e3fe",
+            "file_type": "obj",
+            "bounding_box_x": 30.0, "bounding_box_y": 30.0, "bounding_box_z": 50.0,
+            "volume_cm3": 25.0, "surface_area_cm2": 110.0,
+            "recommended_process": "SLA", "recommended_material": "Standard Resin",
+            "status": "published", "is_public": 1, "download_count": 5,
+            "created_at": ts(38), "updated_at": ts(15),
+        },
+        {
+            "id": uid(), "publisher_user_id": PETER,
+            "name": "3D Printer Miniature",
+            "description": "Detailed desktop 3D printer replica. Moving gantry and spool holder.",
+            "category": "mechanical",
+            "tags": '["printer", "replica", "mechanical", "moving-parts"]',
+            "task_id": "019a9754-69b7-732a-a4d9-4e86c60f29f1",
+            "file_type": "obj",
+            "bounding_box_x": 80.0, "bounding_box_y": 70.0, "bounding_box_z": 90.0,
+            "volume_cm3": 155.0, "surface_area_cm2": 620.0,
+            "recommended_process": "FDM", "recommended_material": "PLA",
+            "status": "published", "is_public": 1, "download_count": 18,
+            "created_at": ts(35), "updated_at": ts(4),
+        },
+        {
+            "id": uid(), "publisher_user_id": PETER,
+            "name": "Paddington Bear",
+            "description": "Classic Paddington Bear with hat and suitcase. Multi-part for colour printing.",
+            "category": "figurine",
+            "tags": '["character", "bear", "classic", "multi-part"]',
+            "task_id": "019a0ca2-b6f8-790e-888c-c700a2d30bcf",
+            "file_type": "obj",
+            "bounding_box_x": 40.0, "bounding_box_y": 35.0, "bounding_box_z": 75.0,
+            "volume_cm3": 72.0, "surface_area_cm2": 310.0,
+            "recommended_process": "FDM", "recommended_material": "PLA",
+            "status": "published", "is_public": 1, "download_count": 27,
+            "created_at": ts(32), "updated_at": ts(1),
+        },
+
+        # ── Marta's parts ──
+        {
+            "id": uid(), "publisher_user_id": MARTA,
+            "name": "Planetary Gear Set",
+            "description": "Fully functional planetary gearbox. 5:1 ratio. Prints assembled with 0.2mm clearance.",
+            "category": "mechanical",
+            "tags": '["gear", "gearbox", "planetary", "functional", "print-in-place"]',
+            "task_id": marta_tasks["bird"],
+            "file_type": "stl",
+            "bounding_box_x": 60.0, "bounding_box_y": 60.0, "bounding_box_z": 40.0,
+            "volume_cm3": 95.0, "surface_area_cm2": 450.0,
+            "recommended_process": "FDM", "recommended_material": "PETG",
+            "status": "published", "is_public": 1, "download_count": 45,
+            "created_at": ts(28), "updated_at": ts(6),
+        },
+        {
+            "id": uid(), "publisher_user_id": MARTA,
+            "name": "M6 Hex Bolt & Nut Set",
+            "description": "ISO-standard M6x20 hex bolt with matching nut. Functional threading.",
+            "category": "hardware",
+            "tags": '["bolt", "nut", "fastener", "M6", "threading", "ISO"]',
+            "task_id": marta_tasks["printer"],
+            "file_type": "step",
+            "bounding_box_x": 10.0, "bounding_box_y": 10.0, "bounding_box_z": 25.0,
+            "volume_cm3": 1.2, "surface_area_cm2": 8.5,
+            "recommended_process": "SLA", "recommended_material": "Tough Resin",
+            "status": "published", "is_public": 1, "download_count": 63,
+            "created_at": ts(25), "updated_at": ts(1),
+        },
+        {
+            "id": uid(), "publisher_user_id": MARTA,
+            "name": "Cable Clip Assortment",
+            "description": "Set of 6 cable management clips for various diameters (3mm to 12mm). Adhesive back.",
+            "category": "hardware",
+            "tags": '["cable", "clip", "organiser", "desk", "adhesive"]',
+            "task_id": marta_tasks["phoebe"],
+            "file_type": "stl",
+            "bounding_box_x": 20.0, "bounding_box_y": 15.0, "bounding_box_z": 12.0,
+            "volume_cm3": 3.5, "surface_area_cm2": 22.0,
+            "recommended_process": "FDM", "recommended_material": "PLA",
+            "status": "published", "is_public": 1, "download_count": 89,
+            "created_at": ts(20), "updated_at": ts(8),
+        },
+        {
+            "id": uid(), "publisher_user_id": MARTA,
+            "name": "Phone Stand (Adjustable)",
+            "description": "Articulating phone stand with ball joint. Fits phones up to 80mm wide.",
+            "category": "hardware",
+            "tags": '["phone", "stand", "adjustable", "ball-joint"]',
+            "task_id": marta_tasks["cooper"],
+            "file_type": "stl",
+            "bounding_box_x": 70.0, "bounding_box_y": 70.0, "bounding_box_z": 120.0,
+            "volume_cm3": 42.0, "surface_area_cm2": 195.0,
+            "recommended_process": "FDM", "recommended_material": "PETG",
+            "status": "published", "is_public": 1, "download_count": 34,
+            "created_at": ts(15), "updated_at": ts(3),
+        },
+
+        # ── Draft part (Peter, not visible in catalog) ──
+        {
+            "id": uid(), "publisher_user_id": PETER,
+            "name": "Scary Bird (WIP)",
+            "description": "Work in progress — scary bird model. Not yet ready for ordering.",
+            "category": "figurine",
+            "tags": '["bird", "wip"]',
+            "task_id": "019a0b48-84af-7522-8867-e5782e1ada80",
+            "file_type": "obj",
+            "bounding_box_x": 50.0, "bounding_box_y": 45.0, "bounding_box_z": 60.0,
+            "volume_cm3": 55.0, "surface_area_cm2": 240.0,
+            "recommended_process": "FDM", "recommended_material": "PLA",
+            "status": "draft", "is_public": 0, "download_count": 0,
+            "created_at": ts(5), "updated_at": ts(1),
+        },
+    ]
+
+    cols = [
+        "id", "publisher_user_id", "name", "description", "category", "tags",
+        "task_id", "file_type", "bounding_box_x", "bounding_box_y", "bounding_box_z",
+        "volume_cm3", "surface_area_cm2", "recommended_process", "recommended_material",
+        "status", "is_public", "download_count", "created_at", "updated_at",
+    ]
+    placeholders = ",".join(["?"] * len(cols))
+    col_names = ",".join(cols)
+
+    for p in parts:
+        values = [p.get(col) for col in cols]
+        c.execute(f"INSERT INTO parts ({col_names}) VALUES ({placeholders})", values)
+
     conn.commit()
     conn.close()
 
@@ -353,6 +563,13 @@ def main():
     print(f"  Manufacturing Model | qty 10 | unclaimed")
     print(f"  Kuldeep Figurine    | qty 2  | 2 claimed by Marta (disputed, open)")
     print(f"  shrek               | qty 1  | 1 claimed by Marta (disputed, existing)")
+    print()
+    print("=== PARTS CATALOG ===")
+    print(f"  {len(parts)} parts seeded ({len([p for p in parts if p['status'] == 'published'])} published, {len([p for p in parts if p['status'] == 'draft'])} draft)")
+    print(f"  Peter's: Shrek, Donkey, Fiona, Mini Cooper, Monitor Stand, Baby Phoebe, 3D Printer, Paddington, Scary Bird (draft)")
+    print(f"  Marta's: Planetary Gear, M6 Bolt Set, Cable Clips, Phone Stand")
+    print(f"  Categories: figurine, automotive, mechanical, hardware")
+    print(f"  File types: obj, stl, step")
     print()
     print("=== CLAIM LIFECYCLE COVERAGE ===")
     print("  pending, in_progress, printing, qa_check, shipped, delivered, accepted, disputed, resolved_partial")

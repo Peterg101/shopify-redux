@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import {
   Box,
   Typography,
@@ -9,43 +10,95 @@ import {
   CardContent,
   CircularProgress,
   IconButton,
+  useTheme,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import DownloadIcon from "@mui/icons-material/Download";
+import { RootState } from "../../app/store";
+import { setLeftDrawerClosed, setSelectedComponent } from "../../services/userInterfaceSlice";
+import { HeaderBar } from "../userInterface/headerBar";
+import { UpdatedUserInterface } from "../userInterface/updatedUserInterface";
+import { DRAWER_WIDTH } from "../userInterface/uiComponents";
 import { useGetPartDetailQuery } from "../../services/catalogApi";
 import { OrderFromPartDialog } from "./OrderFromPartDialog";
 
 export const PartDetailPage = () => {
   const { partId } = useParams<{ partId: string }>();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const theme = useTheme();
+  const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
+  const collapsedWidth = `calc(${theme.spacing(8)} + 1px)`;
   const [orderOpen, setOrderOpen] = useState(false);
+
+  useEffect(() => {
+    dispatch(setLeftDrawerClosed());
+    dispatch(setSelectedComponent({ selectedComponent: "" }));
+  }, []);
 
   const { data: part, isLoading, error } = useGetPartDetailQuery(partId!, {
     skip: !partId,
   });
 
+  const contentMargin = userInterfaceState.leftDrawerOpen
+    ? `${DRAWER_WIDTH}px`
+    : collapsedWidth;
+
   if (isLoading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
-        <CircularProgress />
+      <Box>
+        <HeaderBar />
+        <UpdatedUserInterface />
+        <Box sx={{
+          display: "flex", justifyContent: "center", py: 6,
+          marginLeft: contentMargin,
+          transition: theme.transitions.create(["margin"], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
+        }}>
+          <CircularProgress />
+        </Box>
       </Box>
     );
   }
 
   if (error || !part) {
     return (
-      <Box sx={{ py: 4 }}>
-        <Typography color="error">Part not found</Typography>
-        <Button onClick={() => navigate("/catalog")} sx={{ mt: 1 }}>
-          Back to Catalog
-        </Button>
+      <Box>
+        <HeaderBar />
+        <UpdatedUserInterface />
+        <Box sx={{
+          pt: 12, px: 4,
+          marginLeft: contentMargin,
+          transition: theme.transitions.create(["margin"], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
+        }}>
+          <Typography color="error">Part not found</Typography>
+          <Button onClick={() => navigate("/catalog")} sx={{ mt: 1 }}>
+            Back to Catalog
+          </Button>
+        </Box>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+    <Box>
+      <HeaderBar />
+      <UpdatedUserInterface />
+      <Box sx={{
+        display: "flex", flexDirection: "column", gap: 3,
+        pt: 10, pb: 6, px: { xs: 2, md: 4 },
+        marginLeft: contentMargin,
+        transition: theme.transitions.create(["margin"], {
+          easing: theme.transitions.easing.sharp,
+          duration: theme.transitions.duration.enteringScreen,
+        }),
+      }}>
       {/* Header */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
         <IconButton onClick={() => navigate("/catalog")} size="small">
@@ -151,11 +204,13 @@ export const PartDetailPage = () => {
       </Box>
 
       {/* Order Dialog */}
+      {/* Order Dialog */}
       <OrderFromPartDialog
         open={orderOpen}
         onClose={() => setOrderOpen(false)}
         part={part}
       />
+      </Box>
     </Box>
   );
 };
