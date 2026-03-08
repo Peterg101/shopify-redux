@@ -57,6 +57,8 @@ const handleAddToBasket = async () => {
         quantity: 1,
         file_blob: base64String,
         price: totalCost,
+        process_id: dataState.processId ?? undefined,
+        material_id: dataState.materialId ?? undefined,
       };
       await uploadFile(basketInformationAndFile).unwrap();
       dispatch(resetDataState());

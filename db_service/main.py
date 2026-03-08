@@ -204,12 +204,7 @@ async def get_user(
 
     # Convert orders to Pydantic too
     orders = db.query(Order).filter(Order.user_id == user_id).all()
-    claimable_orders = db.query(Order).filter(
-        Order.user_id != user_id,
-        Order.is_collaborative == True
-    ).all()
     orders_response = [OrderResponse.from_orm(order) for order in orders]
-    claimable_orders_response = [OrderResponse.from_orm(order) for order in claimable_orders]
 
     # Check Stripe onboarding status
     user_stripe = db.query(UserStripeAccount).filter(
@@ -222,6 +217,39 @@ async def get_user(
         FulfillerProfile.user_id == user_id
     ).first()
     fulfiller_profile_response = FulfillerProfileResponse.from_orm(fulfiller_profile) if fulfiller_profile else None
+
+    # Claimable orders — filter by fulfiller capabilities when profile exists
+    all_collaborative = db.query(Order).filter(
+        Order.user_id != user_id,
+        Order.is_collaborative == True
+    ).all()
+
+    if fulfiller_profile and fulfiller_profile.capabilities:
+        import json as _json
+        cap_lookup = {}
+        for cap in fulfiller_profile.capabilities:
+            mat_ids = None
+            if cap.materials:
+                try:
+                    parsed = _json.loads(cap.materials) if isinstance(cap.materials, str) else cap.materials
+                    mat_ids = set(parsed) if parsed else None
+                except (ValueError, TypeError):
+                    mat_ids = None
+            cap_lookup[cap.process_id] = mat_ids
+
+        claimable_orders = []
+        for order in all_collaborative:
+            if order.process_id is None:
+                # Legacy order without manufacturing spec — visible to all
+                claimable_orders.append(order)
+            elif order.process_id in cap_lookup:
+                fulfiller_mats = cap_lookup[order.process_id]
+                if fulfiller_mats is None or order.material_id is None or order.material_id in fulfiller_mats:
+                    claimable_orders.append(order)
+    else:
+        claimable_orders = all_collaborative
+
+    claimable_orders_response = [OrderResponse.from_orm(order) for order in claimable_orders]
 
     return {
         "user": user,
@@ -531,6 +559,8 @@ async def create_order_from_stripe(
             created_at=datetime.utcnow().isoformat(),
             is_collaborative=False,
             status=checkout_order.order_status,
+            process_id=item.process_id,
+            material_id=item.material_id,
             shipping_name=shipping.name if shipping else None,
             shipping_line1=shipping.line1 if shipping else None,
             shipping_line2=shipping.line2 if shipping else None,
@@ -701,7 +731,7 @@ async def confirm_onboarding(
 
 @app.post("/claims/claim_order")
 async def claim_order(
-    claimed_order: ClaimOrder, 
+    claimed_order: ClaimOrder,
     db: Session = Depends(get_db),
     user_information: None = Depends(cookie_verification_user_only),
 ):
@@ -713,6 +743,40 @@ async def claim_order(
 
         if existing_claim:
             raise HTTPException(status_code=409, detail="You have already claimed this order")
+
+        # Capability validation — check fulfiller can handle the order's manufacturing spec
+        order = db.query(Order).filter(Order.order_id == claimed_order.order_id).first()
+        if not order:
+            raise HTTPException(status_code=404, detail="Order not found")
+
+        if order.process_id:
+            import json as _json
+            profile = db.query(FulfillerProfile).filter(
+                FulfillerProfile.user_id == user_information.user_id
+            ).first()
+            if not profile:
+                raise HTTPException(
+                    status_code=403,
+                    detail="A fulfiller profile with matching capabilities is required to claim this order"
+                )
+
+            matching_cap = next(
+                (cap for cap in profile.capabilities if cap.process_id == order.process_id),
+                None
+            )
+            if not matching_cap:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Your profile does not support the required manufacturing process"
+                )
+
+            if order.material_id and matching_cap.materials:
+                mat_list = _json.loads(matching_cap.materials) if isinstance(matching_cap.materials, str) else matching_cap.materials
+                if mat_list and order.material_id not in mat_list:
+                    raise HTTPException(
+                        status_code=403,
+                        detail="Your profile does not support the required material"
+                    )
 
         add_claim_to_db(db, claimed_order, user_information)
 

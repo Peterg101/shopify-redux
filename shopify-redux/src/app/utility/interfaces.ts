@@ -53,6 +53,21 @@ export interface UserInterfaceState {
     updateClaimMode: boolean
 }
 
+export interface CadGenerationSettings {
+  max_iterations: number;
+  timeout_seconds: number;
+  target_units: string;
+}
+
+export interface CadState {
+  cadLoading: boolean;
+  cadLoadedPercentage: number;
+  cadPending: boolean;
+  cadGenerationSettings: CadGenerationSettings;
+  cadError: string | null;
+  cadStatusMessage: string | null;
+}
+
 export interface StepMetadata {
   jobId?: string;
   processingStatus?: "pending" | "processing" | "complete" | "failed";
@@ -70,6 +85,8 @@ export interface DataState {
    selectedFileType: string
    printTechnique: string
    printMaterial: string
+   processId: string | null
+   materialId: string | null
    modelVolume: number
    modelDimensions: VectorState
    multiplierValue: number
@@ -134,6 +151,8 @@ export interface BasketInformation {
   quantity: number;
   selectedFileType: string; // Changed to snake_case
   price: number
+  process_id?: string;
+  material_id?: string;
 }
 
 export interface BasketInformationAndFile extends BasketInformation {
@@ -177,6 +196,11 @@ export interface Order {
   is_collaborative: boolean;
   status: "open" | "in_progress" | "fulfilled";
   qa_level?: "standard" | "high";
+  process_id?: string;
+  material_id?: string;
+  tolerance_mm?: number;
+  surface_finish?: string;
+  special_requirements?: string;
   claims?: Claim[];
   shipping_name?: string;
   shipping_line1?: string;

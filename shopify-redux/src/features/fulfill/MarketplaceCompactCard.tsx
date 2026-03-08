@@ -10,6 +10,7 @@ import {
 } from '@mui/material'
 import ViewInArIcon from '@mui/icons-material/ViewInAr'
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
+import VerifiedIcon from '@mui/icons-material/Verified'
 import { useDispatch } from 'react-redux'
 import { Order } from '../../app/utility/interfaces'
 import logger from '../../app/utility/logger'
@@ -125,6 +126,27 @@ export const MarketplaceCompactCard = React.memo(({ order }: MarketplaceCompactC
                 ${pricePerUnit.toFixed(2)}
               </Typography>
             </Box>
+
+            {/* Spec badge */}
+            {order.process_id && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 8,
+                  left: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  bgcolor: 'rgba(0, 229, 255, 0.15)',
+                  borderRadius: 1,
+                  px: 0.5,
+                  py: 0.25,
+                  backdropFilter: 'blur(4px)',
+                  border: '1px solid rgba(0, 229, 255, 0.3)',
+                }}
+              >
+                <VerifiedIcon sx={{ fontSize: 12, color: '#00E5FF' }} />
+              </Box>
+            )}
 
             {/* Scarcity badge */}
             <Box

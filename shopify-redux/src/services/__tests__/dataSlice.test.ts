@@ -27,6 +27,8 @@ const initialState: DataState = {
   zFlip: 0,
   materialCost: 0.00005,
   qaLevel: 'standard',
+  processId: null,
+  materialId: null,
 }
 
 describe('dataSlice', () => {

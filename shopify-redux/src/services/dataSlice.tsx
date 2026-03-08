@@ -16,6 +16,8 @@ const initialState: DataState = {
     selectedFileType: '',
     printTechnique: 'FDM',
     printMaterial: 'PLA Basic',
+    processId: null,
+    materialId: null,
     modelVolume: 0,
     multiplierValue: 1,
     maxScale: 10,
@@ -55,6 +57,12 @@ export const dataSlice = createSlice({
             const {printMaterial, materialCost} = action.payload
             state.printMaterial = printMaterial
             state.materialCost = materialCost
+        },
+        setProcessId: (state, action: PayloadAction<{processId: string | null}>) => {
+            state.processId = action.payload.processId
+        },
+        setMaterialId: (state, action: PayloadAction<{materialId: string | null}>) => {
+            state.materialId = action.payload.materialId
         },
         setModelVolume: (state, action: PayloadAction<{modelVolume: number}>) => {
             const {modelVolume} = action.payload
@@ -187,7 +195,7 @@ export const dataSlice = createSlice({
     }
 })
 
-export const { 
+export const {
     setModelColour,
     setModelVolume,
     setSelectedFile,
@@ -197,6 +205,8 @@ export const {
     setMultiplierValue,
     setPrintMaterial,
     setPrintTechnique,
+    setProcessId,
+    setMaterialId,
     setSelectedFileType,
     resetDataState,
     setFileProperties,

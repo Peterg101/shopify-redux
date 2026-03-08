@@ -132,6 +132,8 @@ class BasketItemInformation(BaseModel):
     )
     price: float
     file_blob: str  # This matches the `file_blob` in TypeScript
+    process_id: Optional[str] = None
+    material_id: Optional[str] = None
 
 
 class BasketQuantityUpdate(BaseModel):
@@ -272,6 +274,8 @@ class StripeCheckoutLineItem(BaseModel):
     selectedFileType: str
     price: float
     quantity: int
+    process_id: Optional[str] = None
+    material_id: Optional[str] = None
 
 
 class ShippingAddress(BaseModel):
@@ -456,6 +460,12 @@ class OrderResponse(BaseModel):
     quantity_claimed: int
     claims: list[ClaimResponse]
 
+    process_id: Optional[str] = None
+    material_id: Optional[str] = None
+    tolerance_mm: Optional[float] = None
+    surface_finish: Optional[str] = None
+    special_requirements: Optional[str] = None
+
     shipping_name: Optional[str] = None
     shipping_line1: Optional[str] = None
     shipping_line2: Optional[str] = None
@@ -487,6 +497,12 @@ class OrderDetailResponse(BaseModel):
     status: str
     qa_level: str
     claims: List[ClaimDetailResponse]
+
+    process_id: Optional[str] = None
+    material_id: Optional[str] = None
+    tolerance_mm: Optional[float] = None
+    surface_finish: Optional[str] = None
+    special_requirements: Optional[str] = None
 
     shipping_name: Optional[str] = None
     shipping_line1: Optional[str] = None
@@ -523,6 +539,8 @@ class BasketItemResponse(BaseModel):
     selectedFileType: str
     price: float
     quantity: int
+    process_id: Optional[str] = None
+    material_id: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -778,6 +796,19 @@ class PartListResponse(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+class CadGenerationSettings(BaseModel):
+    max_iterations: int = 3
+    timeout_seconds: int = 30
+    target_units: str = "mm"
+
+
+class CadTaskRequest(BaseModel):
+    port_id: str
+    user_id: str
+    prompt: str
+    settings: Optional[CadGenerationSettings] = None
 
 
 class UserHydrationResponse(BaseModel):

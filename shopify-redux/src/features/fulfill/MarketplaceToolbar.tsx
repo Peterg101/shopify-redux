@@ -60,6 +60,11 @@ export function MarketplaceToolbar({
     [orders]
   )
 
+  const availableTechniques = useMemo(
+    () => Array.from(new Set(orders.map((o) => o.technique))).sort(),
+    [orders]
+  )
+
   useEffect(() => {
     debounceRef.current = setTimeout(() => {
       onSearchChange(localSearch)
@@ -157,8 +162,9 @@ export function MarketplaceToolbar({
             },
           }}
         >
-          <ToggleButton value="FDM">FDM</ToggleButton>
-          <ToggleButton value="Resin">Resin</ToggleButton>
+          {availableTechniques.map((tech) => (
+            <ToggleButton key={tech} value={tech}>{tech}</ToggleButton>
+          ))}
         </ToggleButtonGroup>
 
         {/* Sort */}

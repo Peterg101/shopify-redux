@@ -16,6 +16,7 @@ import {
 } from '@mui/material'
 import ViewInArIcon from '@mui/icons-material/ViewInAr'
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
+import VerifiedIcon from '@mui/icons-material/Verified'
 import { useDispatch } from 'react-redux'
 import { Order } from '../../app/utility/interfaces'
 import logger from '../../app/utility/logger'
@@ -49,6 +50,7 @@ export const MarketplaceGridCard = React.memo(({ order }: MarketplaceGridCardPro
   const scarcityColor = getScarcityColor(remaining, order.quantity)
   const isNew = isNewOrder(order.created_at)
   const isHighQA = order.qa_level === 'high'
+  const hasSpec = Boolean(order.process_id)
   const isImage = order.selectedFileType?.startsWith('image')
   const is3D = order.selectedFileType?.includes('obj') || order.selectedFileType?.includes('stl')
 
@@ -157,6 +159,22 @@ export const MarketplaceGridCard = React.memo(({ order }: MarketplaceGridCardPro
                   fontWeight: 700,
                   fontSize: '0.7rem',
                   height: 22,
+                }}
+              />
+            )}
+            {hasSpec && (
+              <Chip
+                icon={<VerifiedIcon sx={{ fontSize: 14, color: '#00E5FF !important' }} />}
+                label="Spec'd"
+                size="small"
+                sx={{
+                  bgcolor: 'rgba(0, 229, 255, 0.15)',
+                  color: '#00E5FF',
+                  fontWeight: 600,
+                  fontSize: '0.7rem',
+                  height: 22,
+                  borderColor: 'rgba(0, 229, 255, 0.3)',
+                  border: '1px solid',
                 }}
               />
             )}

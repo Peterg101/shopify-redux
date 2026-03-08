@@ -14,6 +14,7 @@ import {
   Alert,
 } from '@mui/material'
 import ViewInArIcon from '@mui/icons-material/ViewInAr'
+import VerifiedIcon from '@mui/icons-material/Verified'
 import { useDispatch } from 'react-redux'
 import { Order } from '../../app/utility/interfaces'
 import logger from '../../app/utility/logger'
@@ -140,6 +141,22 @@ export const MarketplaceListCard = React.memo(({ order }: MarketplaceListCardPro
                   bgcolor: 'rgba(255, 145, 0, 0.85)',
                   color: '#fff',
                   fontWeight: 600,
+                }}
+              />
+            )}
+            {order.process_id && (
+              <Chip
+                icon={<VerifiedIcon sx={{ fontSize: 12, color: '#00E5FF !important' }} />}
+                label="Spec'd"
+                size="small"
+                sx={{
+                  height: 20,
+                  fontSize: '0.7rem',
+                  bgcolor: 'rgba(0, 229, 255, 0.15)',
+                  color: '#00E5FF',
+                  fontWeight: 600,
+                  borderColor: 'rgba(0, 229, 255, 0.3)',
+                  border: '1px solid',
                 }}
               />
             )}

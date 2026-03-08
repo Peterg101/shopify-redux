@@ -50,6 +50,12 @@ class BasketItem(Base):
     selectedFileType: Mapped[str] = mapped_column()
     price: Mapped[float] = mapped_column()
     quantity: Mapped[int] = mapped_column(default=1)
+    process_id: Mapped[str | None] = mapped_column(
+        String, ForeignKey("manufacturing_processes.id"), nullable=True
+    )
+    material_id: Mapped[str | None] = mapped_column(
+        String, ForeignKey("manufacturing_materials.id"), nullable=True
+    )
 
 
 class PortID(Base):
@@ -88,6 +94,17 @@ class Order(Base):
     status: Mapped[str] = mapped_column(default="open")
     qa_level: Mapped[str] = mapped_column(String, default="standard")
 
+    # Manufacturing specification (optional — links to taxonomy for capability matching)
+    process_id: Mapped[str | None] = mapped_column(
+        String, ForeignKey("manufacturing_processes.id"), nullable=True
+    )
+    material_id: Mapped[str | None] = mapped_column(
+        String, ForeignKey("manufacturing_materials.id"), nullable=True
+    )
+    tolerance_mm: Mapped[float | None] = mapped_column(Float, nullable=True)
+    surface_finish: Mapped[str | None] = mapped_column(String, nullable=True)
+    special_requirements: Mapped[str | None] = mapped_column(Text, nullable=True)
+
     # Shipping address (collected from Stripe Checkout)
     shipping_name: Mapped[str | None] = mapped_column(String, nullable=True)
     shipping_line1: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -99,6 +116,8 @@ class Order(Base):
     # Relationships
     user = relationship("User", backref="orders")
     task = relationship("Task", backref="order", uselist=False)
+    manufacturing_process = relationship("ManufacturingProcess", lazy="selectin")
+    manufacturing_material = relationship("ManufacturingMaterial", lazy="selectin")
     claims: Mapped[list["Claim"]] = relationship(
         "Claim",
         back_populates="order",

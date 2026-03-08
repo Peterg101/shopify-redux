@@ -38,10 +38,13 @@ import {
   setModelColour,
   setMultiplierValue,
   setQALevel,
+  setProcessId,
+  setMaterialId,
 } from '../../services/dataSlice';
-import { PricingConfig } from '../../app/utility/interfaces';
+import { PricingConfig, ManufacturingProcess, ManufacturingMaterial } from '../../app/utility/interfaces';
 import pricingConfig from '../../config/pricingConfig.json';
 import { getPrice } from '../../app/utility/utils';
+import { useGetManufacturingProcessesQuery, useGetManufacturingMaterialsQuery } from '../../services/dbApi';
 import { monoFontFamily } from '../../theme';
 
 const config: PricingConfig = pricingConfig;
@@ -67,7 +70,30 @@ export const ConfigurationPanel = () => {
   const dispatch = useDispatch();
   const dataState = useSelector((state: RootState) => state.dataState);
 
+  // Server-driven manufacturing taxonomy (with pricingConfig fallback)
+  const { data: serverProcesses } = useGetManufacturingProcessesQuery();
+  const { data: serverMaterials } = useGetManufacturingMaterialsQuery();
+
+  // Group processes by family for the technique dropdown
+  const processFamilies = serverProcesses
+    ? Array.from(new Set(serverProcesses.map((p: ManufacturingProcess) => p.family)))
+    : null;
+
+  // Derive technique list: use server data if available, else static config
   const { techniques, materials } = config;
+  const techniqueOptions: string[] = serverProcesses
+    ? serverProcesses.map((p: ManufacturingProcess) => p.name)
+    : techniques;
+
+  // Filter materials by the selected process's family
+  const selectedProcess = serverProcesses?.find(
+    (p: ManufacturingProcess) => p.name === dataState.printTechnique
+  );
+  const materialOptions = serverMaterials && selectedProcess
+    ? serverMaterials.filter(
+        (m: ManufacturingMaterial) => m.process_family === selectedProcess.family
+      )
+    : null;
 
   const colours = ['red', 'blue', 'green', 'orange', 'purple', 'black', 'white', 'grey'];
 
@@ -79,12 +105,21 @@ export const ConfigurationPanel = () => {
 
   // Material handlers
   const handleTechniqueChange = (event: SelectChangeEvent) => {
-    dispatch(setPrintTechnique({ printTechnique: event.target.value }));
+    const value = event.target.value;
+    dispatch(setPrintTechnique({ printTechnique: value }));
+    // Set process_id from server data
+    const proc = serverProcesses?.find((p: ManufacturingProcess) => p.name === value);
+    dispatch(setProcessId({ processId: proc?.id ?? null }));
+    // Reset material when technique changes
+    dispatch(setMaterialId({ materialId: null }));
   };
   const handleMaterialChange = (event: SelectChangeEvent) => {
     const printMaterial = event.target.value;
     const materialCost = getPrice(printMaterial, config);
     dispatch(setPrintMaterial({ printMaterial, materialCost }));
+    // Set material_id from server data
+    const mat = serverMaterials?.find((m: ManufacturingMaterial) => m.name === printMaterial);
+    dispatch(setMaterialId({ materialId: mat?.id ?? null }));
   };
   const handleColourChange = (event: SelectChangeEvent) => {
     dispatch(setModelColour({ modelColour: event.target.value }));
@@ -161,7 +196,7 @@ export const ConfigurationPanel = () => {
                     label="Technique"
                     onChange={handleTechniqueChange}
                   >
-                    {techniques.map((t) => (
+                    {techniqueOptions.map((t) => (
                       <MenuItem key={t} value={t}>{t}</MenuItem>
                     ))}
                   </Select>
@@ -176,9 +211,14 @@ export const ConfigurationPanel = () => {
                     label="Material"
                     onChange={handleMaterialChange}
                   >
-                    {materials[dataState.printTechnique]?.map((m) => (
-                      <MenuItem key={m.name} value={m.name}>{m.name}</MenuItem>
-                    ))}
+                    {materialOptions
+                      ? materialOptions.map((m: ManufacturingMaterial) => (
+                          <MenuItem key={m.id} value={m.name}>{m.name}</MenuItem>
+                        ))
+                      : materials[dataState.printTechnique]?.map((m) => (
+                          <MenuItem key={m.name} value={m.name}>{m.name}</MenuItem>
+                        ))
+                    }
                   </Select>
                 </FormControl>
               </Grid>
