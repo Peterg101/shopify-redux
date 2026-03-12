@@ -76,6 +76,7 @@ async def websocket_endpoint(
 
     await websocket.accept()
 
+    pubsub = None
     try:
         # Check if the task already finished before we connected
         existing_result = await redis.get(f"task_result:{port_id}")
@@ -106,8 +107,9 @@ async def websocket_endpoint(
     except Exception as e:
         logger.error(f"WebSocket Error: {e}")
     finally:
-        await pubsub.unsubscribe(f"task_progress:{port_id}")
-        await pubsub.close()
+        if pubsub is not None:
+            await pubsub.unsubscribe(f"task_progress:{port_id}")
+            await pubsub.close()
         await websocket.close()
         logger.info(f"WebSocket connection for task {port_id} closed.")
 
