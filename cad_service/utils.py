@@ -93,7 +93,7 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
 
         # Step 3: Register task in db_service
         await publish(redis, port_id, f"70,registering,{task_name}")
-        task_id = await register_task(user_id, task_name)
+        task_id = await register_task(user_id, task_name, port_id)
 
         if not task_id:
             await publish(redis, port_id, "Task Failed,Could not register task in database")
@@ -117,16 +117,21 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
         await publish(redis, port_id, f"Task Failed,{str(e)[:200]}")
 
 
-async def register_task(user_id: str, task_name: str) -> str | None:
+async def register_task(user_id: str, task_name: str, port_id: str) -> str | None:
     """Register a new task in db_service, returns task_id."""
+    import uuid
+
+    task_id = str(uuid.uuid4())
     auth_token = generate_token("cad_service")
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {auth_token}",
     }
     payload = {
+        "task_id": task_id,
         "user_id": user_id,
         "task_name": task_name,
+        "port_id": port_id,
     }
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
@@ -134,8 +139,7 @@ async def register_task(user_id: str, task_name: str) -> str | None:
                 f"{DB_SERVICE_URL}/tasks", json=payload, headers=headers
             )
             if resp.status_code in (200, 201):
-                data = resp.json()
-                return data.get("task_id")
+                return task_id
             logger.error(f"register_task failed: {resp.status_code} {resp.text}")
     except Exception as e:
         logger.error(f"register_task error: {e}")
