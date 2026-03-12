@@ -48,6 +48,7 @@ def add_task_to_db(db: Session, task_information: TaskInformation) -> Task:
         task_id=task_information.task_id,
         user_id=task_information.user_id,
         task_name=task_information.task_name,
+        file_type=task_information.file_type or "obj",
     )
     db.add(task)
     db.commit()

@@ -2,7 +2,6 @@ import { AppDispatch } from "../app/store";
 import { authApi } from "./authApi";
 import logger from '../app/utility/logger';
 import { setCadLoadedPercentage, setCadLoading, setCadStatusMessage, setCadError } from "./cadSlice";
-import { extractFileInfo, fetchFile } from "./fetchFileUtils";
 import { setFileProperties, setFromMeshyOrHistory } from "./dataSlice";
 
 const MAX_RECONNECT_ATTEMPTS = 5;
@@ -39,20 +38,36 @@ export const createCadWebsocketConnection = (
         return;
       }
 
-      // Handle completion: "Task Completed,{task_id},{name}"
+      // Handle completion: "Task Completed,{task_id},{name},{job_id}"
       if (data.startsWith("Task Completed")) {
         const parts = data.split(",");
-        const taskId = parts[1];
         const fileName = parts[2] || "generated";
+        const jobId = parts[3];
 
         try {
-          const fileData = await fetchFile(taskId);
-          const fileInfo = extractFileInfo(fileData, fileName);
-          setActualFile(fileInfo.file);
+          // Fetch presigned glB preview URL from step_service
+          const previewResp = await fetch(
+            `${process.env.REACT_APP_STEP_SERVICE}/step/${jobId}/preview_url`
+          );
+          if (!previewResp.ok) {
+            throw new Error(`Preview URL request failed: ${previewResp.status}`);
+          }
+          const { url: presignedUrl } = await previewResp.json();
+
+          // Fetch the glB binary from MinIO
+          const glbResp = await fetch(presignedUrl);
+          if (!glbResp.ok) {
+            throw new Error(`glB fetch failed: ${glbResp.status}`);
+          }
+          const glbBlob = await glbResp.blob();
+          const glbFile = new File([glbBlob], `${fileName}.glb`, { type: "model/gltf-binary" });
+          const blobUrl = URL.createObjectURL(glbBlob);
+
+          setActualFile(glbFile);
           dispatch(setFromMeshyOrHistory({ fromMeshyOrHistory: true }));
           dispatch(setFileProperties({
-            selectedFile: fileInfo.fileUrl,
-            selectedFileType: 'step',
+            selectedFile: blobUrl,
+            selectedFileType: 'glb',
             fileNameBoxValue: fileName,
           }));
         } catch (err) {

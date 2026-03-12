@@ -4,7 +4,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
-import { keyframes } from '@mui/system';
+import { keyframes } from '@mui/material/styles';
 import { monoFontFamily } from '../../theme';
 
 const pulseGlow = keyframes`

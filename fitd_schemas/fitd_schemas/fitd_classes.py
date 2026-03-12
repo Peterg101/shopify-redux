@@ -71,6 +71,7 @@ class TaskInformation(BaseModel):
     task_id: Optional[str] = None
     user_id: Optional[str] = None
     task_name: Optional[str] = None
+    file_type: Optional[str] = "obj"
     port_id: Optional[str] = None
     created_at: Optional[str] = datetime.now().isoformat()
 
@@ -559,6 +560,7 @@ class TaskResponse(BaseModel):
     task_id: str
     user_id: str
     task_name: str
+    file_type: str = "obj"
     complete: bool
     created_at: str
 

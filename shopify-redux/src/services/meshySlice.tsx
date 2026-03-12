@@ -60,6 +60,7 @@ export const meshySlice = createSlice({
         setMeshyRefining: (state, action: PayloadAction<{meshyRefining: boolean}>) => {
             state.meshyRefining = action.payload.meshyRefining;
         },
+        resetMeshyState: () => initialState,
     },
 })
 
@@ -72,6 +73,7 @@ export const {
     resetMeshyGenerationSettings,
     setMeshyPreviewTaskId,
     setMeshyRefining,
+    resetMeshyState,
 } = meshySlice.actions
 
 export default meshySlice.reducer

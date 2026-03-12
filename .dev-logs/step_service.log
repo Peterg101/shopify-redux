@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/Users/petergoon/Documents/Development/Shopify App with Redux/step_service/main.py", line 23, in <module>
+    from s3_utils import upload_file, generate_presigned_url, ensure_bucket_exists
+  File "/Users/petergoon/Documents/Development/Shopify App with Redux/step_service/s3_utils.py", line 3, in <module>
+    import boto3
+ModuleNotFoundError: No module named 'boto3'

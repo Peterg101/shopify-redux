@@ -1,0 +1,111 @@
+INFO:     Started server process [93716]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:1236 (Press CTRL+C to quit)
+INFO:     127.0.0.1:63991 - "OPTIONS /start_cad_task/ HTTP/1.1" 200 OK
+2026-03-08 17:46:11,110 [httpx] INFO: HTTP Request: GET http://localhost:2468/get_session "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63993 - "POST /start_cad_task/ HTTP/1.1" 200 OK
+2026-03-08 17:46:11,117 [utils] INFO: [15c63afd-d606-495a-9671-874cef9aad6e] Generating CadQuery code for: m6 hex bolt
+2026-03-08 17:46:11,536 [httpx] INFO: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 400 Bad Request"
+2026-03-08 17:46:11,537 [utils] ERROR: [15c63afd-d606-495a-9671-874cef9aad6e] CAD task error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CYr2kCqipcynE6fcrhdW9'}
+Traceback (most recent call last):
+  File "/Users/petergoon/Documents/Development/Shopify App with Redux/cad_service/utils.py", line 49, in generate_cad_task
+    code = await generate_cadquery_code(prompt, target_units)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/petergoon/Documents/Development/Shopify App with Redux/cad_service/claude_cad.py", line 84, in generate_cadquery_code
+    message = client.messages.create(
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/anthropic/_utils/_utils.py", line 282, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/anthropic/resources/messages/messages.py", line 996, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/anthropic/_base_client.py", line 1364, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/anthropic/_base_client.py", line 1137, in request
+    raise self._make_status_error_from_response(err.response) from None
+anthropic.BadRequestError: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CYr2kCqipcynE6fcrhdW9'}
+2026-03-08 17:46:11,626 [httpx] INFO: HTTP Request: GET http://localhost:2468/get_session "HTTP/1.1 200 OK"
+INFO:     ('127.0.0.1', 64001) - "WebSocket /ws/15c63afd-d606-495a-9671-874cef9aad6e" [accepted]
+INFO:     connection open
+2026-03-08 18:36:36,839 [httpx] INFO: HTTP Request: GET http://localhost:2468/get_session "HTTP/1.1 200 OK"
+INFO:     ('127.0.0.1', 60970) - "WebSocket /ws/15c63afd-d606-495a-9671-874cef9aad6e" [accepted]
+INFO:     connection open
+INFO:     ('127.0.0.1', 51919) - "WebSocket /ws/15c63afd-d606-495a-9671-874cef9aad6e" 403
+INFO:     connection rejected (403 Forbidden)
+I2026-03-08 19:56:47,188 [__main__] ERROR: WebSocket Error: Error 61 connecting to localhost:6379. Connection refused.
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/redis/asyncio/connection.py", line 342, in connect_check_health
+    await self._connect()
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/redis/asyncio/connection.py", line 811, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/petergoon/anaconda3/lib/python3.11/asyncio/streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "uvloop/loop.pyx", line 2043, in create_connection
+  File "uvloop/loop.pyx", line 2020, in uvloop.loop.Loop.create_connection
+ConnectionRefusedError: [Errno 61] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/uvicorn/protocols/websockets/websockets_impl.py", line 238, in run_asgi
+    result = await self.app(self.scope, self.asgi_receive, self.asgi_send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 78, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/applications.py", line 123, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/middleware/errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/middleware/cors.py", line 77, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/routing.py", line 754, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/routing.py", line 774, in app
+    await route.handle(scope, receive, send)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/routing.py", line 371, in handle
+    await self.app(scope, receive, send)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/routing.py", line 96, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/starlette/routing.py", line 94, in app
+    await func(session)
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/fastapi/routing.py", line 367, in app
+    await dependant.call(**values)
+  File "/Users/petergoon/Documents/Development/Shopify App with Redux/cad_service/main.py", line 97, in websocket_endpoint
+    await pubsub.unsubscribe(f"task_progress:{port_id}")
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/redis/asyncio/client.py", line 987, in execute_command
+    await self.connect()
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/redis/asyncio/client.py", line 1002, in connect
+    await self.connection.connect()
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/redis/asyncio/connection.py", line 324, in connect
+    await self.retry.call_with_retry(
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/redis/asyncio/retry.py", line 55, in call_with_retry
+    raise error
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/redis/asyncio/retry.py", line 50, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "/Users/petergoon/anaconda3/lib/python3.11/site-packages/redis/asyncio/connection.py", line 348, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [91979]

@@ -22,6 +22,32 @@ export const fetchFile = async (fileId: string): Promise<FileResponse> => {
     }
   };
 
+/** Fetch a CAD-generated file (glB preview) from step_service by task_id. */
+export const fetchCadFile = async (taskId: string): Promise<{ file: File; fileUrl: string }> => {
+  const previewResp = await fetch(
+    `${process.env.REACT_APP_STEP_SERVICE}/step/by_task/${taskId}/preview_url`
+  );
+  if (!previewResp.ok) {
+    throw new Error(`No CAD preview found for task ${taskId}`);
+  }
+
+  const { url: presignedUrl } = await previewResp.json();
+  const binaryResp = await fetch(presignedUrl);
+  if (!binaryResp.ok) {
+    throw new Error(`Failed to fetch CAD preview from storage: ${binaryResp.status}`);
+  }
+
+  const blob = await binaryResp.blob();
+  const file = new File([blob], `${taskId}.glb`, { type: "model/gltf-binary" });
+  const fileUrl = URL.createObjectURL(blob);
+  return { file, fileUrl };
+};
+
+const CAD_FILE_TYPES = new Set(['glb', 'step', 'gltf']);
+
+/** Returns true if this file_type is served by step_service (CAD pipeline). */
+export const isCadFileType = (fileType: string): boolean => CAD_FILE_TYPES.has(fileType);
+
 export const extractFileInfo = (fileResponse: FileResponse, filename: string): FileInformation => {
     const byteCharacters = atob(fileResponse.file_data);
     const byteNumbers = Array.from(byteCharacters, char => char.charCodeAt(0));

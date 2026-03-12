@@ -162,6 +162,17 @@ async def add_task(
     return ""
 
 
+@app.patch("/tasks/{task_id}/complete", status_code=200)
+async def complete_task(
+    task_id: str,
+    db: Session = Depends(get_db),
+    authorization: str = Depends(verify_jwt_token),
+):
+    mark_meshy_task_complete(db, task_id)
+    delete_port_id(db, task_id)
+    return {"message": "Task marked as complete"}
+
+
 @app.get("/users/{user_id}", response_model=UserHydrationResponse)
 async def get_user(
     user_id: str,

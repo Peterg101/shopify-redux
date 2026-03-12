@@ -2,7 +2,7 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Box, CircularProgress } from '@mui/material';
 import ViewInArIcon from '@mui/icons-material/ViewInAr';
-import { fetchFile, extractFileInfo } from '../../services/fetchFileUtils';
+import { fetchFile, extractFileInfo, fetchCadFile, isCadFileType } from '../../services/fetchFileUtils';
 import ThumbnailScene from './ThumbnailScene';
 
 interface ModelThumbnailProps {
@@ -23,10 +23,16 @@ const ModelThumbnail = React.memo(({ taskId, fileType, colour, name }: ModelThum
 
     const loadFile = async () => {
       try {
-        const fileResponse = await fetchFile(taskId);
-        if (cancelled) return;
-        const fileInfo = extractFileInfo(fileResponse, name);
-        blobUrl = fileInfo.fileUrl;
+        if (isCadFileType(fileType)) {
+          const cadResult = await fetchCadFile(taskId);
+          if (cancelled) return;
+          blobUrl = cadResult.fileUrl;
+        } else {
+          const fileResponse = await fetchFile(taskId);
+          if (cancelled) return;
+          const fileInfo = extractFileInfo(fileResponse, name);
+          blobUrl = fileInfo.fileUrl;
+        }
         setFileUrl(blobUrl);
       } catch (err) {
         if (!cancelled) setError(true);
@@ -41,7 +47,7 @@ const ModelThumbnail = React.memo(({ taskId, fileType, colour, name }: ModelThum
       cancelled = true;
       if (blobUrl) URL.revokeObjectURL(blobUrl);
     };
-  }, [taskId, name]);
+  }, [taskId, fileType, name]);
 
   if (loading) {
     return (

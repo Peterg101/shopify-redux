@@ -124,9 +124,10 @@ export interface UserInformation {
 }
 
 export interface TaskInformation {
-  task_id: string; 
-  user_id: string; 
-  task_name: string; 
+  task_id: string;
+  user_id: string;
+  task_name: string;
+  file_type: string;
   created_at: string;
 }
 

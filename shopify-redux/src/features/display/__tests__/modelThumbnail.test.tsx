@@ -6,9 +6,12 @@ import ModelThumbnail from '../ModelThumbnail'
 // Mock fetchFileUtils
 const mockFetchFile = jest.fn()
 const mockExtractFileInfo = jest.fn()
+const mockFetchCadFile = jest.fn()
 jest.mock('../../../services/fetchFileUtils', () => ({
   fetchFile: (...args: any[]) => mockFetchFile(...args),
   extractFileInfo: (...args: any[]) => mockExtractFileInfo(...args),
+  fetchCadFile: (...args: any[]) => mockFetchCadFile(...args),
+  isCadFileType: (ft: string) => ['glb', 'step', 'gltf'].includes(ft),
 }))
 
 // Mock react-three/fiber Canvas to avoid WebGL in tests

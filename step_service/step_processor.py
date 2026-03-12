@@ -99,8 +99,9 @@ def tessellate_to_glb(file_path: str, output_path: str, tolerance: float = TESSE
         vertices, triangles = result.val().tessellate(tolerance)
 
         # Convert to trimesh format
+        # vertices are Vector objects (.x, .y, .z), triangles are (int, int, int) tuples
         verts = [(v.x, v.y, v.z) for v in vertices]
-        faces = [(t.x, t.y, t.z) for t in triangles]
+        faces = [t for t in triangles]
 
         mesh = trimesh.Trimesh(vertices=verts, faces=faces)
         mesh.export(output_path, file_type="glb")

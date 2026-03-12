@@ -25,6 +25,7 @@ class Task(Base):
     task_id = Column(String, primary_key=True, index=True)
     user_id = Column(String, ForeignKey("users.user_id"))
     task_name = Column(String)
+    file_type = Column(String, default="obj")
     complete = Column(Boolean, default=False)
     created_at = Column(String, default=datetime.now().isoformat())
     owner = relationship("User", back_populates="tasks")

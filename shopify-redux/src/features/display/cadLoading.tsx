@@ -3,7 +3,7 @@ import { Box, CircularProgress, LinearProgress, Typography, Alert } from '@mui/m
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
-import { keyframes } from '@mui/system';
+import { keyframes } from '@mui/material/styles';
 import { monoFontFamily } from '../../theme';
 
 const pulseGlow = keyframes`

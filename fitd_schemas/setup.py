@@ -12,6 +12,8 @@ setup(
     install_requires=[
         "PyJWT>=2.6.0",
         "fastapi>=0.95.2",
+        "sqlalchemy>=2.0",
+        "pydantic>=1.10,<2",
     ],  # Dependencies
     python_requires=">=3.7",  # Minimum Python version
     classifiers=[

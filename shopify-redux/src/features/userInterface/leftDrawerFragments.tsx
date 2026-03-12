@@ -6,8 +6,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { useFile } from "../../services/fileProvider";
 import { resetDataState, setFileProperties, setFromMeshyOrHistory } from "../../services/dataSlice";
-import { extractFileInfo, fetchFile } from "../../services/fetchFileUtils";
+import { extractFileInfo, fetchFile, fetchCadFile, isCadFileType } from "../../services/fetchFileUtils";
 import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
+import { resetCadState } from "../../services/cadSlice";
+import { resetMeshyState } from "../../services/meshySlice";
 import { downloadBlob } from "../../app/utility/utils";
 
 const formatRelativeTime = (dateString: string): string => {
@@ -78,23 +80,37 @@ export function LeftDrawerButtons(task: TaskInformation) {
   const { setActualFile } = useFile();
   const dispatch = useDispatch();
 
-  const handleGetFile = async (fileId: string, filename: string, shouldDownload = false) => {
+  const handleGetFile = async (fileId: string, filename: string, fileType: string, shouldDownload = false) => {
     setActualFile(null);
     dispatch(resetDataState());
+    dispatch(resetCadState());
+    dispatch(resetMeshyState());
     dispatch(setLeftDrawerClosed());
 
-    const data = await fetchFile(fileId);
-    const fileInfo = extractFileInfo(data, filename);
+    let file: File;
+    let fileUrl: string;
+
+    if (isCadFileType(fileType)) {
+      const cadResult = await fetchCadFile(fileId);
+      file = cadResult.file;
+      fileUrl = cadResult.fileUrl;
+    } else {
+      const data = await fetchFile(fileId);
+      const fileInfo = extractFileInfo(data, filename);
+      file = fileInfo.file;
+      fileUrl = fileInfo.fileUrl;
+    }
 
     if (shouldDownload) {
-      downloadBlob(fileInfo.file, filename.endsWith(".obj") ? filename : `${filename}.obj`);
+      const ext = isCadFileType(fileType) ? '.glb' : '.obj';
+      downloadBlob(file, filename.endsWith(ext) ? filename : `${filename}${ext}`);
     } else {
-      setActualFile(fileInfo.file);
+      setActualFile(file);
       dispatch(setFromMeshyOrHistory({ fromMeshyOrHistory: true }));
       dispatch(
         setFileProperties({
-          selectedFile: fileInfo.fileUrl,
-          selectedFileType: "obj",
+          selectedFile: fileUrl,
+          selectedFileType: fileType,
           fileNameBoxValue: filename,
         })
       );
@@ -107,7 +123,7 @@ export function LeftDrawerButtons(task: TaskInformation) {
         variant="outlined"
         size="small"
         startIcon={<Download sx={{ fontSize: 16 }} />}
-        onClick={() => handleGetFile(task.task_id, task.task_name, true)}
+        onClick={() => handleGetFile(task.task_id, task.task_name, task.file_type, true)}
         sx={{ fontSize: '0.75rem' }}
       >
         Download
@@ -116,7 +132,7 @@ export function LeftDrawerButtons(task: TaskInformation) {
         variant="outlined"
         size="small"
         startIcon={<Edit sx={{ fontSize: 16 }} />}
-        onClick={() => handleGetFile(task.task_id, task.task_name)}
+        onClick={() => handleGetFile(task.task_id, task.task_name, task.file_type)}
         sx={{ fontSize: '0.75rem' }}
       >
         Edit

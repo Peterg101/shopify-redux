@@ -1,6 +1,8 @@
 node_modules/
 __pycache__/
 *.db
-.env
+**/.env
 *.egg-info/
 .git/
+.dev-logs/
+.claude/

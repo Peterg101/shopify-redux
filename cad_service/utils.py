@@ -35,7 +35,7 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
 
     Progress messages follow the meshy_backend format:
       "{percentage},{task_id},{name}"
-      "Task Completed,{task_id},{name}"
+      "Task Completed,{task_id},{name},{job_id}"
       "Task Failed,{error_message}"
     """
     port_id = request.port_id
@@ -101,15 +101,18 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
 
         # Step 4: Upload STEP file to step_service
         await publish(redis, port_id, f"80,uploading,{task_name}")
-        upload_ok = await upload_step_file(output_path, user_id, task_id)
+        job_id = await upload_step_file(output_path, user_id, task_id)
 
-        if not upload_ok:
+        if not job_id:
             await publish(redis, port_id, "Task Failed,Could not upload STEP file")
             return
 
-        # Step 5: Done
+        # Step 5: Mark task complete in db_service
+        await mark_task_complete(task_id)
+
+        # Step 6: Done — include job_id so frontend can fetch the glB preview
         await publish(redis, port_id, f"100,complete,{task_name}")
-        await publish(redis, port_id, f"Task Completed,{task_id},{task_name}")
+        await publish(redis, port_id, f"Task Completed,{task_id},{task_name},{job_id}")
         logger.info(f"[{port_id}] CAD task completed: {task_id}")
 
     except Exception as e:
@@ -131,6 +134,7 @@ async def register_task(user_id: str, task_name: str, port_id: str) -> str | Non
         "task_id": task_id,
         "user_id": user_id,
         "task_name": task_name,
+        "file_type": "glb",
         "port_id": port_id,
     }
     try:
@@ -146,8 +150,8 @@ async def register_task(user_id: str, task_name: str, port_id: str) -> str | Non
     return None
 
 
-async def upload_step_file(file_path: str, user_id: str, task_id: str) -> bool:
-    """Upload the generated STEP file to step_service."""
+async def upload_step_file(file_path: str, user_id: str, task_id: str) -> str | None:
+    """Upload the generated STEP file to step_service. Returns the job_id on success."""
     try:
         with open(file_path, "rb") as f:
             file_content = f.read()
@@ -159,12 +163,28 @@ async def upload_step_file(file_path: str, user_id: str, task_id: str) -> bool:
                 data={"user_id": user_id, "task_id": task_id},
             )
             if resp.status_code in (200, 201):
-                logger.info(f"STEP file uploaded successfully for task {task_id}")
-                return True
+                job_id = resp.json().get("job_id")
+                logger.info(f"STEP file uploaded successfully for task {task_id}, job_id={job_id}")
+                return job_id
             logger.error(f"STEP upload failed: {resp.status_code} {resp.text}")
     except Exception as e:
         logger.error(f"STEP upload error: {e}")
-    return False
+    return None
+
+
+async def mark_task_complete(task_id: str):
+    """Mark a task as complete in db_service (clears incomplete_task flag)."""
+    auth_token = generate_token("cad_service")
+    headers = {"Authorization": f"Bearer {auth_token}"}
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.patch(
+                f"{DB_SERVICE_URL}/tasks/{task_id}/complete", headers=headers
+            )
+            if resp.status_code != 200:
+                logger.warning(f"mark_task_complete failed: {resp.status_code} {resp.text}")
+    except Exception as e:
+        logger.warning(f"mark_task_complete error: {e}")
 
 
 async def http_session_exists(session_id: str):

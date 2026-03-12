@@ -45,13 +45,47 @@ def upload_bytes(data: bytes, s3_key: str, content_type: str = "application/octe
 
 
 def generate_presigned_url(s3_key: str, expiration: int = 3600) -> str:
-    """Generate a pre-signed URL for downloading a file from S3."""
-    client = get_s3_client()
-    return client.generate_presigned_url(
+    """Generate a pre-signed URL for downloading a file from S3.
+
+    Uses S3_PUBLIC_URL when set so that presigned URLs are reachable from
+    the browser (e.g. http://localhost:9000 instead of http://minio:9000).
+    """
+    public_url = os.getenv("S3_PUBLIC_URL")
+    if public_url:
+        # Build a client pointing at the public endpoint for URL generation
+        public_client = boto3.client(
+            "s3",
+            endpoint_url=public_url,
+            aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID", "minioadmin"),
+            aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY", "minioadmin"),
+            config=Config(signature_version="s3v4"),
+            region_name=os.getenv("AWS_REGION", "us-east-1"),
+        )
+    else:
+        public_client = get_s3_client()
+
+    return public_client.generate_presigned_url(
         "get_object",
         Params={"Bucket": BUCKET_NAME, "Key": s3_key},
         ExpiresIn=expiration,
     )
+
+
+def find_preview_key_by_task_id(task_id: str) -> str | None:
+    """Search S3 for a preview.glb matching the given task_id.
+
+    S3 keys follow the pattern: files/{user_id}/{task_id}/preview.glb
+    """
+    client = get_s3_client()
+    try:
+        response = client.list_objects_v2(Bucket=BUCKET_NAME, Prefix="files/")
+        for obj in response.get("Contents", []):
+            key = obj["Key"]
+            if task_id in key and key.endswith("preview.glb"):
+                return key
+    except Exception:
+        pass
+    return None
 
 
 def ensure_bucket_exists():

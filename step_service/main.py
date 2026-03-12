@@ -20,7 +20,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from step_processor import validate_step_file, extract_metadata, tessellate_to_glb, generate_thumbnail
-from s3_utils import upload_file, generate_presigned_url, ensure_bucket_exists
+from s3_utils import upload_file, generate_presigned_url, ensure_bucket_exists, find_preview_key_by_task_id
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -210,6 +210,30 @@ async def get_preview_url(job_id: str):
 
     try:
         url = generate_presigned_url(job.s3_key_preview)
+        return {"url": url, "content_type": "model/gltf-binary"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate URL: {e}")
+
+
+@app.get("/step/by_task/{task_id}/preview_url")
+async def get_preview_url_by_task(task_id: str):
+    """Get a signed URL for the glTF preview, looked up by task_id."""
+    # Check in-memory jobs first
+    job = next((j for j in jobs.values() if j.task_id == task_id), None)
+    if job:
+        if job.status != "complete":
+            raise HTTPException(status_code=400, detail=f"Job is {job.status}, not complete")
+        if not job.s3_key_preview:
+            raise HTTPException(status_code=404, detail="No preview available for this file")
+        s3_key = job.s3_key_preview
+    else:
+        # Fallback: search S3 directly (survives service restarts)
+        s3_key = find_preview_key_by_task_id(task_id)
+        if not s3_key:
+            raise HTTPException(status_code=404, detail="No preview found for this task_id")
+
+    try:
+        url = generate_presigned_url(s3_key)
         return {"url": url, "content_type": "model/gltf-binary"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate URL: {e}")
