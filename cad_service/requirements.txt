@@ -7,3 +7,4 @@ anthropic
 openai
 cadquery
 docker>=7.0.0
+sqlalchemy

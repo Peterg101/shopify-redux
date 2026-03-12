@@ -11,3 +11,4 @@ pytest
 fakeredis
 bcrypt
 slowapi
+sqlalchemy
