@@ -2,7 +2,7 @@ import { AppDispatch } from "../app/store";
 import { authApi } from "./authApi";
 import logger from '../app/utility/logger';
 import { setCadLoadedPercentage, setCadLoading, setCadStatusMessage, setCadError } from "./cadSlice";
-import { setFileProperties, setFromMeshyOrHistory } from "./dataSlice";
+import { setFileProperties, setFromMeshyOrHistory, setStepMetadata, setModelVolume, setModelDimensions } from "./dataSlice";
 
 const MAX_RECONNECT_ATTEMPTS = 5;
 const BASE_RECONNECT_DELAY = 1000;
@@ -70,6 +70,42 @@ export const createCadWebsocketConnection = (
             selectedFileType: 'glb',
             fileNameBoxValue: fileName,
           }));
+
+          // Fetch CAD metadata (volume, bounding box) from step_service
+          try {
+            const metaResp = await fetch(
+              `${process.env.REACT_APP_STEP_SERVICE}/step/${jobId}/status`
+            );
+            if (metaResp.ok) {
+              const meta = await metaResp.json();
+              dispatch(setStepMetadata({
+                jobId,
+                processingStatus: meta.processing_status,
+                boundingBox: meta.bounding_box_x != null ? {
+                  x: meta.bounding_box_x,
+                  y: meta.bounding_box_y,
+                  z: meta.bounding_box_z,
+                } : undefined,
+                volumeMm3: meta.volume_mm3,
+                surfaceAreaMm2: meta.surface_area_mm2,
+              }));
+              if (meta.volume_mm3) {
+                dispatch(setModelVolume({ modelVolume: meta.volume_mm3 }));
+              }
+              if (meta.bounding_box_x != null) {
+                const THREE = await import('three');
+                dispatch(setModelDimensions({
+                  modelDimensions: new THREE.Vector3(
+                    meta.bounding_box_x,
+                    meta.bounding_box_y,
+                    meta.bounding_box_z,
+                  ),
+                }));
+              }
+            }
+          } catch (metaErr) {
+            logger.warn("Could not fetch CAD metadata:", metaErr);
+          }
         } catch (err) {
           logger.error("Error fetching completed CAD file:", err);
         }

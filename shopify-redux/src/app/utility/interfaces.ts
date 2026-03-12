@@ -87,6 +87,7 @@ export interface DataState {
    printMaterial: string
    processId: string | null
    materialId: string | null
+   processFamily: string | null
    modelVolume: number
    modelDimensions: VectorState
    multiplierValue: number
@@ -100,6 +101,8 @@ export interface DataState {
    zFlip: number
    materialCost: number
    qaLevel: "standard" | "high"
+   toleranceMm?: number
+   surfaceFinish?: string
    stepMetadata?: StepMetadata
 }
 
@@ -154,6 +157,8 @@ export interface BasketInformation {
   price: number
   process_id?: string;
   material_id?: string;
+  tolerance_mm?: number;
+  surface_finish?: string;
 }
 
 export interface BasketInformationAndFile extends BasketInformation {

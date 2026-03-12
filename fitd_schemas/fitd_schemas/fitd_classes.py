@@ -135,6 +135,9 @@ class BasketItemInformation(BaseModel):
     file_blob: str  # This matches the `file_blob` in TypeScript
     process_id: Optional[str] = None
     material_id: Optional[str] = None
+    tolerance_mm: Optional[float] = None
+    surface_finish: Optional[str] = None
+    special_requirements: Optional[str] = None
 
 
 class BasketQuantityUpdate(BaseModel):
@@ -277,6 +280,9 @@ class StripeCheckoutLineItem(BaseModel):
     quantity: int
     process_id: Optional[str] = None
     material_id: Optional[str] = None
+    tolerance_mm: Optional[float] = None
+    surface_finish: Optional[str] = None
+    special_requirements: Optional[str] = None
 
 
 class ShippingAddress(BaseModel):
@@ -542,6 +548,9 @@ class BasketItemResponse(BaseModel):
     quantity: int
     process_id: Optional[str] = None
     material_id: Optional[str] = None
+    tolerance_mm: Optional[float] = None
+    surface_finish: Optional[str] = None
+    special_requirements: Optional[str] = None
 
     class Config:
         orm_mode = True

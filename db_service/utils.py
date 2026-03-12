@@ -109,7 +109,12 @@ def add_or_update_basket_item_in_db(
                 existing_item.selectedFile != basket_item_info.selected_file,
                 existing_item.selectedFileType != basket_item_info.selectedFileType,
                 existing_item.price != basket_item_info.price,
-                existing_item.quantity != basket_item_info.quantity
+                existing_item.quantity != basket_item_info.quantity,
+                existing_item.process_id != basket_item_info.process_id,
+                existing_item.material_id != basket_item_info.material_id,
+                existing_item.tolerance_mm != basket_item_info.tolerance_mm,
+                existing_item.surface_finish != basket_item_info.surface_finish,
+                existing_item.special_requirements != basket_item_info.special_requirements,
             ]
         )
 
@@ -125,6 +130,11 @@ def add_or_update_basket_item_in_db(
             existing_item.selectedFileType = basket_item_info.selectedFileType
             existing_item.price = basket_item_info.price
             existing_item.quantity = basket_item_info.quantity
+            existing_item.process_id = basket_item_info.process_id
+            existing_item.material_id = basket_item_info.material_id
+            existing_item.tolerance_mm = basket_item_info.tolerance_mm
+            existing_item.surface_finish = basket_item_info.surface_finish
+            existing_item.special_requirements = basket_item_info.special_requirements
             db.commit()
             db.refresh(existing_item)
 
@@ -142,7 +152,12 @@ def add_or_update_basket_item_in_db(
         selectedFile=basket_item_info.selected_file,
         selectedFileType=basket_item_info.selectedFileType,
         price=basket_item_info.price,
-        quantity=basket_item_info.quantity
+        quantity=basket_item_info.quantity,
+        process_id=basket_item_info.process_id,
+        material_id=basket_item_info.material_id,
+        tolerance_mm=basket_item_info.tolerance_mm,
+        surface_finish=basket_item_info.surface_finish,
+        special_requirements=basket_item_info.special_requirements,
     )
     db.add(new_item)
     db.commit()

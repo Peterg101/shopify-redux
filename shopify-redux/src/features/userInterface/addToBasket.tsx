@@ -59,6 +59,8 @@ const handleAddToBasket = async () => {
         price: totalCost,
         process_id: dataState.processId ?? undefined,
         material_id: dataState.materialId ?? undefined,
+        tolerance_mm: dataState.toleranceMm,
+        surface_finish: dataState.surfaceFinish,
       };
       await uploadFile(basketInformationAndFile).unwrap();
       dispatch(resetDataState());

@@ -80,6 +80,10 @@ async def checkout_completed_webhook(event=Depends(validate_stripe_header)):
             "selectedFileType": meta.get("selectedFileType", ""),
             "price": item.amount_total / 100,
             "quantity": item.quantity,
+            "process_id": meta.get("process_id") or None,
+            "material_id": meta.get("material_id") or None,
+            "tolerance_mm": float(meta["tolerance_mm"]) if meta.get("tolerance_mm") else None,
+            "surface_finish": meta.get("surface_finish") or None,
         })
 
     # Extract shipping address from Stripe checkout

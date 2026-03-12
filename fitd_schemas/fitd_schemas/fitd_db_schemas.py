@@ -57,6 +57,9 @@ class BasketItem(Base):
     material_id: Mapped[str | None] = mapped_column(
         String, ForeignKey("manufacturing_materials.id"), nullable=True
     )
+    tolerance_mm: Mapped[float | None] = mapped_column(Float, nullable=True)
+    surface_finish: Mapped[str | None] = mapped_column(String, nullable=True)
+    special_requirements: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
 class PortID(Base):

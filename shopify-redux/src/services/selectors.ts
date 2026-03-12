@@ -11,9 +11,10 @@ export const selectTotalCost = createSelector(
     (state: RootState) => selectDataState(state).modelVolume,
     (state: RootState) => selectDataState(state).materialCost,
     (state: RootState) => selectDataState(state).multiplierValue,
+    (state: RootState) => selectDataState(state).processFamily,
   ],
-  (modelVolume, materialCost, multiplierValue) =>
-    recalculateTotalCost({ modelVolume, materialCost, multiplierValue })
+  (modelVolume, materialCost, multiplierValue, processFamily) =>
+    recalculateTotalCost({ modelVolume, materialCost, multiplierValue, processFamily })
 )
 
 export const selectTotalBasketValue = createSelector(

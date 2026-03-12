@@ -18,6 +18,7 @@ const initialState: DataState = {
     printMaterial: 'PLA Basic',
     processId: null,
     materialId: null,
+    processFamily: null,
     modelVolume: 0,
     multiplierValue: 1,
     maxScale: 10,
@@ -30,7 +31,9 @@ const initialState: DataState = {
     yFlip: 0,
     zFlip: 0,
     materialCost: 0.00005,
-    qaLevel: 'standard'
+    qaLevel: 'standard',
+    toleranceMm: undefined,
+    surfaceFinish: undefined
 }
 
 export const dataSlice = createSlice({
@@ -63,6 +66,9 @@ export const dataSlice = createSlice({
         },
         setMaterialId: (state, action: PayloadAction<{materialId: string | null}>) => {
             state.materialId = action.payload.materialId
+        },
+        setProcessFamily: (state, action: PayloadAction<{processFamily: string | null}>) => {
+            state.processFamily = action.payload.processFamily
         },
         setModelVolume: (state, action: PayloadAction<{modelVolume: number}>) => {
             const {modelVolume} = action.payload
@@ -189,6 +195,12 @@ export const dataSlice = createSlice({
             const {qaLevel} = action.payload
             state.qaLevel = qaLevel
         },
+        setToleranceMm: (state, action: PayloadAction<{toleranceMm: number | undefined}>) => {
+            state.toleranceMm = action.payload.toleranceMm
+        },
+        setSurfaceFinish: (state, action: PayloadAction<{surfaceFinish: string | undefined}>) => {
+            state.surfaceFinish = action.payload.surfaceFinish
+        },
         setStepMetadata: (state, action: PayloadAction<StepMetadata>) => {
             state.stepMetadata = action.payload
         }
@@ -207,6 +219,7 @@ export const {
     setPrintTechnique,
     setProcessId,
     setMaterialId,
+    setProcessFamily,
     setSelectedFileType,
     resetDataState,
     setFileProperties,
@@ -220,6 +233,8 @@ export const {
     setClearFileDisplay,
     setFulfillFileViewProperties,
     setQALevel,
+    setToleranceMm,
+    setSurfaceFinish,
     setStepMetadata
 
  } = dataSlice.actions

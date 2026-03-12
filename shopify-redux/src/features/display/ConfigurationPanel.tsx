@@ -28,6 +28,7 @@ import {
   Straighten,
   HighQuality,
   Build,
+  Tune,
 } from '@mui/icons-material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { useDispatch, useSelector } from 'react-redux';
@@ -40,12 +41,16 @@ import {
   setQALevel,
   setProcessId,
   setMaterialId,
+  setProcessFamily,
+  setToleranceMm,
+  setSurfaceFinish,
 } from '../../services/dataSlice';
 import { PricingConfig, ManufacturingProcess, ManufacturingMaterial } from '../../app/utility/interfaces';
 import pricingConfig from '../../config/pricingConfig.json';
 import { getPrice } from '../../app/utility/utils';
 import { useGetManufacturingProcessesQuery, useGetManufacturingMaterialsQuery } from '../../services/dbApi';
 import { monoFontFamily } from '../../theme';
+import { isCadFileType } from '../../services/fetchFileUtils';
 
 const config: PricingConfig = pricingConfig;
 
@@ -74,15 +79,20 @@ export const ConfigurationPanel = () => {
   const { data: serverProcesses } = useGetManufacturingProcessesQuery();
   const { data: serverMaterials } = useGetManufacturingMaterialsQuery();
 
-  // Group processes by family for the technique dropdown
-  const processFamilies = serverProcesses
-    ? Array.from(new Set(serverProcesses.map((p: ManufacturingProcess) => p.family)))
+  // Determine if the current file is a CAD model
+  const isCad = isCadFileType(dataState.selectedFileType);
+
+  // Filter processes: CAD files see all processes, Meshy files see only 3D printing
+  const filteredProcesses = serverProcesses
+    ? isCad
+      ? serverProcesses
+      : serverProcesses.filter((p: ManufacturingProcess) => p.family === '3d_printing')
     : null;
 
   // Derive technique list: use server data if available, else static config
   const { techniques, materials } = config;
-  const techniqueOptions: string[] = serverProcesses
-    ? serverProcesses.map((p: ManufacturingProcess) => p.name)
+  const techniqueOptions: string[] = filteredProcesses
+    ? filteredProcesses.map((p: ManufacturingProcess) => p.name)
     : techniques;
 
   // Filter materials by the selected process's family
@@ -107,9 +117,10 @@ export const ConfigurationPanel = () => {
   const handleTechniqueChange = (event: SelectChangeEvent) => {
     const value = event.target.value;
     dispatch(setPrintTechnique({ printTechnique: value }));
-    // Set process_id from server data
+    // Set process_id and family from server data
     const proc = serverProcesses?.find((p: ManufacturingProcess) => p.name === value);
     dispatch(setProcessId({ processId: proc?.id ?? null }));
+    dispatch(setProcessFamily({ processFamily: proc?.family ?? null }));
     // Reset material when technique changes
     dispatch(setMaterialId({ materialId: null }));
   };
@@ -141,6 +152,16 @@ export const ConfigurationPanel = () => {
   // QA handler
   const handleQAChange = (event: SelectChangeEvent) => {
     dispatch(setQALevel({ qaLevel: event.target.value as 'standard' | 'high' }));
+  };
+
+  // Manufacturing spec handlers (CAD only)
+  const handleToleranceChange = (event: SelectChangeEvent) => {
+    const val = event.target.value;
+    dispatch(setToleranceMm({ toleranceMm: val ? parseFloat(val) : undefined }));
+  };
+  const handleSurfaceFinishChange = (event: SelectChangeEvent) => {
+    const val = event.target.value;
+    dispatch(setSurfaceFinish({ surfaceFinish: val || undefined }));
   };
 
   const marks = [
@@ -262,6 +283,20 @@ export const ConfigurationPanel = () => {
                 />
               )}
             </Box>
+            {/* File type info chip */}
+            {dataState.selectedFileType && (
+              <Box sx={{ mt: 1 }}>
+                <Chip
+                  size="small"
+                  label={isCad ? 'CAD model — all manufacturing techniques' : '3D printing only'}
+                  sx={{
+                    backgroundColor: isCad ? 'rgba(0, 229, 255, 0.08)' : 'rgba(255, 255, 255, 0.05)',
+                    color: isCad ? 'primary.main' : 'text.secondary',
+                    fontSize: '0.7rem',
+                  }}
+                />
+              </Box>
+            )}
           </AccordionDetails>
         </Accordion>
 
@@ -374,6 +409,63 @@ export const ConfigurationPanel = () => {
             </Grid>
           </AccordionDetails>
         </Accordion>
+
+        {/* Manufacturing Specs (CAD only) */}
+        {isCad && (
+          <Accordion sx={sectionSx}>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Box sx={summaryLabelSx}>
+                <Tune sx={{ color: 'primary.main', fontSize: 18 }} />
+                <Typography variant="body1" fontWeight={500}>Manufacturing Specs</Typography>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel id="cfg-tolerance-label">Tolerance</InputLabel>
+                    <Select
+                      labelId="cfg-tolerance-label"
+                      value={dataState.toleranceMm != null ? String(dataState.toleranceMm) : ''}
+                      label="Tolerance"
+                      onChange={handleToleranceChange}
+                    >
+                      <MenuItem value="0.5">0.5 mm — Standard</MenuItem>
+                      <MenuItem value="0.2">0.2 mm — Precision</MenuItem>
+                      <MenuItem value="0.1">0.1 mm — High</MenuItem>
+                      <MenuItem value="0.05">0.05 mm — Ultra</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel id="cfg-surface-label">Surface Finish</InputLabel>
+                    <Select
+                      labelId="cfg-surface-label"
+                      value={dataState.surfaceFinish ?? ''}
+                      label="Surface Finish"
+                      onChange={handleSurfaceFinishChange}
+                    >
+                      <MenuItem value="As Machined">As Machined</MenuItem>
+                      <MenuItem value="Smooth">Smooth</MenuItem>
+                      <MenuItem value="Polished">Polished</MenuItem>
+                      <MenuItem value="Bead Blasted">Bead Blasted</MenuItem>
+                      <MenuItem value="Anodized">Anodized</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </Grid>
+              <Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap' }}>
+                {dataState.toleranceMm != null && (
+                  <Chip label={`±${dataState.toleranceMm} mm`} size="small" variant="outlined" />
+                )}
+                {dataState.surfaceFinish && (
+                  <Chip label={dataState.surfaceFinish} size="small" variant="outlined" />
+                )}
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+        )}
 
       </Box>
     </Box>

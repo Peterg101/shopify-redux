@@ -572,6 +572,9 @@ async def create_order_from_stripe(
             status=checkout_order.order_status,
             process_id=item.process_id,
             material_id=item.material_id,
+            tolerance_mm=item.tolerance_mm,
+            surface_finish=item.surface_finish,
+            special_requirements=item.special_requirements,
             shipping_name=shipping.name if shipping else None,
             shipping_line1=shipping.line1 if shipping else None,
             shipping_line2=shipping.line2 if shipping else None,
@@ -787,6 +790,14 @@ async def claim_order(
                     raise HTTPException(
                         status_code=403,
                         detail="Your profile does not support the required material"
+                    )
+
+            # Tolerance validation — fulfiller must meet the order's required precision
+            if order.tolerance_mm is not None and profile.min_tolerance_mm is not None:
+                if profile.min_tolerance_mm > order.tolerance_mm:
+                    raise HTTPException(
+                        status_code=403,
+                        detail=f"Order requires ±{order.tolerance_mm}mm tolerance but your profile minimum is ±{profile.min_tolerance_mm}mm"
                     )
 
         add_claim_to_db(db, claimed_order, user_information)
