@@ -19,8 +19,15 @@ AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:2468")
 
 
 async def publish(redis: AsyncRedis, port_id: str, message: str):
-    """Publish a progress message to the Redis channel."""
+    """Publish a progress message to the Redis channel.
+
+    Also stores terminal states (Completed/Failed) in a Redis key so that
+    late-connecting WebSocket clients can retrieve the final status instead
+    of spinning forever.
+    """
     await redis.publish(f"task_progress:{port_id}", message)
+    if message.startswith("Task Completed") or message.startswith("Task Failed"):
+        await redis.set(f"task_result:{port_id}", message, ex=300)
 
 
 async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):

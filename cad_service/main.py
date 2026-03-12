@@ -77,8 +77,20 @@ async def websocket_endpoint(
     await websocket.accept()
 
     try:
+        # Check if the task already finished before we connected
+        existing_result = await redis.get(f"task_result:{port_id}")
+        if existing_result:
+            await websocket.send_text(existing_result)
+            return
+
         pubsub = redis.pubsub()
         await pubsub.subscribe(f"task_progress:{port_id}")
+
+        # Re-check after subscribing to avoid race window
+        existing_result = await redis.get(f"task_result:{port_id}")
+        if existing_result:
+            await websocket.send_text(existing_result)
+            return
 
         async for message in pubsub.listen():
             if message["type"] == "message":
