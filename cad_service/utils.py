@@ -8,7 +8,7 @@ from fastapi import Request, HTTPException
 from fitd_schemas.fitd_classes import CadTaskRequest
 from jwt_auth import generate_token
 
-from claude_cad import generate_cadquery_code, fix_cadquery_code
+from llm_cad import generate_cadquery_code, fix_cadquery_code
 from executor import execute_cadquery
 
 logger = logging.getLogger(__name__)
@@ -126,7 +126,7 @@ async def register_task(user_id: str, task_name: str) -> str | None:
             resp = await client.post(
                 f"{DB_SERVICE_URL}/tasks", json=payload, headers=headers
             )
-            if resp.status_code == 200:
+            if resp.status_code in (200, 201):
                 data = resp.json()
                 return data.get("task_id")
             logger.error(f"register_task failed: {resp.status_code} {resp.text}")
@@ -147,7 +147,7 @@ async def upload_step_file(file_path: str, user_id: str, task_id: str) -> bool:
                 files={"file": ("generated.step", file_content, "application/octet-stream")},
                 data={"user_id": user_id, "task_id": task_id},
             )
-            if resp.status_code == 200:
+            if resp.status_code in (200, 201):
                 logger.info(f"STEP file uploaded successfully for task {task_id}")
                 return True
             logger.error(f"STEP upload failed: {resp.status_code} {resp.text}")
