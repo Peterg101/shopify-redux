@@ -124,6 +124,7 @@ services:
     depends_on: [minio]
 
   cad_sandbox:
+    platform: linux/amd64
     build:
       context: .
       dockerfile: cad_service/Dockerfile.sandbox
