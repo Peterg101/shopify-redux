@@ -1,14 +1,14 @@
 """add capability matching columns to orders and basket_items
 
 Revision ID: f6a7b8c9d0e1
-Revises: e5f6a7b8c9d0
+Revises: e5f6a7b8c9d1
 Create Date: 2026-03-08
 """
 from alembic import op
 import sqlalchemy as sa
 
 revision = 'f6a7b8c9d0e1'
-down_revision = 'e5f6a7b8c9d0'
+down_revision = 'e5f6a7b8c9d1'
 branch_labels = None
 depends_on = None
 
