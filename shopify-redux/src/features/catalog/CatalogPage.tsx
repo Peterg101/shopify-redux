@@ -57,7 +57,7 @@ export const CatalogPage = () => {
   return (
     <Box>
       <HeaderBar />
-      <UpdatedUserInterface />
+      <UpdatedUserInterface visibleItems={["Basket"]} />
       <Box sx={{
         display: "flex", flexDirection: "column", gap: 3,
         pt: 10, pb: 6, px: { xs: 2, md: 4 },

@@ -16,7 +16,11 @@ import { ProfilePage } from "./profilePage";
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import { EmptyOrderHistory, OrderHistory } from "./orderHistoryFragments";
 
-export const UpdatedUserInterface = () => {
+interface UpdatedUserInterfaceProps {
+  visibleItems?: string[];
+}
+
+export const UpdatedUserInterface = ({ visibleItems }: UpdatedUserInterfaceProps) => {
   const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
   const dispatch = useDispatch();
   const theme = useTheme();
@@ -78,7 +82,7 @@ export const UpdatedUserInterface = () => {
         </Badge>
       ),
     },
-  ];
+  ].filter((item) => !visibleItems || visibleItems.includes(item.text));
 
   const renderResultsOptionsComponent = () => {
     switch (userInterfaceState.selectedComponent) {
