@@ -3,7 +3,7 @@ uvicorn
 sqlalchemy
 alembic
 psycopg2-binary
-pydantic
+pydantic==1.10.8
 python-jose[cryptography]
 httpx
 python-dotenv

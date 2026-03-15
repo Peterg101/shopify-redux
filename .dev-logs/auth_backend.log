@@ -1,61 +1,22 @@
-INFO:     Started server process [93712]
+INFO:     Started server process [26051]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://127.0.0.1:2468 (Press CTRL+C to quit)
-2026-03-08 17:45:58,073 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:63965 - "GET /get_session HTTP/1.1" 200 OK
-2026-03-08 17:46:02,458 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:63982 - "GET /get_session HTTP/1.1" 200 OK
-2026-03-08 17:46:11,106 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:63995 - "GET /get_session HTTP/1.1" 200 OK
-2026-03-08 17:46:11,161 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:64002 - "GET /get_session HTTP/1.1" 200 OK
-2026-03-08 17:46:11,623 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:64007 - "GET /get_session HTTP/1.1" 200 OK
-2026-03-08 17:46:53,555 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:64167 - "GET /get_session HTTP/1.1" 200 OK
-2026-03-08 17:46:58,434 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:64192 - "GET /get_session HTTP/1.1" 200 OK
-2026-03-08 17:47:45,250 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:64399 - "GET /get_session HTTP/1.1" 200 OK
-2026-03-08 17:47:48,937 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:64399 - "GET /get_session HTTP/1.1" 200 OK
-2026-03-08 17:48:21,633 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:64561 - "GET /get_session HTTP/1.1" 200 OK
-2026-03-08 17:53:21,857 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:49630 - "GET /get_session HTTP/1.1" 200 OK
-2026-03-08 17:58:22,833 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:51066 - "GET /get_session HTTP/1.1" 200 OK
-2026-03-08 18:03:23,853 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:52331 - "GET /get_session HTTP/1.1" 200 OK
-2026-03-08 18:08:24,940 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:53749 - "GET /get_session HTTP/1.1" 200 OK
-2026-03-08 18:13:25,932 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:55016 - "GET /get_session HTTP/1.1" 200 OK
-2026-03-08 18:18:26,910 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:56303 - "GET /get_session HTTP/1.1" 200 OK
-2026-03-08 18:23:27,952 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:57576 - "GET /get_session HTTP/1.1" 200 OK
-2026-03-08 18:28:28,934 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:58845 - "GET /get_session HTTP/1.1" 200 OK
-2026-03-08 18:33:31,638 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:60152 - "GET /get_session HTTP/1.1" 200 OK
-2026-03-08 18:36:35,064 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:60958 - "GET /get_session HTTP/1.1" 200 OK
-2026-03-08 18:36:36,836 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:60974 - "GET /get_session HTTP/1.1" 200 OK
-2026-03-08 18:42:19,711 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 200 OK"
-INFO:     127.0.0.1:62287 - "GET /get_session HTTP/1.1" 200 OK
-INFO:     127.0.0.1:63581 - "GET /get_session HTTP/1.1" 401 Unauthorized
-INFO:     127.0.0.1:64862 - "GET /get_session HTTP/1.1" 401 Unauthorized
-INFO:     127.0.0.1:65357 - "GET /get_session HTTP/1.1" 401 Unauthorized
-INFO:     127.0.0.1:50256 - "GET /get_session HTTP/1.1" 401 Unauthorized
-INFO:     127.0.0.1:51537 - "GET /get_session HTTP/1.1" 401 Unauthorized
-INFO:     127.0.0.1:51905 - "GET /get_session HTTP/1.1" 401 Unauthorized
-INFO:     127.0.0.1:51905 - "GET /get_session HTTP/1.1" 401 Unauthorized
-INFO:     127.0.0.1:51956 - "GET /get_session HTTP/1.1" 401 Unauthorized
-INFO:     127.0.0.1:52007 - "GET /get_session HTTP/1.1" 401 Unauthorized
-INFO:     127.0.0.1:52142 - "GET /get_session HTTP/1.1" 401 Unauthorized
-INFO:     127.0.0.1:52142 - "GET /get_session HTTP/1.1" 401 Unauthorized
-INFO:     127.0.0.1:52165 - "GET /get_session HTTP/1.1" 401 Unauthorized
-INFO:     127.0.0.1:53455 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:60971 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:60981 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61042 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61639 - "GET /get_session HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61639 - "GET /auth/google HTTP/1.1" 307 Temporary Redirect
+2026-03-12 21:14:59,541 [httpx] INFO: HTTP Request: POST https://oauth2.googleapis.com/token "HTTP/1.1 200 OK"
+2026-03-12 21:15:00,098 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 500 Internal Server Error"
+2026-03-12 21:15:00,098 [api_calls] ERROR: Error: 500 - Internal Server Error
+2026-03-12 21:15:00,122 [httpx] INFO: HTTP Request: POST http://localhost:8000/users "HTTP/1.1 500 Internal Server Error"
+2026-03-12 21:15:00,123 [api_calls] ERROR: Error: 500 - Internal Server Error
+INFO:     127.0.0.1:61639 - "GET /auth/google/callback?iss=https%3A%2F%2Faccounts.google.com&code=4%2F0AfrIepAIQOsarRj6FZd7VGac5kXMjGPtTrqWMvzucJgAfJ_NUe2s-PZSegx7lGSgwQ5HSQ&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email&authuser=0&prompt=none HTTP/1.1" 307 Temporary Redirect
+2026-03-12 21:15:00,291 [httpx] INFO: HTTP Request: GET http://localhost:8000/users/103968401714276034667 "HTTP/1.1 500 Internal Server Error"
+2026-03-12 21:15:00,293 [api_calls] ERROR: Error: 500 - Internal Server Error
+INFO:     127.0.0.1:61639 - "GET /get_session HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [26051]

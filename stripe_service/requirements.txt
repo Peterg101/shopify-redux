@@ -2,7 +2,7 @@ fastapi
 uvicorn
 httpx
 stripe
-pydantic
+pydantic==1.10.8
 python-dotenv
 pytest
 pytest-asyncio

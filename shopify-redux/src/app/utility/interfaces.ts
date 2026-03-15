@@ -434,6 +434,8 @@ export interface PartOrderConfig {
   sizing?: number;
   colour?: string;
   price?: number;
+  tolerance_mm?: number;
+  surface_finish?: string;
 }
 
 export interface UserAndTasksAndBasketAndIncompleteAndOrders{

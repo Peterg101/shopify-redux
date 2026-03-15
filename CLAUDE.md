@@ -1,7 +1,25 @@
 # FITD Platform — Claude Code Instructions
 
 ## Project Overview
-FITD is a 3D printing fulfillment marketplace. Buyers upload/generate 3D models, place orders via Stripe, and fulfillers claim and manufacture them. The platform is a microservices architecture with a React frontend.
+FITD is a decentralised manufacturing marketplace. Buyers upload or generate 3D models (STL, OBJ, STEP), place orders via Stripe, and community fulfillers claim and manufacture them. The platform also offers AI-powered CAD generation and a community file-sharing library.
+
+Built by a solo developer with a PhD in Materials Science, two Chemistry degrees, and professional experience across software engineering and manufacturing in the defence industry. This domain expertise directly informs the platform's quoting logic, material specifications, manufacturability constraints, and process selection — these are engineering decisions, not guesswork.
+
+### Product Scope
+- **Target processes**: All major manufacturing (3D printing, CNC, injection moulding, sheet metal, casting). Launch priority is 3D printing/additive — simplest quoting, fastest turnaround, easiest to onboard operators.
+- **File formats**: STL (hobbyist/3D printing), OBJ (mesh, broad compatibility), STEP (industry-standard parametric, professional engineering).
+- **Competitive landscape**: Zoo.dev is the only comparable player with AI CAD generation. Most manufacturing marketplaces are pure matchmaking with no generative layer. The combination of community file sharing + AI generation + manufacturing fulfilment is genuinely differentiated.
+- **Current state**: Functional with bugs. Only deployed locally, never in production. Core flow works: upload → quote → pay → manufacturer fulfils.
+
+### AI CAD Generation Pipeline
+The most technically distinctive feature. Flow:
+1. User provides natural language description of a desired part
+2. LLM generates a Python CadQuery script (constrained for manufacturability — min wall thickness, fillet radii, overhang limits, unit conventions)
+3. Script executes in a **fully sandboxed Docker container** (arbitrary code execution isolation)
+4. `step_service` validates the STEP output, extracts metadata (bounding box, volume, surface area), tessellates to glTF/glB
+5. Result returned to frontend for 3D preview
+
+**LLM config**: env var switches between local Qwen 2.5 7B (poor CadQuery quality — niche library, insufficient training data) and Claude API (dramatically better, recommended for production, pennies per generation).
 
 ## Architecture
 
@@ -10,9 +28,15 @@ FITD is a 3D printing fulfillment marketplace. Buyers upload/generate 3D models,
 |---------|------|---------|
 | `db_service` | 8000 | Core API — users, orders, claims, files, disputes |
 | `auth_backend` | 2468 | Google OAuth + email auth, Redis sessions |
-| `meshy_backend` | 1234 | Meshy.ai 3D generation, WebSocket progress |
+| `meshy_backend` | 1234 | Meshy.ai 3D generation (artistic/organic), WebSocket progress |
+| `cad_service` | 1236 | AI CAD generation — LLM → CadQuery → STEP, sandboxed execution |
+| `step_service` | 1235 | STEP processing — validation, metadata, tessellation to glTF/glB, S3 |
 | `stripe_service` | 100 | Stripe checkout, webhooks, onboarding, shipping |
 | `shopify-redux` | 3000 | React 18 frontend — MUI, Redux Toolkit, Three.js |
+
+**Two distinct 3D generation pipelines** (complementary, not redundant):
+- `meshy_backend` (Meshy.ai API): artistic/organic models — figurines, characters, decorative → OBJ meshes
+- `cad_service` (LLM + CadQuery): engineering-grade parametric geometry — functional parts, enclosures, brackets → STEP files
 
 ### Shared Packages
 - `fitd_schemas/` — SQLAlchemy models + Pydantic response classes (installed editable)
@@ -154,6 +178,27 @@ These are NOT regressions — do not spend time trying to fix them unless explic
 pending → in_progress → printing → qa_check → shipped → delivered → accepted/disputed → resolved_*
                                                                                          ↘ cancelled (from pending or in_progress only)
 ```
+
+## Deployment & Production Readiness
+
+Never deployed to production — currently local-only via Docker Compose. Target: VPS (Hetzner/DigitalOcean) with Traefik for reverse proxy + SSL. 4GB RAM / 2 vCPU sufficient when using Claude API (no local model inference).
+
+### Production checklist
+- [ ] Add Traefik service to Docker Compose (SSL via Let's Encrypt, route to microservices)
+- [ ] Google OAuth: add production domain as authorised redirect URI
+- [ ] Stripe: update webhook endpoint URLs to production domain
+- [ ] CORS: update all microservices to allow production domain
+- [ ] React: update API base URL from localhost
+- [ ] Production `.env` with real keys (Stripe, Google OAuth, Claude API, ShipStation)
+- [ ] LLM env var: set to Claude API mode
+- [ ] File storage: Docker volumes + backup cron initially; migrate to S3/Backblaze later
+
+### Immediate priorities
+1. Deploy to production
+2. Switch AI to Claude API (drop local Qwen)
+3. Fix bugs blocking core transaction flow
+4. Onboard 3-5 3D printing manufacturers
+5. Get one real order through the system end-to-end
 
 ## Parallel Agent Strategy
 
