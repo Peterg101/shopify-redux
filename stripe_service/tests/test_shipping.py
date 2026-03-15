@@ -103,3 +103,74 @@ def test_create_label_missing_buyer_address(mock_claim_detail, client):
     response = client.post("/shipping/create_label/claim-003")
     assert response.status_code == 400
     assert "shipping address" in response.json()["detail"].lower()
+
+
+# ── Additional shipping edge case tests ──
+
+
+@patch("routes.shipping.create_shipping_label", new_callable=AsyncMock)
+@patch("routes.shipping.get_claim_detail", new_callable=AsyncMock)
+@patch("routes.shipping.get_fulfiller_address", new_callable=AsyncMock)
+def test_create_label_shipengine_failure(mock_fulfiller_addr, mock_claim_detail, mock_create_label, client):
+    """When ShipEngine raises an exception, should return 502."""
+    mock_claim_detail.return_value = {
+        "claim_id": "claim-004",
+        "claimant_user_id": "test-user-123",
+        "status": "qa_check",
+        "order_id": "order-004",
+        "ship_to": {
+            "name": "Buyer",
+            "line1": "10 Downing Street",
+            "line2": None,
+            "city": "London",
+            "postal_code": "SW1A 2AA",
+            "country": "GB",
+        },
+    }
+
+    mock_fulfiller_addr.return_value = {
+        "name": "Fulfiller",
+        "line1": "1 Industrial Park",
+        "line2": None,
+        "city": "Birmingham",
+        "postal_code": "B1 1AA",
+        "country": "GB",
+    }
+
+    mock_create_label.side_effect = Exception("ShipEngine API timeout")
+
+    response = client.post("/shipping/create_label/claim-004")
+    assert response.status_code == 502
+    assert "shipping label" in response.json()["detail"].lower()
+
+
+@patch("routes.shipping.get_claim_detail", new_callable=AsyncMock)
+def test_create_label_claim_not_found(mock_claim_detail, client):
+    """When get_claim_detail returns None, should return 404."""
+    mock_claim_detail.return_value = None
+
+    response = client.post("/shipping/create_label/claim-nonexistent")
+    assert response.status_code == 404
+    assert "claim not found" in response.json()["detail"].lower()
+
+
+@patch("routes.shipping.get_claim_detail", new_callable=AsyncMock)
+def test_create_label_wrong_fulfiller(mock_claim_detail, client):
+    """When the requesting user is not the fulfiller, should return 403."""
+    mock_claim_detail.return_value = {
+        "claim_id": "claim-005",
+        "claimant_user_id": "different-user-456",  # Not the test user
+        "status": "qa_check",
+        "order_id": "order-005",
+        "ship_to": {
+            "name": "Buyer",
+            "line1": "1 High St",
+            "city": "London",
+            "postal_code": "E1 1AA",
+            "country": "GB",
+        },
+    }
+
+    response = client.post("/shipping/create_label/claim-005")
+    assert response.status_code == 403
+    assert "fulfiller" in response.json()["detail"].lower()

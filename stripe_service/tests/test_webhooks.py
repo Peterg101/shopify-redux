@@ -151,3 +151,74 @@ def test_checkout_completed_ignores_unpaid():
 
     assert response.status_code == 200
     assert response.json()["status"] == "not_paid"
+
+
+# ── Additional webhook edge case tests ──
+
+
+def test_checkout_completed_missing_user_id_in_metadata():
+    """Checkout completed event with missing user_id should return error status."""
+    async def override_missing_user_id():
+        return {
+            "type": "checkout.session.completed",
+            "data": {
+                "object": {
+                    "id": "cs_test_no_user",
+                    "payment_status": "paid",
+                    "metadata": {},  # no user_id
+                }
+            }
+        }
+
+    app.dependency_overrides[validate_stripe_header] = override_missing_user_id
+    with TestClient(app) as client:
+        response = client.post("/webhook/checkout_completed")
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "error"
+    assert "user_id" in data["detail"].lower()
+
+
+def test_checkout_completed_ignores_non_checkout_event():
+    """A non-checkout.session.completed event type should be ignored."""
+    async def override_wrong_event_type():
+        return {
+            "type": "payment_intent.succeeded",
+            "data": {
+                "object": {
+                    "id": "pi_test_unrelated",
+                }
+            }
+        }
+
+    app.dependency_overrides[validate_stripe_header] = override_wrong_event_type
+    with TestClient(app) as client:
+        response = client.post("/webhook/checkout_completed")
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "event_ignored"
+
+
+@patch("routes.webhooks.httpx.AsyncClient")
+def test_webhook_account_updated_db_service_error(mock_client_class):
+    """When db_service returns error for onboarding confirmation, should return error status."""
+    mock_response = MagicMock()
+    mock_response.status_code = 500
+    mock_async_client = AsyncMock()
+    mock_async_client.post.return_value = mock_response
+    mock_async_client.__aenter__ = AsyncMock(return_value=mock_async_client)
+    mock_async_client.__aexit__ = AsyncMock(return_value=None)
+    mock_client_class.return_value = mock_async_client
+
+    app.dependency_overrides[validate_stripe_header] = override_validate_stripe_header_ready
+    with TestClient(app) as client:
+        response = client.post("/webhook/confirm_user_onboarded")
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "error"
+    assert "failed" in data["detail"].lower()
