@@ -22,4 +22,11 @@ describe('HeaderBar', () => {
     expect(generateLink).toHaveAttribute('href', '/generate')
     expect(fulfillLink).toHaveAttribute('href', '/fulfill')
   })
+
+  it('renders Catalog navigation link with correct href', () => {
+    renderWithProviders(<HeaderBar />, { route: '/generate' })
+    const catalogLink = screen.getByText('Catalog')
+    expect(catalogLink).toBeInTheDocument()
+    expect(catalogLink.closest('a')).toHaveAttribute('href', '/catalog')
+  })
 })

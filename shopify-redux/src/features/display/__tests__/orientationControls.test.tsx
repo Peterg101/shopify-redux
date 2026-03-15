@@ -11,8 +11,10 @@ describe('OrientationControls', () => {
     expect(screen.getByLabelText('Z axis rotation')).toBeInTheDocument()
   })
 
-  it('renders the orientation label', () => {
+  it('renders axis labels with initial 0° values', () => {
     renderWithProviders(<OrientationControls />)
-    expect(screen.getByText('Orientation')).toBeInTheDocument()
+    expect(screen.getByText('X: 0°')).toBeInTheDocument()
+    expect(screen.getByText('Y: 0°')).toBeInTheDocument()
+    expect(screen.getByText('Z: 0°')).toBeInTheDocument()
   })
 })

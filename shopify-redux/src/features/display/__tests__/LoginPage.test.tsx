@@ -42,4 +42,38 @@ describe('LoginPage', () => {
     renderWithProviders(<LoginPageWithRoutes />, { route: '/login' })
     expect(screen.getByText(/sign in with google/i)).toBeInTheDocument()
   })
+
+  it('Sign In button is enabled when email and password fields are filled', () => {
+    renderWithProviders(<LoginPageWithRoutes />, { route: '/login' })
+    const emailInput = screen.getByLabelText('Email')
+    const passwordInput = screen.getByLabelText('Password')
+
+    fireEvent.change(emailInput, { target: { value: 'user@example.com' } })
+    fireEvent.change(passwordInput, { target: { value: 'password123' } })
+
+    const buttons = screen.getAllByRole('button')
+    const signInButton = buttons.find(b => b.textContent === 'Sign In')
+    expect(signInButton).toBeInTheDocument()
+    expect(signInButton).not.toBeDisabled()
+  })
+
+  it('switches back to Sign In tab after visiting Register tab', () => {
+    renderWithProviders(<LoginPageWithRoutes />, { route: '/login' })
+
+    // Switch to Register tab
+    fireEvent.click(screen.getByRole('tab', { name: /register/i }))
+    expect(screen.getByLabelText('Username')).toBeInTheDocument()
+    expect(screen.getByLabelText('Confirm Password')).toBeInTheDocument()
+
+    // Switch back to Sign In tab
+    fireEvent.click(screen.getByRole('tab', { name: /sign in/i }))
+
+    // Should show sign-in fields again
+    expect(screen.getByLabelText('Email')).toBeInTheDocument()
+    expect(screen.getByLabelText('Password')).toBeInTheDocument()
+
+    // Register-only fields should not be present
+    expect(screen.queryByLabelText('Username')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Confirm Password')).not.toBeInTheDocument()
+  })
 })
