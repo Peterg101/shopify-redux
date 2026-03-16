@@ -214,7 +214,7 @@ export const BasketSummary = () => {
   const [open, setOpen] = useState(false);
   const handleClose = () => setOpen(false);
 
-  const user_id = useSelector((state: RootState) => state.userInterfaceState.userInformation.user.user_id);
+  const user_id = useSelector((state: RootState) => state.userInterfaceState.userInformation?.user?.user_id);
   const basketItems = useSelector((state: RootState) => state.userInterfaceState.userInformation?.basket_items || []);
   const subtotal = useSelector(selectTotalBasketValue);
   const shippingEstimate = subtotal > 0 ? 4.99 : 0;

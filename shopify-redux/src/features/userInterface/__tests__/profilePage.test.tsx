@@ -36,7 +36,7 @@ describe('ProfilePage', () => {
   it('renders stat cards for basket, orders, and claims', () => {
     const sessionData = createMockSessionData({
       basket_items: [
-        { task_id: 't1', user_id: 'u1', name: 'Item', material: 'PLA', technique: 'FDM', sizing: 1, colour: 'white', selected_file: 'f.stl', quantity: 2, selectedFileType: 'stl', price: 10 },
+        { task_id: 't1', user_id: 'u1', name: 'Item', material: 'PLA', technique: 'FDM', sizing: 1, colour: 'white', selectedFile: 'f.stl', quantity: 2, selectedFileType: 'stl', price: 10 },
       ],
       orders: [],
       claims: [],
@@ -74,9 +74,9 @@ describe('ProfilePage', () => {
   it('renders correct stat counts for basket, orders, and claims', () => {
     const sessionData = createMockSessionData({
       basket_items: [
-        { task_id: 'b1', user_id: 'u1', name: 'Item 1', material: 'PLA', technique: 'FDM', sizing: 1, colour: 'white', selected_file: 'a.stl', quantity: 1, selectedFileType: 'stl', price: 10 },
-        { task_id: 'b2', user_id: 'u1', name: 'Item 2', material: 'PLA', technique: 'FDM', sizing: 1, colour: 'black', selected_file: 'b.stl', quantity: 1, selectedFileType: 'stl', price: 15 },
-        { task_id: 'b3', user_id: 'u1', name: 'Item 3', material: 'ABS', technique: 'FDM', sizing: 2, colour: 'red', selected_file: 'c.stl', quantity: 1, selectedFileType: 'stl', price: 20 },
+        { task_id: 'b1', user_id: 'u1', name: 'Item 1', material: 'PLA', technique: 'FDM', sizing: 1, colour: 'white', selectedFile: 'a.stl', quantity: 1, selectedFileType: 'stl', price: 10 },
+        { task_id: 'b2', user_id: 'u1', name: 'Item 2', material: 'PLA', technique: 'FDM', sizing: 1, colour: 'black', selectedFile: 'b.stl', quantity: 1, selectedFileType: 'stl', price: 15 },
+        { task_id: 'b3', user_id: 'u1', name: 'Item 3', material: 'ABS', technique: 'FDM', sizing: 2, colour: 'red', selectedFile: 'c.stl', quantity: 1, selectedFileType: 'stl', price: 20 },
       ],
       orders: [
         {

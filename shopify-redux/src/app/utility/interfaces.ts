@@ -151,7 +151,7 @@ export interface BasketInformation {
   technique: string;
   sizing: number;
   colour: string;
-  selected_file: string; // Changed to snake_case
+  selectedFile: string;
   quantity: number;
   selectedFileType: string; // Changed to snake_case
   price: number

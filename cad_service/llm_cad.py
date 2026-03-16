@@ -4,6 +4,7 @@ Supports two backends via CAD_PROVIDER env var:
   - "ollama" (default) — local Ollama via OpenAI-compatible API
   - "anthropic" — Claude API (requires ANTHROPIC_API_KEY)
 """
+import asyncio
 import os
 import re
 import logging
@@ -141,15 +142,19 @@ async def generate_cadquery_code(prompt: str, target_units: str = "mm") -> str:
 
     if CAD_PROVIDER == "anthropic":
         logger.info(f"Using Anthropic ({ANTHROPIC_MODEL}) for code generation")
-        response_text = _anthropic_generate(
-            [{"role": "user", "content": user_content}]
+        response_text = await asyncio.to_thread(
+            _anthropic_generate,
+            [{"role": "user", "content": user_content}],
         )
     else:
         logger.info(f"Using Ollama ({OLLAMA_MODEL}) for code generation")
-        response_text = _ollama_generate([
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_content},
-        ])
+        response_text = await asyncio.to_thread(
+            _ollama_generate,
+            [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_content},
+            ],
+        )
 
     return extract_code(response_text)
 
@@ -167,18 +172,24 @@ async def fix_cadquery_code(
 
     if CAD_PROVIDER == "anthropic":
         logger.info(f"Using Anthropic ({ANTHROPIC_MODEL}) for code fix")
-        response_text = _anthropic_generate([
-            {"role": "user", "content": user_msg_1},
-            {"role": "assistant", "content": assistant_msg},
-            {"role": "user", "content": fix_msg},
-        ])
+        response_text = await asyncio.to_thread(
+            _anthropic_generate,
+            [
+                {"role": "user", "content": user_msg_1},
+                {"role": "assistant", "content": assistant_msg},
+                {"role": "user", "content": fix_msg},
+            ],
+        )
     else:
         logger.info(f"Using Ollama ({OLLAMA_MODEL}) for code fix")
-        response_text = _ollama_generate([
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_msg_1},
-            {"role": "assistant", "content": assistant_msg},
-            {"role": "user", "content": fix_msg},
-        ])
+        response_text = await asyncio.to_thread(
+            _ollama_generate,
+            [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_msg_1},
+                {"role": "assistant", "content": assistant_msg},
+                {"role": "user", "content": fix_msg},
+            ],
+        )
 
     return extract_code(response_text)

@@ -143,10 +143,9 @@ describe('collectionUtils', () => {
       expect(result.basketItem.name).toBe('Widget')
     })
 
-    it('returns object with undefined fields when UUID not found', () => {
+    it('returns undefined when UUID not found', () => {
       const result = combineBasketItem('missing' as UUID, [], [])
-      expect(result.uploadedFile).toBeUndefined()
-      expect(result.basketItem).toBeUndefined()
+      expect(result).toBeUndefined()
     })
   })
 

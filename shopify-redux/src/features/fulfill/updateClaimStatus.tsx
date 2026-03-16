@@ -4,7 +4,7 @@ import { setSelectedClaim, setUpdateClaimMode } from '../../services/userInterfa
 import { resetDataState } from '../../services/dataSlice'
 import { createShippingLabel } from '../../services/fetchFileUtils'
 import { useUpdateClaimStatusMutation, useUploadClaimEvidenceMutation } from '../../services/dbApi'
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
 import {
   Box,
@@ -165,6 +165,11 @@ export const UpdateClaimStatus = () => {
   const [selectedStatus, setSelectedStatus] = useState(validNextStatuses[0] ?? '')
   const [isUpdating, setIsUpdating] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
+
+  // Reset selectedStatus when the claim changes so the dropdown doesn't show a stale value
+  useEffect(() => {
+    setSelectedStatus(validNextStatuses[0] ?? '')
+  }, [selectedClaim?.id])
 
   // Evidence upload state
   const [evidenceFile, setEvidenceFile] = useState<File | null>(null)

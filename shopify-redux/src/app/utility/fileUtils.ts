@@ -4,8 +4,9 @@ export function createFileBlob(file: File): string {
 
 export function extractFileType(file: File): string {
   const fileName = file.name
-  const extension = fileName.split('.').pop()?.toLowerCase()
-  return extension || ''
+  const dotIndex = fileName.lastIndexOf('.')
+  if (dotIndex <= 0) return ''
+  return fileName.slice(dotIndex + 1).toLowerCase()
 }
 
 export async function convertFileToBase64WithoutFileReader(file: File): Promise<string> {

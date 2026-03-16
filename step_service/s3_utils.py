@@ -75,14 +75,17 @@ def find_preview_key_by_task_id(task_id: str) -> str | None:
     """Search S3 for a preview.glb matching the given task_id.
 
     S3 keys follow the pattern: files/{user_id}/{task_id}/preview.glb
+    Uses a paginator to handle >1000 objects and a targeted suffix match.
     """
     client = get_s3_client()
     try:
-        response = client.list_objects_v2(Bucket=BUCKET_NAME, Prefix="files/")
-        for obj in response.get("Contents", []):
-            key = obj["Key"]
-            if task_id in key and key.endswith("preview.glb"):
-                return key
+        paginator = client.get_paginator("list_objects_v2")
+        for page in paginator.paginate(Bucket=BUCKET_NAME, Prefix="files/"):
+            for obj in page.get("Contents", []):
+                key = obj["Key"]
+                # Match exact path segment: .../task_id/preview.glb
+                if key.endswith(f"/{task_id}/preview.glb"):
+                    return key
     except Exception:
         pass
     return None

@@ -23,16 +23,13 @@ export const combineBasketItem = (
   uuid: UUID,
   uploadedFiles: UploadedFile[],
   basketItems: BasketItem[]
-): FileAndItem => {
+): FileAndItem | undefined => {
   const uploadedFile = findItemFromUUID<UploadedFile>(uuid, uploadedFiles)
   const basketItem = findItemFromUUID<BasketItem>(uuid, basketItems)
 
-  const fileAndItem: FileAndItem = {
-    basketItem: basketItem!,
-    uploadedFile: uploadedFile!,
-  }
+  if (!basketItem || !uploadedFile) return undefined
 
-  return fileAndItem
+  return { basketItem, uploadedFile }
 }
 
 export const findItemFromUUID = <T extends { id: UUID }>(

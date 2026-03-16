@@ -78,7 +78,7 @@ export function createMockBasketInformation(overrides: Partial<BasketInformation
     technique: 'FDM',
     sizing: 1,
     colour: 'white',
-    selected_file: 'model.stl',
+    selectedFile: 'model.stl',
     quantity: 1,
     selectedFileType: 'stl',
     price: 25.0,

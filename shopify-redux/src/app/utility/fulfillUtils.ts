@@ -1,6 +1,7 @@
 import { STATUS_PHASES } from '../../features/fulfill/ClaimDashboardHeader'
 
 export const getScarcityColor = (remaining: number, total: number): string => {
+  if (total <= 0) return '#FF5252'
   const ratio = remaining / total
   if (ratio <= 0.25 || remaining <= 3) return '#FF5252'
   if (ratio <= 0.5) return '#FF9100'

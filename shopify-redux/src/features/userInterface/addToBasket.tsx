@@ -52,7 +52,7 @@ const handleAddToBasket = async () => {
         technique: dataState.printTechnique,
         sizing: dataState.multiplierValue,
         colour: dataState.modelColour,
-        selected_file: dataState.selectedFile,
+        selectedFile: dataState.selectedFile,
         selectedFileType: dataState.selectedFileType,
         quantity: 1,
         file_blob: base64String,

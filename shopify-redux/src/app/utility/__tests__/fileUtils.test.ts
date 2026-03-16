@@ -32,10 +32,9 @@ describe('fileUtils', () => {
       expect(extractFileType(file)).toBe('step')
     })
 
-    it('returns the filename itself when there is no dot', () => {
+    it('returns empty string when there is no dot', () => {
       const file = new File(['data'], 'noextension', { type: 'application/octet-stream' })
-      // 'noextension'.split('.').pop() = 'noextension'
-      expect(extractFileType(file)).toBe('noextension')
+      expect(extractFileType(file)).toBe('')
     })
 
     it('handles multiple dots in filename (takes last segment)', () => {

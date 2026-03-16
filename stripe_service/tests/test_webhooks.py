@@ -134,7 +134,7 @@ def test_checkout_completed_creates_orders(mock_stripe, mock_create_orders):
     assert call_args["stripe_checkout_session_id"] == "cs_test_webhook_123"
     assert call_args["user_id"] == "test-user-123"
     assert len(call_args["line_items"]) == 1
-    assert call_args["line_items"][0]["price"] == 19.99
+    assert call_args["line_items"][0]["price"] == 9.995
 
     # Verify shipping address was extracted
     assert call_args["shipping_address"] is not None

@@ -152,13 +152,17 @@ async def get_obj_file_blob(url: str) -> BytesIO:
 
 async def websocket_session_exists(session_id: str):
     url = f"{AUTH_SERVICE_URL}/get_session"
-    headers = {"Cookie": f"{session_id}"}
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url, headers=headers)
-        user_information = json.loads(response.text)
-        user_response = UserAndTasks(**user_information)
-
-    return response.status_code == 200, user_response
+    cookies = {"fitd_session_data": session_id}
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, cookies=cookies)
+            if response.status_code != 200:
+                return False, None
+            user_information = json.loads(response.text)
+            user_response = UserAndTasks(**user_information)
+        return True, user_response
+    except Exception:
+        return False, None
 
 
 async def http_session_exists(session_id: str) -> bool:

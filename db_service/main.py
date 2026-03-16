@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, Order, UserStripeAccount, Claim, Disbursement, ClaimEvidence, ClaimStatusHistory, Dispute, ManufacturingProcess, ManufacturingMaterial, FulfillerProfile, FulfillerCapability, Part
-from fitd_schemas.fitd_classes import UserHydrationResponse, ClaimWithOrderResponse, OrderResponse, OrderDetailResponse, ClaimDetailResponse, DisputeFulfillerResponse, DisputeResolveRequest, DisputeResponse, ClaimEvidenceResponse, ClaimStatusHistoryResponse, MarkDisbursementPaidRequest, ManufacturingProcessResponse, ManufacturingMaterialResponse, FulfillerProfileCreate, FulfillerProfileResponse, PartCreate, PartUpdate, PartResponse, PartListResponse
+from fitd_schemas.fitd_classes import UserHydrationResponse, ClaimWithOrderResponse, OrderResponse, OrderDetailResponse, ClaimDetailResponse, DisputeFulfillerResponse, DisputeResolveRequest, DisputeResponse, ClaimEvidenceResponse, ClaimStatusHistoryResponse, MarkDisbursementPaidRequest, ManufacturingProcessResponse, ManufacturingMaterialResponse, FulfillerProfileCreate, FulfillerProfileResponse, PartCreate, PartUpdate, PartResponse, PartListResponse, IncompleteTaskResponse
 from datetime import datetime, timedelta
 import uuid
 from db_setup import engine, get_db
@@ -83,11 +83,13 @@ def create_user(
     authorization: str = Depends(verify_jwt_token),
 ):
     # Check if the user already exists
-    user_exists = check_user_existence(db, user_information.email)
+    user_exists = check_user_existence(db, user_information.user_id)
 
     # Add the user to the database
     if not user_exists:
         user = add_user_to_db(db, user_information)
+    else:
+        user = db.query(User).filter(User.user_id == user_information.user_id).first()
 
     # Return the created user's data
     return {"user_id": user.user_id, "username": user.username, "email": user.email}
@@ -266,7 +268,7 @@ async def get_user(
         "user": user,
         "tasks": tasks,
         "basket_items": basket_items,
-        "incomplete_task": incomplete_task,
+        "incomplete_task": IncompleteTaskResponse.from_orm(incomplete_task) if incomplete_task else None,
         "claimable_orders": claimable_orders_response,
         "orders": orders_response,
         "claims": claims_response,
@@ -489,7 +491,7 @@ async def delete_basket_item(
             )
 
         # Possible file extensions
-        extensions = ["str", "obj"]
+        extensions = ["stl", "obj", "step", "stp"]
 
         # Attempt to delete the file for each extension
         file_deleted = False
@@ -1333,7 +1335,7 @@ async def update_fulfiller_address(
 @app.get("/users/{user_id}/fulfiller_address")
 async def get_fulfiller_address(
     user_id: str,
-    payload: dict = Depends(verify_jwt_token),
+    user_information=Depends(cookie_verification_user_only),
     db: Session = Depends(get_db),
 ):
     stripe_account = db.query(UserStripeAccount).filter(

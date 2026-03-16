@@ -148,7 +148,7 @@ export const dataSlice = createSlice({
             state.selectedFileType=basketItem.selectedFileType
             state.fileDisplay = true
 
-            state.materialCost = getPrice(basketItem.material, config)
+            state.materialCost = getPrice(basketItem.material, config) ?? 0
         },
         setFulfillFileViewProperties: (
             state,
@@ -168,7 +168,7 @@ export const dataSlice = createSlice({
             state.selectedFileType=order.selectedFileType
             state.fileDisplay = true
 
-            state.materialCost = getPrice(order.material, config)
+            state.materialCost = getPrice(order.material, config) ?? 0
             state.fromMeshyOrHistory = true
 
         },

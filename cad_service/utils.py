@@ -134,7 +134,7 @@ async def register_task(user_id: str, task_name: str, port_id: str) -> str | Non
         "task_id": task_id,
         "user_id": user_id,
         "task_name": task_name,
-        "file_type": "glb",
+        "file_type": "step",
         "port_id": port_id,
     }
     try:
@@ -210,7 +210,9 @@ async def validate_session(websocket) -> tuple[bool, str | None]:
 
     data = await http_session_exists(session_id)
     if data:
-        return True, data.get("user_id")
+        user = data.get("user")
+        user_id = user.get("user_id") if user else None
+        return True, user_id
     return False, None
 
 

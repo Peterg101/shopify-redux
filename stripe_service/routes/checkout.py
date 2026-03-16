@@ -43,6 +43,7 @@ async def create_checkout_session(user=Depends(cookie_verification_user_only)):
                         "material_id": item.get("material_id", ""),
                         "tolerance_mm": str(item.get("tolerance_mm", "")),
                         "surface_finish": item.get("surface_finish", ""),
+                        "special_requirements": item.get("special_requirements", ""),
                     },
                 },
             },

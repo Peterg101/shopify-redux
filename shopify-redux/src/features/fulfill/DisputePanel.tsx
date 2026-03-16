@@ -125,7 +125,7 @@ export function DisputePanel({ claim, onClose }: DisputePanelProps) {
       }
       if (resolution === 'partial' && partial) {
         const order = claim.order
-        const maxCents = Math.round(order.price * claim.quantity / order.quantity * 100)
+        const maxCents = Math.round(order.price * claim.quantity * 100)
         if (partial > maxCents) {
           setError(`Partial amount cannot exceed claim value (${maxCents} cents / $${(maxCents / 100).toFixed(2)})`)
           return

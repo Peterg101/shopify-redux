@@ -73,7 +73,7 @@ class TaskInformation(BaseModel):
     task_name: Optional[str] = None
     file_type: Optional[str] = "obj"
     port_id: Optional[str] = None
-    created_at: Optional[str] = datetime.now().isoformat()
+    created_at: Optional[str] = Field(default_factory=lambda: datetime.now().isoformat())
 
 
 class UserAndTasks(BaseModel):
@@ -523,6 +523,7 @@ class OrderDetailResponse(BaseModel):
 
 class ClaimWithOrderResponse(BaseModel):
     id: str
+    order_id: str
     claimant_user_id: str
     quantity: int
     status: str
@@ -580,9 +581,21 @@ class TaskResponse(BaseModel):
         orm_mode = True
 
 
-class IncompleteTaskResponse(BaseModel):
+class IncompleteTaskPortResponse(BaseModel):
     port_id: str
     task_id: str
+
+    class Config:
+        orm_mode = True
+
+
+class IncompleteTaskResponse(BaseModel):
+    task_id: str
+    user_id: Optional[str] = None
+    task_name: Optional[str] = None
+    file_type: Optional[str] = "obj"
+    created_at: Optional[str] = None
+    port: Optional[IncompleteTaskPortResponse] = None
 
     class Config:
         orm_mode = True

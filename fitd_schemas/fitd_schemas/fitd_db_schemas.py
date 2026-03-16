@@ -27,7 +27,7 @@ class Task(Base):
     task_name = Column(String)
     file_type = Column(String, default="obj")
     complete = Column(Boolean, default=False)
-    created_at = Column(String, default=datetime.now().isoformat())
+    created_at = Column(String, default=lambda: datetime.now().isoformat())
     owner = relationship("User", back_populates="tasks")
 
     # Optional one-to-one relationship to PortID

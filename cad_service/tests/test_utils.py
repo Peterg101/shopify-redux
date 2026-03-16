@@ -138,7 +138,7 @@ class TestRegisterTask:
         assert payload["user_id"] == "user-42"
         assert payload["task_name"] == "gear housing"
         assert payload["port_id"] == "port-99"
-        assert payload["file_type"] == "glb"
+        assert payload["file_type"] == "step"
 
     @pytest.mark.asyncio
     @patch("utils.generate_token", return_value="mock-jwt-token")
@@ -422,7 +422,7 @@ class TestValidateSession:
     @pytest.mark.asyncio
     @patch("utils.http_session_exists")
     async def test_valid_session(self, mock_session_check):
-        mock_session_check.return_value = {"user_id": "user-123"}
+        mock_session_check.return_value = {"user": {"user_id": "user-123"}}
 
         ws = MagicMock()
         ws.cookies = {"fitd_session_data": "valid-session-id"}

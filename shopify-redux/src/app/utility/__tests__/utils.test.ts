@@ -46,8 +46,8 @@ describe('calculateTotalBasketValue', () => {
 
   it('sums quantity * price for each item', () => {
     const items: BasketInformation[] = [
-      { task_id: '1', user_id: 'u1', name: 'A', material: 'PLA', technique: 'FDM', sizing: 1, colour: 'white', selected_file: 'a.stl', quantity: 2, selectedFileType: 'stl', price: 10 },
-      { task_id: '2', user_id: 'u1', name: 'B', material: 'PLA', technique: 'FDM', sizing: 1, colour: 'white', selected_file: 'b.stl', quantity: 3, selectedFileType: 'stl', price: 5 },
+      { task_id: '1', user_id: 'u1', name: 'A', material: 'PLA', technique: 'FDM', sizing: 1, colour: 'white', selectedFile: 'a.stl', quantity: 2, selectedFileType: 'stl', price: 10 },
+      { task_id: '2', user_id: 'u1', name: 'B', material: 'PLA', technique: 'FDM', sizing: 1, colour: 'white', selectedFile: 'b.stl', quantity: 3, selectedFileType: 'stl', price: 5 },
     ]
     expect(calculateTotalBasketValue(items)).toBe(35) // (2*10) + (3*5)
   })
@@ -115,7 +115,7 @@ describe('extractFileType', () => {
 
   it('returns empty string for no extension', () => {
     const file = new File([], 'noext')
-    expect(extractFileType(file)).toBe('noext')
+    expect(extractFileType(file)).toBe('')
   })
 })
 
