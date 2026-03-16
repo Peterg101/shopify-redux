@@ -78,7 +78,7 @@ export function OrderDetailCard({
           <Typography variant="h6">{order.name}</Typography>
 
           <Typography variant="body2" color="text.secondary">
-            Material: {order.material} | Technique: {order.technique} | Colour: {order.colour} | Size: {order.sizing}
+            Material: {order.material} | Technique: {order.technique}{order.colour ? ` | Colour: ${order.colour}` : ''} | Size: {order.sizing}
           </Typography>
 
           {variant === 'claimable' ? (

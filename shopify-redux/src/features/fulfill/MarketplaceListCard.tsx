@@ -127,7 +127,7 @@ export const MarketplaceListCard = React.memo(({ order }: MarketplaceListCardPro
             {order.name}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {order.material} | {order.colour}
+            {order.material}{order.colour ? ` | ${order.colour}` : ''}
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
             <Chip label={order.technique} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.7rem' }} />

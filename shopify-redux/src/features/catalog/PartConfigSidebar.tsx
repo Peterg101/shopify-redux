@@ -95,9 +95,18 @@ export const PartConfigSidebar = ({ part, onColourChange }: PartConfigSidebarPro
       )
     : [];
 
+  const is3DPrinting = selectedProcess?.family === '3d_printing';
+
   const handleTechniqueChange = (event: SelectChangeEvent) => {
-    setTechnique(event.target.value);
+    const newTechnique = event.target.value;
+    setTechnique(newTechnique);
     setMaterial(''); // Reset material when technique changes
+    // Reset colour when switching to a non-3D-printing process
+    const newProcess = serverProcesses?.find((p: ManufacturingProcess) => p.name === newTechnique);
+    if (newProcess?.family !== '3d_printing') {
+      setColour('');
+      onColourChange('');
+    }
   };
 
   const handleMaterialChange = (event: SelectChangeEvent) => {
@@ -124,7 +133,7 @@ export const PartConfigSidebar = ({ part, onColourChange }: PartConfigSidebarPro
           material: material || undefined,
           technique: technique || undefined,
           quantity,
-          colour,
+          colour: colour || undefined,
           sizing: 1.0,
           tolerance_mm: toleranceMm,
           surface_finish: surfaceFinish,
@@ -226,31 +235,35 @@ export const PartConfigSidebar = ({ part, onColourChange }: PartConfigSidebarPro
           <AccordionSummary expandIcon={<ExpandMore />}>
             <Box sx={summaryLabelSx}>
               <Palette sx={{ color: 'primary.main', fontSize: 18 }} />
-              <Typography variant="body1" fontWeight={500}>Colour & Quantity</Typography>
+              <Typography variant="body1" fontWeight={500}>
+                {is3DPrinting ? 'Colour & Quantity' : 'Quantity'}
+              </Typography>
             </Box>
           </AccordionSummary>
           <AccordionDetails>
-            <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-              <InputLabel id="part-colour-label">Colour</InputLabel>
-              <Select
-                labelId="part-colour-label"
-                value={colour}
-                label="Colour"
-                onChange={handleColourChange}
-              >
-                {colours.map((c) => (
-                  <MenuItem key={c} value={c}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box sx={{
-                        width: 14, height: 14, borderRadius: '50%',
-                        backgroundColor: c, border: '1px solid rgba(255,255,255,0.2)',
-                      }} />
-                      {c}
-                    </Box>
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            {is3DPrinting && (
+              <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+                <InputLabel id="part-colour-label">Colour</InputLabel>
+                <Select
+                  labelId="part-colour-label"
+                  value={colour}
+                  label="Colour"
+                  onChange={handleColourChange}
+                >
+                  {colours.map((c) => (
+                    <MenuItem key={c} value={c}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{
+                          width: 14, height: 14, borderRadius: '50%',
+                          backgroundColor: c, border: '1px solid rgba(255,255,255,0.2)',
+                        }} />
+                        {c}
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>Qty:</Typography>

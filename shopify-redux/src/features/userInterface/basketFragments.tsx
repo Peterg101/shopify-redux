@@ -138,7 +138,7 @@ function BasketItemCard(item: BasketInformation) {
         <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1.5 }}>
           <Chip label={item.technique} size="small" variant="outlined" />
           <Chip label={item.material} size="small" variant="outlined" />
-          <Chip label={item.colour} size="small" variant="outlined" />
+          {item.colour && <Chip label={item.colour} size="small" variant="outlined" />}
         </Box>
 
         {/* Quantity row */}

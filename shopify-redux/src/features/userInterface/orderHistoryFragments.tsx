@@ -156,7 +156,7 @@ function OrderedItemCard(item: Order) {
         <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1 }}>
           <Chip label={item.technique} size="small" variant="outlined" icon={<Construction sx={{ fontSize: 14 }} />} />
           <Chip label={item.material} size="small" variant="outlined" icon={<Inventory2 sx={{ fontSize: 14 }} />} />
-          <Chip label={item.colour} size="small" variant="outlined" icon={<ColorLens sx={{ fontSize: 14 }} />} />
+          {item.colour && <Chip label={item.colour} size="small" variant="outlined" icon={<ColorLens sx={{ fontSize: 14 }} />} />}
           <Chip
             icon={item.is_collaborative ? <Public sx={{ fontSize: 14 }} /> : <Lock sx={{ fontSize: 14 }} />}
             label={item.is_collaborative ? "Community" : "Private"}

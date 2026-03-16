@@ -211,7 +211,7 @@ export const MarketplaceGridCard = React.memo(({ order }: MarketplaceGridCardPro
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
             <Chip label={order.technique} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.7rem' }} />
             <Chip label={order.material} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.7rem' }} />
-            <Chip label={order.colour} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.7rem' }} />
+            {order.colour && <Chip label={order.colour} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.7rem' }} />}
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5 }}>
