@@ -10,6 +10,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from redis.asyncio import Redis as AsyncRedis
+import asyncio
 import uvicorn
 from fitd_schemas.fitd_classes import SessionData, UserInformation, EmailRegisterRequest, EmailLoginRequest
 import httpx
@@ -77,6 +78,7 @@ def auth_google(request: Request):
 
 
 @app.get("/auth/google/callback")
+@limiter.limit("10/minute")
 async def auth_callback(code: str, request: Request):
     redirect_uri = REDIRECT_URI
     token_request_uri = "https://oauth2.googleapis.com/token"
@@ -105,7 +107,8 @@ async def auth_callback(code: str, request: Request):
 
     try:
         # Verify the ID token
-        id_info = id_token.verify_oauth2_token(
+        id_info = await asyncio.to_thread(
+            id_token.verify_oauth2_token,
             id_token_value, google_requests.Request(), GOOGLE_CLIENT_ID
         )
         user_information = UserInformation()
@@ -144,7 +147,7 @@ async def auth_callback(code: str, request: Request):
 @app.post("/auth/register")
 @limiter.limit("3/minute")
 async def email_register(request: Request, register_request: EmailRegisterRequest):
-    hashed = bcrypt.hashpw(register_request.password.encode("utf-8"), bcrypt.gensalt())
+    hashed = await asyncio.to_thread(bcrypt.hashpw, register_request.password.encode("utf-8"), bcrypt.gensalt())
 
     import uuid
     user_info = UserInformation(
@@ -218,9 +221,10 @@ async def logout(request: Request):
     try:
         await delete_session(redis_session, session_id)
 
-        return {"message": "Logged out", "user_info": {"user_id": session_data.user_id}}
+        response = JSONResponse(content={"message": "Logged out", "user_info": {"user_id": session_data.user_id}})
+        response.delete_cookie("fitd_session_data")
+        return response
     except ValueError:
-        # Token is invalid or verification failed
         raise HTTPException(
             status_code=401, detail="Invalid token or token verification failed"
         )

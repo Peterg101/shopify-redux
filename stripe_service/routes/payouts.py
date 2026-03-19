@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from fastapi import APIRouter, HTTPException, Depends
 from utils import cookie_verification_user_only
@@ -47,11 +48,13 @@ async def process_payout(claim_id: str, user=Depends(cookie_verification_user_on
 
         # Create Stripe Transfer
         try:
-            transfer = stripe.Transfer.create(
+            transfer = await asyncio.to_thread(
+                stripe.Transfer.create,
                 amount=disbursement["amount_cents"],
                 currency="gbp",
                 destination=stripe_info["stripe_account_id"],
                 description=f"Payout for claim {claim_id}",
+                idempotency_key=f"payout-{claim_id}-{disbursement['id']}",
             )
         except stripe.error.StripeError:
             logger.exception("Stripe transfer failed")

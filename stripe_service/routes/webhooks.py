@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, Header, HTTPException, Depends
 from utils import validate_stripe_header
 from api_calls import create_orders_from_checkout
 from jwt_auth import generate_token
+import asyncio
 import logging
 import httpx
 import os
@@ -59,7 +60,8 @@ async def checkout_completed_webhook(event=Depends(validate_stripe_header)):
         return {"status": "error", "detail": "Missing user_id in session metadata"}
 
     # Retrieve the full session with expanded line items
-    full_session = stripe.checkout.Session.retrieve(
+    full_session = await asyncio.to_thread(
+        stripe.checkout.Session.retrieve,
         session_id,
         expand=["line_items.data.price.product"],
     )

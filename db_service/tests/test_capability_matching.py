@@ -241,7 +241,7 @@ class TestClaimValidation:
         resp = client.post("/claims/claim_order", json={
             "order_id": "order-legacy", "quantity": 1, "status": "pending"
         })
-        assert resp.status_code == 200
+        assert resp.status_code == 201
         set_auth_as_buyer()
 
     def test_claim_rejected_no_profile(self, client, seed_user, seed_task, seed_claimant_user, db_session):
@@ -308,7 +308,7 @@ class TestClaimValidation:
         resp = client.post("/claims/claim_order", json={
             "order_id": "order-fdm-pla", "quantity": 1, "status": "pending"
         })
-        assert resp.status_code == 200
+        assert resp.status_code == 201
         set_auth_as_buyer()
 
     def test_claim_allowed_no_material_constraint(self, client, seed_user, seed_task, seed_claimant_user, db_session):
@@ -325,5 +325,5 @@ class TestClaimValidation:
         resp = client.post("/claims/claim_order", json={
             "order_id": "order-fdm", "quantity": 1, "status": "pending"
         })
-        assert resp.status_code == 200
+        assert resp.status_code == 201
         set_auth_as_buyer()

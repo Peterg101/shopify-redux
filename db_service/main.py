@@ -46,6 +46,10 @@ from fitd_schemas.fitd_classes import(
     FulfillerAddressUpdate,
     ClaimShippingUpdate,
     PasswordVerifyRequest,
+    StripeAccountCreateRequest,
+    OrderStatusUpdate,
+    EvidenceUploadRequest,
+    PartOrderConfig,
 )
 import uvicorn
 from typing import Optional, Dict
@@ -95,7 +99,7 @@ def create_user(
     return {"user_id": user.user_id, "username": user.username, "email": user.email}
 
 
-@app.post("/users/register", response_model=Dict[str, str])
+@app.post("/users/register", response_model=Dict[str, str], status_code=201)
 def register_user(
     user_information: UserInformation,
     db: Session = Depends(get_db),
@@ -151,7 +155,7 @@ def verify_password(
 
 # Add a Task
 @app.post("/tasks", status_code=201)
-async def add_task(
+def add_task(
     task_information: TaskInformation,
     db: Session = Depends(get_db),
     authorization: str = Depends(verify_jwt_token),
@@ -165,7 +169,7 @@ async def add_task(
 
 
 @app.patch("/tasks/{task_id}/complete", status_code=200)
-async def complete_task(
+def complete_task(
     task_id: str,
     db: Session = Depends(get_db),
     authorization: str = Depends(verify_jwt_token),
@@ -176,7 +180,7 @@ async def complete_task(
 
 
 @app.get("/users/{user_id}", response_model=UserHydrationResponse)
-async def get_user(
+def get_user(
     user_id: str,
     db: Session = Depends(get_db),
     authorization: str = Depends(verify_jwt_token),
@@ -279,7 +283,7 @@ async def get_user(
 
 # Get User
 @app.get("/only_user/{user_id}")
-async def get_only_user(
+def get_only_user(
     user_id: str,
     db: Session = Depends(get_db),
     authorization: str = Depends(verify_jwt_token),
@@ -292,7 +296,7 @@ async def get_only_user(
 
 # Check that user is onboarded with stripe
 @app.get("/user_onboarded_with_stripe/{user_id}")
-async def check_user_onboarded_with_stripe(
+def check_user_onboarded_with_stripe(
     user_id: str,
     db: Session = Depends(get_db),
     _: str = Depends(verify_jwt_token),
@@ -322,39 +326,35 @@ async def check_user_onboarded_with_stripe(
 
 
 @app.post("/generate_user_stripe_account_in_db/{user_id}")
-async def generate_user_stripe_account_in_db(
+def generate_user_stripe_account_in_db(
     user_id: str,
-    payload: dict,
+    payload: StripeAccountCreateRequest,
     db: Session = Depends(get_db),
     _: str = Depends(verify_jwt_token),
 ):
     """
     Creates a Stripe account record in the DB for a given user.
     """
-    stripe_account_id = payload.get("stripe_account_id")
-    if not stripe_account_id:
-        raise HTTPException(status_code=400, detail="Missing stripe_account_id")
-
     existing = db.query(UserStripeAccount).filter_by(user_id=user_id).first()
     if existing:
-        existing.stripe_account_id = stripe_account_id
+        existing.stripe_account_id = payload.stripe_account_id
         db.commit()
         return {"message": "Stripe account updated", "user_id": user_id}
 
     record = UserStripeAccount(
         user_id=user_id,
-        stripe_account_id=stripe_account_id,
+        stripe_account_id=payload.stripe_account_id,
         onboarding_complete=False
     )
     db.add(record)
     db.commit()
     db.refresh(record)
 
-    return {"message": "Stripe account created", "user_id": user_id, "stripe_account_id": stripe_account_id}
+    return {"message": "Stripe account created", "user_id": user_id, "stripe_account_id": payload.stripe_account_id}
 
 
 @app.post("/file_upload")
-async def receive_meshy_task(
+def receive_meshy_task(
     response: MeshyTaskStatusResponse,
     payload: dict = Depends(verify_jwt_token),
     db: Session = Depends(get_db),
@@ -380,7 +380,7 @@ async def receive_meshy_task(
 
 
 @app.post("/file_upload_from_image")
-async def receive_meshy_task_from_image_generator(
+def receive_meshy_task_from_image_generator(
     response: ImageTo3DMeshyTaskStatusResponse,
     payload: dict = Depends(verify_jwt_token),
     db: Session = Depends(get_db),
@@ -406,11 +406,11 @@ async def receive_meshy_task_from_image_generator(
 
 
 @app.post("/basket_item_quantity")
-async def update_basket_quantity(
+def update_basket_quantity(
     update_data: BasketQuantityUpdate,
     db: Session = Depends(get_db),
-    _: None = Depends(cookie_verification),
-   
+    user_information: None = Depends(cookie_verification_user_only),
+
 ):
     basket_item = db.query(BasketItem).filter(
         BasketItem.task_id == update_data.task_id,
@@ -418,7 +418,10 @@ async def update_basket_quantity(
 
     if not basket_item:
         raise HTTPException(status_code=404, detail="Basket item not found")
-    
+
+    if basket_item.user_id != user_information.user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to modify this basket item")
+
     basket_item.quantity = update_data.quantity
     db.commit()
     db.refresh(basket_item)
@@ -427,7 +430,7 @@ async def update_basket_quantity(
 
 
 @app.get("/file_storage/{file_id}")
-async def get_file_from_storage(
+def get_file_from_storage(
     request: Request, file_id: str, _: None = Depends(cookie_verification)
 ):
     file_path = os.path.join("uploads", f"{file_id}.obj")
@@ -442,17 +445,19 @@ async def get_file_from_storage(
 
 
 @app.post("/file_storage")
-async def post_basket_item_to_storage(
+def post_basket_item_to_storage(
     request: Request,
     basket_item: BasketItemInformation,
     db: Session = Depends(get_db),
-    _: None = Depends(cookie_verification),
+    user_information: None = Depends(cookie_verification_user_only),
 ):
-    # Check if the user exists in the database
     user_exists = check_user_existence(db, basket_item.user_id)
     if not user_exists:
         raise HTTPException(status_code=404, detail="User not found")
-    # Validate the file_blob presence
+
+    if basket_item.user_id != user_information.user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to add items for another user")
+
     if not basket_item.file_blob:
         raise HTTPException(status_code=400, detail="File blob not provided")
 
@@ -470,25 +475,24 @@ async def post_basket_item_to_storage(
 
 
 @app.delete("/file_storage/{file_id}")
-async def delete_basket_item(
+def delete_basket_item(
     request: Request,
     file_id: str,
     db: Session = Depends(get_db),
-    _: None = Depends(
-        cookie_verification
-    ),  
+    user_information: None = Depends(cookie_verification_user_only),
 ):
     try:
-        # Query the database for the item to delete
         basket_item = db.query(BasketItem).filter(
             BasketItem.task_id == file_id
             ).first()
 
-        # If the item doesn't exist, raise a 404 error
         if not basket_item:
             raise HTTPException(
                 status_code=404, detail=f"Item with ID {file_id} not found."
             )
+
+        if basket_item.user_id != user_information.user_id:
+            raise HTTPException(status_code=403, detail="Not authorized to delete this basket item")
 
         # Possible file extensions
         extensions = ["stl", "obj", "step", "stp"]
@@ -524,7 +528,7 @@ async def delete_basket_item(
 
 
 @app.get("/all_basket_items")
-async def get_all_basket_items(
+def get_all_basket_items(
     user_id: str,
     db: Session = Depends(get_db),
     authorization: str = Depends(verify_jwt_token),
@@ -537,8 +541,8 @@ async def get_all_basket_items(
     return basket_items
 
 
-@app.post("/orders/create_from_stripe_checkout")
-async def create_order_from_stripe(
+@app.post("/orders/create_from_stripe_checkout", status_code=201)
+def create_order_from_stripe(
     checkout_order: StripeCheckoutOrder,
     payload: dict = Depends(verify_jwt_token),
     db: Session = Depends(get_db)
@@ -593,7 +597,7 @@ async def create_order_from_stripe(
 
 
 @app.get("/orders/{order_id}/detail", response_model=OrderDetailResponse)
-async def get_order_detail(
+def get_order_detail(
     order_id: str,
     db: Session = Depends(get_db),
     user_information: None = Depends(cookie_verification_user_only),
@@ -668,7 +672,7 @@ async def get_order_detail(
 
 
 @app.patch("/orders/{order_id}/visibility")
-async def toggle_order_visibility(
+def toggle_order_visibility(
     order_id: str,
     db: Session = Depends(get_db),
     user_information: None = Depends(cookie_verification_user_only),
@@ -693,31 +697,26 @@ async def toggle_order_visibility(
 
 
 @app.post("/orders/update_order")
-async def update_order(
-    update_payload: dict,
+def update_order(
+    update_payload: OrderStatusUpdate,
     payload: dict = Depends(verify_jwt_token),
     db: Session = Depends(get_db)
 ):
     try:
-        order_id = update_payload.get("order_id")
-        new_status = update_payload.get("order_status")
-        if not order_id or not new_status:
-            raise HTTPException(status_code=400, detail="order_id and order_status are required")
-
-        orders = db.query(Order).filter(Order.order_id == order_id).all()
+        orders = db.query(Order).filter(Order.order_id == update_payload.order_id).all()
 
         if not orders:
-            raise HTTPException(status_code=404, detail=f"No orders found with ID {order_id}")
+            raise HTTPException(status_code=404, detail=f"No orders found with ID {update_payload.order_id}")
 
         for order in orders:
-            order.status = new_status
+            order.status = update_payload.order_status
 
         db.commit()
 
         return {
             "status": "success",
             "updated_count": len(orders),
-            "order_id": order_id,
+            "order_id": update_payload.order_id,
         }
 
     except HTTPException:
@@ -729,7 +728,7 @@ async def update_order(
 
 
 @app.post("/stripe/confirm_onboarding/{stripe_account_id}")
-async def confirm_onboarding(
+def confirm_onboarding(
     stripe_account_id: str,
     payload: dict = Depends(verify_jwt_token),
     db: Session = Depends(get_db),
@@ -745,8 +744,8 @@ async def confirm_onboarding(
     return {"message": "Onboarding confirmed", "stripe_account_id": stripe_account_id}
 
 
-@app.post("/claims/claim_order")
-async def claim_order(
+@app.post("/claims/claim_order", status_code=201)
+def claim_order(
     claimed_order: ClaimOrder,
     db: Session = Depends(get_db),
     user_information: None = Depends(cookie_verification_user_only),
@@ -812,7 +811,7 @@ async def claim_order(
         raise HTTPException(status_code=500, detail="Error claiming order")
 
 @app.patch("/claims/{claim_id}/quantity")
-async def update_claim_quantity(
+def update_claim_quantity(
     claim_id: str,
     quantity_update: ClaimQuantityUpdate,
     db: Session = Depends(get_db),
@@ -920,7 +919,7 @@ ALLOWED_STATUS_TRANSITIONS = {
 
 
 @app.patch("/claims/{claim_id}/status")
-async def update_claim_status(
+def update_claim_status(
     claim_id: str,
     status_update: ClaimStatusUpdate,
     db: Session = Depends(get_db),
@@ -1015,10 +1014,10 @@ async def update_claim_status(
     return {"message": "Claim status updated", "claim_id": claim_id, "new_status": status_update.status}
 
 
-@app.post("/claims/{claim_id}/evidence")
-async def upload_claim_evidence(
+@app.post("/claims/{claim_id}/evidence", status_code=201)
+def upload_claim_evidence(
     claim_id: str,
-    payload: dict,
+    payload: EvidenceUploadRequest,
     db: Session = Depends(get_db),
     user_information: None = Depends(cookie_verification_user_only),
 ):
@@ -1029,16 +1028,12 @@ async def upload_claim_evidence(
     if claim.claimant_user_id != user_information.user_id:
         raise HTTPException(status_code=403, detail="Only the fulfiller can upload evidence")
 
-    image_data = payload.get("image_data")
-    if not image_data:
-        raise HTTPException(status_code=400, detail="Missing image_data")
-
-    if len(image_data) > MAX_EVIDENCE_SIZE_B64:
+    if len(payload.image_data) > MAX_EVIDENCE_SIZE_B64:
         raise HTTPException(status_code=413, detail=f"File exceeds {MAX_EVIDENCE_SIZE_MB}MB limit")
 
     file_id = str(uuid.uuid4())
     file_path = UPLOAD_DIR / f"evidence_{file_id}.jpg"
-    file_bytes = base64.b64decode(image_data)
+    file_bytes = base64.b64decode(payload.image_data)
     with open(file_path, "wb") as f:
         f.write(file_bytes)
 
@@ -1046,7 +1041,7 @@ async def upload_claim_evidence(
         claim_id=claim_id,
         file_path=str(file_path),
         status_at_upload=claim.status,
-        description=payload.get("description"),
+        description=payload.description,
     )
     db.add(evidence)
     db.commit()
@@ -1062,7 +1057,7 @@ async def upload_claim_evidence(
 
 
 @app.get("/claims/{claim_id}/evidence")
-async def get_claim_evidence(
+def get_claim_evidence(
     claim_id: str,
     db: Session = Depends(get_db),
     _: None = Depends(cookie_verification),
@@ -1087,7 +1082,7 @@ async def get_claim_evidence(
 
 
 @app.get("/claims/{claim_id}/history")
-async def get_claim_history(
+def get_claim_history(
     claim_id: str,
     db: Session = Depends(get_db),
     _: None = Depends(cookie_verification),
@@ -1109,7 +1104,7 @@ async def get_claim_history(
 
 
 @app.get("/disbursements/pending/{claim_id}")
-async def get_pending_disbursement(
+def get_pending_disbursement(
     claim_id: str,
     db: Session = Depends(get_db),
     _: dict = Depends(verify_jwt_token),
@@ -1130,7 +1125,7 @@ async def get_pending_disbursement(
 
 
 @app.patch("/disbursements/{disbursement_id}/paid")
-async def mark_disbursement_paid(
+def mark_disbursement_paid(
     disbursement_id: str,
     payload: MarkDisbursementPaidRequest,
     db: Session = Depends(get_db),
@@ -1148,7 +1143,7 @@ async def mark_disbursement_paid(
 
 
 @app.get("/disputes/{claim_id}", response_model=DisputeResponse)
-async def get_dispute(
+def get_dispute(
     claim_id: str,
     db: Session = Depends(get_db),
     _: None = Depends(cookie_verification),
@@ -1161,7 +1156,7 @@ async def get_dispute(
 
 
 @app.post("/disputes/{dispute_id}/respond")
-async def respond_to_dispute(
+def respond_to_dispute(
     dispute_id: str,
     payload: DisputeFulfillerResponse,
     db: Session = Depends(get_db),
@@ -1193,7 +1188,7 @@ async def respond_to_dispute(
 
 
 @app.post("/disputes/{dispute_id}/resolve")
-async def resolve_dispute(
+def resolve_dispute(
     dispute_id: str,
     payload: DisputeResolveRequest,
     db: Session = Depends(get_db),
@@ -1258,10 +1253,10 @@ async def resolve_dispute(
     return {"message": "Dispute resolved", "dispute_id": dispute_id, "resolution": payload.resolution}
 
 
-@app.post("/disputes/{dispute_id}/evidence")
-async def upload_dispute_evidence(
+@app.post("/disputes/{dispute_id}/evidence", status_code=201)
+def upload_dispute_evidence(
     dispute_id: str,
-    payload: dict,
+    payload: EvidenceUploadRequest,
     db: Session = Depends(get_db),
     user_information: None = Depends(cookie_verification_user_only),
 ):
@@ -1273,16 +1268,12 @@ async def upload_dispute_evidence(
     if claim.claimant_user_id != user_information.user_id:
         raise HTTPException(status_code=403, detail="Only the fulfiller can upload counter-evidence")
 
-    image_data = payload.get("image_data")
-    if not image_data:
-        raise HTTPException(status_code=400, detail="Missing image_data")
-
-    if len(image_data) > MAX_EVIDENCE_SIZE_B64:
+    if len(payload.image_data) > MAX_EVIDENCE_SIZE_B64:
         raise HTTPException(status_code=413, detail=f"File exceeds {MAX_EVIDENCE_SIZE_MB}MB limit")
 
     file_id = str(uuid.uuid4())
     file_path = UPLOAD_DIR / f"evidence_{file_id}.jpg"
-    file_bytes = base64.b64decode(image_data)
+    file_bytes = base64.b64decode(payload.image_data)
     with open(file_path, "wb") as f:
         f.write(file_bytes)
 
@@ -1290,7 +1281,7 @@ async def upload_dispute_evidence(
         claim_id=claim.id,
         file_path=str(file_path),
         status_at_upload="disputed",
-        description=payload.get("description"),
+        description=payload.description,
     )
     db.add(evidence)
     db.commit()
@@ -1306,7 +1297,7 @@ async def upload_dispute_evidence(
 
 
 @app.put("/users/{user_id}/fulfiller_address")
-async def update_fulfiller_address(
+def update_fulfiller_address(
     user_id: str,
     address: FulfillerAddressUpdate,
     db: Session = Depends(get_db),
@@ -1333,7 +1324,7 @@ async def update_fulfiller_address(
 
 
 @app.get("/users/{user_id}/fulfiller_address")
-async def get_fulfiller_address(
+def get_fulfiller_address(
     user_id: str,
     user_information=Depends(cookie_verification_user_only),
     db: Session = Depends(get_db),
@@ -1355,7 +1346,7 @@ async def get_fulfiller_address(
 
 
 @app.get("/claims/{claim_id}/shipping_context")
-async def get_claim_shipping_context(
+def get_claim_shipping_context(
     claim_id: str,
     payload: dict = Depends(verify_jwt_token),
     db: Session = Depends(get_db),
@@ -1383,7 +1374,7 @@ async def get_claim_shipping_context(
 
 
 @app.patch("/claims/{claim_id}/shipping")
-async def update_claim_shipping(
+def update_claim_shipping(
     claim_id: str,
     shipping_data: ClaimShippingUpdate,
     payload: dict = Depends(verify_jwt_token),
@@ -1405,7 +1396,7 @@ async def update_claim_shipping(
 ## ── Manufacturing & Fulfiller Profile Endpoints ──────────────────────
 
 @app.get("/manufacturing/processes", response_model=List[ManufacturingProcessResponse])
-async def list_manufacturing_processes(
+def list_manufacturing_processes(
     db: Session = Depends(get_db),
     _: None = Depends(cookie_verification),
 ):
@@ -1413,7 +1404,7 @@ async def list_manufacturing_processes(
 
 
 @app.get("/manufacturing/materials", response_model=List[ManufacturingMaterialResponse])
-async def list_manufacturing_materials(
+def list_manufacturing_materials(
     process_family: Optional[str] = None,
     db: Session = Depends(get_db),
     _: None = Depends(cookie_verification),
@@ -1425,7 +1416,7 @@ async def list_manufacturing_materials(
 
 
 @app.get("/fulfiller_profile/{user_id}", response_model=FulfillerProfileResponse)
-async def get_fulfiller_profile(
+def get_fulfiller_profile(
     user_id: str,
     db: Session = Depends(get_db),
     _: None = Depends(cookie_verification),
@@ -1437,7 +1428,7 @@ async def get_fulfiller_profile(
 
 
 @app.post("/fulfiller_profile", response_model=FulfillerProfileResponse, status_code=201)
-async def create_fulfiller_profile(
+def create_fulfiller_profile(
     profile_data: FulfillerProfileCreate,
     db: Session = Depends(get_db),
     user_information=Depends(cookie_verification_user_only),
@@ -1483,7 +1474,7 @@ async def create_fulfiller_profile(
 
 
 @app.put("/fulfiller_profile", response_model=FulfillerProfileResponse)
-async def update_fulfiller_profile(
+def update_fulfiller_profile(
     profile_data: FulfillerProfileCreate,
     db: Session = Depends(get_db),
     user_information=Depends(cookie_verification_user_only),
@@ -1528,7 +1519,7 @@ async def update_fulfiller_profile(
 ## ── Parts Catalog Endpoints ──────────────────────────────────────────
 
 @app.get("/parts", response_model=PartListResponse)
-async def list_parts(
+def list_parts(
     q: Optional[str] = None,
     category: Optional[str] = None,
     file_type: Optional[str] = None,
@@ -1561,7 +1552,7 @@ async def list_parts(
 
 
 @app.get("/parts/{part_id}", response_model=PartResponse)
-async def get_part(
+def get_part(
     part_id: str,
     db: Session = Depends(get_db),
     _: None = Depends(cookie_verification),
@@ -1573,7 +1564,7 @@ async def get_part(
 
 
 @app.post("/parts", response_model=PartResponse, status_code=201)
-async def create_part(
+def create_part(
     part_data: PartCreate,
     db: Session = Depends(get_db),
     user_information=Depends(cookie_verification_user_only),
@@ -1611,7 +1602,7 @@ async def create_part(
 
 
 @app.put("/parts/{part_id}", response_model=PartResponse)
-async def update_part(
+def update_part(
     part_id: str,
     part_data: PartUpdate,
     db: Session = Depends(get_db),
@@ -1637,7 +1628,7 @@ async def update_part(
 
 
 @app.delete("/parts/{part_id}")
-async def delete_part(
+def delete_part(
     part_id: str,
     db: Session = Depends(get_db),
     user_information=Depends(cookie_verification_user_only),
@@ -1653,10 +1644,10 @@ async def delete_part(
     return {"message": "Part archived", "part_id": part_id}
 
 
-@app.post("/parts/{part_id}/order")
-async def order_from_part(
+@app.post("/parts/{part_id}/order", status_code=201)
+def order_from_part(
     part_id: str,
-    config: dict,
+    config: PartOrderConfig,
     db: Session = Depends(get_db),
     user_information=Depends(cookie_verification_user_only),
 ):
@@ -1664,22 +1655,13 @@ async def order_from_part(
     if not part:
         raise HTTPException(status_code=404, detail="Part not found or not published")
 
-    # Get the original task to find the file
     task = db.query(Task).filter(Task.task_id == part.task_id).first()
     if not task:
         raise HTTPException(status_code=404, detail="Source file not found")
 
-    material = config.get("material", part.recommended_material or "PLA Basic")
-    technique = config.get("technique", part.recommended_process or "FDM")
-    quantity = config.get("quantity", 1)
-    sizing = config.get("sizing", 1.0)
-    colour = config.get("colour", "white")
-    price = config.get("price", 0.0)
+    material = config.material or part.recommended_material or "PLA Basic"
+    technique = config.technique or part.recommended_process or "FDM"
 
-    if quantity < 1:
-        raise HTTPException(status_code=400, detail="Quantity must be at least 1")
-
-    # Find the file for this task
     file_path = UPLOAD_DIR / f"{part.task_id}.{part.file_type}"
     selected_file = str(file_path) if file_path.exists() else part.task_id
 
@@ -1689,12 +1671,12 @@ async def order_from_part(
         name=part.name,
         material=material,
         technique=technique,
-        sizing=sizing,
-        colour=colour,
+        sizing=config.sizing,
+        colour=config.colour,
         selectedFile=selected_file,
         selectedFileType=part.file_type,
-        price=price,
-        quantity=quantity,
+        price=config.price,
+        quantity=config.quantity,
     )
     db.add(basket_item)
 

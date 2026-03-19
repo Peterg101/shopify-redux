@@ -43,7 +43,7 @@ def test_create_order_from_stripe_checkout(client, seed_user, seed_task, db_sess
         },
         headers={"Authorization": "Bearer fake"},
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     data = response.json()
     assert data["status"] == "success"
     assert data["order_count"] == 1
@@ -87,7 +87,7 @@ def test_stripe_checkout_idempotency(client, seed_user, seed_task):
         json=checkout_payload,
         headers={"Authorization": "Bearer fake"},
     )
-    assert r1.status_code == 200
+    assert r1.status_code == 201
     assert r1.json()["status"] == "success"
 
     # Second call — should be idempotent
@@ -96,7 +96,7 @@ def test_stripe_checkout_idempotency(client, seed_user, seed_task):
         json=checkout_payload,
         headers={"Authorization": "Bearer fake"},
     )
-    assert r2.status_code == 200
+    assert r2.status_code == 201
     assert r2.json()["status"] == "already_processed"
 
 
@@ -375,7 +375,7 @@ def test_order_includes_shipping_address(client, seed_user, seed_task, db_sessio
         },
         headers={"Authorization": "Bearer fake"},
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
 
     from fitd_schemas.fitd_db_schemas import Order
     order = db_session.query(Order).filter(

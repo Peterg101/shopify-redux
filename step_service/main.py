@@ -6,6 +6,7 @@ extraction, tessellation to glTF, thumbnail generation), and S3 storage.
 import os
 import uuid
 import logging
+import asyncio
 import tempfile
 import shutil
 from datetime import datetime
@@ -19,6 +20,7 @@ from fastapi import FastAPI, HTTPException, UploadFile, File, Depends, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from jwt_auth import verify_jwt_token
 from step_processor import validate_step_file, extract_metadata, tessellate_to_glb, generate_thumbnail
 from s3_utils import upload_file, generate_presigned_url, ensure_bucket_exists, find_preview_key_by_task_id
 
@@ -74,11 +76,12 @@ async def startup():
         logger.warning(f"Could not ensure S3 bucket exists: {e}")
 
 
-@app.post("/step/upload", response_model=JobStatus)
+@app.post("/step/upload", response_model=JobStatus, status_code=201)
 async def upload_step_file(
     file: UploadFile = File(...),
     user_id: str = Form(...),
     task_id: Optional[str] = Form(None),
+    _: str = Depends(verify_jwt_token),
 ):
     """Upload a STEP file for processing."""
     # Validate extension
@@ -86,6 +89,11 @@ async def upload_step_file(
     ext = Path(filename).suffix.lower()
     if ext not in (".step", ".stp"):
         raise HTTPException(status_code=400, detail="Only .step and .stp files are accepted")
+
+    # Pre-check Content-Length
+    content_length = file.size
+    if content_length and content_length > MAX_FILE_SIZE_BYTES:
+        raise HTTPException(status_code=413, detail=f"File exceeds {MAX_FILE_SIZE_MB}MB limit")
 
     # Read file content
     content = await file.read()
@@ -120,7 +128,7 @@ async def upload_step_file(
     jobs[job_id] = job
 
     # Process synchronously for now (in production: Celery task)
-    _process_step_file(job_id, str(local_path), user_id, task_id or job_id)
+    await asyncio.to_thread(_process_step_file, job_id, str(local_path), user_id, task_id or job_id)
 
     return jobs[job_id]
 
@@ -189,7 +197,7 @@ def _process_step_file(job_id: str, file_path: str, user_id: str, task_id: str):
 
 
 @app.get("/step/{job_id}/status", response_model=JobStatus)
-async def get_job_status(job_id: str):
+def get_job_status(job_id: str):
     """Get the processing status of a STEP file upload."""
     if job_id not in jobs:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -197,7 +205,7 @@ async def get_job_status(job_id: str):
 
 
 @app.get("/step/{job_id}/preview_url")
-async def get_preview_url(job_id: str):
+def get_preview_url(job_id: str):
     """Get a signed URL for the glTF preview of a processed STEP file."""
     if job_id not in jobs:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -216,7 +224,7 @@ async def get_preview_url(job_id: str):
 
 
 @app.get("/step/by_task/{task_id}/preview_url")
-async def get_preview_url_by_task(task_id: str):
+def get_preview_url_by_task(task_id: str):
     """Get a signed URL for the glTF preview, looked up by task_id."""
     # Check in-memory jobs first
     job = next((j for j in jobs.values() if j.task_id == task_id), None)
@@ -240,7 +248,7 @@ async def get_preview_url_by_task(task_id: str):
 
 
 @app.get("/step/{job_id}/download_url")
-async def get_download_url(job_id: str):
+def get_download_url(job_id: str):
     """Get a signed URL for downloading the original STEP file."""
     if job_id not in jobs:
         raise HTTPException(status_code=404, detail="Job not found")

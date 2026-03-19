@@ -1,5 +1,6 @@
 """Background task utilities for CAD generation."""
 import os
+import asyncio
 import logging
 import httpx
 from redis.asyncio import Redis as AsyncRedis
@@ -67,7 +68,7 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
             await publish(redis, port_id, f"{iter_progress},{status_msg},{task_name}")
             logger.info(f"[{port_id}] {status_msg}")
 
-            success, output_path, error = execute_cadquery(code, timeout_seconds)
+            success, output_path, error = await asyncio.to_thread(execute_cadquery, code, timeout_seconds)
 
             if success:
                 logger.info(f"[{port_id}] CadQuery succeeded on attempt {attempt + 1}")
@@ -156,11 +157,13 @@ async def upload_step_file(file_path: str, user_id: str, task_id: str) -> str | 
         with open(file_path, "rb") as f:
             file_content = f.read()
 
+        auth_token = generate_token("cad_service")
         async with httpx.AsyncClient(timeout=60.0) as client:
             resp = await client.post(
                 f"{STEP_SERVICE_URL}/step/upload",
                 files={"file": ("generated.step", file_content, "application/octet-stream")},
                 data={"user_id": user_id, "task_id": task_id},
+                headers={"Authorization": f"Bearer {auth_token}"},
             )
             if resp.status_code in (200, 201):
                 job_id = resp.json().get("job_id")

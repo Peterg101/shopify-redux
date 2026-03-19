@@ -1,3 +1,4 @@
+import asyncio
 import os
 import logging
 import stripe
@@ -13,7 +14,7 @@ STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 
-@router.post("/checkout")
+@router.post("/checkout", status_code=201)
 async def create_checkout_session(user=Depends(cookie_verification_user_only)):
     stripe.api_key = STRIPE_SECRET_KEY
 
@@ -50,7 +51,8 @@ async def create_checkout_session(user=Depends(cookie_verification_user_only)):
             "quantity": item["quantity"],
         })
 
-    session = stripe.checkout.Session.create(
+    session = await asyncio.to_thread(
+        stripe.checkout.Session.create,
         mode="payment",
         line_items=line_items,
         shipping_address_collection={

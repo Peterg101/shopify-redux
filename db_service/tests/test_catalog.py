@@ -215,7 +215,7 @@ class TestOrderFromPart:
             "quantity": 2,
             "price": 5.99,
         })
-        assert resp.status_code == 200
+        assert resp.status_code == 201
         data = resp.json()
         assert "basket_task_id" in data
 
@@ -225,7 +225,7 @@ class TestOrderFromPart:
 
     def test_order_from_part_defaults(self, client, seed_part):
         resp = client.post(f"/parts/{seed_part['id']}/order", json={})
-        assert resp.status_code == 200
+        assert resp.status_code == 201
 
     def test_order_from_archived_part(self, client, seed_part):
         client.delete(f"/parts/{seed_part['id']}")
@@ -234,4 +234,4 @@ class TestOrderFromPart:
 
     def test_order_invalid_quantity(self, client, seed_part):
         resp = client.post(f"/parts/{seed_part['id']}/order", json={"quantity": 0})
-        assert resp.status_code == 400
+        assert resp.status_code == 422

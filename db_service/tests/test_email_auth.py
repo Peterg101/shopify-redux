@@ -14,7 +14,7 @@ def test_register_user(client, seed_user):
         },
         headers={"Authorization": "Bearer fake"},
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     data = response.json()
     assert data["user_id"] == "email-user-001"
     assert data["username"] == "emailuser"

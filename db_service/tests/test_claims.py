@@ -6,7 +6,7 @@ def test_claim_order(claimant_client, seed_order, seed_claimant_user):
         "/claims/claim_order",
         json={"order_id": "order-001", "quantity": 2, "status": "pending"},
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
 
 
 def test_duplicate_claim_returns_409(claimant_client, seed_order, seed_claimant_user):

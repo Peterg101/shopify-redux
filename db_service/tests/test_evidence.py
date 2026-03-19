@@ -16,7 +16,7 @@ def test_upload_claim_evidence(claimant_client, seed_order, seed_claimant_user, 
         f"/claims/{claim.id}/evidence",
         json={"image_data": image_data, "description": "Test photo"},
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     data = response.json()
     assert data["claim_id"] == claim.id
     assert data["description"] == "Test photo"

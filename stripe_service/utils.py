@@ -2,6 +2,7 @@ from fastapi import Request, HTTPException
 from fitd_schemas.fitd_classes import UserInformation
 from fitd_schemas.auth_utils import cookie_verification as _cookie_verification, cookie_verification_user_only as _cookie_verification_user_only
 from api_calls import session_exists, session_exists_user_only
+import asyncio
 import os
 import logging
 import stripe
@@ -25,7 +26,8 @@ async def cookie_verification_user_only(request: Request) -> UserInformation:
 
 async def generate_stripe_account(email: str):
     stripe.api_key = STRIPE_SECRET_KEY
-    stripe_account = stripe.Account.create(
+    stripe_account = await asyncio.to_thread(
+        stripe.Account.create,
         type="express",
         country="GB",
         email=email
@@ -36,7 +38,8 @@ async def generate_stripe_account(email: str):
 
 async def generate_account_link(account_id: str):
     stripe.api_key = STRIPE_SECRET_KEY
-    account_link = stripe.AccountLink.create(
+    account_link = await asyncio.to_thread(
+        stripe.AccountLink.create,
         account=account_id,
         refresh_url=REFRESH_URL,
         return_url=RETURN_URL,

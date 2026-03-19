@@ -103,10 +103,22 @@ async def websocket_endpoint(
 
     await websocket.accept()
 
+    pubsub = None
     try:
-        # Subscribe to the task's progress channel
+        # Check if the task already finished before we connected
+        existing_result = await redis.get(f"task_result:{port_id}")
+        if existing_result:
+            await websocket.send_text(existing_result)
+            return
+
         pubsub = redis.pubsub()
         await pubsub.subscribe(f"task_progress:{port_id}")
+
+        # Re-check after subscribing to avoid race window
+        existing_result = await redis.get(f"task_result:{port_id}")
+        if existing_result:
+            await websocket.send_text(existing_result)
+            return
 
         async for message in pubsub.listen():
             if message["type"] == "message":
@@ -121,10 +133,13 @@ async def websocket_endpoint(
     except Exception as e:
         logger.error(f"WebSocket Error: {e}")
     finally:
-        # Cleanup: close the Redis pubsub and WebSocket connection
-        await pubsub.unsubscribe(f"task_progress:{port_id}")
-        await pubsub.close()
-        await websocket.close()
+        if pubsub is not None:
+            await pubsub.unsubscribe(f"task_progress:{port_id}")
+            await pubsub.close()
+        try:
+            await websocket.close()
+        except Exception:
+            pass
         logger.info(f"WebSocket connection for task {port_id} closed.")
 
 

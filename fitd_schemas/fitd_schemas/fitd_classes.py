@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl, validator
+from pydantic import BaseModel, Field, HttpUrl, validator
 from typing import Optional, List, Union, Any
 from datetime import datetime
 from dataclasses import dataclass
@@ -112,10 +112,8 @@ class MeshyTaskStatusResponse(BaseModel):
     obj_file_blob: Optional[str] = None  # Base64-encoded string
     model_urls: Optional[ModelUrls] = None
 
-    model_config = ConfigDict(
-        arbitrary_types_allowed=True,
-        protected_namespaces=(),  # Disables the warning about `model_`
-    )
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class BasketItemInformation(BaseModel):
@@ -323,6 +321,12 @@ class ClaimOrder(BaseModel):
     quantity: int
     status: str
 
+    @validator('status')
+    def validate_status(cls, v):
+        if v != "pending":
+            raise ValueError('Claim status must be "pending"')
+        return v
+
     @validator('quantity')
     def validate_quantity(cls, v):
         if v < 1:
@@ -352,6 +356,12 @@ class DisputeResolveRequest(BaseModel):
     resolution: str  # accepted | partial | rejected
     partial_amount_cents: Optional[int] = None
 
+    @validator('resolution')
+    def validate_resolution(cls, v):
+        if v not in ("accepted", "partial", "rejected"):
+            raise ValueError('Resolution must be "accepted", "partial", or "rejected"')
+        return v
+
 
 class DisputeResponse(BaseModel):
     id: str
@@ -373,10 +383,22 @@ class DisputeResponse(BaseModel):
         orm_mode = True
 
 
+ALLOWED_CLAIM_STATUSES = {
+    "pending", "in_progress", "printing", "qa_check",
+    "shipped", "delivered", "accepted", "disputed", "cancelled",
+}
+
+
 class ClaimStatusUpdate(BaseModel):
     status: str
     evidence_description: Optional[str] = None
     reason: Optional[str] = None
+
+    @validator('status')
+    def validate_status(cls, v):
+        if v not in ALLOWED_CLAIM_STATUSES:
+            raise ValueError(f'Invalid status "{v}". Allowed: {sorted(ALLOWED_CLAIM_STATUSES)}')
+        return v
 
 
 class ClaimEvidenceResponse(BaseModel):
@@ -406,6 +428,12 @@ class ClaimStatusHistoryResponse(BaseModel):
 class BuyerReviewRequest(BaseModel):
     decision: str
     reason: Optional[str] = None
+
+    @validator('decision')
+    def validate_decision(cls, v):
+        if v not in ("accepted", "rejected"):
+            raise ValueError('Decision must be "accepted" or "rejected"')
+        return v
 
 
 class ClaimResponse(BaseModel):
@@ -848,3 +876,32 @@ class UserHydrationResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class StripeAccountCreateRequest(BaseModel):
+    stripe_account_id: str
+
+
+class OrderStatusUpdate(BaseModel):
+    order_id: str
+    order_status: str
+
+
+class EvidenceUploadRequest(BaseModel):
+    image_data: str
+    description: Optional[str] = None
+
+
+class PartOrderConfig(BaseModel):
+    material: Optional[str] = None
+    technique: Optional[str] = None
+    quantity: int = 1
+    sizing: float = 1.0
+    colour: str = "white"
+    price: float = 0.0
+
+    @validator('quantity')
+    def validate_quantity(cls, v):
+        if v < 1:
+            raise ValueError('Quantity must be at least 1')
+        return v
