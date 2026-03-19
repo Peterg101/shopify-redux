@@ -1,16 +1,14 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createBaseQueryWithReauth } from './baseQueryWithReauth';
 import { UserAndTasksAndBasketAndIncompleteAndOrders, FileResponse } from '../app/utility/interfaces';
 
 
 export const authApi = createApi({
   reducerPath: 'authApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.REACT_APP_AUTH_SERVICE,
-    credentials: 'include',
-  }),
+  baseQuery: createBaseQueryWithReauth(process.env.REACT_APP_AUTH_SERVICE!),
   refetchOnFocus: true,
   refetchOnReconnect: true,
-  tagTypes: ['sessionData'],
+  tagTypes: ['sessionData', 'BasketItems', 'UserOrders', 'UserClaims', 'UserTasks'],
   endpoints: (builder) => ({
     getSession: builder.query<UserAndTasksAndBasketAndIncompleteAndOrders, void>({
       query: () => ({
@@ -18,7 +16,7 @@ export const authApi = createApi({
         method: 'GET',
         
       }),
-      providesTags: ['sessionData'],
+      providesTags: ['sessionData', 'BasketItems', 'UserOrders', 'UserClaims', 'UserTasks'],
     }),
     logOut: builder.mutation<{ message: string }, void>({
       query: () => ({

@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { Box, Badge, ListItemButton, ListItemIcon, IconButton, Typography, List, Divider, Tooltip } from "@mui/material";
+import { Box, Badge, ListItemButton, ListItemIcon, IconButton, Typography, List, Divider, Tooltip, useMediaQuery } from "@mui/material";
 import { Basket, EmptyBasket } from "./basketFragments";
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
@@ -24,6 +24,7 @@ export const UpdatedUserInterface = ({ visibleItems }: UpdatedUserInterfaceProps
   const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
   const dispatch = useDispatch();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const openDrawer = (itemText: string) => {
     if (userInterfaceState.leftDrawerOpen && userInterfaceState.selectedComponent === itemText) {
@@ -144,9 +145,10 @@ export const UpdatedUserInterface = ({ visibleItems }: UpdatedUserInterfaceProps
   return (
     <div>
       <Drawer
-        variant="permanent"
+        variant={isMobile ? "temporary" : "permanent"}
         ref={drawerRef}
         open={userInterfaceState.leftDrawerOpen}
+        onClose={handleDrawerClose}
       >
         {userInterfaceState.leftDrawerOpen && (
           <DrawerHeader sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -159,7 +161,7 @@ export const UpdatedUserInterface = ({ visibleItems }: UpdatedUserInterfaceProps
           </DrawerHeader>
         )}
 
-        {!userInterfaceState.leftDrawerOpen && (
+        {!userInterfaceState.leftDrawerOpen && !isMobile && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, py: 1 }}>
             {sidebarItems(resultsItems)}
           </Box>

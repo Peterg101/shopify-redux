@@ -1,7 +1,8 @@
 import { useRef } from "react";
-import { Box, ListItemButton, ListItemIcon, IconButton, Typography, Tooltip } from "@mui/material";
+import { Box, ListItemButton, ListItemIcon, IconButton, Typography, Tooltip, useMediaQuery } from "@mui/material";
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import { useTheme } from "@mui/material/styles";
 import { Drawer, DrawerHeader } from '../userInterface/uiComponents';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
@@ -14,6 +15,8 @@ import CategoryIcon from '@mui/icons-material/Category';
 export const FulfillUserInterface = () => {
   const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
   const dispatch = useDispatch();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const openDrawer = (itemText: string) => {
     if (userInterfaceState.leftDrawerOpen && userInterfaceState.selectedComponent === itemText) {
@@ -85,9 +88,10 @@ export const FulfillUserInterface = () => {
   return (
     <div>
       <Drawer
-        variant="permanent"
+        variant={isMobile ? "temporary" : "permanent"}
         ref={drawerRef}
         open={userInterfaceState.leftDrawerOpen}
+        onClose={handleDrawerClose}
       >
         {userInterfaceState.leftDrawerOpen && (
           <DrawerHeader sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -100,8 +104,8 @@ export const FulfillUserInterface = () => {
           </DrawerHeader>
         )}
 
-        {/* When closed: show icon strip. When open: show content only */}
-        {!userInterfaceState.leftDrawerOpen && (
+        {/* When closed: show icon strip (hidden on mobile). When open: show content only */}
+        {!userInterfaceState.leftDrawerOpen && !isMobile && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, py: 1 }}>
             {sidebarItems(resultsItems)}
           </Box>

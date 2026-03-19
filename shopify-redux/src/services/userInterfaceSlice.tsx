@@ -45,6 +45,9 @@ export const userInterfaceSlice = createSlice({
             state.leftDrawerOpen = false;
             state.selectedComponent = '';
         },
+        forceLogout: (state) => {
+            state.userInformation = null;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -77,7 +80,8 @@ export const {
     setSelectedClaim,
     setFulfillMode,
     setUpdateClaimMode,
-    resetSidebar
+    resetSidebar,
+    forceLogout
 } = userInterfaceSlice.actions
 
 export default userInterfaceSlice.reducer

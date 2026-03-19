@@ -13,15 +13,34 @@ export const createWebsocketConnection = (
   portId: string,
   dispatch: AppDispatch,
   setActualFile: React.Dispatch<React.SetStateAction<File | null>>
-): WebSocket => {
+): { ws: WebSocket; cleanup: () => void } => {
   let reconnectAttempts = 0;
   let ws: WebSocket;
+  let reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  let disposed = false;
+  const abortController = new AbortController();
+  const blobUrls: string[] = [];
+
+  const cleanup = () => {
+    disposed = true;
+    if (reconnectTimeoutId !== null) {
+      clearTimeout(reconnectTimeoutId);
+      reconnectTimeoutId = null;
+    }
+    abortController.abort();
+    blobUrls.forEach(url => URL.revokeObjectURL(url));
+    blobUrls.length = 0;
+    if (ws && ws.readyState !== WebSocket.CLOSED) {
+      ws.close();
+    }
+  };
 
   const connect = (): WebSocket => {
     ws = new WebSocket(`${process.env.REACT_APP_MESHY_WEBSOCKET}/ws/${portId}`);
     let isFirstMessage = true;
 
     ws.onmessage = async (event) => {
+      if (disposed) return;
       if (!event.data || typeof event.data !== 'string') return;
 
       if (isFirstMessage) {
@@ -51,8 +70,9 @@ export const createWebsocketConnection = (
 
       if (percentageComplete === 100) {
         try {
-          const fileData = await fetchFile(taskId);
+          const fileData = await fetchFile(taskId, abortController.signal);
           const fileInfo = extractFileInfo(fileData, fileName);
+          blobUrls.push(fileInfo.fileUrl);
           setActualFile(fileInfo.file);
           dispatch(setFromMeshyOrHistory({ fromMeshyOrHistory: true }));
           dispatch(setFileProperties({
@@ -61,7 +81,9 @@ export const createWebsocketConnection = (
             fileNameBoxValue: fileName,
           }));
         } catch (err) {
-          logger.error("Error fetching completed file:", err);
+          if (!disposed) {
+            logger.error("Error fetching completed file:", err);
+          }
         }
         ws.close();
         dispatch(setMeshyLoading({ meshyLoading: false }));
@@ -78,18 +100,19 @@ export const createWebsocketConnection = (
       dispatch(setMeshyLoading({ meshyLoading: false }));
 
       // Reconnect with exponential backoff if not a clean close
-      if (!event.wasClean && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+      if (!disposed && !event.wasClean && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
         const delay = BASE_RECONNECT_DELAY * Math.pow(2, reconnectAttempts);
         reconnectAttempts++;
         logger.warn(`WebSocket closed unexpectedly. Reconnecting in ${delay}ms (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
-        setTimeout(() => connect(), delay);
+        reconnectTimeoutId = setTimeout(() => connect(), delay);
       }
     };
 
     return ws;
   };
 
-  return connect();
+  ws = connect();
+  return { ws, cleanup };
 };
 
 

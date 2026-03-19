@@ -1,11 +1,10 @@
-import { useDispatch, useSelector } from 'react-redux'
-import { RootState } from '../../app/store'
+import { useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { setSelectedClaim, setUpdateClaimMode } from '../../services/userInterfaceSlice'
 import { resetDataState } from '../../services/dataSlice'
 import { createShippingLabel } from '../../services/fetchFileUtils'
 import { useUpdateClaimStatusMutation, useUploadClaimEvidenceMutation } from '../../services/dbApi'
-import { useState, useCallback, useMemo, useEffect } from 'react'
-import { useDropzone } from 'react-dropzone'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import {
   Box,
   Typography,
@@ -13,33 +12,21 @@ import {
   Divider,
   Grid,
   Button,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  TextField,
   Snackbar,
   Alert,
-  Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   CircularProgress,
-  IconButton,
   Tooltip,
 } from '@mui/material'
-import CloudUploadIcon from '@mui/icons-material/CloudUpload'
-import CancelIcon from '@mui/icons-material/Cancel'
-import LocalShippingIcon from '@mui/icons-material/LocalShipping'
-import DownloadIcon from '@mui/icons-material/Download'
-import ContentCopyIcon from '@mui/icons-material/ContentCopy'
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
-import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 import OBJSTLViewer from '../display/objStlViewer'
 import { OrientationControls } from '../display/OrientationControls'
 import { BuyerReviewPanel } from './BuyerReviewPanel'
 import { DisputePanel } from './DisputePanel'
+import { EvidenceUploadSection } from './EvidenceUploadSection'
+import { ShippingLabelCard } from './ShippingLabelCard'
+import { OrderInfoCard } from './OrderInfoCard'
+import { StatusSelector } from './StatusSelector'
+import { StatusTransitionDialog } from './StatusTransitionDialog'
+import { selectSelectedClaim, selectUserInformation } from '../../services/selectors'
 
 // ── Status phase definitions ──────────────────────────────────────────
 const STATUS_PHASES = [
@@ -54,8 +41,6 @@ const STATUS_PHASES = [
   { key: 'cancelled',    label: 'Cancelled',    color: '#FF5252', description: 'Claim cancelled, items returned to marketplace' },
 ] as const
 
-const getPhase = (key: string) => STATUS_PHASES.find((p) => p.key === key)
-
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
   pending: ['in_progress'],
   in_progress: ['printing'],
@@ -65,7 +50,6 @@ const ALLOWED_TRANSITIONS: Record<string, string[]> = {
   delivered: ['accepted', 'disputed'],
 }
 
-// Statuses that allow cancellation
 const CANCELLABLE_STATUSES = ['pending', 'in_progress']
 
 // ── MiniStepper ───────────────────────────────────────────────────────
@@ -151,9 +135,8 @@ const MiniStepper = ({ currentStatus }: { currentStatus: string }) => {
 
 // ── Main Component ────────────────────────────────────────────────────
 export const UpdateClaimStatus = () => {
-  const { selectedClaim, userInformation } = useSelector(
-    (state: RootState) => state.userInterfaceState
-  )
+  const selectedClaim = useSelector(selectSelectedClaim)
+  const userInformation = useSelector(selectUserInformation)
   const dispatch = useDispatch()
   const [updateStatus] = useUpdateClaimStatusMutation()
   const [uploadEvidence] = useUploadClaimEvidenceMutation()
@@ -166,16 +149,20 @@ export const UpdateClaimStatus = () => {
   const [isUpdating, setIsUpdating] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
 
-  // Reset selectedStatus when the claim changes so the dropdown doesn't show a stale value
+  // Track evidence from child component
+  const evidenceRef = useRef<{ file: File | null; description: string }>({
+    file: null,
+    description: '',
+  })
+
+  const handleEvidenceChange = useCallback((file: File | null, description: string) => {
+    evidenceRef.current = { file, description }
+  }, [])
+
+  // Reset selectedStatus when the claim changes
   useEffect(() => {
     setSelectedStatus(validNextStatuses[0] ?? '')
   }, [selectedClaim?.id])
-
-  // Evidence upload state
-  const [evidenceFile, setEvidenceFile] = useState<File | null>(null)
-  const [evidencePreview, setEvidencePreview] = useState<string | null>(null)
-  const [evidenceDescription, setEvidenceDescription] = useState('')
-  const [fileError, setFileError] = useState('')
 
   // Shipping label state
   const [labelResult, setLabelResult] = useState<{
@@ -206,76 +193,15 @@ export const UpdateClaimStatus = () => {
 
   const shippingLabel = labelResult || existingLabel
 
-  // ── Dropzone ──────────────────────────────────────────────────────
-  const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
-      setFileError('')
-      if (acceptedFiles.length === 0) return
-
-      const file = acceptedFiles[0]
-      if (file.size > 5 * 1024 * 1024) {
-        setFileError('File too large -- maximum 5 MB')
-        return
-      }
-      if (!file.type.startsWith('image/')) {
-        setFileError('Only image files are accepted')
-        return
-      }
-      setEvidenceFile(file)
-      const url = URL.createObjectURL(file)
-      setEvidencePreview(url)
-    },
-    []
-  )
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: { 'image/*': [] },
-    maxFiles: 1,
-    multiple: false,
-  })
-
-  const clearEvidence = () => {
-    setEvidenceFile(null)
-    if (evidencePreview) URL.revokeObjectURL(evidencePreview)
-    setEvidencePreview(null)
-    setEvidenceDescription('')
-    setFileError('')
-  }
-
   // ── Confirmation dialog helpers ───────────────────────────────────
   const isCancelAction = selectedStatus === 'cancelled'
-  const fromPhase = getPhase(currentStatus)
-  const toPhase = getPhase(selectedStatus)
 
-  const getTransitionDescription = () => {
-    if (isCancelAction) {
-      return 'This claim will be cancelled. The claimed items will be returned to the marketplace for other fulfillers.'
-    }
-    if (selectedStatus === 'shipped') {
-      return 'A shipping label will be automatically created and the buyer will be notified.'
-    }
-    if (selectedStatus === 'qa_check') {
-      return 'The order will enter quality assurance inspection before shipping.'
-    }
-    if (selectedStatus === 'printing') {
-      return 'Marks the order as actively being printed or manufactured.'
-    }
-    if (selectedStatus === 'in_progress') {
-      return 'You are accepting this claim and beginning fulfillment.'
-    }
-    if (selectedStatus === 'delivered') {
-      return 'Confirms the package has been delivered. The buyer will be prompted to review.'
-    }
-    return `Moving claim from ${fromPhase?.label || currentStatus} to ${toPhase?.label || selectedStatus}.`
-  }
-
-  const handleConfirmClick = () => {
+  const handleConfirmClick = useCallback(() => {
     if (!selectedClaim || !selectedStatus) return
     if (
       currentStatus === 'qa_check' &&
       selectedClaim.order.qa_level === 'high' &&
-      !evidenceFile
+      !evidenceRef.current.file
     ) {
       setSnackbar({
         open: true,
@@ -285,15 +211,16 @@ export const UpdateClaimStatus = () => {
       return
     }
     setConfirmOpen(true)
-  }
+  }, [selectedClaim, selectedStatus, currentStatus])
 
-  const handleDialogConfirm = async () => {
+  const handleDialogConfirm = useCallback(async () => {
     if (!selectedClaim || !selectedStatus) return
     setIsUpdating(true)
     setConfirmOpen(false)
 
     try {
       // Upload evidence before status patch if file selected
+      const { file: evidenceFile, description: evidenceDescription } = evidenceRef.current
       if (evidenceFile) {
         const reader = new FileReader()
         await new Promise<void>((resolve) => {
@@ -340,13 +267,21 @@ export const UpdateClaimStatus = () => {
     } finally {
       setIsUpdating(false)
     }
-  }
+  }, [selectedClaim, selectedStatus, updateStatus, uploadEvidence, dispatch])
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     dispatch(setSelectedClaim({ selectedClaim: null }))
     dispatch(resetDataState())
     dispatch(setUpdateClaimMode({ updateClaimMode: false }))
-  }
+  }, [dispatch])
+
+  const handleCopySuccess = useCallback(() => {
+    setSnackbar({
+      open: true,
+      message: 'Tracking number copied',
+      severity: 'success',
+    })
+  }, [])
 
   if (!selectedClaim) return null
   const order = selectedClaim.order
@@ -412,7 +347,7 @@ export const UpdateClaimStatus = () => {
           md={5}
           sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
         >
-          {/* ── 3a. MiniStepper ────────────────────────────────── */}
+          {/* ── MiniStepper ────────────────────────────────────── */}
           <Paper
             elevation={1}
             sx={{
@@ -431,176 +366,19 @@ export const UpdateClaimStatus = () => {
             <MiniStepper currentStatus={currentStatus} />
           </Paper>
 
-          {/* ── 3f. Order Info Panel ───────────────────────────── */}
-          <Paper elevation={2} sx={{ flex: 1, p: 3, borderRadius: 3 }}>
-            <Typography variant="h5" fontWeight={600} gutterBottom>
-              Order Information
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Typography variant="body1">
-                <strong>Name:</strong> {order.name}
-              </Typography>
-              <Typography variant="body1">
-                <strong>Material:</strong> {order.material}
-              </Typography>
-              <Typography variant="body1">
-                <strong>Technique:</strong> {order.technique}
-              </Typography>
-              <Typography variant="body1">
-                <strong>Colour:</strong> {order.colour}
-              </Typography>
+          {/* ── Order Info Panel ─────────────────────────────────── */}
+          <OrderInfoCard
+            order={order}
+            claim={selectedClaim}
+            currentStatus={currentStatus}
+          />
 
-              {/* Quantity as chip */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography variant="body1">
-                  <strong>Quantity:</strong>
-                </Typography>
-                <Chip
-                  label={`${selectedClaim.quantity} units`}
-                  size="small"
-                  sx={{
-                    backgroundColor: 'rgba(0, 229, 255, 0.12)',
-                    color: '#00E5FF',
-                    fontWeight: 600,
-                  }}
-                />
-              </Box>
-
-              {/* Current status as colored chip */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography variant="body1">
-                  <strong>Status:</strong>
-                </Typography>
-                <Chip
-                  label={fromPhase?.label || currentStatus.replace(/_/g, ' ')}
-                  size="small"
-                  sx={{
-                    backgroundColor: `${fromPhase?.color || '#8899AA'}20`,
-                    color: fromPhase?.color || '#8899AA',
-                    fontWeight: 600,
-                    border: `1px solid ${fromPhase?.color || '#8899AA'}40`,
-                  }}
-                />
-              </Box>
-
-              {/* QA level as colored chip */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography variant="body1">
-                  <strong>QA Level:</strong>
-                </Typography>
-                <Chip
-                  label={qaLevel.charAt(0).toUpperCase() + qaLevel.slice(1)}
-                  size="small"
-                  sx={{
-                    backgroundColor:
-                      qaLevel === 'high'
-                        ? 'rgba(255, 145, 0, 0.15)'
-                        : 'rgba(136, 153, 170, 0.15)',
-                    color: qaLevel === 'high' ? '#FF9100' : '#8899AA',
-                    fontWeight: 600,
-                    border: `1px solid ${qaLevel === 'high' ? '#FF910040' : '#8899AA30'}`,
-                  }}
-                />
-              </Box>
-            </Box>
-          </Paper>
-
-          {/* ── 3e. Shipping Label Display ─────────────────────── */}
+          {/* ── Shipping Label Display ───────────────────────────── */}
           {shippingLabel && (
-            <Paper
-              elevation={2}
-              sx={{
-                p: 2.5,
-                borderRadius: 3,
-                border: '1px solid rgba(68, 138, 255, 0.25)',
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-                <LocalShippingIcon sx={{ color: '#448AFF', fontSize: 24 }} />
-                <Typography variant="h6" fontWeight={600}>
-                  Shipping Label
-                </Typography>
-              </Box>
-              <Divider sx={{ mb: 2 }} />
-              <Grid container spacing={2} alignItems="center">
-                <Grid item xs={6}>
-                  <Typography variant="caption" color="text.secondary">
-                    Carrier
-                  </Typography>
-                  <Box sx={{ mt: 0.5 }}>
-                    <Chip
-                      label={shippingLabel.carrier_code}
-                      size="small"
-                      sx={{
-                        backgroundColor: 'rgba(68, 138, 255, 0.12)',
-                        color: '#448AFF',
-                        fontWeight: 600,
-                      }}
-                    />
-                  </Box>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="caption" color="text.secondary">
-                    Tracking Number
-                  </Typography>
-                  <Box
-                    sx={{
-                      mt: 0.5,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 0.5,
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      sx={{ fontFamily: 'monospace', fontWeight: 600 }}
-                    >
-                      {shippingLabel.tracking_number}
-                    </Typography>
-                    <Tooltip title="Copy tracking number">
-                      <IconButton
-                        size="small"
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            shippingLabel.tracking_number
-                          )
-                          setSnackbar({
-                            open: true,
-                            message: 'Tracking number copied',
-                            severity: 'success',
-                          })
-                        }}
-                        sx={{ color: 'text.secondary' }}
-                      >
-                        <ContentCopyIcon sx={{ fontSize: 16 }} />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </Grid>
-                <Grid item xs={12}>
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    startIcon={<DownloadIcon />}
-                    href={shippingLabel.label_url}
-                    target="_blank"
-                    sx={{
-                      mt: 1,
-                      py: 1.2,
-                      fontWeight: 600,
-                      backgroundColor: '#448AFF',
-                      '&:hover': {
-                        backgroundColor: '#2979FF',
-                        boxShadow: '0 0 16px rgba(68, 138, 255, 0.4)',
-                      },
-                    }}
-                  >
-                    Download PDF Label
-                  </Button>
-                </Grid>
-              </Grid>
-            </Paper>
+            <ShippingLabelCard
+              label={shippingLabel}
+              onCopySuccess={handleCopySuccess}
+            />
           )}
 
         </Grid>
@@ -627,259 +405,20 @@ export const UpdateClaimStatus = () => {
             </Typography>
             <Divider sx={{ mb: 3 }} />
 
-            {/* ── 3d. Drag-and-drop evidence upload ────────────── */}
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                {currentStatus === 'qa_check' && qaLevel === 'high'
-                  ? 'Upload QA evidence photo (required for high-QA orders)'
-                  : 'Upload photo evidence (optional)'}
-              </Typography>
+            {/* ── Evidence upload ─────────────────────────────────── */}
+            <EvidenceUploadSection
+              qaLevel={qaLevel}
+              currentStatus={currentStatus}
+              onEvidenceChange={handleEvidenceChange}
+            />
 
-              {!evidenceFile ? (
-                <Box
-                  {...getRootProps()}
-                  sx={{
-                    border: '2px dashed',
-                    borderColor: isDragActive
-                      ? 'primary.main'
-                      : fileError
-                        ? 'error.main'
-                        : 'rgba(0, 229, 255, 0.25)',
-                    borderRadius: 2,
-                    py: 3,
-                    px: 2,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexDirection: 'column',
-                    cursor: 'pointer',
-                    backgroundColor: isDragActive
-                      ? 'rgba(0, 229, 255, 0.06)'
-                      : 'transparent',
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      borderColor: 'primary.main',
-                      backgroundColor: 'rgba(0, 229, 255, 0.04)',
-                      boxShadow: '0 0 20px rgba(0, 229, 255, 0.08)',
-                    },
-                  }}
-                >
-                  <input {...getInputProps()} />
-                  <CloudUploadIcon
-                    sx={{ fontSize: 36, color: 'primary.main', mb: 1, opacity: 0.7 }}
-                  />
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    textAlign="center"
-                  >
-                    Drag photo here or click to browse
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ mt: 0.5, opacity: 0.5 }}
-                  >
-                    Max 5 MB, images only
-                  </Typography>
-                </Box>
-              ) : (
-                <Box
-                  sx={{
-                    border: '1px solid rgba(0, 229, 255, 0.2)',
-                    borderRadius: 2,
-                    p: 2,
-                    position: 'relative',
-                  }}
-                >
-                  {evidencePreview && (
-                    <Box
-                      sx={{
-                        mb: 1.5,
-                        borderRadius: 1,
-                        overflow: 'hidden',
-                        maxHeight: 160,
-                        display: 'flex',
-                        justifyContent: 'center',
-                        backgroundColor: 'rgba(0,0,0,0.2)',
-                      }}
-                    >
-                      <img
-                        src={evidencePreview}
-                        alt="Evidence preview"
-                        style={{
-                          maxWidth: '100%',
-                          maxHeight: 160,
-                          objectFit: 'contain',
-                        }}
-                      />
-                    </Box>
-                  )}
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        maxWidth: '70%',
-                      }}
-                    >
-                      {evidenceFile.name}
-                    </Typography>
-                    <Button
-                      size="small"
-                      color="error"
-                      startIcon={<DeleteOutlineIcon sx={{ fontSize: 16 }} />}
-                      onClick={clearEvidence}
-                      sx={{ textTransform: 'none', minWidth: 'auto' }}
-                    >
-                      Remove
-                    </Button>
-                  </Box>
-                  <TextField
-                    label="Evidence Description"
-                    value={evidenceDescription}
-                    onChange={(e) => setEvidenceDescription(e.target.value)}
-                    fullWidth
-                    size="small"
-                    sx={{ mt: 1.5 }}
-                  />
-                </Box>
-              )}
-
-              {fileError && (
-                <Typography
-                  variant="caption"
-                  color="error"
-                  sx={{ mt: 0.5, display: 'block' }}
-                >
-                  {fileError}
-                </Typography>
-              )}
-            </Box>
-
-            {/* ── 3b. Rich status dropdown ─────────────────────── */}
-            {dropdownOptions.length > 0 ? (
-              <FormControl fullWidth sx={{ mb: 3 }}>
-                <InputLabel>New Status</InputLabel>
-                <Select
-                  value={selectedStatus}
-                  label="New Status"
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  disabled={isUpdating}
-                  renderValue={(value) => {
-                    const phase = getPhase(value)
-                    if (!phase) return value
-                    return (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box
-                          sx={{
-                            width: 10,
-                            height: 10,
-                            borderRadius: '50%',
-                            backgroundColor: phase.color,
-                            flexShrink: 0,
-                          }}
-                        />
-                        <Typography variant="body2">{phase.label}</Typography>
-                      </Box>
-                    )
-                  }}
-                >
-                  {dropdownOptions.map(({ key, isCancel }) => {
-                    const phase = getPhase(key)
-                    return (
-                      <MenuItem
-                        key={key}
-                        value={key}
-                        sx={{
-                          py: 1.5,
-                          ...(isCancel && {
-                            borderTop: '1px solid rgba(255, 82, 82, 0.2)',
-                            mt: 0.5,
-                          }),
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'flex-start',
-                            gap: 1.5,
-                            width: '100%',
-                          }}
-                        >
-                          {isCancel ? (
-                            <CancelIcon
-                              sx={{ color: '#FF5252', fontSize: 20, mt: 0.25 }}
-                            />
-                          ) : (
-                            <Box
-                              sx={{
-                                width: 12,
-                                height: 12,
-                                borderRadius: '50%',
-                                backgroundColor: phase?.color || '#8899AA',
-                                mt: 0.5,
-                                flexShrink: 0,
-                              }}
-                            />
-                          )}
-                          <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1,
-                              }}
-                            >
-                              <Typography
-                                variant="body2"
-                                fontWeight={600}
-                                sx={{
-                                  color: isCancel ? '#FF5252' : 'text.primary',
-                                }}
-                              >
-                                {isCancel ? 'Cancel Claim' : phase?.label}
-                              </Typography>
-                              <Chip
-                                label={key}
-                                size="small"
-                                sx={{
-                                  height: 18,
-                                  fontSize: '0.65rem',
-                                  backgroundColor: `${phase?.color || '#FF5252'}15`,
-                                  color: phase?.color || '#FF5252',
-                                  border: `1px solid ${phase?.color || '#FF5252'}30`,
-                                }}
-                              />
-                            </Box>
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{ display: 'block', mt: 0.25 }}
-                            >
-                              {phase?.description}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </MenuItem>
-                    )
-                  })}
-                </Select>
-              </FormControl>
-            ) : (
-              <Typography color="text.secondary" sx={{ mb: 3 }}>
-                No further status transitions available.
-              </Typography>
-            )}
+            {/* ── Status dropdown ─────────────────────────────────── */}
+            <StatusSelector
+              options={dropdownOptions}
+              selectedStatus={selectedStatus}
+              isUpdating={isUpdating}
+              onChange={setSelectedStatus}
+            />
 
             {labelError && (
               <Typography color="error" variant="body2" sx={{ mb: 2 }}>
@@ -887,7 +426,7 @@ export const UpdateClaimStatus = () => {
               </Typography>
             )}
 
-            {/* ── 3g. Action Buttons with loading state ────────── */}
+            {/* ── Action Buttons ──────────────────────────────────── */}
             <Box display="flex" gap={2}>
               <Button
                 variant="contained"
@@ -925,137 +464,17 @@ export const UpdateClaimStatus = () => {
         </Grid>
       </Grid>
 
-      {/* ── 3c / 3h. Confirmation Dialog ─────────────────────────── */}
-      <Dialog
+      {/* ── Confirmation Dialog ─────────────────────────────────── */}
+      <StatusTransitionDialog
         open={confirmOpen}
-        onClose={() => !isUpdating && setConfirmOpen(false)}
-        maxWidth="xs"
-        fullWidth
-      >
-        <DialogTitle
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            ...(isCancelAction && { color: '#FF5252' }),
-          }}
-        >
-          {isCancelAction && <WarningAmberIcon sx={{ color: '#FF5252' }} />}
-          {isCancelAction ? 'Cancel Claim?' : 'Confirm Status Change'}
-        </DialogTitle>
-        <DialogContent>
-          {/* From -> To chips */}
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.5,
-              mb: 2.5,
-              flexWrap: 'wrap',
-            }}
-          >
-            <Chip
-              label={fromPhase?.label || currentStatus}
-              size="small"
-              sx={{
-                backgroundColor: `${fromPhase?.color || '#8899AA'}20`,
-                color: fromPhase?.color || '#8899AA',
-                fontWeight: 600,
-                border: `1px solid ${fromPhase?.color || '#8899AA'}40`,
-              }}
-            />
-            <Typography variant="body2" color="text.secondary">
-              -&gt;
-            </Typography>
-            <Chip
-              label={toPhase?.label || selectedStatus}
-              size="small"
-              sx={{
-                backgroundColor: `${toPhase?.color || '#8899AA'}20`,
-                color: toPhase?.color || '#FF5252',
-                fontWeight: 600,
-                border: `1px solid ${toPhase?.color || '#FF5252'}40`,
-              }}
-            />
-          </Box>
-
-          {/* Description */}
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            {getTransitionDescription()}
-          </Typography>
-
-          {/* High QA warning */}
-          {qaLevel === 'high' &&
-            !isCancelAction &&
-            (selectedStatus === 'shipped' || selectedStatus === 'qa_check') && (
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: 1,
-                  p: 1.5,
-                  borderRadius: 1.5,
-                  backgroundColor: 'rgba(255, 145, 0, 0.08)',
-                  border: '1px solid rgba(255, 145, 0, 0.2)',
-                  mb: 1,
-                }}
-              >
-                <WarningAmberIcon
-                  sx={{ color: '#FF9100', fontSize: 20, mt: 0.25 }}
-                />
-                <Typography variant="caption" color="#FF9100">
-                  This is a <strong>high-QA</strong> order. Evidence photos are
-                  required and will be reviewed by the buyer.
-                </Typography>
-              </Box>
-            )}
-
-          {/* Cancel warning */}
-          {isCancelAction && (
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: 1,
-                p: 1.5,
-                borderRadius: 1.5,
-                backgroundColor: 'rgba(255, 82, 82, 0.08)',
-                border: '1px solid rgba(255, 82, 82, 0.2)',
-              }}
-            >
-              <WarningAmberIcon
-                sx={{ color: '#FF5252', fontSize: 20, mt: 0.25 }}
-              />
-              <Typography variant="caption" color="#FF5252">
-                Items will be returned to the marketplace and made available
-                for other fulfillers to claim.
-              </Typography>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2.5 }}>
-          <Button
-            onClick={() => setConfirmOpen(false)}
-            disabled={isUpdating}
-            sx={{ fontWeight: 600 }}
-          >
-            Go Back
-          </Button>
-          <Button
-            variant="contained"
-            color={isCancelAction ? 'error' : 'primary'}
-            onClick={handleDialogConfirm}
-            disabled={isUpdating}
-            sx={{ fontWeight: 600, minWidth: 100 }}
-          >
-            {isUpdating ? (
-              <CircularProgress size={20} sx={{ color: 'inherit' }} />
-            ) : (
-              'Confirm'
-            )}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        currentStatus={currentStatus}
+        selectedStatus={selectedStatus}
+        qaLevel={qaLevel}
+        isUpdating={isUpdating}
+        isCancelAction={isCancelAction}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={handleDialogConfirm}
+      />
 
       {/* ── Snackbar ─────────────────────────────────────────────── */}
       <Snackbar

@@ -21,9 +21,10 @@ function App() {
     useEffect(() => {
       if (userInterfaceState.userInformation?.incomplete_task?.port) {
         const portId = userInterfaceState.userInformation?.incomplete_task.port.port_id;
-        createWebsocketConnection(portId, dispatch, setActualFile);
+        const { cleanup } = createWebsocketConnection(portId, dispatch, setActualFile);
+        return cleanup;
       }
-    }, [userInterfaceState.userInformation]);
+    }, [userInterfaceState.userInformation?.incomplete_task?.port?.port_id]);
 
     useGetSessionQuery(undefined, { pollingInterval: 5 * 60 * 1000 });
 

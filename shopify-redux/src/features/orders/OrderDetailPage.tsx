@@ -27,6 +27,7 @@ import {
   ImageListItem,
   TextField,
   Collapse,
+  useMediaQuery,
 } from '@mui/material'
 import {
   ArrowBack,
@@ -302,6 +303,8 @@ interface ClaimTrackerProps {
 }
 
 function ClaimTracker({ claim, order, isOwner }: ClaimTrackerProps) {
+  const theme = useTheme()
+  const imageCols = useMediaQuery(theme.breakpoints.down('sm')) ? 2 : useMediaQuery(theme.breakpoints.down('md')) ? 3 : 4
   const { userInformation } = useSelector((state: RootState) => state.userInterfaceState)
   const [updateStatus, { isLoading: statusLoading }] = useUpdateClaimStatusMutation()
   const [respondToDispute, { isLoading: respondLoading }] = useRespondToDisputeMutation()
@@ -462,7 +465,7 @@ function ClaimTracker({ claim, order, isOwner }: ClaimTrackerProps) {
           <Typography variant="subtitle2" fontWeight={600} gutterBottom>
             Evidence Photos ({claim.evidence.length})
           </Typography>
-          <ImageList cols={4} gap={8} sx={{ maxHeight: 200 }}>
+          <ImageList cols={imageCols} gap={8} sx={{ maxHeight: 200 }}>
             {claim.evidence.map((ev) => (
               <ImageListItem key={ev.id}>
                 {ev.image_data ? (

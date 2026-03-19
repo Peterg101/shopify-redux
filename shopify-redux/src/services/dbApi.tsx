@@ -1,4 +1,5 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createBaseQueryWithReauth } from './baseQueryWithReauth';
 import {
   OrderDetail,
   ClaimEvidence,
@@ -16,10 +17,7 @@ import { authApi } from './authApi';
 
 export const dbApi = createApi({
   reducerPath: 'dbApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.REACT_APP_DB_SERVICE,
-    credentials: 'include',
-  }),
+  baseQuery: createBaseQueryWithReauth(process.env.REACT_APP_DB_SERVICE!),
   tagTypes: ['OrderDetail', 'ClaimEvidence', 'ClaimHistory', 'Dispute', 'FulfillerAddress', 'FulfillerProfile', 'ManufacturingProcesses', 'ManufacturingMaterials'],
   endpoints: (builder) => ({
     // ── Queries ──────────────────────────────────────────────
@@ -65,7 +63,7 @@ export const dbApi = createApi({
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           await queryFulfilled;
-          dispatch(authApi.util.invalidateTags(['sessionData']));
+          dispatch(authApi.util.invalidateTags(['BasketItems']));
         } catch { /* mutation failed */ }
       },
     }),
@@ -78,7 +76,7 @@ export const dbApi = createApi({
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           await queryFulfilled;
-          dispatch(authApi.util.invalidateTags(['sessionData']));
+          dispatch(authApi.util.invalidateTags(['BasketItems']));
         } catch { /* mutation failed */ }
       },
     }),
@@ -92,7 +90,7 @@ export const dbApi = createApi({
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           await queryFulfilled;
-          dispatch(authApi.util.invalidateTags(['sessionData']));
+          dispatch(authApi.util.invalidateTags(['UserClaims', 'UserOrders']));
         } catch { /* mutation failed */ }
       },
     }),
@@ -110,7 +108,7 @@ export const dbApi = createApi({
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           await queryFulfilled;
-          dispatch(authApi.util.invalidateTags(['sessionData']));
+          dispatch(authApi.util.invalidateTags(['UserClaims']));
         } catch { /* mutation failed */ }
       },
     }),
@@ -124,7 +122,7 @@ export const dbApi = createApi({
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           await queryFulfilled;
-          dispatch(authApi.util.invalidateTags(['sessionData']));
+          dispatch(authApi.util.invalidateTags(['UserClaims']));
         } catch { /* mutation failed */ }
       },
     }),
@@ -147,7 +145,7 @@ export const dbApi = createApi({
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           await queryFulfilled;
-          dispatch(authApi.util.invalidateTags(['sessionData']));
+          dispatch(authApi.util.invalidateTags(['UserOrders']));
         } catch { /* mutation failed */ }
       },
     }),

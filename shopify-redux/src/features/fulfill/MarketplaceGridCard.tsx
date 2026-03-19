@@ -14,6 +14,8 @@ import {
   Snackbar,
   Alert,
 } from '@mui/material'
+import { ConfirmDialog } from '../shared/ConfirmDialog'
+import { useSnackbar } from '../shared/useSnackbar'
 import ViewInArIcon from '@mui/icons-material/ViewInAr'
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
 import VerifiedIcon from '@mui/icons-material/Verified'
@@ -42,7 +44,9 @@ export const MarketplaceGridCard = React.memo(({ order }: MarketplaceGridCardPro
   const dispatch = useDispatch()
   const { prepareOrderFile } = useOrderFileLoader()
   const [viewerOpen, setViewerOpen] = useState(false)
-  const [snackbar, setSnackbar] = useState({ open: false, message: '' })
+  const [confirmClaimOpen, setConfirmClaimOpen] = useState(false)
+  const [isClaiming, setIsClaiming] = useState(false)
+  const { snackbar, showSuccess, showError, close: closeSnackbar } = useSnackbar()
 
   const remaining = order.quantity - order.quantity_claimed
   const pricePerUnit = order.quantity > 0 ? order.price / order.quantity : 0
@@ -54,13 +58,18 @@ export const MarketplaceGridCard = React.memo(({ order }: MarketplaceGridCardPro
   const isImage = order.selectedFileType?.startsWith('image')
   const is3D = order.selectedFileType?.includes('obj') || order.selectedFileType?.includes('stl')
 
-  const handleClaim = async () => {
+  const handleClaimConfirmed = async () => {
+    setIsClaiming(true)
     try {
       await prepareOrderFile(order)
       dispatch(setClaimedOrder({ claimedOrder: order }))
+      showSuccess(`Successfully claimed "${order.name}"`)
+      setConfirmClaimOpen(false)
     } catch (err) {
       logger.error('Error claiming order:', err)
-      setSnackbar({ open: true, message: 'Failed to load order file.' })
+      showError('Failed to load order file.')
+    } finally {
+      setIsClaiming(false)
     }
   }
 
@@ -71,7 +80,7 @@ export const MarketplaceGridCard = React.memo(({ order }: MarketplaceGridCardPro
       setViewerOpen(true)
     } catch (err) {
       logger.error('Error loading 3D viewer:', err)
-      setSnackbar({ open: true, message: 'Sorry, this file could not be loaded.' })
+      showError('Sorry, this file could not be loaded.')
     }
   }
 
@@ -243,7 +252,7 @@ export const MarketplaceGridCard = React.memo(({ order }: MarketplaceGridCardPro
         </CardContent>
 
         <CardActions sx={{ px: 2, pb: 2, pt: 0 }}>
-          <Button size="small" variant="contained" onClick={handleClaim} sx={{ flex: 1 }}>
+          <Button size="small" variant="contained" onClick={() => setConfirmClaimOpen(true)} disabled={remaining <= 0} sx={{ flex: 1 }}>
             Claim
           </Button>
           {is3D && (
@@ -264,13 +273,24 @@ export const MarketplaceGridCard = React.memo(({ order }: MarketplaceGridCardPro
         </MuiDialogActions>
       </Dialog>
 
+      <ConfirmDialog
+        open={confirmClaimOpen}
+        title="Claim Order"
+        message={`You will be responsible for manufacturing and shipping "${order.name}". Are you sure you want to claim this order?`}
+        confirmLabel="Claim Order"
+        severity="info"
+        isLoading={isClaiming}
+        onConfirm={handleClaimConfirmed}
+        onCancel={() => setConfirmClaimOpen(false)}
+      />
+
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
-        onClose={() => setSnackbar({ open: false, message: '' })}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        onClose={closeSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert severity="error" onClose={() => setSnackbar({ open: false, message: '' })}>
+        <Alert severity={snackbar.severity} onClose={closeSnackbar} variant="filled">
           {snackbar.message}
         </Alert>
       </Snackbar>

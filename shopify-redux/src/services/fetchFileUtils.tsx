@@ -3,11 +3,12 @@ import {convertFileToDataURI } from "../app/utility/utils";
 import logger from '../app/utility/logger';
 import { safeRedirect } from '../app/utility/urlValidation';
 
-export const fetchFile = async (fileId: string): Promise<FileResponse> => {
+export const fetchFile = async (fileId: string, signal?: AbortSignal): Promise<FileResponse> => {
     try {
       const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/file_storage/${fileId}`, {
         method: 'GET',
-        credentials: 'include'
+        credentials: 'include',
+        signal,
       });
 
       if (!response.ok) {
@@ -23,16 +24,17 @@ export const fetchFile = async (fileId: string): Promise<FileResponse> => {
   };
 
 /** Fetch a CAD-generated file (glB preview) from step_service by task_id. */
-export const fetchCadFile = async (taskId: string): Promise<{ file: File; fileUrl: string }> => {
+export const fetchCadFile = async (taskId: string, signal?: AbortSignal): Promise<{ file: File; fileUrl: string }> => {
   const previewResp = await fetch(
-    `${process.env.REACT_APP_STEP_SERVICE}/step/by_task/${taskId}/preview_url`
+    `${process.env.REACT_APP_STEP_SERVICE}/step/by_task/${taskId}/preview_url`,
+    { signal }
   );
   if (!previewResp.ok) {
     throw new Error(`No CAD preview found for task ${taskId}`);
   }
 
   const { url: presignedUrl } = await previewResp.json();
-  const binaryResp = await fetch(presignedUrl);
+  const binaryResp = await fetch(presignedUrl, { signal });
   if (!binaryResp.ok) {
     throw new Error(`Failed to fetch CAD preview from storage: ${binaryResp.status}`);
   }

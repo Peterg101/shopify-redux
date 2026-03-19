@@ -11,15 +11,34 @@ export const createCadWebsocketConnection = (
   portId: string,
   dispatch: AppDispatch,
   setActualFile: React.Dispatch<React.SetStateAction<File | null>>
-): WebSocket => {
+): { ws: WebSocket; cleanup: () => void } => {
   let reconnectAttempts = 0;
   let ws: WebSocket;
+  let reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  let disposed = false;
+  const abortController = new AbortController();
+  const blobUrls: string[] = [];
+
+  const cleanup = () => {
+    disposed = true;
+    if (reconnectTimeoutId !== null) {
+      clearTimeout(reconnectTimeoutId);
+      reconnectTimeoutId = null;
+    }
+    abortController.abort();
+    blobUrls.forEach(url => URL.revokeObjectURL(url));
+    blobUrls.length = 0;
+    if (ws && ws.readyState !== WebSocket.CLOSED) {
+      ws.close();
+    }
+  };
 
   const connect = (): WebSocket => {
     ws = new WebSocket(`${process.env.REACT_APP_CAD_WEBSOCKET}/ws/${portId}`);
     let isFirstMessage = true;
 
     ws.onmessage = async (event) => {
+      if (disposed) return;
       if (!event.data || typeof event.data !== 'string') return;
 
       if (isFirstMessage) {
@@ -43,11 +62,13 @@ export const createCadWebsocketConnection = (
         const parts = data.split(",");
         const fileName = parts[2] || "generated";
         const jobId = parts[3];
+        const signal = abortController.signal;
 
         try {
           // Fetch presigned glB preview URL from step_service
           const previewResp = await fetch(
-            `${process.env.REACT_APP_STEP_SERVICE}/step/${jobId}/preview_url`
+            `${process.env.REACT_APP_STEP_SERVICE}/step/${jobId}/preview_url`,
+            { signal }
           );
           if (!previewResp.ok) {
             throw new Error(`Preview URL request failed: ${previewResp.status}`);
@@ -55,13 +76,14 @@ export const createCadWebsocketConnection = (
           const { url: presignedUrl } = await previewResp.json();
 
           // Fetch the glB binary from MinIO
-          const glbResp = await fetch(presignedUrl);
+          const glbResp = await fetch(presignedUrl, { signal });
           if (!glbResp.ok) {
             throw new Error(`glB fetch failed: ${glbResp.status}`);
           }
           const glbBlob = await glbResp.blob();
           const glbFile = new File([glbBlob], `${fileName}.glb`, { type: "model/gltf-binary" });
           const blobUrl = URL.createObjectURL(glbBlob);
+          blobUrls.push(blobUrl);
 
           setActualFile(glbFile);
           dispatch(setFromMeshyOrHistory({ fromMeshyOrHistory: true }));
@@ -74,7 +96,8 @@ export const createCadWebsocketConnection = (
           // Fetch CAD metadata (volume, bounding box) from step_service
           try {
             const metaResp = await fetch(
-              `${process.env.REACT_APP_STEP_SERVICE}/step/${jobId}/status`
+              `${process.env.REACT_APP_STEP_SERVICE}/step/${jobId}/status`,
+              { signal }
             );
             if (metaResp.ok) {
               const meta = await metaResp.json();
@@ -104,10 +127,14 @@ export const createCadWebsocketConnection = (
               }
             }
           } catch (metaErr) {
-            logger.warn("Could not fetch CAD metadata:", metaErr);
+            if (!disposed) {
+              logger.warn("Could not fetch CAD metadata:", metaErr);
+            }
           }
         } catch (err) {
-          logger.error("Error fetching completed CAD file:", err);
+          if (!disposed) {
+            logger.error("Error fetching completed CAD file:", err);
+          }
         }
         dispatch(setCadLoading({ cadLoading: false }));
         ws.close();
@@ -136,16 +163,17 @@ export const createCadWebsocketConnection = (
       dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
       dispatch(setCadLoading({ cadLoading: false }));
 
-      if (!event.wasClean && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+      if (!disposed && !event.wasClean && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
         const delay = BASE_RECONNECT_DELAY * Math.pow(2, reconnectAttempts);
         reconnectAttempts++;
         logger.warn(`CAD WebSocket closed unexpectedly. Reconnecting in ${delay}ms (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
-        setTimeout(() => connect(), delay);
+        reconnectTimeoutId = setTimeout(() => connect(), delay);
       }
     };
 
     return ws;
   };
 
-  return connect();
+  ws = connect();
+  return { ws, cleanup };
 };

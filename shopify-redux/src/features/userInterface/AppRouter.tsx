@@ -9,6 +9,7 @@ import { OrderDetailPage } from "../orders/OrderDetailPage";
 import { CatalogPage } from "../catalog/CatalogPage";
 import { PartDetailPage } from "../catalog/PartDetailPage";
 import { ProtectedRoute } from "./ProtectedRoute";
+import { NotFoundPage } from "../shared/NotFoundPage";
 import { authApi } from "../../services/authApi";
 import { CircularProgress, Box } from "@mui/material";
 
@@ -40,7 +41,7 @@ function AppRouter() {
         <Route path="/orders/:orderId" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />
         <Route path="/catalog" element={<ProtectedRoute><CatalogPage /></ProtectedRoute>} />
         <Route path="/catalog/:partId" element={<ProtectedRoute><PartDetailPage /></ProtectedRoute>} />
-        <Route path="*" element={<h1>404 - Page Not Found</h1>} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );

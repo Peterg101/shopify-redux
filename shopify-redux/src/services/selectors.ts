@@ -6,6 +6,14 @@ const selectDataState = (state: RootState) => state.dataState
 
 export const selectIsLoggedIn = (state: RootState) => state.userInterfaceState.userInformation !== null
 
+// Property-level selectors — prevent whole-slice subscriptions
+export const selectUserInformation = (state: RootState) => state.userInterfaceState.userInformation
+export const selectSelectedClaim = (state: RootState) => state.userInterfaceState.selectedClaim
+export const selectLeftDrawerOpen = (state: RootState) => state.userInterfaceState.leftDrawerOpen
+export const selectSelectedComponent = (state: RootState) => state.userInterfaceState.selectedComponent
+export const selectFulfillMode = (state: RootState) => state.userInterfaceState.fulfillMode
+export const selectUpdateClaimMode = (state: RootState) => state.userInterfaceState.updateClaimMode
+
 export const selectTotalCost = createSelector(
   [
     (state: RootState) => selectDataState(state).modelVolume,

@@ -12,7 +12,9 @@ import {
   ImageListItem,
   Chip,
   Alert,
+  useMediaQuery,
 } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import { RootState } from '../../app/store'
 import { Claim } from '../../app/utility/interfaces'
 import {
@@ -41,6 +43,8 @@ function formatDeadline(deadline: string): string {
 }
 
 export function DisputePanel({ claim, onClose }: DisputePanelProps) {
+  const theme = useTheme()
+  const imageCols = useMediaQuery(theme.breakpoints.down('sm')) ? 2 : useMediaQuery(theme.breakpoints.down('md')) ? 3 : 4
   const dispatch = useDispatch()
   const { userInformation } = useSelector((state: RootState) => state.userInterfaceState)
 
@@ -227,7 +231,7 @@ export function DisputePanel({ claim, onClose }: DisputePanelProps) {
             <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
               <Typography variant="h6" fontWeight={600} gutterBottom>Evidence</Typography>
               <Divider sx={{ mb: 2 }} />
-              <ImageList cols={3} gap={8}>
+              <ImageList cols={imageCols} gap={8}>
                 {evidence.map((ev) => (
                   <ImageListItem key={ev.id}>
                     {ev.image_data && (

@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 import { useFile } from '../services/fileProvider'
 import { fetchFile, extractFileInfo, fetchCadFile, isCadFileType } from '../services/fetchFileUtils'
@@ -9,7 +10,7 @@ export const useOrderFileLoader = () => {
   const dispatch = useDispatch()
   const { setActualFile } = useFile()
 
-  const prepareOrderFile = async (order: Order) => {
+  const prepareOrderFile = useCallback(async (order: Order) => {
     let file: File;
     let fileUrl: string;
 
@@ -33,7 +34,7 @@ export const useOrderFileLoader = () => {
     dispatch(setFulfillMode({ fulfillMode: true }))
 
     return fileInfo
-  }
+  }, [dispatch, setActualFile])
 
   return { prepareOrderFile }
 }

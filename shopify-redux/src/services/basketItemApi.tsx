@@ -1,13 +1,11 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createBaseQueryWithReauth } from './baseQueryWithReauth';
 import { BasketQuantityUpdate } from "../app/utility/interfaces";
 import { authApi } from './authApi';
 
 export const basketApi = createApi({
   reducerPath: 'basketApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.REACT_APP_DB_SERVICE,
-    credentials: 'include',
-  }),
+  baseQuery: createBaseQueryWithReauth(process.env.REACT_APP_DB_SERVICE!),
   endpoints: (builder) => ({
     updateBasketQuantity: builder.mutation<void, BasketQuantityUpdate>({
       query: ({ task_id, quantity }) => ({
@@ -32,7 +30,7 @@ export const basketApi = createApi({
         try {
           await queryFulfilled;  // Wait for the API mutation to complete
           // Invalidate the session cache to trigger a refetch of the latest data
-          dispatch(authApi.util.invalidateTags(['sessionData']));
+          dispatch(authApi.util.invalidateTags(['BasketItems']));
         } catch {
           patchResult.undo();  // Rollback if the mutation fails
         }
@@ -50,7 +48,7 @@ export const basketApi = createApi({
         try {
           await queryFulfilled;
           // Invalidate authApi's session cache to refetch updated basket/task data
-          dispatch(authApi.util.invalidateTags(['sessionData']));
+          dispatch(authApi.util.invalidateTags(['BasketItems', 'UserOrders']));
         } catch {
           // Mutation failed — no cache to rollback
         }

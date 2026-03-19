@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -83,27 +83,39 @@ export const ConfigurationPanel = () => {
   const isCad = isCadFileType(dataState.selectedFileType);
 
   // Filter processes: CAD files see all processes, Meshy files see only 3D printing
-  const filteredProcesses = serverProcesses
-    ? isCad
-      ? serverProcesses
-      : serverProcesses.filter((p: ManufacturingProcess) => p.family === '3d_printing')
-    : null;
+  const filteredProcesses = useMemo(
+    () =>
+      serverProcesses
+        ? isCad
+          ? serverProcesses
+          : serverProcesses.filter((p: ManufacturingProcess) => p.family === '3d_printing')
+        : null,
+    [serverProcesses, isCad]
+  );
 
   // Derive technique list: use server data if available, else static config
   const { techniques, materials } = config;
-  const techniqueOptions: string[] = filteredProcesses
-    ? filteredProcesses.map((p: ManufacturingProcess) => p.name)
-    : techniques;
+  const techniqueOptions: string[] = useMemo(
+    () =>
+      filteredProcesses
+        ? filteredProcesses.map((p: ManufacturingProcess) => p.name)
+        : techniques,
+    [filteredProcesses, techniques]
+  );
 
   // Filter materials by the selected process's family
   const selectedProcess = serverProcesses?.find(
     (p: ManufacturingProcess) => p.name === dataState.printTechnique
   );
-  const materialOptions = serverMaterials && selectedProcess
-    ? serverMaterials.filter(
-        (m: ManufacturingMaterial) => m.process_family === selectedProcess.family
-      )
-    : null;
+  const materialOptions = useMemo(
+    () =>
+      serverMaterials && selectedProcess
+        ? serverMaterials.filter(
+            (m: ManufacturingMaterial) => m.process_family === selectedProcess.family
+          )
+        : null,
+    [serverMaterials, selectedProcess]
+  );
 
   const colours = ['red', 'blue', 'green', 'orange', 'purple', 'black', 'white', 'grey'];
 

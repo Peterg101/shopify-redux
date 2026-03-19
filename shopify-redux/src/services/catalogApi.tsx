@@ -1,4 +1,5 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createBaseQueryWithReauth } from './baseQueryWithReauth';
 import {
   Part,
   PartCreate,
@@ -19,10 +20,7 @@ interface ListPartsParams {
 
 export const catalogApi = createApi({
   reducerPath: 'catalogApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.REACT_APP_DB_SERVICE,
-    credentials: 'include',
-  }),
+  baseQuery: createBaseQueryWithReauth(process.env.REACT_APP_DB_SERVICE!),
   tagTypes: ['Parts', 'PartDetail'],
   endpoints: (builder) => ({
     getParts: builder.query<PartListResponse, ListPartsParams | void>({
