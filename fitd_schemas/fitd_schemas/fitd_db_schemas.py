@@ -28,7 +28,7 @@ class Task(Base):
     file_type: Mapped[str] = mapped_column(String, default="obj")
     complete: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[str] = mapped_column(String, default=lambda: datetime.now().isoformat())
-    owner = relationship("User", back_populates="tasks", lazy="joined")
+    owner = relationship("User", back_populates="tasks", lazy="noload")
 
     # Optional one-to-one relationship to PortID
     port = relationship("PortID", back_populates="task", uselist=False, lazy="joined")
@@ -118,8 +118,8 @@ class Order(Base):
     shipping_country: Mapped[str | None] = mapped_column(String, nullable=True)
 
     # Relationships
-    user = relationship("User", backref=backref("orders", lazy="selectin"), lazy="selectin")
-    task = relationship("Task", backref=backref("order", uselist=False, lazy="joined"), uselist=False, lazy="joined")
+    user = relationship("User", backref=backref("orders", lazy="noload"), lazy="noload")
+    task = relationship("Task", backref=backref("order", uselist=False, lazy="noload"), uselist=False, lazy="noload")
     manufacturing_process = relationship("ManufacturingProcess", lazy="selectin")
     manufacturing_material = relationship("ManufacturingMaterial", lazy="selectin")
     claims: Mapped[list["Claim"]] = relationship(
@@ -156,7 +156,7 @@ class Claim(Base):
     shipment_id: Mapped[str | None] = mapped_column(String, nullable=True)
 
     # Relationships
-    order: Mapped["Order"] = relationship("Order", back_populates="claims", lazy="selectin")
+    order: Mapped["Order"] = relationship("Order", back_populates="claims", lazy="noload")
     disbursements: Mapped[list["Disbursement"]] = relationship("Disbursement", back_populates="claim", lazy="selectin", cascade="all, delete-orphan")
 
 class Disbursement(Base):
@@ -170,7 +170,7 @@ class Disbursement(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
     stripe_transfer_id: Mapped[str | None] = mapped_column(String, nullable=True)
 
-    claim: Mapped["Claim"] = relationship("Claim", back_populates="disbursements", lazy="joined")
+    claim: Mapped["Claim"] = relationship("Claim", back_populates="disbursements", lazy="noload")
 
 
 class UserStripeAccount(Base):
@@ -200,7 +200,7 @@ class ClaimEvidence(Base):
     uploaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
     status_at_upload: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    claim = relationship("Claim", backref=backref("evidence", lazy="selectin"), lazy="joined")
+    claim = relationship("Claim", backref=backref("evidence", lazy="selectin"), lazy="noload")
 
 
 class ClaimStatusHistory(Base):
@@ -211,7 +211,7 @@ class ClaimStatusHistory(Base):
     new_status: Mapped[str] = mapped_column(String, nullable=False)
     changed_by: Mapped[str] = mapped_column(String, ForeignKey("users.user_id"), nullable=False)
     changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
-    claim = relationship("Claim", backref=backref("status_history", lazy="selectin"), lazy="joined")
+    claim = relationship("Claim", backref=backref("status_history", lazy="selectin"), lazy="noload")
 
 
 class Dispute(Base):
@@ -230,7 +230,7 @@ class Dispute(Base):
     buyer_deadline: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
     resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
-    claim = relationship("Claim", backref=backref("dispute", uselist=False))
+    claim = relationship("Claim", backref=backref("dispute", uselist=False, lazy="selectin"), lazy="noload")
 
 
 class ManufacturingProcess(Base):
@@ -270,7 +270,7 @@ class FulfillerProfile(Base):
     capabilities: Mapped[list["FulfillerCapability"]] = relationship(
         "FulfillerCapability", back_populates="profile", cascade="all, delete-orphan", lazy="selectin"
     )
-    user = relationship("User", backref=backref("fulfiller_profile", uselist=False, lazy="joined"), lazy="joined")
+    user = relationship("User", backref=backref("fulfiller_profile", uselist=False, lazy="noload"), lazy="noload")
 
 
 class FulfillerCapability(Base):
@@ -309,7 +309,7 @@ class Part(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    publisher = relationship("User", backref=backref("published_parts", lazy="selectin"), lazy="joined")
+    publisher = relationship("User", backref=backref("published_parts", lazy="noload"), lazy="noload")
     task = relationship("Task", backref=backref("part", uselist=False, lazy="joined"), lazy="joined")
 
 
@@ -334,6 +334,6 @@ class FileAsset(Base):
     thumbnail_asset_id: Mapped[Optional[str]] = mapped_column(String, ForeignKey("file_assets.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
 
-    user = relationship("User", backref=backref("file_assets", lazy="selectin"), lazy="selectin")
+    user = relationship("User", backref=backref("file_assets", lazy="noload"), lazy="noload")
     preview_asset = relationship("FileAsset", foreign_keys=[preview_asset_id], remote_side="FileAsset.id", lazy="joined")
     thumbnail_asset = relationship("FileAsset", foreign_keys=[thumbnail_asset_id], remote_side="FileAsset.id", lazy="joined")

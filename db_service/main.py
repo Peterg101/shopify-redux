@@ -59,6 +59,30 @@ from pathlib import Path
 import re
 from sqlalchemy import text
 
+from fitd_schemas.fitd_classes import ClaimResponse, UserResponse, TaskResponse, BasketItemResponse
+
+
+def _order_to_response(o) -> OrderResponse:
+    """Serialize an Order ORM object without triggering circular claim→order loading."""
+    return OrderResponse(
+        order_id=o.order_id, task_id=o.task_id, user_id=o.user_id,
+        name=o.name, material=o.material, technique=o.technique,
+        sizing=o.sizing, colour=o.colour, selectedFile=o.selectedFile,
+        selectedFileType=o.selectedFileType, price=o.price,
+        quantity=o.quantity, created_at=str(o.created_at),
+        is_collaborative=o.is_collaborative, status=o.status,
+        qa_level=o.qa_level, quantity_claimed=o.quantity_claimed,
+        claims=[ClaimResponse.from_orm(c) for c in o.claims],
+        process_id=o.process_id, material_id=o.material_id,
+        tolerance_mm=o.tolerance_mm, surface_finish=o.surface_finish,
+        special_requirements=o.special_requirements,
+        shipping_name=o.shipping_name, shipping_line1=o.shipping_line1,
+        shipping_line2=o.shipping_line2, shipping_city=o.shipping_city,
+        shipping_postal_code=o.shipping_postal_code,
+        shipping_country=o.shipping_country,
+    )
+
+
 UPLOAD_DIR = Path("./uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
@@ -217,11 +241,20 @@ def get_user(
         .options(selectinload(Claim.order))
         .all()
     )
-    claims_response = [ClaimWithOrderResponse.from_orm(claim) for claim in claims]
+    claims_response = []
+    for claim in claims:
+        order_data = _order_to_response(claim.order)
+        claims_response.append(ClaimWithOrderResponse(
+            id=claim.id, order_id=claim.order_id,
+            claimant_user_id=claim.claimant_user_id,
+            quantity=claim.quantity, status=claim.status,
+            created_at=claim.created_at, updated_at=claim.updated_at,
+            order=order_data,
+        ))
 
     # Convert orders to Pydantic too
     orders = db.query(Order).filter(Order.user_id == user_id).all()
-    orders_response = [OrderResponse.from_orm(order) for order in orders]
+    orders_response = [_order_to_response(order) for order in orders]
 
     # Check Stripe onboarding status
     user_stripe = db.query(UserStripeAccount).filter(
@@ -266,19 +299,19 @@ def get_user(
     else:
         claimable_orders = all_collaborative
 
-    claimable_orders_response = [OrderResponse.from_orm(order) for order in claimable_orders]
+    claimable_orders_response = [_order_to_response(order) for order in claimable_orders]
 
-    return {
-        "user": user,
-        "tasks": tasks,
-        "basket_items": basket_items,
-        "incomplete_task": IncompleteTaskResponse.from_orm(incomplete_task) if incomplete_task else None,
-        "claimable_orders": claimable_orders_response,
-        "orders": orders_response,
-        "claims": claims_response,
-        "stripe_onboarded": stripe_onboarded,
-        "fulfiller_profile": fulfiller_profile_response,
-    }
+    return UserHydrationResponse(
+        user=UserResponse.from_orm(user),
+        tasks=[TaskResponse.from_orm(t) for t in tasks],
+        basket_items=[BasketItemResponse.from_orm(b) for b in basket_items],
+        incomplete_task=IncompleteTaskResponse.from_orm(incomplete_task) if incomplete_task else None,
+        claimable_orders=claimable_orders_response,
+        orders=orders_response,
+        claims=claims_response,
+        stripe_onboarded=stripe_onboarded,
+        fulfiller_profile=fulfiller_profile_response,
+    )
 
 
 # Get User
@@ -817,7 +850,7 @@ def update_claim_quantity(
     db: Session = Depends(get_db),
     user_information: None = Depends(cookie_verification_user_only),
 ):
-    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    claim = db.query(Claim).options(selectinload(Claim.order)).filter(Claim.id == claim_id).first()
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
 
@@ -925,7 +958,7 @@ def update_claim_status(
     db: Session = Depends(get_db),
     user_information: None = Depends(cookie_verification_user_only),
 ):
-    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    claim = db.query(Claim).options(selectinload(Claim.order)).filter(Claim.id == claim_id).first()
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
 
@@ -1148,7 +1181,9 @@ def get_dispute(
     db: Session = Depends(get_db),
     _: None = Depends(cookie_verification),
 ):
-    dispute = db.query(Dispute).filter(Dispute.claim_id == claim_id).first()
+    dispute = db.query(Dispute).options(
+        selectinload(Dispute.claim).selectinload(Claim.order)
+    ).filter(Dispute.claim_id == claim_id).first()
     if not dispute:
         raise HTTPException(status_code=404, detail="Dispute not found")
     check_and_auto_resolve(dispute, db)
@@ -1162,7 +1197,9 @@ def respond_to_dispute(
     db: Session = Depends(get_db),
     user_information: None = Depends(cookie_verification_user_only),
 ):
-    dispute = db.query(Dispute).filter(Dispute.id == dispute_id).first()
+    dispute = db.query(Dispute).options(
+        selectinload(Dispute.claim).selectinload(Claim.order)
+    ).filter(Dispute.id == dispute_id).first()
     if not dispute:
         raise HTTPException(status_code=404, detail="Dispute not found")
 
@@ -1194,7 +1231,9 @@ def resolve_dispute(
     db: Session = Depends(get_db),
     user_information: None = Depends(cookie_verification_user_only),
 ):
-    dispute = db.query(Dispute).filter(Dispute.id == dispute_id).first()
+    dispute = db.query(Dispute).options(
+        selectinload(Dispute.claim).selectinload(Claim.order)
+    ).filter(Dispute.id == dispute_id).first()
     if not dispute:
         raise HTTPException(status_code=404, detail="Dispute not found")
 
@@ -1260,7 +1299,9 @@ def upload_dispute_evidence(
     db: Session = Depends(get_db),
     user_information: None = Depends(cookie_verification_user_only),
 ):
-    dispute = db.query(Dispute).filter(Dispute.id == dispute_id).first()
+    dispute = db.query(Dispute).options(
+        selectinload(Dispute.claim)
+    ).filter(Dispute.id == dispute_id).first()
     if not dispute:
         raise HTTPException(status_code=404, detail="Dispute not found")
 
@@ -1352,7 +1393,7 @@ def get_claim_shipping_context(
     db: Session = Depends(get_db),
 ):
     """Returns claim + order shipping details for label creation (inter-service)."""
-    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    claim = db.query(Claim).options(selectinload(Claim.order)).filter(Claim.id == claim_id).first()
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
 

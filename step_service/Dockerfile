@@ -10,13 +10,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxrender1 libxmu6 libxi6 libxext6 libx11-6 libxft2 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+COPY step_service/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Install shared packages
+COPY fitd_schemas/ /packages/fitd_schemas/
+COPY jwt_auth/ /packages/jwt_auth/
+RUN pip install /packages/fitd_schemas/ /packages/jwt_auth/
 
 # CadQuery is large (~500MB) — install separately for better Docker layer caching
 RUN pip install --no-cache-dir cadquery
 
-COPY . .
+COPY step_service/ .
 
 EXPOSE 1235
 
