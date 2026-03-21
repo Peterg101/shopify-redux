@@ -9,7 +9,7 @@ import { resetDataState } from "../../services/dataSlice";
 import { extractFileInfo, fetchFile, fetchCadFile, isCadFileType } from "../../services/fetchFileUtils";
 
 function EditBasketItem({ item }: { item: BasketInformation }) {
-const {actualFile, setActualFile} = useFile()
+const { setActualFile} = useFile()
 const dispatch = useDispatch()
 
 const handleEditBasketItem = async (item: BasketInformation) => {

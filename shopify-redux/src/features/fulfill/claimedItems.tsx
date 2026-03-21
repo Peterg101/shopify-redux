@@ -62,7 +62,10 @@ export const ClaimedItems = () => {
   const userInterfaceState = useSelector(
     (state: RootState) => state.userInterfaceState
   )
-  const claims = userInterfaceState.userInformation?.claims ?? []
+  const claims = useMemo(
+    () => userInterfaceState.userInformation?.claims ?? [],
+    [userInterfaceState.userInformation?.claims]
+  )
 
   const [viewMode, setViewMode] = useState<ClaimViewMode>(
     () => (localStorage.getItem('claimed-view') as ClaimViewMode) || 'grid'

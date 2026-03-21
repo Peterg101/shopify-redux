@@ -11,7 +11,7 @@ const OBJScene = () => {
     const dispatch = useDispatch()
     const [obj, setObj] = useState<THREE.Mesh | null>(null);
     const [measuredObj, setMeasuredObj] = useState<THREE.Mesh | null>(null);
-    const [isMultiplierInitialized, setIsMultiplierInitialized] = useState<boolean>(false);
+    const [isMultiplierInitialized] = useState<boolean>(false);
     const objRef = useRef<THREE.Mesh | null>(null);
     const dataState = useSelector(
         (state: RootState) => state.dataState
@@ -64,7 +64,7 @@ const OBJScene = () => {
             (error) => {
                 logger.error('Error loading OBJ file:', error);
             }
-        ); },[dataState.selectedFile, dataState.multiplierValue, dataState.modelColour, dispatch, isMultiplierInitialized])
+        ); },[dataState.selectedFile, dataState.multiplierValue, dataState.modelColour, dataState.fromMeshyOrHistory, dispatch, isMultiplierInitialized])
     
     
         useEffect(() => {

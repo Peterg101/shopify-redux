@@ -16,7 +16,7 @@ export const LandingPage = () => {
           dispatch(setClaimedOrder({claimedOrder: null}))
           dispatch(setFulfillMode({fulfillMode: false}))
         };
-      }, []);
+      }, [dispatch]);
 
     return(
         <Box>

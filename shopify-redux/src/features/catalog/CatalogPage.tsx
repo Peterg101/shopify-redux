@@ -38,7 +38,7 @@ export const CatalogPage = () => {
   useEffect(() => {
     dispatch(setLeftDrawerClosed());
     dispatch(setSelectedComponent({ selectedComponent: "" }));
-  }, []);
+  }, [dispatch]);
 
   const { data, isLoading } = useGetPartsQuery({
     q: search || undefined,

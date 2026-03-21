@@ -12,7 +12,7 @@ const STLScene = (
 ) => {
     const [stl, setStl] = useState<THREE.Mesh | null>(null);
     const [measuredStl, setMeasuredStl] = useState<THREE.Mesh | null>(null)
-    const [isMultiplierInitialized, setIsMultiplierInitialized] = useState<boolean>(false);
+    const [isMultiplierInitialized] = useState<boolean>(false);
     const dispatch = useDispatch()
     const dataState = useSelector(
         (state: RootState) => state.dataState
@@ -34,7 +34,7 @@ const STLScene = (
         }, undefined, (error) => {
             logger.error("[STLScene] Error loading STL file:", error);
         });
-    }, [dataState.selectedFile, dataState.multiplierValue]);
+    }, [dataState.selectedFile, dataState.multiplierValue, dataState.modelColour]);
 
     useEffect(() => {
         const measuredLoader = new STLLoader();
@@ -54,7 +54,7 @@ const STLScene = (
         }, undefined, (error) => {
             logger.error("Error loading STL file:", error);
         });
-    }, [dataState.selectedFile, dataState.modelColour, dataState.multiplierValue, isMultiplierInitialized, dispatch]);
+    }, [dataState.selectedFile, dataState.modelColour, dataState.fromMeshyOrHistory, dataState.multiplierValue, isMultiplierInitialized, dispatch]);
     
 useEffect(() => {
     if (stl && measuredStl) {
@@ -74,7 +74,7 @@ useEffect(() => {
             dispatch(setModelDimensions({modelDimensions: measuredSize}))  
         });
     } 
-}, [stl, measuredStl, dataState.modelColour, dataState.multiplierValue, dispatch]);
+}, [stl, measuredStl, dataState.modelColour, dataState.multiplierValue, dataState.xFlip, dataState.yFlip, dataState.zFlip, dispatch]);
 
 return (
     <>

@@ -16,7 +16,7 @@ export const Fulfill = () => {
 
     useEffect(() => {
         dispatch(resetSidebar());
-    }, []);
+    }, [dispatch]);
 
     return (
         <Box>

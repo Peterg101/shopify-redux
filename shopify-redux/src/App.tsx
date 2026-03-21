@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState, useEffect } from "react";
-import { useGetSessionQuery, useLogOutMutation } from "./services/authApi";
+import { useGetSessionQuery } from "./services/authApi";
 import { useSelector } from 'react-redux';
 import { RootState } from "./app/store";
 import { createWebsocketConnection } from "./services/meshyWebsocket";
@@ -13,18 +13,19 @@ import AppRouter from './features/userInterface/AppRouter';
 
 function App() {
 
-    const [actualFile, setActualFile] = useState<File | null>(null);
+    const [, setActualFile] = useState<File | null>(null);
     const userInterfaceState = useSelector(
       (state: RootState) => state.userInterfaceState
     )
     const dispatch = useDispatch()
+    const incompletePort = userInterfaceState.userInformation?.incomplete_task?.port;
+    const portId = incompletePort?.port_id;
     useEffect(() => {
-      if (userInterfaceState.userInformation?.incomplete_task?.port) {
-        const portId = userInterfaceState.userInformation?.incomplete_task.port.port_id;
-        const { cleanup } = createWebsocketConnection(portId, dispatch, setActualFile);
+      if (incompletePort) {
+        const { cleanup } = createWebsocketConnection(portId!, dispatch, setActualFile);
         return cleanup;
       }
-    }, [userInterfaceState.userInformation?.incomplete_task?.port?.port_id]);
+    }, [incompletePort, portId, dispatch]);
 
     useGetSessionQuery(undefined, { pollingInterval: 5 * 60 * 1000 });
 

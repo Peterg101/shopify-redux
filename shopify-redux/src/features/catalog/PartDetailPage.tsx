@@ -35,7 +35,7 @@ export const PartDetailPage = () => {
   useEffect(() => {
     dispatch(setLeftDrawerClosed());
     dispatch(setSelectedComponent({ selectedComponent: "" }));
-  }, []);
+  }, [dispatch]);
 
   const { data: part, isLoading, error } = useGetPartDetailQuery(partId!, {
     skip: !partId,

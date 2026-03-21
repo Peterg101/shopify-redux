@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { Box, Container, Paper, Typography, Button, Stack } from '@mui/material'
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined'
 import FilterListOffIcon from '@mui/icons-material/FilterListOff'

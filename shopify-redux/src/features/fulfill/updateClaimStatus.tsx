@@ -142,7 +142,10 @@ export const UpdateClaimStatus = () => {
   const [uploadEvidence] = useUploadClaimEvidenceMutation()
 
   const currentStatus = selectedClaim?.status ?? 'pending'
-  const validNextStatuses = ALLOWED_TRANSITIONS[currentStatus] ?? []
+  const validNextStatuses = useMemo(
+    () => ALLOWED_TRANSITIONS[currentStatus] ?? [],
+    [currentStatus]
+  )
   const canCancel = CANCELLABLE_STATUSES.includes(currentStatus)
 
   const [selectedStatus, setSelectedStatus] = useState(validNextStatuses[0] ?? '')
@@ -162,7 +165,7 @@ export const UpdateClaimStatus = () => {
   // Reset selectedStatus when the claim changes
   useEffect(() => {
     setSelectedStatus(validNextStatuses[0] ?? '')
-  }, [selectedClaim?.id])
+  }, [selectedClaim?.id, validNextStatuses])
 
   // Shipping label state
   const [labelResult, setLabelResult] = useState<{

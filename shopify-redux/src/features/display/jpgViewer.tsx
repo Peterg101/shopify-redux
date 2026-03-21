@@ -1,19 +1,19 @@
 import { useSelector } from "react-redux"
 import { RootState } from "../../app/store";
 import Cropper from 'react-cropper';
-import OBJSTLViewer from "./objStlViewer";
+
 import "cropperjs/dist/cropper.css";
-import SendIcon from '@mui/icons-material/Send';
+
 import CropIcon from '@mui/icons-material/Crop';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { useDispatch } from 'react-redux';
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Box, Button, Collapse } from "@mui/material";
-import { resetDataState, setClearFileDisplay, setSelectedFile, setSelectedFileType } from "../../services/dataSlice";
+import { setClearFileDisplay } from "../../services/dataSlice";
 import { setMeshyPending } from "../../services/meshySlice";
 import { startImageTo3DTask } from "../../services/fetchFileUtils";
-import { generateUuid } from "../../app/utility/utils";
+
 import { generateUUID } from "three/src/math/MathUtils";
 import { useFile } from '../../services/fileProvider';
 import { authApi } from '../../services/authApi';

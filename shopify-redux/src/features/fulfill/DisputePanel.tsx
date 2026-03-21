@@ -44,7 +44,9 @@ function formatDeadline(deadline: string): string {
 
 export function DisputePanel({ claim, onClose }: DisputePanelProps) {
   const theme = useTheme()
-  const imageCols = useMediaQuery(theme.breakpoints.down('sm')) ? 2 : useMediaQuery(theme.breakpoints.down('md')) ? 3 : 4
+  const isSmall = useMediaQuery(theme.breakpoints.down('sm'))
+  const isMedium = useMediaQuery(theme.breakpoints.down('md'))
+  const imageCols = isSmall ? 2 : isMedium ? 3 : 4
   const dispatch = useDispatch()
   const { userInformation } = useSelector((state: RootState) => state.userInterfaceState)
 

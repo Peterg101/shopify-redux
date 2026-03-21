@@ -1,13 +1,6 @@
 import { Box, Chip, Typography } from "@mui/material";
 import { FulfillerProfile } from "../../app/utility/interfaces";
 
-const PROCESS_FAMILY_LABELS: Record<string, string> = {
-  "3d_printing": "3D Printing",
-  cnc: "CNC Machining",
-  sheet_metal: "Sheet Metal",
-  casting: "Casting",
-  injection_molding: "Injection Molding",
-};
 
 interface Props {
   profile: FulfillerProfile;

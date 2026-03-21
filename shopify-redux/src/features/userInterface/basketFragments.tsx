@@ -11,7 +11,7 @@ import {
   Chip,
   Collapse,
   Dialog,
-  DialogActions,
+
   DialogTitle,
   DialogContent,
 } from "@mui/material";
@@ -27,7 +27,7 @@ import {
 
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
-import { useGenerateTasksFromBasketMutation, useUpdateBasketQuantityMutation } from "../../services/basketItemApi";
+import { useUpdateBasketQuantityMutation } from "../../services/basketItemApi";
 import DeleteFromBasket from "./deleteFromBasket";
 import EditBasketItem from "./editBasketItem";
 import { BasketInformation } from "../../app/utility/interfaces";
@@ -214,12 +214,10 @@ export const BasketSummary = () => {
   const [open, setOpen] = useState(false);
   const handleClose = () => setOpen(false);
 
-  const user_id = useSelector((state: RootState) => state.userInterfaceState.userInformation?.user?.user_id);
   const basketItems = useSelector((state: RootState) => state.userInterfaceState.userInformation?.basket_items || []);
   const subtotal = useSelector(selectTotalBasketValue);
   const shippingEstimate = subtotal > 0 ? 4.99 : 0;
   const total = subtotal + shippingEstimate;
-  const [generateTasksFromBasket] = useGenerateTasksFromBasketMutation();
   const dispatch = useDispatch();
 
   const clickProceedToBasket = () => {

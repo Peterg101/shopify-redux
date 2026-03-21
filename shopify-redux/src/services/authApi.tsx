@@ -1,6 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { createBaseQueryWithReauth } from './baseQueryWithReauth';
-import { UserAndTasksAndBasketAndIncompleteAndOrders, FileResponse } from '../app/utility/interfaces';
+import { UserAndTasksAndBasketAndIncompleteAndOrders } from '../app/utility/interfaces';
 
 
 export const authApi = createApi({

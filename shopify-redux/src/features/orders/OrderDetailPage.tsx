@@ -22,7 +22,7 @@ import {
   Stepper,
   Step,
   StepLabel,
-  StepContent,
+
   ImageList,
   ImageListItem,
   TextField,
@@ -103,7 +103,7 @@ export const OrderDetailPage = () => {
   useEffect(() => {
     dispatch(setLeftDrawerClosed())
     dispatch(setSelectedComponent({ selectedComponent: '' }))
-  }, [])
+  }, [dispatch])
 
   const handleToggleVisibility = async () => {
     if (!order) return
@@ -304,7 +304,9 @@ interface ClaimTrackerProps {
 
 function ClaimTracker({ claim, order, isOwner }: ClaimTrackerProps) {
   const theme = useTheme()
-  const imageCols = useMediaQuery(theme.breakpoints.down('sm')) ? 2 : useMediaQuery(theme.breakpoints.down('md')) ? 3 : 4
+  const isSmall = useMediaQuery(theme.breakpoints.down('sm'))
+  const isMedium = useMediaQuery(theme.breakpoints.down('md'))
+  const imageCols = isSmall ? 2 : isMedium ? 3 : 4
   const { userInformation } = useSelector((state: RootState) => state.userInterfaceState)
   const [updateStatus, { isLoading: statusLoading }] = useUpdateClaimStatusMutation()
   const [respondToDispute, { isLoading: respondLoading }] = useRespondToDisputeMutation()
