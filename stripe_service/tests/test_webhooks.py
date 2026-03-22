@@ -68,7 +68,7 @@ def test_webhook_account_updated_db_service_error(mock_confirm):
 # ── Checkout completed webhook tests ──
 
 
-def make_checkout_completed_event(payment_status="paid", user_id="test-user-123"):
+def make_checkout_completed_event(payment_status="paid", user_id="test-user-123", is_collaborative=False):
     return {
         "type": "checkout.session.completed",
         "data": {
@@ -76,7 +76,7 @@ def make_checkout_completed_event(payment_status="paid", user_id="test-user-123"
                 "id": "cs_test_webhook_123",
                 "payment_status": payment_status,
                 "payment_intent": "pi_test_123",
-                "metadata": {"user_id": user_id},
+                "metadata": {"user_id": user_id, "is_collaborative": str(is_collaborative)},
             }
         }
     }
@@ -157,6 +157,49 @@ def test_checkout_completed_creates_orders(mock_stripe, mock_create_orders):
     assert call_args["shipping_address"]["name"] == "John Doe"
     assert call_args["shipping_address"]["line1"] == "42 Test Street"
     assert call_args["shipping_address"]["city"] == "London"
+    assert call_args["is_collaborative"] is False
+
+
+@patch("routes.webhooks.create_orders_from_checkout", new_callable=AsyncMock)
+@patch("routes.webhooks.stripe")
+def test_checkout_completed_community_order(mock_stripe, mock_create_orders):
+    """Community checkout should pass is_collaborative=True to order creation."""
+    mock_product = MagicMock()
+    mock_product.name = "Community Part"
+    mock_product.metadata = {
+        "task_id": "task-comm", "user_id": "test-user-123",
+        "material": "PLA", "technique": "FDM", "sizing": "1.0",
+        "colour": "white", "selectedFile": "part.obj", "selectedFileType": "obj",
+    }
+    mock_price = MagicMock()
+    mock_price.product = mock_product
+    mock_line_item = MagicMock()
+    mock_line_item.price = mock_price
+    mock_line_item.amount_total = 1500
+    mock_line_item.quantity = 1
+
+    mock_session = MagicMock()
+    mock_session.line_items.data = [mock_line_item]
+    mock_session.shipping_details = None
+    mock_stripe.checkout.Session.retrieve.return_value = mock_session
+
+    mock_pi = MagicMock()
+    mock_pi.transfer_group = "tg_comm123"
+    mock_stripe.PaymentIntent.retrieve.return_value = mock_pi
+
+    mock_create_orders.return_value = {"status": "success", "order_count": 1}
+
+    async def override_community():
+        return make_checkout_completed_event("paid", is_collaborative=True)
+
+    app.dependency_overrides[validate_stripe_header] = override_community
+    with TestClient(app) as client:
+        response = client.post("/webhook")
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    call_args = mock_create_orders.call_args[0][1]
+    assert call_args["is_collaborative"] is True
 
 
 def test_checkout_completed_ignores_unpaid():

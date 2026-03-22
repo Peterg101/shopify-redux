@@ -65,6 +65,7 @@ async def handle_checkout_completed(event, db_api: ServiceClient):
         return {"status": "error", "detail": "Missing user_id in session metadata"}
 
     payment_intent_id = session.get("payment_intent")
+    is_collaborative = session.get("metadata", {}).get("is_collaborative", "False") == "True"
 
     full_session = await asyncio.to_thread(
         stripe.checkout.Session.retrieve,
@@ -120,6 +121,7 @@ async def handle_checkout_completed(event, db_api: ServiceClient):
         "shipping_address": shipping_address,
         "payment_intent": payment_intent_id,
         "transfer_group": transfer_group,
+        "is_collaborative": is_collaborative,
     }
 
     result = await create_orders_from_checkout(db_api, checkout_payload)

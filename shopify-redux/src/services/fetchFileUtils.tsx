@@ -139,7 +139,7 @@ export const startImageTo3DTask = async (image_file: File, userId: string, portI
 };
 
 
-export async function createStripeCheckoutAndRedirect() {
+export async function createStripeCheckoutAndRedirect(is_collaborative: boolean = false) {
   try {
     const response = await fetch(`${process.env.REACT_APP_STRIPE_SERVICE}/stripe/checkout`, {
       method: "POST",
@@ -147,7 +147,7 @@ export async function createStripeCheckoutAndRedirect() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({}),
+      body: JSON.stringify({ is_collaborative }),
     });
 
     if (!response.ok) {

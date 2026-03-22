@@ -292,6 +292,10 @@ class ShippingAddress(BaseModel):
     country: str = "GB"
 
 
+class CheckoutRequest(BaseModel):
+    is_collaborative: bool = False
+
+
 class StripeCheckoutOrder(BaseModel):
     stripe_checkout_session_id: str
     user_id: str
@@ -300,6 +304,7 @@ class StripeCheckoutOrder(BaseModel):
     shipping_address: Optional[ShippingAddress] = None
     payment_intent: Optional[str] = None
     transfer_group: Optional[str] = None
+    is_collaborative: bool = False
 
 
 class FulfillerAddressUpdate(BaseModel):

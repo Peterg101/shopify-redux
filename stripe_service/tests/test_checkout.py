@@ -25,7 +25,7 @@ def test_checkout_creates_session(mock_stripe, mock_basket, client):
     mock_session.url = "https://checkout.stripe.com/pay/cs_test_123"
     mock_stripe.checkout.Session.create.return_value = mock_session
 
-    response = client.post("/stripe/checkout")
+    response = client.post("/stripe/checkout", json={})
     assert response.status_code == 201
     data = response.json()
     assert data["checkout_url"] == "https://checkout.stripe.com/pay/cs_test_123"
@@ -40,13 +40,16 @@ def test_checkout_creates_session(mock_stripe, mock_basket, client):
     assert "payment_intent_data" in call_kwargs
     assert call_kwargs["payment_intent_data"]["transfer_group"].startswith("tg_")
 
+    # Verify is_collaborative defaults to False in metadata
+    assert call_kwargs["metadata"]["is_collaborative"] == "False"
+
 
 
 @patch("routes.checkout.get_all_basket_items", new_callable=AsyncMock)
 def test_checkout_empty_basket_400(mock_basket, client):
     mock_basket.return_value = []
 
-    response = client.post("/stripe/checkout")
+    response = client.post("/stripe/checkout", json={})
     assert response.status_code == 400
     assert "empty" in response.json()["detail"].lower()
 
@@ -76,7 +79,7 @@ def test_checkout_price_conversion(mock_stripe, mock_basket, client):
     mock_session.url = "https://checkout.stripe.com/pay/cs_test_price"
     mock_stripe.checkout.Session.create.return_value = mock_session
 
-    response = client.post("/stripe/checkout")
+    response = client.post("/stripe/checkout", json={})
     assert response.status_code == 201
 
     call_kwargs = mock_stripe.checkout.Session.create.call_args[1]
@@ -109,7 +112,7 @@ def test_checkout_includes_shipping_collection(mock_stripe, mock_basket, client)
     mock_session.url = "https://checkout.stripe.com/pay/cs_test_ship"
     mock_stripe.checkout.Session.create.return_value = mock_session
 
-    response = client.post("/stripe/checkout")
+    response = client.post("/stripe/checkout", json={})
     assert response.status_code == 201
 
     call_kwargs = mock_stripe.checkout.Session.create.call_args[1]
@@ -170,7 +173,7 @@ def test_checkout_multiple_items(mock_stripe, mock_basket, client):
     mock_session.url = "https://checkout.stripe.com/pay/cs_test_multi"
     mock_stripe.checkout.Session.create.return_value = mock_session
 
-    response = client.post("/stripe/checkout")
+    response = client.post("/stripe/checkout", json={})
     assert response.status_code == 201
 
     call_kwargs = mock_stripe.checkout.Session.create.call_args[1]
@@ -215,7 +218,7 @@ def test_checkout_zero_price_item(mock_stripe, mock_basket, client):
     mock_session.url = "https://checkout.stripe.com/pay/cs_test_free"
     mock_stripe.checkout.Session.create.return_value = mock_session
 
-    response = client.post("/stripe/checkout")
+    response = client.post("/stripe/checkout", json={})
     assert response.status_code == 201
 
     call_kwargs = mock_stripe.checkout.Session.create.call_args[1]
@@ -250,7 +253,7 @@ def test_checkout_metadata_includes_manufacturing_fields(mock_stripe, mock_baske
     mock_session.url = "https://checkout.stripe.com/pay/cs_test_meta"
     mock_stripe.checkout.Session.create.return_value = mock_session
 
-    response = client.post("/stripe/checkout")
+    response = client.post("/stripe/checkout", json={})
     assert response.status_code == 201
 
     call_kwargs = mock_stripe.checkout.Session.create.call_args[1]
@@ -270,3 +273,35 @@ def test_checkout_metadata_includes_manufacturing_fields(mock_stripe, mock_baske
     assert metadata["material_id"] == "mat-al6061"
     assert metadata["tolerance_mm"] == "0.05"
     assert metadata["surface_finish"] == "anodized"
+
+
+@patch("routes.checkout.get_all_basket_items", new_callable=AsyncMock)
+@patch("routes.checkout.stripe")
+def test_checkout_community_sets_metadata(mock_stripe, mock_basket, client):
+    """Community checkout should set is_collaborative=True in Stripe session metadata."""
+    mock_basket.return_value = [
+        {
+            "task_id": "task-community",
+            "user_id": "test-user-123",
+            "name": "Community Part",
+            "material": "PLA",
+            "technique": "FDM",
+            "sizing": 1.0,
+            "colour": "white",
+            "selectedFile": "part.obj",
+            "selectedFileType": "obj",
+            "price": 15.00,
+            "quantity": 1,
+        }
+    ]
+
+    mock_session = MagicMock()
+    mock_session.url = "https://checkout.stripe.com/pay/cs_test_community"
+    mock_stripe.checkout.Session.create.return_value = mock_session
+
+    response = client.post("/stripe/checkout", json={"is_collaborative": True})
+    assert response.status_code == 201
+
+    call_kwargs = mock_stripe.checkout.Session.create.call_args[1]
+    assert call_kwargs["metadata"]["is_collaborative"] == "True"
+    assert call_kwargs["metadata"]["user_id"] == "test-user-123"

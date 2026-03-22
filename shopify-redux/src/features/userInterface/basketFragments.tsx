@@ -231,7 +231,9 @@ export const BasketSummary = () => {
   };
 
   const handleCheckoutWithCommunity = () => {
-    // TODO: implement community checkout flow
+    dispatch(setLeftDrawerClosed());
+    setOpen(false);
+    createStripeCheckoutAndRedirect(true);
   };
 
   return (

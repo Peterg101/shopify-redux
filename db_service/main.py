@@ -609,7 +609,7 @@ def create_order_from_stripe(
             price=item.price,
             quantity=item.quantity,
             created_at=datetime.utcnow().isoformat(),
-            is_collaborative=False,
+            is_collaborative=checkout_order.is_collaborative,
             status=checkout_order.order_status,
             process_id=item.process_id,
             material_id=item.material_id,

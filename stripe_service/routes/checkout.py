@@ -8,6 +8,7 @@ from utils import cookie_verification_user_only
 from dependencies import get_db_api
 from service_client import ServiceClient
 from api_calls import get_all_basket_items
+from fitd_schemas.fitd_classes import CheckoutRequest
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +19,7 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 @router.post("/checkout", status_code=201)
 async def create_checkout_session(
+    body: CheckoutRequest,
     user=Depends(cookie_verification_user_only),
     db_api: ServiceClient = Depends(get_db_api),
 ):
@@ -66,7 +68,7 @@ async def create_checkout_session(
         payment_intent_data={"transfer_group": transfer_group},
         success_url=f"{FRONTEND_URL}/generate?checkout=success",
         cancel_url=f"{FRONTEND_URL}/generate?checkout=cancelled",
-        metadata={"user_id": user.user_id},
+        metadata={"user_id": user.user_id, "is_collaborative": str(body.is_collaborative)},
     )
 
     return {"checkout_url": session.url}
