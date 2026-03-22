@@ -26,7 +26,7 @@ def test_checkout_creates_session(mock_stripe, mock_basket, client):
     mock_stripe.checkout.Session.create.return_value = mock_session
 
     response = client.post("/stripe/checkout")
-    assert response.status_code == 200
+    assert response.status_code == 201
     data = response.json()
     assert data["checkout_url"] == "https://checkout.stripe.com/pay/cs_test_123"
 
@@ -35,6 +35,10 @@ def test_checkout_creates_session(mock_stripe, mock_basket, client):
     assert call_kwargs["line_items"][0]["price_data"]["unit_amount"] == 1999
     assert call_kwargs["line_items"][0]["quantity"] == 2
     assert call_kwargs["mode"] == "payment"
+
+    # Verify payment_intent_data includes transfer_group
+    assert "payment_intent_data" in call_kwargs
+    assert call_kwargs["payment_intent_data"]["transfer_group"].startswith("tg_")
 
 
 
@@ -73,7 +77,7 @@ def test_checkout_price_conversion(mock_stripe, mock_basket, client):
     mock_stripe.checkout.Session.create.return_value = mock_session
 
     response = client.post("/stripe/checkout")
-    assert response.status_code == 200
+    assert response.status_code == 201
 
     call_kwargs = mock_stripe.checkout.Session.create.call_args[1]
     assert call_kwargs["line_items"][0]["price_data"]["unit_amount"] == 1999
@@ -106,7 +110,7 @@ def test_checkout_includes_shipping_collection(mock_stripe, mock_basket, client)
     mock_stripe.checkout.Session.create.return_value = mock_session
 
     response = client.post("/stripe/checkout")
-    assert response.status_code == 200
+    assert response.status_code == 201
 
     call_kwargs = mock_stripe.checkout.Session.create.call_args[1]
     assert "shipping_address_collection" in call_kwargs
@@ -167,7 +171,7 @@ def test_checkout_multiple_items(mock_stripe, mock_basket, client):
     mock_stripe.checkout.Session.create.return_value = mock_session
 
     response = client.post("/stripe/checkout")
-    assert response.status_code == 200
+    assert response.status_code == 201
 
     call_kwargs = mock_stripe.checkout.Session.create.call_args[1]
     line_items = call_kwargs["line_items"]
@@ -212,7 +216,7 @@ def test_checkout_zero_price_item(mock_stripe, mock_basket, client):
     mock_stripe.checkout.Session.create.return_value = mock_session
 
     response = client.post("/stripe/checkout")
-    assert response.status_code == 200
+    assert response.status_code == 201
 
     call_kwargs = mock_stripe.checkout.Session.create.call_args[1]
     assert call_kwargs["line_items"][0]["price_data"]["unit_amount"] == 0
@@ -247,7 +251,7 @@ def test_checkout_metadata_includes_manufacturing_fields(mock_stripe, mock_baske
     mock_stripe.checkout.Session.create.return_value = mock_session
 
     response = client.post("/stripe/checkout")
-    assert response.status_code == 200
+    assert response.status_code == 201
 
     call_kwargs = mock_stripe.checkout.Session.create.call_args[1]
     metadata = call_kwargs["line_items"][0]["price_data"]["product_data"]["metadata"]

@@ -1,24 +1,27 @@
 import asyncio
 import os
 import logging
+import uuid
 import stripe
 from fastapi import APIRouter, Depends, HTTPException
 from utils import cookie_verification_user_only
+from dependencies import get_db_api
+from service_client import ServiceClient
 from api_calls import get_all_basket_items
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/stripe", tags=["checkout"])
 
-STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 
 @router.post("/checkout", status_code=201)
-async def create_checkout_session(user=Depends(cookie_verification_user_only)):
-    stripe.api_key = STRIPE_SECRET_KEY
-
-    basket_items = await get_all_basket_items(user.user_id)
+async def create_checkout_session(
+    user=Depends(cookie_verification_user_only),
+    db_api: ServiceClient = Depends(get_db_api),
+):
+    basket_items = await get_all_basket_items(db_api, user.user_id)
     if not basket_items:
         raise HTTPException(status_code=400, detail="Basket is empty")
 
@@ -51,6 +54,8 @@ async def create_checkout_session(user=Depends(cookie_verification_user_only)):
             "quantity": item["quantity"],
         })
 
+    transfer_group = f"tg_{uuid.uuid4().hex[:16]}"
+
     session = await asyncio.to_thread(
         stripe.checkout.Session.create,
         mode="payment",
@@ -58,6 +63,7 @@ async def create_checkout_session(user=Depends(cookie_verification_user_only)):
         shipping_address_collection={
             "allowed_countries": ["GB"],
         },
+        payment_intent_data={"transfer_group": transfer_group},
         success_url=f"{FRONTEND_URL}/generate?checkout=success",
         cancel_url=f"{FRONTEND_URL}/generate?checkout=cancelled",
         metadata={"user_id": user.user_id},

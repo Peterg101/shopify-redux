@@ -298,6 +298,8 @@ class StripeCheckoutOrder(BaseModel):
     order_status: str = "created"
     line_items: List[StripeCheckoutLineItem]
     shipping_address: Optional[ShippingAddress] = None
+    payment_intent: Optional[str] = None
+    transfer_group: Optional[str] = None
 
 
 class FulfillerAddressUpdate(BaseModel):
@@ -346,6 +348,8 @@ class ClaimQuantityUpdate(BaseModel):
 
 class MarkDisbursementPaidRequest(BaseModel):
     stripe_transfer_id: str
+    source_transaction: Optional[str] = None
+    transfer_group: Optional[str] = None
 
 
 class DisputeFulfillerResponse(BaseModel):
@@ -501,6 +505,9 @@ class OrderResponse(BaseModel):
     surface_finish: Optional[str] = None
     special_requirements: Optional[str] = None
 
+    payment_intent: Optional[str] = None
+    transfer_group: Optional[str] = None
+
     shipping_name: Optional[str] = None
     shipping_line1: Optional[str] = None
     shipping_line2: Optional[str] = None
@@ -538,6 +545,9 @@ class OrderDetailResponse(BaseModel):
     tolerance_mm: Optional[float] = None
     surface_finish: Optional[str] = None
     special_requirements: Optional[str] = None
+
+    payment_intent: Optional[str] = None
+    transfer_group: Optional[str] = None
 
     shipping_name: Optional[str] = None
     shipping_line1: Optional[str] = None

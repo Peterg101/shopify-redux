@@ -10,7 +10,6 @@ import stripe
 
 logger = logging.getLogger(__name__)
 
-STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 REFRESH_URL = f"{FRONTEND_URL}/fulfill"
 RETURN_URL = f"{FRONTEND_URL}/fulfill"
@@ -25,7 +24,6 @@ async def cookie_verification_user_only(request: Request) -> UserInformation:
 
 
 async def generate_stripe_account(email: str):
-    stripe.api_key = STRIPE_SECRET_KEY
     stripe_account = await asyncio.to_thread(
         stripe.Account.create,
         type="express",
@@ -37,7 +35,6 @@ async def generate_stripe_account(email: str):
 
 
 async def generate_account_link(account_id: str):
-    stripe.api_key = STRIPE_SECRET_KEY
     account_link = await asyncio.to_thread(
         stripe.AccountLink.create,
         account=account_id,

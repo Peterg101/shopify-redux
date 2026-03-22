@@ -1,6 +1,8 @@
 import logging
 from fastapi import APIRouter, Depends, HTTPException
 from utils import cookie_verification_user_only
+from dependencies import get_db_api
+from service_client import ServiceClient
 from api_calls import get_fulfiller_address, get_claim_detail, update_claim_shipping
 from shipping import create_shipping_label
 
@@ -13,9 +15,10 @@ router = APIRouter(prefix="/shipping", tags=["shipping"])
 async def create_label_for_claim(
     claim_id: str,
     user=Depends(cookie_verification_user_only),
+    db_api: ServiceClient = Depends(get_db_api),
 ):
     # 1. Fetch claim + order details (buyer shipping address)
-    claim_context = await get_claim_detail(claim_id)
+    claim_context = await get_claim_detail(db_api, claim_id)
     if not claim_context:
         raise HTTPException(status_code=404, detail="Claim not found")
 
@@ -28,7 +31,7 @@ async def create_label_for_claim(
         raise HTTPException(status_code=400, detail="Buyer shipping address not available on this order")
 
     # 2. Fetch fulfiller address
-    ship_from = await get_fulfiller_address(user.user_id)
+    ship_from = await get_fulfiller_address(db_api, user.user_id)
     if not ship_from:
         raise HTTPException(status_code=400, detail="Fulfiller address not set. Please add your shipping address first.")
 
@@ -43,7 +46,7 @@ async def create_label_for_claim(
         raise HTTPException(status_code=502, detail="Failed to create shipping label")
 
     # 4. Save shipping info back to claim
-    await update_claim_shipping(claim_id, {
+    await update_claim_shipping(db_api, claim_id, {
         "tracking_number": label_result["tracking_number"],
         "label_url": label_result["label_url"],
         "carrier_code": label_result["carrier_code"],

@@ -84,6 +84,8 @@ class Order(Base):
     task_id: Mapped[str] = mapped_column(ForeignKey("tasks.task_id"), nullable=False)
     user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"))
     stripe_checkout_session_id: Mapped[str | None] = mapped_column(index=True)
+    payment_intent: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    transfer_group: Mapped[str | None] = mapped_column(String, nullable=True)
     name: Mapped[str] = mapped_column()
     material: Mapped[str] = mapped_column()
     technique: Mapped[str] = mapped_column()
@@ -169,6 +171,8 @@ class Disbursement(Base):
     status: Mapped[str] = mapped_column(String, default="pending", nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
     stripe_transfer_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_transaction: Mapped[str | None] = mapped_column(String, nullable=True)
+    transfer_group: Mapped[str | None] = mapped_column(String, nullable=True)
 
     claim: Mapped["Claim"] = relationship("Claim", back_populates="disbursements", lazy="noload")
 

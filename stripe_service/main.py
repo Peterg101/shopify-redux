@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routes import onboard, webhooks, payouts, checkout, shipping
 import uvicorn
+import stripe
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -11,6 +12,9 @@ logger = logging.getLogger(__name__)
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 app = FastAPI()
+
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[FRONTEND_URL],
