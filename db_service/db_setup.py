@@ -20,9 +20,7 @@ else:
     engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Base class for models
-# Base = declarative_base()
-Base.metadata.create_all(bind=engine)
+# Schema is managed by Alembic migrations — do not call create_all() here
 
 
 # Dependency to get a database session

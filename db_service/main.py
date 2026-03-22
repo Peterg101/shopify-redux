@@ -499,6 +499,18 @@ def post_basket_item_to_storage(
     if len(basket_item.file_blob) > MAX_FILE_SIZE_B64:
         raise HTTPException(status_code=413, detail=f"File exceeds {MAX_FILE_SIZE_MB}MB limit")
 
+    # Ensure the task exists (manual uploads may not have created one)
+    existing_task = db.query(Task).filter(Task.task_id == basket_item.task_id).first()
+    if not existing_task:
+        db.add(Task(
+            task_id=basket_item.task_id,
+            user_id=basket_item.user_id,
+            task_name=basket_item.name,
+            file_type=basket_item.selectedFileType,
+            complete=True,
+        ))
+        db.flush()
+
     # Decode the file and save to the specified directory
     try:
         decode_file(basket_item.file_blob, basket_item.task_id, UPLOAD_DIR)
