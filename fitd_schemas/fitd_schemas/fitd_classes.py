@@ -124,7 +124,7 @@ class BasketItemInformation(BaseModel):
     technique: str
     sizing: float
     colour: str
-    selected_file: str  # Changed to snake_case in TypeScript, use snake_case in Python
+    selectedFile: str
     quantity: int
     selectedFileType: (
         str  # Changed to snake_case in TypeScript, use snake_case in Python

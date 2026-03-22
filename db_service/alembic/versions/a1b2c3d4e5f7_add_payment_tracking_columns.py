@@ -1,14 +1,14 @@
 """add payment tracking columns to orders and disbursements
 
 Revision ID: a1b2c3d4e5f7
-Revises: f6a7b8c9d0e1
+Revises: g7b8c9d0e1f2
 Create Date: 2026-03-21
 """
 from alembic import op
 import sqlalchemy as sa
 
 revision = 'a1b2c3d4e5f7'
-down_revision = 'f6a7b8c9d0e1'
+down_revision = 'g7b8c9d0e1f2'
 branch_labels = None
 depends_on = None
 

@@ -95,7 +95,7 @@ async def handle_checkout_completed(event, db_api: ServiceClient):
             "quantity": item.quantity,
             "process_id": meta.get("process_id") or None,
             "material_id": meta.get("material_id") or None,
-            "tolerance_mm": float(meta["tolerance_mm"]) if meta.get("tolerance_mm") else None,
+            "tolerance_mm": float(meta["tolerance_mm"]) if meta.get("tolerance_mm") and meta["tolerance_mm"] not in ("", "None") else None,
             "surface_finish": meta.get("surface_finish") or None,
             "special_requirements": meta.get("special_requirements", ""),
         })

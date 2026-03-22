@@ -201,7 +201,7 @@ def _basket_item_payload(task_id="task-001", user_id="test-user-123", file_blob=
         "technique": "FDM",
         "sizing": 1.0,
         "colour": "white",
-        "selected_file": "test.obj",
+        "selectedFile": "test.obj",
         "selectedFileType": "obj",
         "price": 9.99,
         "quantity": 1,

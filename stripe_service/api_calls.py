@@ -68,7 +68,7 @@ async def get_all_basket_items(db_api: ServiceClient, user_id: str) -> List[dict
 async def create_orders_from_checkout(db_api: ServiceClient, checkout_payload: dict) -> dict:
     try:
         response = await db_api.post("/orders/create_from_stripe_checkout", json=checkout_payload)
-        if response.status_code == 200:
+        if response.status_code in (200, 201):
             return response.json()
         logger.error(f"Failed to create orders: {response.status_code} - {response.text}")
         return {"status": "error", "detail": response.text}

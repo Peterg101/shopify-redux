@@ -79,7 +79,7 @@ class TestCoreCRUDFlow:
                 "technique": "FDM",
                 "sizing": 1.0,
                 "colour": "Blue",
-                "selected_file": "model.obj",
+                "selectedFile": "model.obj",
                 "quantity": 2,
                 "selectedFileType": "obj",
                 "price": 25.00,

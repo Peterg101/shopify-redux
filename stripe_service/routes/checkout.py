@@ -45,7 +45,7 @@ async def create_checkout_session(
                         "selectedFileType": item["selectedFileType"],
                         "process_id": item.get("process_id", ""),
                         "material_id": item.get("material_id", ""),
-                        "tolerance_mm": str(item.get("tolerance_mm", "")),
+                        "tolerance_mm": str(item["tolerance_mm"]) if item.get("tolerance_mm") is not None else "",
                         "surface_finish": item.get("surface_finish", ""),
                         "special_requirements": item.get("special_requirements", ""),
                     },

@@ -106,7 +106,7 @@ def add_or_update_basket_item_in_db(
                 existing_item.technique != basket_item_info.technique,
                 existing_item.sizing != basket_item_info.sizing,
                 existing_item.colour != basket_item_info.colour,
-                existing_item.selectedFile != basket_item_info.selected_file,
+                existing_item.selectedFile != basket_item_info.selectedFile,
                 existing_item.selectedFileType != basket_item_info.selectedFileType,
                 existing_item.price != basket_item_info.price,
                 existing_item.quantity != basket_item_info.quantity,
@@ -126,7 +126,7 @@ def add_or_update_basket_item_in_db(
             existing_item.technique = basket_item_info.technique
             existing_item.sizing = basket_item_info.sizing
             existing_item.colour = basket_item_info.colour
-            existing_item.selectedFile = basket_item_info.selected_file
+            existing_item.selectedFile = basket_item_info.selectedFile
             existing_item.selectedFileType = basket_item_info.selectedFileType
             existing_item.price = basket_item_info.price
             existing_item.quantity = basket_item_info.quantity
@@ -149,7 +149,7 @@ def add_or_update_basket_item_in_db(
         technique=basket_item_info.technique,
         sizing=basket_item_info.sizing,
         colour=basket_item_info.colour,
-        selectedFile=basket_item_info.selected_file,
+        selectedFile=basket_item_info.selectedFile,
         selectedFileType=basket_item_info.selectedFileType,
         price=basket_item_info.price,
         quantity=basket_item_info.quantity,
