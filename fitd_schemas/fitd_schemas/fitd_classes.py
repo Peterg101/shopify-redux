@@ -644,6 +644,16 @@ class IncompleteTaskResponse(BaseModel):
         orm_mode = True
 
 
+class SlimSessionResponse(BaseModel):
+    user: UserResponse
+    stripe_onboarded: bool = False
+    has_fulfiller_profile: bool = False
+    incomplete_task: Optional[IncompleteTaskResponse] = None
+
+    class Config:
+        orm_mode = True
+
+
 class ManufacturingProcessResponse(BaseModel):
     id: str
     family: str

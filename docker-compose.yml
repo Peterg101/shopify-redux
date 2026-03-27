@@ -52,11 +52,15 @@ services:
       FRONTEND_URL: http://localhost:3000
       AUTH_SERVICE_URL: http://auth_backend:2468
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
     volumes:
       - uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
 
   auth_backend:
     build:

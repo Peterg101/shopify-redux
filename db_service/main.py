@@ -10,10 +10,12 @@ from fastapi.middleware.cors import CORSMiddleware
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Base, Order, UserStripeAccount, Claim, Disbursement, ClaimEvidence, ClaimStatusHistory, Dispute, ManufacturingProcess, ManufacturingMaterial, FulfillerProfile, FulfillerCapability, Part
-from fitd_schemas.fitd_classes import UserHydrationResponse, ClaimWithOrderResponse, OrderResponse, OrderDetailResponse, ClaimDetailResponse, DisputeFulfillerResponse, DisputeResolveRequest, DisputeResponse, ClaimEvidenceResponse, ClaimStatusHistoryResponse, MarkDisbursementPaidRequest, ManufacturingProcessResponse, ManufacturingMaterialResponse, FulfillerProfileCreate, FulfillerProfileResponse, PartCreate, PartUpdate, PartResponse, PartListResponse, IncompleteTaskResponse
+from fitd_schemas.fitd_classes import UserHydrationResponse, ClaimWithOrderResponse, OrderResponse, OrderDetailResponse, ClaimDetailResponse, DisputeFulfillerResponse, DisputeResolveRequest, DisputeResponse, ClaimEvidenceResponse, ClaimStatusHistoryResponse, MarkDisbursementPaidRequest, ManufacturingProcessResponse, ManufacturingMaterialResponse, FulfillerProfileCreate, FulfillerProfileResponse, PartCreate, PartUpdate, PartResponse, PartListResponse, IncompleteTaskResponse, SlimSessionResponse
 from datetime import datetime, timedelta
 import uuid
-from db_setup import engine, get_db
+from db_setup import engine, get_db, get_redis
+from cache import cached, cache_invalidate, cache_invalidate_pattern
+from events import publish_event
 from utils import (
     check_session_token_active,
     add_or_update_basket_item_in_db,
@@ -51,11 +53,14 @@ from fitd_schemas.fitd_classes import(
     EvidenceUploadRequest,
     PartOrderConfig,
 )
+import asyncio
 import uvicorn
 from typing import Optional, Dict
 from jwt_auth import verify_jwt_token
 import base64
 from pathlib import Path
+import redis.asyncio as aioredis
+from sse_starlette.sse import EventSourceResponse
 import re
 from sqlalchemy import text
 
@@ -203,6 +208,218 @@ def complete_task(
     mark_meshy_task_complete(db, task_id)
     delete_port_id(db, task_id)
     return {"message": "Task marked as complete"}
+
+
+## ── Slim / Cached User Sub-Resource Endpoints ─────────────────────────
+
+@app.get("/users/{user_id}/session", response_model=SlimSessionResponse)
+def get_user_session(
+    user_id: str,
+    db: Session = Depends(get_db),
+    redis_client=Depends(get_redis),
+    authorization: str = Depends(verify_jwt_token),
+):
+    cache_key = f"fitd:session:{user_id}"
+
+    # Manual Redis get (SlimSessionResponse is built from multiple queries)
+    if redis_client is not None:
+        try:
+            raw = redis_client.get(cache_key)
+            if raw is not None:
+                return SlimSessionResponse.parse_raw(raw)
+        except Exception:
+            logger.warning(f"Redis GET failed for {cache_key}, falling through to DB")
+
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    incomplete = (
+        db.query(Task)
+        .filter(Task.user_id == user_id, Task.complete == False)
+        .options(joinedload(Task.port))
+        .first()
+    )
+
+    user_stripe = db.query(UserStripeAccount).filter(
+        UserStripeAccount.user_id == user_id
+    ).first()
+
+    fulfiller_profile = db.query(FulfillerProfile).filter(
+        FulfillerProfile.user_id == user_id
+    ).first()
+
+    result = SlimSessionResponse(
+        user=UserResponse.from_orm(user),
+        stripe_onboarded=bool(user_stripe and user_stripe.onboarding_complete),
+        has_fulfiller_profile=bool(fulfiller_profile),
+        incomplete_task=IncompleteTaskResponse.from_orm(incomplete) if incomplete else None,
+    )
+
+    # Manual Redis set
+    if redis_client is not None:
+        try:
+            redis_client.set(cache_key, result.json(), ex=30)
+        except Exception:
+            logger.warning(f"Redis SET failed for {cache_key}")
+
+    return result
+
+
+@app.get("/users/{user_id}/basket")
+def get_user_basket(
+    user_id: str,
+    db: Session = Depends(get_db),
+    redis_client=Depends(get_redis),
+    authorization: str = Depends(verify_jwt_token),
+):
+    return cached(
+        redis_client, f"fitd:basket:{user_id}", ttl=60,
+        loader=lambda: [BasketItemResponse.from_orm(b) for b in db.query(BasketItem).filter(BasketItem.user_id == user_id).all()],
+        model_class=BasketItemResponse, is_list=True,
+    )
+
+
+@app.get("/users/{user_id}/orders")
+def get_user_orders(
+    user_id: str,
+    db: Session = Depends(get_db),
+    redis_client=Depends(get_redis),
+    authorization: str = Depends(verify_jwt_token),
+):
+    return cached(
+        redis_client, f"fitd:orders:{user_id}", ttl=120,
+        loader=lambda: [_order_to_response(o) for o in db.query(Order).filter(Order.user_id == user_id).all()],
+        model_class=OrderResponse, is_list=True,
+    )
+
+
+@app.get("/users/{user_id}/claims")
+def get_user_claims(
+    user_id: str,
+    db: Session = Depends(get_db),
+    redis_client=Depends(get_redis),
+    authorization: str = Depends(verify_jwt_token),
+):
+    cache_key = f"fitd:claims:{user_id}"
+
+    # Manual Redis get (ClaimWithOrderResponse requires manual construction)
+    if redis_client is not None:
+        try:
+            raw = redis_client.get(cache_key)
+            if raw is not None:
+                import json as _json
+                return [ClaimWithOrderResponse.parse_obj(item) for item in _json.loads(raw)]
+        except Exception:
+            logger.warning(f"Redis GET failed for {cache_key}, falling through to DB")
+
+    claims = (
+        db.query(Claim)
+        .filter(Claim.claimant_user_id == user_id)
+        .options(selectinload(Claim.order))
+        .all()
+    )
+    claims_response = []
+    for claim in claims:
+        order_data = _order_to_response(claim.order)
+        claims_response.append(ClaimWithOrderResponse(
+            id=claim.id, order_id=claim.order_id,
+            claimant_user_id=claim.claimant_user_id,
+            quantity=claim.quantity, status=claim.status,
+            created_at=claim.created_at, updated_at=claim.updated_at,
+            order=order_data,
+        ))
+
+    # Manual Redis set
+    if redis_client is not None:
+        try:
+            import json as _json
+            serialized = _json.dumps([c.dict() for c in claims_response], default=str)
+            redis_client.set(cache_key, serialized, ex=120)
+        except Exception:
+            logger.warning(f"Redis SET failed for {cache_key}")
+
+    return claims_response
+
+
+@app.get("/users/{user_id}/claimable")
+def get_user_claimable_orders(
+    user_id: str,
+    db: Session = Depends(get_db),
+    redis_client=Depends(get_redis),
+    authorization: str = Depends(verify_jwt_token),
+):
+    cache_key = f"fitd:claimable:{user_id}"
+
+    # Manual Redis get
+    if redis_client is not None:
+        try:
+            raw = redis_client.get(cache_key)
+            if raw is not None:
+                import json as _json
+                return [OrderResponse.parse_obj(item) for item in _json.loads(raw)]
+        except Exception:
+            logger.warning(f"Redis GET failed for {cache_key}, falling through to DB")
+
+    all_collaborative = db.query(Order).filter(
+        Order.user_id != user_id,
+        Order.is_collaborative == True,
+    ).all()
+
+    fulfiller_profile = db.query(FulfillerProfile).filter(
+        FulfillerProfile.user_id == user_id
+    ).first()
+
+    if fulfiller_profile and fulfiller_profile.capabilities:
+        import json as _json
+        cap_lookup = {}
+        for cap in fulfiller_profile.capabilities:
+            mat_ids = None
+            if cap.materials:
+                try:
+                    parsed = _json.loads(cap.materials) if isinstance(cap.materials, str) else cap.materials
+                    mat_ids = set(parsed) if parsed else None
+                except (ValueError, TypeError):
+                    mat_ids = None
+            cap_lookup[cap.process_id] = mat_ids
+
+        claimable_orders = []
+        for order in all_collaborative:
+            if order.process_id is None:
+                claimable_orders.append(order)
+            elif order.process_id in cap_lookup:
+                fulfiller_mats = cap_lookup[order.process_id]
+                if fulfiller_mats is None or order.material_id is None or order.material_id in fulfiller_mats:
+                    claimable_orders.append(order)
+    else:
+        claimable_orders = all_collaborative
+
+    claimable_response = [_order_to_response(order) for order in claimable_orders]
+
+    # Manual Redis set
+    if redis_client is not None:
+        try:
+            import json as _json
+            serialized = _json.dumps([o.dict() for o in claimable_response], default=str)
+            redis_client.set(cache_key, serialized, ex=60)
+        except Exception:
+            logger.warning(f"Redis SET failed for {cache_key}")
+
+    return claimable_response
+
+
+@app.get("/users/{user_id}/tasks")
+def get_user_tasks(
+    user_id: str,
+    db: Session = Depends(get_db),
+    redis_client=Depends(get_redis),
+    authorization: str = Depends(verify_jwt_token),
+):
+    return cached(
+        redis_client, f"fitd:tasks:{user_id}", ttl=120,
+        loader=lambda: [TaskResponse.from_orm(t) for t in db.query(Task).filter(Task.user_id == user_id).options(joinedload(Task.port)).all()],
+        model_class=TaskResponse, is_list=True,
+    )
 
 
 @app.get("/users/{user_id}", response_model=UserHydrationResponse)
@@ -445,7 +662,7 @@ def update_basket_quantity(
     update_data: BasketQuantityUpdate,
     db: Session = Depends(get_db),
     user_information: None = Depends(cookie_verification_user_only),
-
+    redis_client=Depends(get_redis),
 ):
     basket_item = db.query(BasketItem).filter(
         BasketItem.task_id == update_data.task_id,
@@ -460,6 +677,8 @@ def update_basket_quantity(
     basket_item.quantity = update_data.quantity
     db.commit()
     db.refresh(basket_item)
+    cache_invalidate(redis_client, f"fitd:basket:{user_information.user_id}")
+    publish_event(redis_client, "basket:updated", user_id=user_information.user_id)
 
     return basket_item
 
@@ -485,6 +704,7 @@ def post_basket_item_to_storage(
     basket_item: BasketItemInformation,
     db: Session = Depends(get_db),
     user_information: None = Depends(cookie_verification_user_only),
+    redis_client=Depends(get_redis),
 ):
     user_exists = check_user_existence(db, basket_item.user_id)
     if not user_exists:
@@ -518,6 +738,8 @@ def post_basket_item_to_storage(
     except Exception as e:
         logger.exception("File decoding failed")
         raise HTTPException(status_code=500, detail="File decoding failed")
+    cache_invalidate(redis_client, f"fitd:basket:{basket_item.user_id}")
+    publish_event(redis_client, "basket:updated", user_id=basket_item.user_id)
     return {"message": "File successfully saved"}
 
 
@@ -527,6 +749,7 @@ def delete_basket_item(
     file_id: str,
     db: Session = Depends(get_db),
     user_information: None = Depends(cookie_verification_user_only),
+    redis_client=Depends(get_redis),
 ):
     try:
         basket_item = db.query(BasketItem).filter(
@@ -560,8 +783,11 @@ def delete_basket_item(
             )
 
         # Delete the item from the database
+        user_id = basket_item.user_id
         db.delete(basket_item)
         db.commit()
+        cache_invalidate(redis_client, f"fitd:basket:{user_id}")
+        publish_event(redis_client, "basket:updated", user_id=user_id)
 
         return {
             "message": f"Item with ID {file_id} and associated file(s) deleted successfully."
@@ -592,7 +818,8 @@ def get_all_basket_items(
 def create_order_from_stripe(
     checkout_order: StripeCheckoutOrder,
     payload: dict = Depends(verify_jwt_token),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    redis_client=Depends(get_redis),
 ):
     if not checkout_order.line_items:
         raise HTTPException(status_code=400, detail="No line items found")
@@ -642,6 +869,9 @@ def create_order_from_stripe(
 
     db.query(BasketItem).filter(BasketItem.user_id == checkout_order.user_id).delete()
     db.commit()
+    cache_invalidate(redis_client, f"fitd:orders:{checkout_order.user_id}", f"fitd:basket:{checkout_order.user_id}")
+    cache_invalidate_pattern(redis_client, "fitd:claimable:*")
+    publish_event(redis_client, "order:created")
     return {"status": "success", "order_count": len(created_orders)}
 
 
@@ -781,6 +1011,7 @@ def confirm_onboarding(
     stripe_account_id: str,
     payload: dict = Depends(verify_jwt_token),
     db: Session = Depends(get_db),
+    redis_client=Depends(get_redis),
 ):
     account = db.query(UserStripeAccount).filter(
         UserStripeAccount.stripe_account_id == stripe_account_id
@@ -790,6 +1021,8 @@ def confirm_onboarding(
 
     account.onboarding_complete = True
     db.commit()
+    cache_invalidate(redis_client, f"fitd:session:{account.user_id}")
+    publish_event(redis_client, "stripe:onboarded", user_id=account.user_id)
     return {"message": "Onboarding confirmed", "stripe_account_id": stripe_account_id}
 
 
@@ -798,6 +1031,7 @@ def claim_order(
     claimed_order: ClaimOrder,
     db: Session = Depends(get_db),
     user_information: None = Depends(cookie_verification_user_only),
+    redis_client=Depends(get_redis),
 ):
     try:
         existing_claim = db.query(Claim).filter(
@@ -851,6 +1085,9 @@ def claim_order(
                     )
 
         add_claim_to_db(db, claimed_order, user_information)
+        cache_invalidate(redis_client, f"fitd:claims:{user_information.user_id}")
+        cache_invalidate_pattern(redis_client, "fitd:claimable:*")
+        publish_event(redis_client, "claim:status_changed", user_id=user_information.user_id)
 
     except HTTPException:
         raise
@@ -973,6 +1210,7 @@ def update_claim_status(
     status_update: ClaimStatusUpdate,
     db: Session = Depends(get_db),
     user_information: None = Depends(cookie_verification_user_only),
+    redis_client=Depends(get_redis),
 ):
     claim = db.query(Claim).options(selectinload(Claim.order)).filter(Claim.id == claim_id).first()
     if not claim:
@@ -1060,6 +1298,8 @@ def update_claim_status(
         db.add(dispute)
         db.commit()
 
+    cache_invalidate(redis_client, f"fitd:claims:{claim.claimant_user_id}", f"fitd:orders:{order.user_id}")
+    publish_event(redis_client, "claim:status_changed", user_id=claim.claimant_user_id)
     return {"message": "Claim status updated", "claim_id": claim_id, "new_status": status_update.status}
 
 
@@ -1518,21 +1758,32 @@ def update_claim_shipping(
 @app.get("/manufacturing/processes", response_model=List[ManufacturingProcessResponse])
 def list_manufacturing_processes(
     db: Session = Depends(get_db),
+    redis_client=Depends(get_redis),
     _: None = Depends(cookie_verification),
 ):
-    return db.query(ManufacturingProcess).order_by(ManufacturingProcess.family, ManufacturingProcess.name).all()
+    return cached(
+        redis_client, "fitd:ref:processes", ttl=21600,
+        loader=lambda: [ManufacturingProcessResponse.from_orm(p) for p in db.query(ManufacturingProcess).order_by(ManufacturingProcess.family, ManufacturingProcess.name).all()],
+        model_class=ManufacturingProcessResponse, is_list=True, l1=True, l1_ttl=3600,
+    )
 
 
 @app.get("/manufacturing/materials", response_model=List[ManufacturingMaterialResponse])
 def list_manufacturing_materials(
     process_family: Optional[str] = None,
     db: Session = Depends(get_db),
+    redis_client=Depends(get_redis),
     _: None = Depends(cookie_verification),
 ):
+    cache_key = f"fitd:ref:materials:{process_family or 'all'}"
     query = db.query(ManufacturingMaterial)
     if process_family:
         query = query.filter(ManufacturingMaterial.process_family == process_family)
-    return query.order_by(ManufacturingMaterial.category, ManufacturingMaterial.name).all()
+    return cached(
+        redis_client, cache_key, ttl=21600,
+        loader=lambda: [ManufacturingMaterialResponse.from_orm(m) for m in query.order_by(ManufacturingMaterial.category, ManufacturingMaterial.name).all()],
+        model_class=ManufacturingMaterialResponse, is_list=True, l1=True, l1_ttl=3600,
+    )
 
 
 @app.get("/fulfiller_profile/{user_id}", response_model=FulfillerProfileResponse)
@@ -1552,6 +1803,7 @@ def create_fulfiller_profile(
     profile_data: FulfillerProfileCreate,
     db: Session = Depends(get_db),
     user_information=Depends(cookie_verification_user_only),
+    redis_client=Depends(get_redis),
 ):
     existing = db.query(FulfillerProfile).filter(
         FulfillerProfile.user_id == user_information.user_id
@@ -1590,6 +1842,8 @@ def create_fulfiller_profile(
 
     db.commit()
     db.refresh(profile)
+    cache_invalidate(redis_client, f"fitd:session:{user_information.user_id}")
+    publish_event(redis_client, "profile:updated", user_id=user_information.user_id)
     return profile
 
 
@@ -1598,6 +1852,7 @@ def update_fulfiller_profile(
     profile_data: FulfillerProfileCreate,
     db: Session = Depends(get_db),
     user_information=Depends(cookie_verification_user_only),
+    redis_client=Depends(get_redis),
 ):
     profile = db.query(FulfillerProfile).filter(
         FulfillerProfile.user_id == user_information.user_id
@@ -1633,6 +1888,8 @@ def update_fulfiller_profile(
 
     db.commit()
     db.refresh(profile)
+    cache_invalidate(redis_client, f"fitd:session:{user_information.user_id}")
+    publish_event(redis_client, "profile:updated", user_id=user_information.user_id)
     return profile
 
 
@@ -1813,6 +2070,33 @@ def health_check(db: Session = Depends(get_db)):
         return {"status": "ok", "database": "connected"}
     except Exception:
         raise HTTPException(status_code=503, detail={"status": "error", "database": "disconnected"})
+
+
+@app.get("/events/{user_id}")
+async def user_event_stream(
+    user_id: str,
+    authorization: str = Depends(verify_jwt_token),
+):
+    """SSE endpoint — streams real-time events for a specific user."""
+    redis_url = f"redis://{os.getenv('REDIS_HOST', 'localhost')}:{os.getenv('REDIS_PORT', '6379')}"
+
+    async def event_generator():
+        redis_async = aioredis.from_url(redis_url, decode_responses=True)
+        pubsub = redis_async.pubsub()
+        await pubsub.subscribe(f"sse:{user_id}", "sse:global")
+        try:
+            while True:
+                message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=1.0)
+                if message and message["type"] == "message":
+                    yield {"data": message["data"]}
+                await asyncio.sleep(0.1)
+        except asyncio.CancelledError:
+            pass
+        finally:
+            await pubsub.unsubscribe()
+            await redis_async.close()
+
+    return EventSourceResponse(event_generator(), ping=30)
 
 
 if __name__ == "__main__":

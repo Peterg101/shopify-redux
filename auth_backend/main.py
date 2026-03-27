@@ -18,7 +18,7 @@ import bcrypt
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from utils import create_session, delete_session, cookie_verification
-from api_calls import check_user_exists, create_user, check_only_user_exists, register_email_user, get_user_by_email, verify_user_password
+from api_calls import check_user_exists, create_user, check_only_user_exists, register_email_user, get_user_by_email, verify_user_password, get_user_session, get_user_basket, get_user_orders, get_user_claims, get_user_claimable, get_user_tasks
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -254,6 +254,70 @@ async def user_details(request: Request):
         raise HTTPException(
             status_code=401, detail="Invalid token or token verification failed"
         )
+
+
+@app.get("/session")
+async def get_slim_session(request: Request):
+    session_data, _ = await cookie_verification(request, redis_session)
+    return await get_user_session(session_data.user_id)
+
+
+@app.get("/user_basket")
+async def proxy_user_basket(request: Request):
+    session_data, _ = await cookie_verification(request, redis_session)
+    return await get_user_basket(session_data.user_id)
+
+
+@app.get("/user_orders")
+async def proxy_user_orders(request: Request):
+    session_data, _ = await cookie_verification(request, redis_session)
+    return await get_user_orders(session_data.user_id)
+
+
+@app.get("/user_claims")
+async def proxy_user_claims(request: Request):
+    session_data, _ = await cookie_verification(request, redis_session)
+    return await get_user_claims(session_data.user_id)
+
+
+@app.get("/user_claimable")
+async def proxy_user_claimable(request: Request):
+    session_data, _ = await cookie_verification(request, redis_session)
+    return await get_user_claimable(session_data.user_id)
+
+
+@app.get("/user_tasks")
+async def proxy_user_tasks(request: Request):
+    session_data, _ = await cookie_verification(request, redis_session)
+    return await get_user_tasks(session_data.user_id)
+
+
+@app.get("/events")
+async def proxy_events(request: Request):
+    from starlette.responses import StreamingResponse
+    from jwt_auth import generate_token
+
+    session_data, _ = await cookie_verification(request, redis_session)
+    user_id = session_data.user_id
+    auth_token = generate_token("auth_backend")
+    DB_SERVICE_URL = os.getenv("DB_SERVICE_URL", "http://localhost:8000")
+
+    async def stream():
+        async with httpx.AsyncClient() as client:
+            async with client.stream(
+                "GET",
+                f"{DB_SERVICE_URL}/events/{user_id}",
+                headers={"Authorization": f"Bearer {auth_token}"},
+                timeout=None,
+            ) as response:
+                async for chunk in response.aiter_bytes():
+                    yield chunk
+
+    return StreamingResponse(
+        stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @app.get("/health")

@@ -105,3 +105,99 @@ async def verify_user_password(email: str, password: str) -> dict:
         )
         response.raise_for_status()
         return response.json()
+
+
+async def get_user_session(user_id: str):
+    """Call slim session endpoint on db_service."""
+    auth_token = generate_token("auth_backend")
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {auth_token}",
+    }
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{DB_SERVICE_URL}/users/{user_id}/session", headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            logger.error(f"Error fetching session: {response.status_code} - {response.text}")
+            return None
+
+
+async def get_user_basket(user_id: str):
+    """Call basket endpoint on db_service."""
+    auth_token = generate_token("auth_backend")
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {auth_token}",
+    }
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{DB_SERVICE_URL}/users/{user_id}/basket", headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            logger.error(f"Error fetching basket: {response.status_code} - {response.text}")
+            return None
+
+
+async def get_user_orders(user_id: str):
+    """Call orders endpoint on db_service."""
+    auth_token = generate_token("auth_backend")
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {auth_token}",
+    }
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{DB_SERVICE_URL}/users/{user_id}/orders", headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            logger.error(f"Error fetching orders: {response.status_code} - {response.text}")
+            return None
+
+
+async def get_user_claims(user_id: str):
+    """Call claims endpoint on db_service."""
+    auth_token = generate_token("auth_backend")
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {auth_token}",
+    }
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{DB_SERVICE_URL}/users/{user_id}/claims", headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            logger.error(f"Error fetching claims: {response.status_code} - {response.text}")
+            return None
+
+
+async def get_user_claimable(user_id: str):
+    """Call claimable orders endpoint on db_service."""
+    auth_token = generate_token("auth_backend")
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {auth_token}",
+    }
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{DB_SERVICE_URL}/users/{user_id}/claimable", headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            logger.error(f"Error fetching claimable: {response.status_code} - {response.text}")
+            return None
+
+
+async def get_user_tasks(user_id: str):
+    """Call tasks endpoint on db_service."""
+    auth_token = generate_token("auth_backend")
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {auth_token}",
+    }
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{DB_SERVICE_URL}/users/{user_id}/tasks", headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            logger.error(f"Error fetching tasks: {response.status_code} - {response.text}")
+            return None

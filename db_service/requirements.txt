@@ -9,3 +9,6 @@ httpx
 python-dotenv
 pytest
 pytest-asyncio
+redis>=5.0.0
+sse-starlette>=2.0.0,<3.0.0
+cachetools>=5.0.0
