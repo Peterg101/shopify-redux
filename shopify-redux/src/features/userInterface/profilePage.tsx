@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useLogOutMutation } from "../../services/authApi";
-import { Box, Button, Typography, Card, CardContent, Grid, Avatar, Chip } from "@mui/material";
-import { useSelector } from "react-redux";
+import { useLogOutMutation, authApi } from "../../services/authApi";
+import { Box, Button, Typography, Card, CardContent, Grid, Avatar, Chip, CircularProgress } from "@mui/material";
+import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../app/store";
 import PersonIcon from "@mui/icons-material/Person";
 import ShoppingBasketIcon from "@mui/icons-material/ShoppingBasket";
@@ -10,17 +10,28 @@ import AssignmentIcon from "@mui/icons-material/Assignment";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PaymentIcon from "@mui/icons-material/Payment";
 import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import { callStripeService } from "../../services/fetchFileUtils";
 import { FulfillerCapabilityForm } from "../fulfill/FulfillerCapabilityForm";
 import { FulfillerCapabilityDisplay } from "../fulfill/FulfillerCapabilityDisplay";
+import { FulfillerAddressForm } from "../fulfill/FulfillerAddressForm";
 
 export const ProfilePage = () => {
   const userInfo = useSelector(
     (state: RootState) => state.userInterfaceState.userInformation
   );
 
+  const dispatch = useDispatch();
   const [logOut] = useLogOutMutation();
   const [showCapabilityForm, setShowCapabilityForm] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefreshSession = async () => {
+    setRefreshing(true);
+    dispatch(authApi.util.invalidateTags(['sessionData']));
+    setTimeout(() => setRefreshing(false), 2000);
+  };
 
   const fulfillerProfile = userInfo?.fulfiller_profile;
 
@@ -113,14 +124,24 @@ export const ProfilePage = () => {
             {userInfo?.stripe_onboarded ? (
               <Chip label="Payments Active" color="success" size="small" />
             ) : (
-              <Button
-                variant="contained"
-                size="small"
-                onClick={callStripeService}
-                sx={{ mt: 0.5 }}
-              >
-                Set Up Payments
-              </Button>
+              <Box sx={{ display: "flex", gap: 1, mt: 0.5, alignItems: "center" }}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={callStripeService}
+                >
+                  Set Up Payments
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={handleRefreshSession}
+                  disabled={refreshing}
+                  startIcon={refreshing ? <CircularProgress size={14} /> : <RefreshIcon />}
+                >
+                  {refreshing ? "Checking..." : "Check Status"}
+                </Button>
+              </Box>
             )}
           </Box>
         </CardContent>
@@ -167,6 +188,9 @@ export const ProfilePage = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Fulfiller Shipping Address */}
+      {fulfillerProfile && <FulfillerAddressForm />}
 
       {/* Logout */}
       <Button
