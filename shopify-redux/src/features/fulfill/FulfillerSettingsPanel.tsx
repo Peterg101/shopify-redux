@@ -16,6 +16,7 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked"
 import { RootState } from "../../app/store"
 import { authApi } from "../../services/authApi"
+import { useGetFulfillerProfileQuery } from "../../services/dbApi"
 import { callStripeService } from "../../services/fetchFileUtils"
 import { FulfillerCapabilityForm } from "./FulfillerCapabilityForm"
 import { FulfillerCapabilityDisplay } from "./FulfillerCapabilityDisplay"
@@ -65,10 +66,12 @@ export const FulfillerSettingsPanel = () => {
     (state: RootState) => state.userInterfaceState.userInformation
   )
 
+  const userId = userInfo?.user?.user_id
+  const { data: fulfillerProfile } = useGetFulfillerProfileQuery(userId!, { skip: !userId })
+
   const [showCapabilityForm, setShowCapabilityForm] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
 
-  const fulfillerProfile = userInfo?.fulfiller_profile
   const stripeReady = !!userInfo?.stripe_onboarded
   const profileReady = !!fulfillerProfile
 

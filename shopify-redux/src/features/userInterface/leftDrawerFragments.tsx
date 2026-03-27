@@ -11,6 +11,7 @@ import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
 import { resetCadState } from "../../services/cadSlice";
 import { resetMeshyState } from "../../services/meshySlice";
 import { downloadBlob } from "../../app/utility/utils";
+import { useGetUserTasksQuery } from "../../services/authApi";
 
 const formatRelativeTime = (dateString: string): string => {
   const now = new Date();
@@ -169,8 +170,7 @@ export function LeftDrawerTaskLoading() {
 };
 
 export function LeftDrawerList() {
-  const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
-  const tasks = userInterfaceState.userInformation?.tasks ?? [];
+  const { data: tasks = [] } = useGetUserTasksQuery();
 
   return (
     <Box>

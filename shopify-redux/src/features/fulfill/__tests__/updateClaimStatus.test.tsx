@@ -5,7 +5,7 @@ import { UpdateClaimStatus } from '../updateClaimStatus'
 import {
   createMockOrder,
   createMockClaim,
-  createMockSessionData,
+  createMockSlimSession,
 } from '../../../test-utils/mockData'
 import { Claim } from '../../../app/utility/interfaces'
 
@@ -79,7 +79,7 @@ function makeState(claimOverrides: Partial<Claim> = {}, isBuyer = false) {
     ...claimOverrides,
   })
   const userId = isBuyer ? order.user_id : 'claimant-1'
-  const session = createMockSessionData({
+  const session = createMockSlimSession({
     user: { user_id: userId, username: 'tester', email: 'test@test.com' },
   })
   return {

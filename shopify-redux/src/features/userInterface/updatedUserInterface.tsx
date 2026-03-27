@@ -10,6 +10,7 @@ import { Drawer, DrawerHeader } from './uiComponents';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { setLeftDrawerClosed, setLeftDrawerOpen, setSelectedComponent } from "../../services/userInterfaceSlice";
+import { useGetUserBasketQuery, useGetUserOrdersQuery, useGetUserTasksQuery } from "../../services/authApi";
 import { SidebarItem } from "../../app/utility/interfaces";
 import { LeftDrawerList } from "./leftDrawerFragments";
 import { ProfilePage } from "./profilePage";
@@ -25,6 +26,9 @@ export const UpdatedUserInterface = ({ visibleItems }: UpdatedUserInterfaceProps
   const dispatch = useDispatch();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { data: basketItems = [] } = useGetUserBasketQuery();
+  const { data: orders = [] } = useGetUserOrdersQuery();
+  const { data: tasks = [] } = useGetUserTasksQuery();
 
   const openDrawer = (itemText: string) => {
     if (userInterfaceState.leftDrawerOpen && userInterfaceState.selectedComponent === itemText) {
@@ -52,7 +56,7 @@ export const UpdatedUserInterface = ({ visibleItems }: UpdatedUserInterfaceProps
       text: "Gen AI History",
       icon: (
         <Badge
-          badgeContent={userInterfaceState.userInformation?.tasks.length}
+          badgeContent={tasks.length}
           color="secondary"
           anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
         >
@@ -64,7 +68,7 @@ export const UpdatedUserInterface = ({ visibleItems }: UpdatedUserInterfaceProps
       text: "Basket",
       icon: (
         <Badge
-          badgeContent={userInterfaceState.userInformation?.basket_items.length}
+          badgeContent={basketItems.length}
           color="secondary"
           anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
         >
@@ -95,7 +99,7 @@ export const UpdatedUserInterface = ({ visibleItems }: UpdatedUserInterfaceProps
         return (
           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <List component="nav" sx={{ flexGrow: 1 }}>
-              {userInterfaceState.userInformation?.basket_items.length === 0 ? <EmptyBasket /> : <Basket />}
+              {basketItems.length === 0 ? <EmptyBasket /> : <Basket />}
               <Divider sx={{ my: 1 }} />
             </List>
           </Box>
@@ -104,7 +108,7 @@ export const UpdatedUserInterface = ({ visibleItems }: UpdatedUserInterfaceProps
         return (
           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <List component="nav" sx={{ flexGrow: 1 }}>
-              {userInterfaceState.userInformation?.orders.length === 0 ? <EmptyOrderHistory /> : <OrderHistory />}
+              {orders.length === 0 ? <EmptyOrderHistory /> : <OrderHistory />}
               <Divider sx={{ my: 1 }} />
             </List>
           </Box>

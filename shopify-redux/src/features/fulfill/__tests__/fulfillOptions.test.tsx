@@ -2,13 +2,29 @@ import React from 'react'
 import { screen } from '@testing-library/react'
 import { renderWithProviders } from '../../../test-utils/renderWithProviders'
 import { FulfillOptions } from '../fulfillOptions'
-import { createMockOrder, createMockUserInformation, createMockSessionData } from '../../../test-utils/mockData'
+import { createMockOrder, createMockSlimSession } from '../../../test-utils/mockData'
+import { Order } from '../../../app/utility/interfaces'
 
 // Mock OBJSTLViewer to avoid three.js imports
 jest.mock('../../display/objStlViewer', () => ({
   __esModule: true,
   default: () => <div data-testid="mock-viewer">3D Viewer</div>,
 }))
+
+// Mock RTK Query hook for claimable orders
+let mockClaimableData: Order[] = []
+
+jest.mock('../../../services/authApi', () => ({
+  ...jest.requireActual('../../../services/authApi'),
+  useGetUserClaimableQuery: () => ({
+    data: mockClaimableData,
+    isLoading: false,
+  }),
+}))
+
+afterEach(() => {
+  mockClaimableData = []
+})
 
 describe('FulfillOptions', () => {
   it('renders loading state when user is not loaded', () => {
@@ -19,9 +35,8 @@ describe('FulfillOptions', () => {
   })
 
   it('renders empty state when there are no claimable orders', () => {
-    const sessionData = createMockSessionData({
-      claimable_orders: [],
-    })
+    mockClaimableData = []
+    const session = createMockSlimSession()
 
     renderWithProviders(<FulfillOptions />, {
       preloadedState: {
@@ -29,7 +44,7 @@ describe('FulfillOptions', () => {
           leftDrawerOpen: false,
 
           selectedComponent: '',
-          userInformation: sessionData,
+          userInformation: session,
           claimedOrder: null as any,
           selectedClaim: null as any,
           fulfillMode: false,
@@ -48,9 +63,8 @@ describe('FulfillOptions', () => {
       quantity: 5,
       quantity_claimed: 2,
     })
-    const sessionData = createMockSessionData({
-      claimable_orders: [order],
-    })
+    mockClaimableData = [order]
+    const session = createMockSlimSession()
 
     renderWithProviders(<FulfillOptions />, {
       preloadedState: {
@@ -58,7 +72,7 @@ describe('FulfillOptions', () => {
           leftDrawerOpen: false,
 
           selectedComponent: '',
-          userInformation: sessionData,
+          userInformation: session,
           claimedOrder: null as any,
           selectedClaim: null as any,
           fulfillMode: false,
@@ -81,9 +95,8 @@ describe('FulfillOptions', () => {
       quantity: 5,
       quantity_claimed: 2,
     })
-    const sessionData = createMockSessionData({
-      claimable_orders: [fullyClaimed, partialClaimed],
-    })
+    mockClaimableData = [fullyClaimed, partialClaimed]
+    const session = createMockSlimSession()
 
     renderWithProviders(<FulfillOptions />, {
       preloadedState: {
@@ -91,7 +104,7 @@ describe('FulfillOptions', () => {
           leftDrawerOpen: false,
 
           selectedComponent: '',
-          userInformation: sessionData,
+          userInformation: session,
           claimedOrder: null as any,
           selectedClaim: null as any,
           fulfillMode: false,

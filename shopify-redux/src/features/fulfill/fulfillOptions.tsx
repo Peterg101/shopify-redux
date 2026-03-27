@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux'
 import { RootState } from '../../app/store'
 import { visibleOrders } from '../../app/utility/utils'
 import { Order } from '../../app/utility/interfaces'
+import { useGetUserClaimableQuery } from '../../services/authApi'
 import { MarketplaceToolbar, ViewMode, SortOption } from './MarketplaceToolbar'
 import { MarketplaceGridCard } from './MarketplaceGridCard'
 import { MarketplaceListCard } from './MarketplaceListCard'
@@ -58,6 +59,7 @@ function applySort(orders: Order[], sortBy: SortOption): Order[] {
 
 export const FulfillOptions = () => {
   const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState)
+  const { data: claimableOrders = [] } = useGetUserClaimableQuery()
 
   const [viewMode, setViewMode] = useState<ViewMode>(
     () => (localStorage.getItem('marketplace-view') as ViewMode) || 'grid'
@@ -85,7 +87,7 @@ export const FulfillOptions = () => {
 
   const allOrders = visibleOrders(
     userInterfaceState.userInformation.user,
-    userInterfaceState.userInformation.claimable_orders ?? []
+    claimableOrders
   )
 
   const filtered = applyFilters(allOrders, searchQuery, materialFilter, techniqueFilter)

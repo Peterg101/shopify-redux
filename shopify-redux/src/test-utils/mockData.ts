@@ -5,6 +5,7 @@ import {
   BasketItem,
   UserInformation,
   UserAndTasksAndBasketAndIncompleteAndOrders,
+  SlimSession,
   UUIDType,
   ClaimEvidence,
   ClaimStatusHistory,
@@ -169,6 +170,18 @@ export function createMockOrderDetail(overrides: Partial<OrderDetail> = {}): Ord
     status: 'open',
     qa_level: 'standard',
     claims: [],
+    ...overrides,
+  }
+}
+
+export function createMockSlimSession(
+  overrides: Partial<SlimSession> = {}
+): SlimSession {
+  return {
+    user: createMockUserInformation(),
+    stripe_onboarded: false,
+    has_fulfiller_profile: false,
+    incomplete_task: null,
     ...overrides,
   }
 }

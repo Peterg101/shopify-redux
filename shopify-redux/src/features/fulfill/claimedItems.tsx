@@ -2,9 +2,8 @@ import { useState, useMemo, useCallback } from 'react'
 import { Box, Typography, Container, Paper, Stack } from '@mui/material'
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined'
 import FilterListOffIcon from '@mui/icons-material/FilterListOff'
-import { useSelector } from 'react-redux'
-import { RootState } from '../../app/store'
 import { Claim } from '../../app/utility/interfaces'
+import { useGetUserClaimsQuery } from '../../services/authApi'
 import { ClaimDashboardHeader, STATUS_PHASES } from './ClaimDashboardHeader'
 import { ClaimToolbar, ClaimViewMode, ClaimSortOption } from './ClaimToolbar'
 import { ClaimGridCard } from './ClaimGridCard'
@@ -59,13 +58,7 @@ const applySort = (claims: Claim[], sortBy: ClaimSortOption): Claim[] => {
 }
 
 export const ClaimedItems = () => {
-  const userInterfaceState = useSelector(
-    (state: RootState) => state.userInterfaceState
-  )
-  const claims = useMemo(
-    () => userInterfaceState.userInformation?.claims ?? [],
-    [userInterfaceState.userInformation?.claims]
-  )
+  const { data: claims = [] } = useGetUserClaimsQuery()
 
   const [viewMode, setViewMode] = useState<ClaimViewMode>(
     () => (localStorage.getItem('claimed-view') as ClaimViewMode) || 'grid'

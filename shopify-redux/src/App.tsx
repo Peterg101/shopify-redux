@@ -1,6 +1,7 @@
 import React from 'react';
 import { useState, useEffect } from "react";
-import { useGetSessionQuery } from "./services/authApi";
+import { useGetSlimSessionQuery } from "./services/authApi";
+import { connectSSE } from "./services/sseListener";
 import { useSelector } from 'react-redux';
 import { RootState } from "./app/store";
 import { createWebsocketConnection } from "./services/meshyWebsocket";
@@ -13,11 +14,11 @@ import AppRouter from './features/userInterface/AppRouter';
 
 function App() {
 
+    const dispatch = useDispatch();
     const [, setActualFile] = useState<File | null>(null);
     const userInterfaceState = useSelector(
       (state: RootState) => state.userInterfaceState
     )
-    const dispatch = useDispatch()
     const incompletePort = userInterfaceState.userInformation?.incomplete_task?.port;
     const portId = incompletePort?.port_id;
     useEffect(() => {
@@ -27,7 +28,15 @@ function App() {
       }
     }, [incompletePort, portId, dispatch]);
 
-    useGetSessionQuery(undefined, { pollingInterval: 5 * 60 * 1000 });
+    // SSE connection for real-time cache invalidation
+    useEffect(() => {
+      if (userInterfaceState.userInformation) {
+        const cleanup = connectSSE(dispatch);
+        return cleanup;
+      }
+    }, [userInterfaceState.userInformation !== null, dispatch]);
+
+    useGetSlimSessionQuery(undefined, { pollingInterval: 30 * 60 * 1000 });
 
   return (
     <ThemeProvider theme={theme}>

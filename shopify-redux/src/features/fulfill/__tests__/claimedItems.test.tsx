@@ -2,12 +2,24 @@ import React from 'react'
 import { screen } from '@testing-library/react'
 import { renderWithProviders } from '../../../test-utils/renderWithProviders'
 import { ClaimedItems } from '../claimedItems'
-import { createMockClaim, createMockOrder, createMockSessionData } from '../../../test-utils/mockData'
+import { createMockClaim, createMockOrder, createMockSlimSession } from '../../../test-utils/mockData'
+import { Claim } from '../../../app/utility/interfaces'
 
 // Mock OBJSTLViewer to avoid three.js imports
 jest.mock('../../display/objStlViewer', () => ({
   __esModule: true,
   default: () => <div data-testid="mock-viewer">3D Viewer</div>,
+}))
+
+// Mock RTK Query hook for claims
+let mockClaimsData: Claim[] = []
+
+jest.mock('../../../services/authApi', () => ({
+  ...jest.requireActual('../../../services/authApi'),
+  useGetUserClaimsQuery: () => ({
+    data: mockClaimsData,
+    isLoading: false,
+  }),
 }))
 
 const defaultUiState = {
@@ -20,15 +32,20 @@ const defaultUiState = {
   updateClaimMode: false,
 }
 
+afterEach(() => {
+  mockClaimsData = []
+})
+
 describe('ClaimedItems', () => {
   it('renders empty state when user has no claims', () => {
-    const sessionData = createMockSessionData({ claims: [] })
+    mockClaimsData = []
+    const session = createMockSlimSession()
 
     renderWithProviders(<ClaimedItems />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: sessionData,
+          userInformation: session,
         },
       },
     })
@@ -40,13 +57,14 @@ describe('ClaimedItems', () => {
   it('renders claim cards when claims exist', () => {
     const order = createMockOrder({ name: 'Claimed Widget', quantity: 5, quantity_claimed: 2 })
     const claim = createMockClaim({ order, quantity: 2 })
-    const sessionData = createMockSessionData({ claims: [claim] })
+    mockClaimsData = [claim]
+    const session = createMockSlimSession()
 
     renderWithProviders(<ClaimedItems />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: sessionData,
+          userInformation: session,
         },
       },
     })
@@ -60,13 +78,14 @@ describe('ClaimedItems', () => {
     const order2 = createMockOrder({ name: 'Widget Beta', quantity: 7, quantity_claimed: 4 })
     const claim1 = createMockClaim({ order: order1, quantity: 1 })
     const claim2 = createMockClaim({ order: order2, quantity: 4 })
-    const sessionData = createMockSessionData({ claims: [claim1, claim2] })
+    mockClaimsData = [claim1, claim2]
+    const session = createMockSlimSession()
 
     renderWithProviders(<ClaimedItems />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: sessionData,
+          userInformation: session,
         },
       },
     })
@@ -78,13 +97,14 @@ describe('ClaimedItems', () => {
   it('renders dashboard header with progress', () => {
     const order = createMockOrder({ name: 'Progress Test', quantity: 5, quantity_claimed: 2, price: 25 })
     const claim = createMockClaim({ order, quantity: 2, status: 'accepted' })
-    const sessionData = createMockSessionData({ claims: [claim] })
+    mockClaimsData = [claim]
+    const session = createMockSlimSession()
 
     renderWithProviders(<ClaimedItems />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: sessionData,
+          userInformation: session,
         },
       },
     })
@@ -96,13 +116,14 @@ describe('ClaimedItems', () => {
   it('shows toolbar with result count', () => {
     const order = createMockOrder({ name: 'Toolbar Test', quantity: 3, quantity_claimed: 1 })
     const claim = createMockClaim({ order, quantity: 1 })
-    const sessionData = createMockSessionData({ claims: [claim] })
+    mockClaimsData = [claim]
+    const session = createMockSlimSession()
 
     renderWithProviders(<ClaimedItems />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: sessionData,
+          userInformation: session,
         },
       },
     })

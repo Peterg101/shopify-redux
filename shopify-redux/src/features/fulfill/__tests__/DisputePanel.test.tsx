@@ -6,7 +6,7 @@ import {
   createMockOrder,
   createMockClaim,
   createMockDispute,
-  createMockSessionData,
+  createMockSlimSession,
 } from '../../../test-utils/mockData'
 import { Dispute } from '../../../app/utility/interfaces'
 
@@ -74,7 +74,7 @@ afterEach(() => {
 
 // ── Helper to build preloaded state ────────────────────────────────────
 function makeDisputeState(userId: string) {
-  const session = createMockSessionData({
+  const session = createMockSlimSession({
     user: { user_id: userId, username: 'user', email: 'u@t.com' },
   })
   return {

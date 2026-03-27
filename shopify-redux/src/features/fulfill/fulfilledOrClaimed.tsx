@@ -7,16 +7,19 @@ import { ClaimedItemsOrUpdateClaim } from "./claimedItemsOrUpdateClaim";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { visibleOrders } from "../../app/utility/utils";
+import { useGetUserClaimableQuery, useGetUserClaimsQuery } from "../../services/authApi";
 
 export const FulfillOrClaimed = () => {
   const [tabIndex, setTabIndex] = useState(0);
   const theme = useTheme();
   const userInfo = useSelector((state: RootState) => state.userInterfaceState.userInformation);
+  const { data: claimableOrders = [] } = useGetUserClaimableQuery();
+  const { data: claims = [] } = useGetUserClaimsQuery();
 
   const claimableCount = userInfo?.user
-    ? visibleOrders(userInfo.user, userInfo.claimable_orders ?? []).length
+    ? visibleOrders(userInfo.user, claimableOrders).length
     : 0;
-  const claimedCount = userInfo?.claims?.length ?? 0;
+  const claimedCount = claims.length;
 
   const handleChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);

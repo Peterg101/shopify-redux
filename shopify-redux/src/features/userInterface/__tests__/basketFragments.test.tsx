@@ -2,7 +2,8 @@ import React from 'react'
 import { screen, fireEvent } from '@testing-library/react'
 import { renderWithProviders } from '../../../test-utils/renderWithProviders'
 import { EmptyBasket, Basket, BasketList, BasketSummary } from '../basketFragments'
-import { createMockBasketInformation, createMockSessionData } from '../../../test-utils/mockData'
+import { createMockBasketInformation, createMockSlimSession } from '../../../test-utils/mockData'
+import { BasketInformation } from '../../../app/utility/interfaces'
 
 // Mock sub-components and hooks to isolate basket logic
 jest.mock('../../../services/basketItemApi', () => ({
@@ -25,6 +26,23 @@ jest.mock('../../../services/fetchFileUtils', () => ({
   createStripeCheckoutAndRedirect: jest.fn(),
 }))
 
+// Mock RTK Query hook for basket items
+let mockBasketData: BasketInformation[] = []
+let mockTotalBasketValue = 0
+
+jest.mock('../../../services/authApi', () => ({
+  ...jest.requireActual('../../../services/authApi'),
+  useGetUserBasketQuery: () => ({
+    data: mockBasketData,
+    isLoading: false,
+  }),
+}))
+
+jest.mock('../../../services/selectors', () => ({
+  ...jest.requireActual('../../../services/selectors'),
+  selectTotalBasketValue: () => mockTotalBasketValue,
+}))
+
 const defaultUiState = {
   leftDrawerOpen: false,
   selectedComponent: '',
@@ -33,6 +51,11 @@ const defaultUiState = {
   fulfillMode: false,
   updateClaimMode: false,
 }
+
+afterEach(() => {
+  mockBasketData = []
+  mockTotalBasketValue = 0
+})
 
 describe('EmptyBasket', () => {
   it('renders empty basket message', () => {
@@ -45,13 +68,14 @@ describe('EmptyBasket', () => {
 
 describe('Basket', () => {
   it('shows empty basket when basket_items is empty', () => {
-    const sessionData = createMockSessionData({ basket_items: [] })
+    mockBasketData = []
+    const session = createMockSlimSession()
 
     renderWithProviders(<Basket />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: sessionData,
+          userInformation: session,
         },
       },
     })
@@ -68,13 +92,14 @@ describe('Basket', () => {
       material: 'PLA Basic',
       colour: 'white',
     })
-    const sessionData = createMockSessionData({ basket_items: [basketItem] })
+    mockBasketData = [basketItem]
+    const session = createMockSlimSession()
 
     renderWithProviders(<Basket />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: sessionData,
+          userInformation: session,
         },
       },
     })
@@ -95,12 +120,13 @@ describe('BasketItemCard (rendered via BasketList)', () => {
   })
 
   const renderBasketList = () => {
-    const sessionData = createMockSessionData({ basket_items: [basketItem] })
+    mockBasketData = [basketItem]
+    const session = createMockSlimSession()
     return renderWithProviders(<BasketList />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: sessionData,
+          userInformation: session,
         },
       },
     })
@@ -180,12 +206,14 @@ describe('BasketSummary', () => {
   })
 
   const renderSummary = () => {
-    const sessionData = createMockSessionData({ basket_items: [basketItem] })
+    mockBasketData = [basketItem]
+    mockTotalBasketValue = 50.0 // 2 * 25.00
+    const session = createMockSlimSession()
     return renderWithProviders(<BasketSummary />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: sessionData,
+          userInformation: session,
         },
       },
     })
@@ -236,13 +264,14 @@ describe('BasketSummary', () => {
   })
 
   it('renders zero shipping when basket is empty', () => {
-    const emptySession = createMockSessionData({ basket_items: [] })
+    mockBasketData = []
+    const session = createMockSlimSession()
 
     renderWithProviders(<BasketSummary />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: emptySession,
+          userInformation: session,
         },
       },
     })

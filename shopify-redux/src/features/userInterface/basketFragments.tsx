@@ -26,8 +26,8 @@ import {
 } from "@mui/icons-material";
 
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../app/store";
 import { useUpdateBasketQuantityMutation } from "../../services/basketItemApi";
+import { useGetUserBasketQuery } from "../../services/authApi";
 import DeleteFromBasket from "./deleteFromBasket";
 import EditBasketItem from "./editBasketItem";
 import { BasketInformation } from "../../app/utility/interfaces";
@@ -51,8 +51,8 @@ export const EmptyBasket = () => (
 
 // Main Basket component
 export const Basket = () => {
-  const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
-  const isEmpty = userInterfaceState.userInformation?.basket_items.length === 0;
+  const { data: basketItems = [] } = useGetUserBasketQuery();
+  const isEmpty = basketItems.length === 0;
 
   return (
     <Box sx={{ px: 1, pt: 1 }}>
@@ -63,9 +63,7 @@ export const Basket = () => {
 
 // List of basket items
 export const BasketList = () => {
-  const basketItems = useSelector(
-    (state: RootState) => state.userInterfaceState.userInformation?.basket_items || []
-  ) as BasketInformation[];
+  const { data: basketItems = [] } = useGetUserBasketQuery();
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, width: "100%" }}>
@@ -214,7 +212,7 @@ export const BasketSummary = () => {
   const [open, setOpen] = useState(false);
   const handleClose = () => setOpen(false);
 
-  const basketItems = useSelector((state: RootState) => state.userInterfaceState.userInformation?.basket_items || []);
+  const { data: basketItems = [] } = useGetUserBasketQuery();
   const subtotal = useSelector(selectTotalBasketValue);
   const shippingEstimate = subtotal > 0 ? 4.99 : 0;
   const total = subtotal + shippingEstimate;

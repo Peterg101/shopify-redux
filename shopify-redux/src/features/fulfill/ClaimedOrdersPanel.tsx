@@ -1,4 +1,4 @@
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import {
   Box,
   Typography,
@@ -15,10 +15,10 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty'
 import BuildIcon from '@mui/icons-material/Build'
 import GavelIcon from '@mui/icons-material/Gavel'
-import { RootState } from '../../app/store'
 import { Claim } from '../../app/utility/interfaces'
 import { setSelectedClaim, setUpdateClaimMode } from '../../services/userInterfaceSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
+import { useGetUserClaimsQuery } from '../../services/authApi'
 import { FulfillerAddressForm } from './FulfillerAddressForm'
 
 const STATUS_PHASES = [
@@ -65,9 +65,7 @@ const statusLabel = (status: string) => status.replace(/_/g, ' ')
 export const ClaimedOrdersPanel = () => {
   const dispatch = useDispatch()
   const { prepareOrderFile } = useOrderFileLoader()
-  const claims = useSelector(
-    (state: RootState) => state.userInterfaceState.userInformation?.claims ?? []
-  )
+  const { data: claims = [] } = useGetUserClaimsQuery()
 
   const handleOpenClaim = async (claim: Claim) => {
     await prepareOrderFile(claim.order)

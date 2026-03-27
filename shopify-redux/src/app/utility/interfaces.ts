@@ -46,7 +46,7 @@ export interface MeshyState {
 export interface UserInterfaceState {
     leftDrawerOpen: boolean
     selectedComponent: string
-    userInformation: UserAndTasksAndBasketAndIncompleteAndOrders | null
+    userInformation: SlimSession | null
     claimedOrder: Order
     selectedClaim: Claim | null
     fulfillMode: boolean
@@ -448,6 +448,13 @@ export interface UserAndTasksAndBasketAndIncompleteAndOrders{
   claims: Claim[]
   stripe_onboarded?: boolean
   fulfiller_profile?: FulfillerProfile | null
+}
+
+export interface SlimSession {
+  user: UserInformation;
+  stripe_onboarded: boolean;
+  has_fulfiller_profile: boolean;
+  incomplete_task: TaskInformationAndPortId | null;
 }
 
 export interface FileResponse {

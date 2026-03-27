@@ -2,12 +2,25 @@ import React from 'react'
 import { screen, fireEvent } from '@testing-library/react'
 import { renderWithProviders } from '../../../test-utils/renderWithProviders'
 import { EmptyOrderHistory, OrderHistory, OrderList } from '../orderHistoryFragments'
-import { createMockOrder, createMockClaim, createMockSessionData } from '../../../test-utils/mockData'
+import { createMockOrder, createMockClaim, createMockSlimSession } from '../../../test-utils/mockData'
+import { Order } from '../../../app/utility/interfaces'
 
 // Mock the visibility mutation to avoid RTK Query side effects
 jest.mock('../../../services/dbApi', () => ({
   ...jest.requireActual('../../../services/dbApi'),
   useToggleOrderVisibilityMutation: () => [jest.fn(), { isLoading: false }],
+}))
+
+// Mock RTK Query hook for user orders
+let mockOrdersData: Order[] | undefined = undefined
+let mockOrdersLoading = false
+
+jest.mock('../../../services/authApi', () => ({
+  ...jest.requireActual('../../../services/authApi'),
+  useGetUserOrdersQuery: () => ({
+    data: mockOrdersData,
+    isLoading: mockOrdersLoading,
+  }),
 }))
 
 const defaultUiState = {
@@ -18,6 +31,11 @@ const defaultUiState = {
   fulfillMode: false,
   updateClaimMode: false,
 }
+
+afterEach(() => {
+  mockOrdersData = undefined
+  mockOrdersLoading = false
+})
 
 describe('EmptyOrderHistory', () => {
   it('renders "No orders yet" message', () => {
@@ -30,6 +48,8 @@ describe('EmptyOrderHistory', () => {
 
 describe('OrderHistory', () => {
   it('renders loading state when userInformation is null', () => {
+    mockOrdersLoading = true
+    mockOrdersData = undefined
     renderWithProviders(<OrderHistory />, {
       preloadedState: {
         userInterfaceState: {
@@ -43,13 +63,15 @@ describe('OrderHistory', () => {
   })
 
   it('renders empty order history when orders array is empty', () => {
-    const sessionData = createMockSessionData({ orders: [] })
+    mockOrdersData = []
+    mockOrdersLoading = false
+    const session = createMockSlimSession()
 
     renderWithProviders(<OrderHistory />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: sessionData,
+          userInformation: session,
         },
       },
     })
@@ -60,13 +82,15 @@ describe('OrderHistory', () => {
   it('renders order names when orders exist', () => {
     const order1 = createMockOrder({ name: 'Motor Mount' })
     const order2 = createMockOrder({ name: 'Gear Housing' })
-    const sessionData = createMockSessionData({ orders: [order1, order2] })
+    mockOrdersData = [order1, order2]
+    mockOrdersLoading = false
+    const session = createMockSlimSession()
 
     renderWithProviders(<OrderHistory />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: sessionData,
+          userInformation: session,
         },
       },
     })
@@ -79,12 +103,13 @@ describe('OrderHistory', () => {
 describe('OrderedItemCard (rendered via OrderList)', () => {
   it('renders order name', () => {
     const order = createMockOrder({ name: 'My Bracket' })
+    const session = createMockSlimSession()
 
     renderWithProviders(<OrderList orders={[order]} />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: createMockSessionData(),
+          userInformation: session,
         },
       },
     })
@@ -98,12 +123,13 @@ describe('OrderedItemCard (rendered via OrderList)', () => {
       material: 'Nylon 12',
       colour: 'black',
     })
+    const session = createMockSlimSession()
 
     renderWithProviders(<OrderList orders={[order]} />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: createMockSessionData(),
+          userInformation: session,
         },
       },
     })
@@ -118,12 +144,13 @@ describe('OrderedItemCard (rendered via OrderList)', () => {
       price: 30,
       quantity: 4,
     })
+    const session = createMockSlimSession()
 
     renderWithProviders(<OrderList orders={[order]} />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: createMockSessionData(),
+          userInformation: session,
         },
       },
     })
@@ -133,12 +160,13 @@ describe('OrderedItemCard (rendered via OrderList)', () => {
 
   it('renders "View Details" button', () => {
     const order = createMockOrder()
+    const session = createMockSlimSession()
 
     renderWithProviders(<OrderList orders={[order]} />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: createMockSessionData(),
+          userInformation: session,
         },
       },
     })
@@ -151,12 +179,13 @@ describe('OrderedItemCard (rendered via OrderList)', () => {
       quantity: 4,
       quantity_claimed: 2,
     })
+    const session = createMockSlimSession()
 
     renderWithProviders(<OrderList orders={[order]} />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: createMockSessionData(),
+          userInformation: session,
         },
       },
     })
@@ -166,12 +195,13 @@ describe('OrderedItemCard (rendered via OrderList)', () => {
 
   it('renders visibility chip as Community when collaborative', () => {
     const order = createMockOrder({ is_collaborative: true })
+    const session = createMockSlimSession()
 
     renderWithProviders(<OrderList orders={[order]} />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: createMockSessionData(),
+          userInformation: session,
         },
       },
     })
@@ -181,12 +211,13 @@ describe('OrderedItemCard (rendered via OrderList)', () => {
 
   it('renders visibility chip as Private when not collaborative', () => {
     const order = createMockOrder({ is_collaborative: false })
+    const session = createMockSlimSession()
 
     renderWithProviders(<OrderList orders={[order]} />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: createMockSessionData(),
+          userInformation: session,
         },
       },
     })
@@ -200,12 +231,13 @@ describe('OrderedItemCard (rendered via OrderList)', () => {
         createMockClaim({ status: 'printing', quantity: 2 }),
       ],
     })
+    const session = createMockSlimSession()
 
     renderWithProviders(<OrderList orders={[order]} />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: createMockSessionData(),
+          userInformation: session,
         },
       },
     })
@@ -220,12 +252,13 @@ describe('OrderedItemCard (rendered via OrderList)', () => {
         createMockClaim({ status: 'shipped', quantity: 1 }),
       ],
     })
+    const session = createMockSlimSession()
 
     renderWithProviders(<OrderList orders={[order]} />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: createMockSessionData(),
+          userInformation: session,
         },
       },
     })
@@ -239,12 +272,13 @@ describe('OrderedItemCard (rendered via OrderList)', () => {
         createMockClaim({ status: 'printing', quantity: 2 }),
       ],
     })
+    const session = createMockSlimSession()
 
     renderWithProviders(<OrderList orders={[order]} />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: createMockSessionData(),
+          userInformation: session,
         },
       },
     })
@@ -263,12 +297,13 @@ describe('OrderedItemCard (rendered via OrderList)', () => {
         createMockClaim({ status: 'disputed', quantity: 1 }),
       ],
     })
+    const session = createMockSlimSession()
 
     renderWithProviders(<OrderList orders={[order]} />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: createMockSessionData(),
+          userInformation: session,
         },
       },
     })
@@ -279,12 +314,13 @@ describe('OrderedItemCard (rendered via OrderList)', () => {
 
   it('does not render expandable claim section when no claims exist', () => {
     const order = createMockOrder({ claims: [] })
+    const session = createMockSlimSession()
 
     renderWithProviders(<OrderList orders={[order]} />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: createMockSessionData(),
+          userInformation: session,
         },
       },
     })

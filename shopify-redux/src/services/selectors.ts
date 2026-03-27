@@ -1,6 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit'
 import { RootState } from '../app/store'
 import { recalculateTotalCost, calculateTotalBasketValue, visibleOrders } from '../app/utility/utils'
+import { authApi } from './authApi'
 
 const selectDataState = (state: RootState) => state.dataState
 
@@ -26,14 +27,14 @@ export const selectTotalCost = createSelector(
 )
 
 export const selectTotalBasketValue = createSelector(
-  [(state: RootState) => state.userInterfaceState.userInformation?.basket_items ?? []],
+  [(state: RootState) => authApi.endpoints.getUserBasket.select()(state)?.data ?? []],
   (basketItems) => calculateTotalBasketValue(basketItems)
 )
 
 export const selectVisibleOrders = createSelector(
   [
     (state: RootState) => state.userInterfaceState.userInformation?.user ?? null,
-    (state: RootState) => state.userInterfaceState.userInformation?.claimable_orders ?? [],
+    (state: RootState) => authApi.endpoints.getUserClaimable.select()(state)?.data ?? [],
   ],
   (user, claimableOrders) => {
     if (!user) return []

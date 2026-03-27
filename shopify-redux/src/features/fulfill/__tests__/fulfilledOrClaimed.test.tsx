@@ -2,12 +2,29 @@ import React from 'react'
 import { screen, fireEvent } from '@testing-library/react'
 import { renderWithProviders } from '../../../test-utils/renderWithProviders'
 import { FulfillOrClaimed } from '../fulfilledOrClaimed'
-import { createMockSessionData, createMockOrder, createMockClaim } from '../../../test-utils/mockData'
+import { createMockSlimSession, createMockOrder, createMockClaim } from '../../../test-utils/mockData'
+import { Order, Claim } from '../../../app/utility/interfaces'
 
 // Mock OBJSTLViewer to avoid three.js imports
 jest.mock('../../display/objStlViewer', () => ({
   __esModule: true,
   default: () => <div data-testid="mock-viewer">3D Viewer</div>,
+}))
+
+// Mock RTK Query hooks for claimable orders and claims
+let mockClaimableData: Order[] = []
+let mockClaimsData: Claim[] = []
+
+jest.mock('../../../services/authApi', () => ({
+  ...jest.requireActual('../../../services/authApi'),
+  useGetUserClaimableQuery: () => ({
+    data: mockClaimableData,
+    isLoading: false,
+  }),
+  useGetUserClaimsQuery: () => ({
+    data: mockClaimsData,
+    isLoading: false,
+  }),
 }))
 
 const defaultUiState = {
@@ -20,15 +37,20 @@ const defaultUiState = {
   updateClaimMode: false,
 }
 
+afterEach(() => {
+  mockClaimableData = []
+  mockClaimsData = []
+})
+
 describe('FulfillOrClaimed', () => {
   it('renders both tabs', () => {
-    const sessionData = createMockSessionData()
+    const session = createMockSlimSession()
 
     renderWithProviders(<FulfillOrClaimed />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: sessionData,
+          userInformation: session,
         },
       },
     })
@@ -39,15 +61,14 @@ describe('FulfillOrClaimed', () => {
 
   it('shows Available to Fulfill tab content by default', () => {
     const order = createMockOrder({ name: 'Available Order', quantity: 5, quantity_claimed: 1 })
-    const sessionData = createMockSessionData({
-      claimable_orders: [order],
-    })
+    mockClaimableData = [order]
+    const session = createMockSlimSession()
 
     renderWithProviders(<FulfillOrClaimed />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: sessionData,
+          userInformation: session,
         },
       },
     })
@@ -59,15 +80,14 @@ describe('FulfillOrClaimed', () => {
   })
 
   it('switches to My Claimed Items tab on click', () => {
-    const sessionData = createMockSessionData({
-      claims: [],
-    })
+    mockClaimsData = []
+    const session = createMockSlimSession()
 
     renderWithProviders(<FulfillOrClaimed />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: sessionData,
+          userInformation: session,
         },
       },
     })
@@ -85,16 +105,15 @@ describe('FulfillOrClaimed', () => {
     const claim1 = createMockClaim()
     const claim2 = createMockClaim()
 
-    const sessionData = createMockSessionData({
-      claimable_orders: [order1, order2],
-      claims: [claim1, claim2],
-    })
+    mockClaimableData = [order1, order2]
+    mockClaimsData = [claim1, claim2]
+    const session = createMockSlimSession()
 
     renderWithProviders(<FulfillOrClaimed />, {
       preloadedState: {
         userInterfaceState: {
           ...defaultUiState,
-          userInformation: sessionData,
+          userInformation: session,
         },
       },
     })

@@ -52,13 +52,13 @@ export const userInterfaceSlice = createSlice({
     extraReducers: (builder) => {
         builder
           .addMatcher(
-            authApi.endpoints.getSession.matchFulfilled,
+            authApi.endpoints.getSlimSession.matchFulfilled,
             (state, { payload }) => {
               state.userInformation = payload
             }
           )
           .addMatcher(
-            authApi.endpoints.getSession.matchRejected,
+            authApi.endpoints.getSlimSession.matchRejected,
             (state) => {
                 state.userInformation = null;
               }

@@ -3,7 +3,7 @@ import { screen } from '@testing-library/react'
 import { renderWithProviders } from '../../../test-utils/renderWithProviders'
 import { ProtectedRoute } from '../ProtectedRoute'
 import { Routes, Route } from 'react-router-dom'
-import { createMockSessionData } from '../../../test-utils/mockData'
+import { createMockSlimSession } from '../../../test-utils/mockData'
 
 const TestRoutes = () => (
   <Routes>
@@ -25,7 +25,7 @@ describe('ProtectedRoute', () => {
       preloadedState: {
         userInterfaceState: {
 
-          userInformation: createMockSessionData(),
+          userInformation: createMockSlimSession(),
           leftDrawerOpen: false,
 
           selectedComponent: '',

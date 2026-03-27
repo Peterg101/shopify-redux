@@ -23,11 +23,10 @@ import {
 } from "@mui/icons-material";
 
 import { useState } from "react";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { RootState } from "../../app/store";
 import { Order } from "../../app/utility/interfaces";
 import { useToggleOrderVisibilityMutation } from "../../services/dbApi";
+import { useGetUserOrdersQuery } from "../../services/authApi";
 import { monoFontFamily } from "../../theme";
 
 export const EmptyOrderHistory = () => (
@@ -51,12 +50,9 @@ export const OrderList = ({ orders }: { orders: Order[] }) => (
 );
 
 export const OrderHistory = () => {
-  const userInformation = useSelector(
-    (state: RootState) => state.userInterfaceState.userInformation
-  );
-  const orders = userInformation?.orders;
+  const { data: orders, isLoading } = useGetUserOrdersQuery();
 
-  if (!orders) {
+  if (isLoading || !orders) {
     return (
       <Box sx={{ textAlign: "center", py: 6 }}>
         <Typography variant="body1" color="text.secondary">

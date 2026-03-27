@@ -1,4 +1,4 @@
-import { useLogOutMutation } from "../../services/authApi";
+import { useLogOutMutation, useGetUserBasketQuery, useGetUserOrdersQuery, useGetUserClaimsQuery } from "../../services/authApi";
 import { Box, Button, Typography, Card, CardContent, Grid, Avatar } from "@mui/material";
 import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
@@ -14,6 +14,9 @@ export const ProfilePage = () => {
   );
 
   const [logOut] = useLogOutMutation();
+  const { data: basketItems = [] } = useGetUserBasketQuery();
+  const { data: orders = [] } = useGetUserOrdersQuery();
+  const { data: claims = [] } = useGetUserClaimsQuery();
 
   const handleLogOut = () => {
     logOut();
@@ -22,17 +25,17 @@ export const ProfilePage = () => {
   const stats = [
     {
       label: "Basket Items",
-      value: userInfo?.basket_items?.length ?? 0,
+      value: basketItems.length,
       icon: <ShoppingBasketIcon />,
     },
     {
       label: "Orders",
-      value: userInfo?.orders?.length ?? 0,
+      value: orders.length,
       icon: <LocalShippingIcon />,
     },
     {
       label: "Active Claims",
-      value: userInfo?.claims?.length ?? 0,
+      value: claims.length,
       icon: <AssignmentIcon />,
     },
   ];
