@@ -102,7 +102,7 @@ class TestAuthGoogleCallback:
 
     @patch("main.create_session", new_callable=AsyncMock)
     @patch("main.create_user", new_callable=AsyncMock)
-    @patch("main.check_user_exists", new_callable=AsyncMock)
+    @patch("main.check_only_user_exists", new_callable=AsyncMock)
     @patch("main.id_token")
     @patch("main.httpx.AsyncClient")
     def test_callback_new_user(
@@ -149,7 +149,7 @@ class TestAuthGoogleCallback:
         mock_create_session.assert_called_once()
 
     @patch("main.create_session", new_callable=AsyncMock)
-    @patch("main.check_user_exists", new_callable=AsyncMock)
+    @patch("main.check_only_user_exists", new_callable=AsyncMock)
     @patch("main.id_token")
     @patch("main.httpx.AsyncClient")
     def test_callback_existing_user(
@@ -478,68 +478,8 @@ class TestEmailLogin:
         assert resp.status_code == 422
 
 
-# ===================================================================
-# GET /get_session (protected)
-# ===================================================================
 
-class TestGetSession:
-    """Tests for the /get_session protected endpoint."""
-
-    @patch("main.check_user_exists", new_callable=AsyncMock)
-    @patch("main.cookie_verification", new_callable=AsyncMock)
-    def test_get_session_success(self, mock_cookie, mock_check_user, test_client):
-        """With a valid session, returns full user info from db_service."""
-        mock_cookie.return_value = (MOCK_SESSION_DATA, MOCK_SESSION_ID)
-        mock_check_user.return_value = MOCK_USER_RESPONSE
-
-        resp = test_client.get(
-            "/get_session",
-            cookies=_authenticated_cookies(),
-        )
-
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["user_id"] == MOCK_USER_ID
-        assert data["email"] == MOCK_EMAIL
-
-    @patch("main.check_user_exists", new_callable=AsyncMock)
-    @patch("main.cookie_verification", new_callable=AsyncMock)
-    def test_get_session_user_not_in_db(self, mock_cookie, mock_check_user, test_client):
-        """Valid session but user deleted from DB returns the None from check_user_exists."""
-        mock_cookie.return_value = (MOCK_SESSION_DATA, MOCK_SESSION_ID)
-        mock_check_user.return_value = None
-
-        resp = test_client.get(
-            "/get_session",
-            cookies=_authenticated_cookies(),
-        )
-
-        # The endpoint returns whatever check_user_exists returns (null)
-        assert resp.status_code == 200
-        assert resp.json() is None
-
-    @patch("main.cookie_verification", new_callable=AsyncMock)
-    def test_get_session_no_cookie(self, mock_cookie, test_client):
-        """Without a session cookie, cookie_verification raises 401."""
-        from fastapi import HTTPException
-        mock_cookie.side_effect = HTTPException(status_code=401, detail="Not authenticated")
-
-        resp = test_client.get("/get_session")
-
-        assert resp.status_code == 401
-
-    @patch("main.cookie_verification", new_callable=AsyncMock)
-    def test_get_session_invalid_session(self, mock_cookie, test_client):
-        """With an expired/invalid session ID, cookie_verification raises 401."""
-        from fastapi import HTTPException
-        mock_cookie.side_effect = HTTPException(status_code=401, detail="No Session Found")
-
-        resp = test_client.get(
-            "/get_session",
-            cookies={"fitd_session_data": "expired-session"},
-        )
-
-        assert resp.status_code == 401
+# GET /get_session removed — replaced by GET /session (slim session endpoint)
 
 
 # ===================================================================

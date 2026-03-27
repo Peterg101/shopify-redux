@@ -11,7 +11,7 @@ AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:2468")
 
 async def session_exists(session_id: str) -> bool:
     cookies = {"fitd_session_data": session_id}
-    url = f"{AUTH_SERVICE_URL}/get_session"
+    url = f"{AUTH_SERVICE_URL}/session"
 
     async with httpx.AsyncClient() as client:
         try:

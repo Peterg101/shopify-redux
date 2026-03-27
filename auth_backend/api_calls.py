@@ -9,23 +9,6 @@ logger = logging.getLogger(__name__)
 DB_SERVICE_URL = os.getenv("DB_SERVICE_URL", "http://localhost:8000")
 
 
-async def check_user_exists(user_id: str | None):
-    url = f"{DB_SERVICE_URL}/users/{user_id}"
-    auth_token = generate_token("auth_backend")
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {auth_token}",  # Add the auth token here
-    }
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url, headers=headers)
-
-        if response.status_code == 200:
-            # If the user was successfully found, return the response data
-            return response.json()
-        else:
-            # Handle any errors
-            logger.error(f"Error: {response.status_code} - {response.text}")
-            return None
 
 async def check_only_user_exists(user_id: str | None):
     url = f"{DB_SERVICE_URL}/only_user/{user_id}"

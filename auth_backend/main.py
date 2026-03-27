@@ -18,7 +18,7 @@ import bcrypt
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from utils import create_session, delete_session, cookie_verification
-from api_calls import check_user_exists, create_user, check_only_user_exists, register_email_user, get_user_by_email, verify_user_password, get_user_session, get_user_basket, get_user_orders, get_user_claims, get_user_claimable, get_user_tasks
+from api_calls import create_user, check_only_user_exists, register_email_user, get_user_by_email, verify_user_password, get_user_session, get_user_basket, get_user_orders, get_user_claims, get_user_claimable, get_user_tasks
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -117,7 +117,7 @@ async def auth_callback(code: str, request: Request):
         user_information.username = id_info["name"]
 
         # # Step 3: Check if the user exists in the database
-        user_exists = await check_user_exists(user_information.user_id)
+        user_exists = await check_only_user_exists(user_information.user_id)
         if not user_exists:
             await create_user(user_information)
 
@@ -229,18 +229,6 @@ async def logout(request: Request):
             status_code=401, detail="Invalid token or token verification failed"
         )
 
-
-@app.get("/get_session")
-async def protected_endpoint(request: Request):
-    session_data, _ = await cookie_verification(request, redis_session)
-
-    try:
-        user_info = await check_user_exists(session_data.user_id)
-        return user_info
-    except ValueError:
-        raise HTTPException(
-            status_code=401, detail="Invalid token or token verification failed"
-        )
 
 
 @app.get("/get_just_user_details")

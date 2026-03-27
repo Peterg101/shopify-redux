@@ -16,7 +16,7 @@ async def session_exists(session_id: str) -> bool:
     cookies = {"fitd_session_data": session_id}
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.get(f"{AUTH_SERVICE_URL}/get_session", cookies=cookies)
+            response = await client.get(f"{AUTH_SERVICE_URL}/session", cookies=cookies)
             return response.status_code == 200
         except httpx.HTTPError as e:
             logger.error(f"HTTP error checking session: {e}")
