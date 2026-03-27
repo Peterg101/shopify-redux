@@ -27,7 +27,7 @@ export const FulfillOrClaimed = () => {
       <Tabs
         value={tabIndex}
         onChange={handleChange}
-        centered
+        variant="fullWidth"
         sx={{
           position: "sticky",
           top: 0,
