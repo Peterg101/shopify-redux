@@ -10,7 +10,9 @@ import { setLeftDrawerClosed, setLeftDrawerOpen, setSelectedComponent } from "..
 import { SidebarItem } from "../../app/utility/interfaces";
 import { ProfilePage } from "../userInterface/profilePage";
 import { ClaimedOrdersPanel } from "./ClaimedOrdersPanel";
+import { FulfillerSettingsPanel } from "./FulfillerSettingsPanel";
 import CategoryIcon from '@mui/icons-material/Category';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 export const FulfillUserInterface = () => {
   const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
@@ -44,6 +46,10 @@ export const FulfillUserInterface = () => {
       text: "Claimed Orders",
       icon: <CategoryIcon />,
     },
+    {
+      text: "Settings",
+      icon: <SettingsIcon />,
+    },
   ];
 
   const renderResultsOptionsComponent = () => {
@@ -52,6 +58,8 @@ export const FulfillUserInterface = () => {
         return <ProfilePage />;
       case "Claimed Orders":
         return <ClaimedOrdersPanel />;
+      case "Settings":
+        return <FulfillerSettingsPanel />;
       default:
         return null;
     }
