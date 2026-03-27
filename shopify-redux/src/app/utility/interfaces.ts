@@ -438,18 +438,6 @@ export interface PartOrderConfig {
   surface_finish?: string;
 }
 
-export interface UserAndTasksAndBasketAndIncompleteAndOrders{
-  user: UserInformation
-  tasks: TaskInformation[]
-  basket_items: BasketInformation[],
-  incomplete_task: TaskInformationAndPortId,
-  orders: Order[]
-  claimable_orders: Order[]
-  claims: Claim[]
-  stripe_onboarded?: boolean
-  fulfiller_profile?: FulfillerProfile | null
-}
-
 export interface SlimSession {
   user: UserInformation;
   stripe_onboarded: boolean;

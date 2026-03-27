@@ -9,7 +9,7 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
-const selectSessionQuery = authApi.endpoints.getSession.select();
+const selectSessionQuery = authApi.endpoints.getSlimSession.select();
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const isLoggedIn = useSelector(selectIsLoggedIn);

@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw'
-import { createMockSessionData, createMockSlimSession, createMockDispute, createMockOrderDetail, createMockClaimDetail } from './mockData'
+import { createMockSlimSession, createMockDispute, createMockOrderDetail, createMockClaimDetail } from './mockData'
 
 const AUTH_BASE = process.env.REACT_APP_AUTH_SERVICE || 'http://localhost:8000'
 const DB_BASE = process.env.REACT_APP_DB_SERVICE || 'http://localhost:8001'
@@ -7,12 +7,6 @@ const MESHY_BASE = process.env.REACT_APP_MESHY_SERVICE || 'http://localhost:8002
 const STRIPE_BASE = process.env.REACT_APP_STRIPE_SERVICE || 'http://localhost:100'
 
 export const handlers = [
-  // Auth — legacy
-  http.get(`${AUTH_BASE}/get_session`, () => {
-    return HttpResponse.json(createMockSessionData())
-  }),
-
-  // Auth — new granular endpoints
   http.get(`${AUTH_BASE}/session`, () => {
     return HttpResponse.json(createMockSlimSession())
   }),

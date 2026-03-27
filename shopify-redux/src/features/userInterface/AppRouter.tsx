@@ -13,7 +13,7 @@ import { NotFoundPage } from "../shared/NotFoundPage";
 import { authApi } from "../../services/authApi";
 import { CircularProgress, Box } from "@mui/material";
 
-const selectSessionQuery = authApi.endpoints.getSession.select();
+const selectSessionQuery = authApi.endpoints.getSlimSession.select();
 
 function RootRedirect() {
   const isLoggedIn = useSelector(selectIsLoggedIn);

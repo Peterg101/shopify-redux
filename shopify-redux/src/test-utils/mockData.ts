@@ -4,7 +4,6 @@ import {
   BasketInformation,
   BasketItem,
   UserInformation,
-  UserAndTasksAndBasketAndIncompleteAndOrders,
   SlimSession,
   UUIDType,
   ClaimEvidence,
@@ -186,17 +185,3 @@ export function createMockSlimSession(
   }
 }
 
-export function createMockSessionData(
-  overrides: Partial<UserAndTasksAndBasketAndIncompleteAndOrders> = {}
-): UserAndTasksAndBasketAndIncompleteAndOrders {
-  return {
-    user: createMockUserInformation(),
-    tasks: [],
-    basket_items: [],
-    incomplete_task: null as any,
-    orders: [],
-    claimable_orders: [],
-    claims: [],
-    ...overrides,
-  }
-}

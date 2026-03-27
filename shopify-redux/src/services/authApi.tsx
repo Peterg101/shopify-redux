@@ -1,6 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { createBaseQueryWithReauth } from './baseQueryWithReauth';
-import { UserAndTasksAndBasketAndIncompleteAndOrders, SlimSession, BasketInformation, Order, Claim, TaskInformation } from '../app/utility/interfaces';
+import { SlimSession, BasketInformation, Order, Claim, TaskInformation } from '../app/utility/interfaces';
 
 
 export const authApi = createApi({
@@ -10,16 +10,6 @@ export const authApi = createApi({
   refetchOnReconnect: true,
   tagTypes: ['sessionData', 'BasketItems', 'UserOrders', 'UserClaims', 'UserTasks', 'ClaimableOrders'],
   endpoints: (builder) => ({
-    // Legacy endpoint — kept for backward compatibility during migration
-    getSession: builder.query<UserAndTasksAndBasketAndIncompleteAndOrders, void>({
-      query: () => ({
-        url: '/get_session',
-        method: 'GET',
-
-      }),
-      providesTags: ['sessionData', 'BasketItems', 'UserOrders', 'UserClaims', 'UserTasks'],
-    }),
-    // New granular endpoints
     getSlimSession: builder.query<SlimSession, void>({
       query: () => ({ url: '/session', method: 'GET' }),
       providesTags: ['sessionData'],
@@ -69,9 +59,7 @@ export const authApi = createApi({
   }),
 });
 
-// Export hooks for the queries
 export const {
-  useGetSessionQuery,
   useGetSlimSessionQuery,
   useGetUserBasketQuery,
   useGetUserOrdersQuery,

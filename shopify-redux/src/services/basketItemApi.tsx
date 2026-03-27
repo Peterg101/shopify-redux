@@ -17,10 +17,10 @@ export const basketApi = createApi({
         },
       }),
       async onQueryStarted({ task_id, quantity }, { dispatch, queryFulfilled }) {
+        // Optimistically update the basket item quantity in the RTK Query cache
         const patchResult = dispatch(
-          authApi.util.updateQueryData('getSession', undefined, (draft: any) => {
-            // Optimistically update the basket item's quantity in the session data
-            const item = draft.userInformation?.basket_items.find((i: any) => i.task_id === task_id);
+          authApi.util.updateQueryData('getUserBasket', undefined, (draft: any) => {
+            const item = draft?.find((i: any) => i.task_id === task_id);
             if (item) {
               item.quantity = quantity;
             }
@@ -28,11 +28,10 @@ export const basketApi = createApi({
         );
 
         try {
-          await queryFulfilled;  // Wait for the API mutation to complete
-          // Invalidate the session cache to trigger a refetch of the latest data
+          await queryFulfilled;
           dispatch(authApi.util.invalidateTags(['BasketItems']));
         } catch {
-          patchResult.undo();  // Rollback if the mutation fails
+          patchResult.undo();
         }
       },
     }),
