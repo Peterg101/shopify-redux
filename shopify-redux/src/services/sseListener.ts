@@ -4,7 +4,8 @@ import type { AppDispatch } from '../app/store'
 const EVENT_TO_TAGS: Record<string, string[]> = {
   'basket:updated': ['BasketItems'],
   'order:created': ['ClaimableOrders', 'UserOrders'],
-  'claim:status_changed': ['UserClaims'],
+  'order:claimed': ['UserOrders'],
+  'claim:status_changed': ['UserClaims', 'UserOrders'],
   'stripe:onboarded': ['sessionData'],
   'task:completed': ['UserTasks', 'sessionData'],
   'profile:updated': ['sessionData'],

@@ -1085,9 +1085,11 @@ def claim_order(
                     )
 
         add_claim_to_db(db, claimed_order, user_information)
-        cache_invalidate(redis_client, f"fitd:claims:{user_information.user_id}")
+        cache_invalidate(redis_client, f"fitd:claims:{user_information.user_id}", f"fitd:orders:{order.user_id}")
         cache_invalidate_pattern(redis_client, "fitd:claimable:*")
         publish_event(redis_client, "claim:status_changed", user_id=user_information.user_id)
+        if order.user_id != user_information.user_id:
+            publish_event(redis_client, "order:claimed", user_id=order.user_id)
 
     except HTTPException:
         raise
@@ -1300,6 +1302,8 @@ def update_claim_status(
 
     cache_invalidate(redis_client, f"fitd:claims:{claim.claimant_user_id}", f"fitd:orders:{order.user_id}")
     publish_event(redis_client, "claim:status_changed", user_id=claim.claimant_user_id)
+    if order.user_id != claim.claimant_user_id:
+        publish_event(redis_client, "claim:status_changed", user_id=order.user_id)
     return {"message": "Claim status updated", "claim_id": claim_id, "new_status": status_update.status}
 
 
