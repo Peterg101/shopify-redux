@@ -266,7 +266,15 @@ export const FulfillerCapabilityForm = ({
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      <Stepper activeStep={activeStep} alternativeLabel>
+      <Stepper
+        activeStep={activeStep}
+        alternativeLabel
+        sx={{
+          "& .MuiStepLabel-label": { fontSize: "0.65rem", mt: 0.5 },
+          "& .MuiStepConnector-root": { top: 12 },
+          "& .MuiStep-root": { px: 0.5 },
+        }}
+      >
         {STEPS.map((label) => (
           <Step key={label}>
             <StepLabel>{label}</StepLabel>
