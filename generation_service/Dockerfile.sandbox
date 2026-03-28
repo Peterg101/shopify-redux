@@ -1,0 +1,16 @@
+# Minimal sandbox image for executing LLM-generated CadQuery code.
+# Contains ONLY CadQuery + Python stdlib -- no network libs, no secrets,
+# no fitd_schemas, no httpx/redis/anthropic/openai.
+# Force x86_64 -- cadquery-ocp has no arm64 wheels on PyPI
+FROM --platform=linux/amd64 python:3.11-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgl1 libglib2.0-0 \
+    libxrender1 libxmu6 libxi6 libxext6 libx11-6 libxft2 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir cadquery
+
+RUN useradd --create-home --shell /bin/false sandbox
+USER sandbox
+WORKDIR /home/sandbox

@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+redis[async]
+httpx
+httpx-sse
+python-dotenv
+aiohttp
+anthropic
+openai
+docker>=7.0.0
+sqlalchemy
+pydantic==1.10.8

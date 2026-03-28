@@ -68,21 +68,30 @@ services:
       redis:
         condition: service_started
 
-  meshy_backend:
+  generation_service:
     build:
       context: .
-      dockerfile: Dockerfile.python
-      args: { SERVICE_DIR: meshy_backend }
+      dockerfile: generation_service/Dockerfile
     ports: ["1234:1234"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/cad_work:/tmp/cad_work
     environment:
       HOST: "0.0.0.0"
       REDIS_HOST: redis
       DB_SERVICE_URL: http://db_service:8000
       AUTH_SERVICE_URL: http://db_service:8000
+      STEP_SERVICE_URL: http://step_service:1235
       MESHY_API_KEY: ${MESHY_API_KEY}
+      CAD_PROVIDER: ${CAD_PROVIDER:-ollama}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5-coder:7b}
+      OLLAMA_URL: http://ollama:11434/v1
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       FRONTEND_URL: http://localhost:3000
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-    depends_on: [redis, db_service]
+      CAD_SANDBOX_IMAGE: fitd-cad-sandbox:latest
+      CAD_WORK_DIR: /tmp/cad_work
+    depends_on: [redis, ollama, db_service, step_service, cad_sandbox]
 
   step_service:
     platform: linux/amd64
@@ -105,34 +114,10 @@ services:
     platform: linux/amd64
     build:
       context: .
-      dockerfile: cad_service/Dockerfile.sandbox
+      dockerfile: generation_service/Dockerfile.sandbox
     image: fitd-cad-sandbox:latest
     entrypoint: ["true"]
     restart: "no"
-
-  cad_service:
-    build:
-      context: .
-      dockerfile: cad_service/Dockerfile
-    ports: ["1236:1236"]
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /tmp/cad_work:/tmp/cad_work
-    environment:
-      HOST: "0.0.0.0"
-      REDIS_HOST: redis
-      CAD_PROVIDER: ${CAD_PROVIDER:-ollama}
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5-coder:7b}
-      OLLAMA_URL: http://ollama:11434/v1
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      DB_SERVICE_URL: http://db_service:8000
-      AUTH_SERVICE_URL: http://db_service:8000
-      STEP_SERVICE_URL: http://step_service:1235
-      FRONTEND_URL: http://localhost:3000
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      CAD_SANDBOX_IMAGE: fitd-cad-sandbox:latest
-      CAD_WORK_DIR: /tmp/cad_work
-    depends_on: [redis, ollama, db_service, step_service, cad_sandbox]
 
   # ── Frontend ────────────────────────────────────────────────────
 
@@ -146,8 +131,8 @@ services:
         REACT_APP_MESHY_SERVICE: http://localhost:1234
         REACT_APP_MESHY_WEBSOCKET: ws://localhost:1234
         REACT_APP_STRIPE_SERVICE: http://localhost:8000
-        REACT_APP_CAD_SERVICE: http://localhost:1236
-        REACT_APP_CAD_WEBSOCKET: ws://localhost:1236
+        REACT_APP_CAD_SERVICE: http://localhost:1234
+        REACT_APP_CAD_WEBSOCKET: ws://localhost:1234
         REACT_APP_STEP_SERVICE: http://localhost:1235
     ports: ["3000:3000"]
     depends_on: [db_service]
