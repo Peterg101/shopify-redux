@@ -18,11 +18,12 @@ load_dotenv()
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, Depends, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 
 from jwt_auth import verify_jwt_token
 from step_processor import validate_step_file, extract_metadata, tessellate_to_glb, generate_thumbnail
-from s3_utils import upload_file, generate_presigned_url, ensure_bucket_exists, find_preview_key_by_task_id
+from s3_utils import upload_file, generate_presigned_url, ensure_bucket_exists, find_preview_key_by_task_id, find_thumbnail_key_by_task_id
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -37,7 +38,7 @@ WORK_DIR = Path(tempfile.mkdtemp(prefix="step_service_"))
 app = FastAPI(title="STEP File Processing Service")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL, "http://localhost:3000"],
+    allow_origins=[FRONTEND_URL, "http://localhost:3000", "http://localhost:8000"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],
@@ -262,6 +263,79 @@ def get_download_url(job_id: str):
         return {"url": url, "filename": job.original_filename}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate URL: {e}")
+
+
+@app.get("/thumbnail/{task_id}")
+async def get_thumbnail(task_id: str):
+    """Get a thumbnail image for a task by redirecting to the presigned S3 URL."""
+    # Check in-memory jobs first
+    job = next((j for j in jobs.values() if j.task_id == task_id), None)
+    if job and job.s3_key_thumbnail:
+        s3_key = job.s3_key_thumbnail
+    else:
+        # Fallback: search S3 directly (survives service restarts)
+        s3_key = find_thumbnail_key_by_task_id(task_id)
+        if not s3_key:
+            raise HTTPException(status_code=404, detail="Thumbnail not found")
+
+    try:
+        url = generate_presigned_url(s3_key)
+        return RedirectResponse(url=url)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate thumbnail URL: {e}")
+
+
+@app.post("/thumbnail/generate")
+async def generate_thumbnail_endpoint(
+    file: UploadFile = File(...),
+    user_id: str = Form(...),
+    task_id: str = Form(...),
+    authorization: str = Depends(verify_jwt_token),
+):
+    """Upload a 3D file, generate a thumbnail, store in S3, and return the URL."""
+    filename = file.filename or "unknown.stl"
+    ext = Path(filename).suffix.lower().strip(".")
+
+    supported_types = {"step", "stp", "obj", "stl", "glb"}
+    if ext not in supported_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type '.{ext}'. Supported: {', '.join(sorted(supported_types))}",
+        )
+
+    # Read file content
+    content = await file.read()
+    if len(content) > MAX_FILE_SIZE_BYTES:
+        raise HTTPException(status_code=413, detail=f"File exceeds {MAX_FILE_SIZE_MB}MB limit")
+
+    # Save to temp dir
+    job_dir = WORK_DIR / f"thumb_{uuid.uuid4().hex}"
+    job_dir.mkdir(parents=True, exist_ok=True)
+
+    try:
+        local_path = str(job_dir / f"input.{ext}")
+        with open(local_path, "wb") as f:
+            f.write(content)
+
+        thumbnail_path = str(job_dir / "thumbnail.png")
+        file_type = "step" if ext in ("step", "stp") else ext
+
+        success = await asyncio.to_thread(
+            generate_thumbnail, local_path, thumbnail_path, 512, 512, file_type
+        )
+
+        if not success:
+            raise HTTPException(status_code=500, detail="Thumbnail generation failed")
+
+        # Upload to S3
+        s3_key = f"files/{user_id}/{task_id}/thumbnail.png"
+        upload_file(thumbnail_path, s3_key, content_type="image/png")
+        url = generate_presigned_url(s3_key)
+
+        return {"thumbnail_url": url, "s3_key": s3_key}
+
+    finally:
+        shutil.rmtree(job_dir, ignore_errors=True)
 
 
 @app.get("/health")

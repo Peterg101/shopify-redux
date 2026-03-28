@@ -8,7 +8,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 \
     libglib2.0-0 \
     libxrender1 libxmu6 libxi6 libxext6 libx11-6 libxft2 \
+    libosmesa6-dev \
     && rm -rf /var/lib/apt/lists/*
+
+ENV PYOPENGL_PLATFORM=osmesa
 
 COPY step_service/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

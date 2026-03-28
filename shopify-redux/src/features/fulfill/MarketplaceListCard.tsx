@@ -22,7 +22,7 @@ import { setClaimedOrder, setFulfillMode } from '../../services/userInterfaceSli
 import { resetDataState } from '../../services/dataSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
 import OBJSTLViewer from '../display/objStlViewer'
-import ModelThumbnail from '../display/ModelThumbnail'
+import { ThumbnailImage } from '../display/ThumbnailImage'
 import { monoFontFamily } from '../../theme'
 import { getScarcityColor } from '../../app/utility/fulfillUtils'
 
@@ -106,13 +106,8 @@ export const MarketplaceListCard = React.memo(({ order }: MarketplaceListCardPro
               alt={order.name}
               sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
-          ) : is3D && order.task_id ? (
-            <ModelThumbnail
-              taskId={order.task_id}
-              fileType={order.selectedFileType}
-              colour={order.colour}
-              name={order.name}
-            />
+          ) : order.task_id ? (
+            <ThumbnailImage taskId={order.task_id} alt={order.name} />
           ) : (
             <ViewInArIcon sx={{ fontSize: 40, color: 'text.secondary', opacity: 0.4 }} />
           )}

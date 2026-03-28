@@ -91,6 +91,25 @@ def find_preview_key_by_task_id(task_id: str) -> str | None:
     return None
 
 
+def find_thumbnail_key_by_task_id(task_id: str) -> str | None:
+    """Search S3 for a thumbnail.png matching the given task_id.
+
+    S3 keys follow the pattern: files/{user_id}/{task_id}/thumbnail.png
+    Uses a paginator to handle >1000 objects and a targeted suffix match.
+    """
+    client = get_s3_client()
+    try:
+        paginator = client.get_paginator("list_objects_v2")
+        for page in paginator.paginate(Bucket=BUCKET_NAME, Prefix="files/"):
+            for obj in page.get("Contents", []):
+                key = obj["Key"]
+                if key.endswith(f"/{task_id}/thumbnail.png"):
+                    return key
+    except Exception:
+        pass
+    return None
+
+
 def ensure_bucket_exists():
     """Create the S3 bucket if it doesn't exist (useful for MinIO local dev)."""
     client = get_s3_client()
