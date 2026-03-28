@@ -75,7 +75,7 @@ const startMockGeneration = async (name: string, type: 'meshy' | 'cad', userId: 
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, type, user_id: userId }),
+    body: JSON.stringify({ name, type, user_id: userId, port_id: portId }),
   });
   if (!response.ok) throw new Error(`Mock generation failed: ${response.statusText}`);
   return response.json();

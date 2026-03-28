@@ -154,7 +154,7 @@ if os.getenv("MOCK_GENERATION", "false").lower() == "true":
         task_type = body.get("type", "meshy")
         task_name = body.get("name", f"mock-{task_type}-{uuid.uuid4().hex[:6]}")
         user_id = body.get("user_id", "mock-user")
-        port_id = str(uuid.uuid4())
+        port_id = body.get("port_id", str(uuid.uuid4()))
 
         background_tasks.add_task(_mock_generation, redis, port_id, task_name, task_type, user_id)
 
