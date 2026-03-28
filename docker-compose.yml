@@ -89,6 +89,7 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       FRONTEND_URL: http://localhost:3000
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      MOCK_GENERATION: ${MOCK_GENERATION:-false}
       CAD_SANDBOX_IMAGE: fitd-cad-sandbox:latest
       CAD_WORK_DIR: /tmp/cad_work
     depends_on: [redis, ollama, api_service, media_service, cad_sandbox]

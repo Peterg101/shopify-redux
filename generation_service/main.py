@@ -94,5 +94,78 @@ async def health():
     return {"status": "ok", "service": "generation_service"}
 
 
+# ── Dev Mock Endpoints ───────────────────────────────────────────────
+# Simulate generation tasks without external APIs (Meshy, Ollama, Claude).
+# Enable with MOCK_GENERATION=true in environment.
+
+if os.getenv("MOCK_GENERATION", "false").lower() == "true":
+    import asyncio
+    import uuid
+    from fastapi import BackgroundTasks, Depends
+    from shared import get_redis, publish, register_task, mark_task_complete, cookie_verification
+
+    async def _mock_generation(redis, port_id: str, task_name: str, task_type: str, user_id: str):
+        """Simulate a 15-second generation task with progress updates."""
+        # Register task in DB
+        task_id = await register_task(user_id, task_name, port_id, file_type="glb" if task_type == "cad" else "obj")
+
+        stages = [
+            (5, "initializing"),
+            (15, "processing geometry"),
+            (30, "generating mesh"),
+            (50, "refining details"),
+            (70, "applying textures"),
+            (85, "finalizing"),
+            (95, "uploading"),
+        ]
+
+        for pct, status in stages:
+            await asyncio.sleep(1.5)
+            if task_type == "cad":
+                await publish(redis, port_id, f"{pct},{status},{task_name}")
+            else:
+                await publish(redis, port_id, f"{pct},{task_id or 'mock'},{task_name}")
+
+        # Simulate completion
+        await asyncio.sleep(1.0)
+        if task_id:
+            await mark_task_complete(task_id)
+
+        if task_type == "cad":
+            await publish(redis, port_id, f"Task Completed,{task_id or 'mock'},{task_name},mock-job-001")
+        else:
+            await publish(redis, port_id, f"Task Completed,{task_id or 'mock'},{task_name}")
+
+        logger.info(f"Mock {task_type} generation complete: {task_name} ({port_id})")
+
+    @app.post("/mock/generate")
+    async def mock_generate(
+        background_tasks: BackgroundTasks,
+        request: Request,
+        redis=Depends(get_redis),
+        _=Depends(cookie_verification),
+    ):
+        """Start a mock generation task. Returns port_id for SSE progress tracking.
+
+        Usage: POST /mock/generate?type=meshy&name=my-model
+        Then connect to GET /progress/{port_id} for SSE progress stream.
+        """
+        body = await request.json() if request.headers.get("content-type") == "application/json" else {}
+        task_type = body.get("type", "meshy")
+        task_name = body.get("name", f"mock-{task_type}-{uuid.uuid4().hex[:6]}")
+        user_id = body.get("user_id", "mock-user")
+        port_id = str(uuid.uuid4())
+
+        background_tasks.add_task(_mock_generation, redis, port_id, task_name, task_type, user_id)
+
+        return {
+            "message": f"Mock {task_type} generation started",
+            "port_id": port_id,
+            "task_name": task_name,
+        }
+
+    logger.info("Mock generation endpoints enabled (MOCK_GENERATION=true)")
+
+
 if __name__ == "__main__":
     uvicorn.run(app, host=os.getenv("HOST", "127.0.0.1"), port=1234)
