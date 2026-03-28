@@ -195,7 +195,7 @@ async def http_session_exists(session_id: str):
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.get(
-                f"{AUTH_SERVICE_URL}/get_session",
+                f"{AUTH_SERVICE_URL}/session",
                 cookies={"fitd_session_data": session_id},
             )
             if resp.status_code == 200:

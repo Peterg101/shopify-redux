@@ -151,15 +151,16 @@ async def get_obj_file_blob(url: str) -> BytesIO:
 
 
 async def websocket_session_exists(session_id: str):
-    url = f"{AUTH_SERVICE_URL}/get_session"
+    url = f"{AUTH_SERVICE_URL}/session"
     cookies = {"fitd_session_data": session_id}
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(url, cookies=cookies)
             if response.status_code != 200:
                 return False, None
-            user_information = json.loads(response.text)
-            user_response = UserAndTasks(**user_information)
+            session_data = json.loads(response.text)
+            # Build a UserAndTasks from the slim session (tasks not needed for WebSocket auth)
+            user_response = UserAndTasks(user=session_data["user"], tasks=[])
         return True, user_response
     except Exception:
         return False, None
@@ -167,7 +168,7 @@ async def websocket_session_exists(session_id: str):
 
 async def http_session_exists(session_id: str) -> bool:
     cookies = {"fitd_session_data": session_id}
-    url = f"{AUTH_SERVICE_URL}/get_session"
+    url = f"{AUTH_SERVICE_URL}/session"
 
     async with httpx.AsyncClient() as client:
         try:
