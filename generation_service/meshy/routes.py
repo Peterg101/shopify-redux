@@ -10,8 +10,8 @@ from fitd_schemas.fitd_classes import (
 )
 from shared import get_redis, cookie_verification
 from meshy.handlers import (
-    generate_task_and_check_for_response_decoupled_ws,
-    generate_image_to_3d_task_and_check_for_response_decoupled_ws,
+    generate_text_to_3d_and_stream,
+    generate_image_to_3d_and_stream,
     generate_refine_task_and_stream,
 )
 
@@ -28,7 +28,7 @@ async def start_task(
     _: None = Depends(cookie_verification),
 ):
     background_tasks.add_task(
-        generate_task_and_check_for_response_decoupled_ws, request, redis
+        generate_text_to_3d_and_stream, request, redis
     )
     return {"message": "Task started!", "task_id": request.port_id}
 
@@ -41,7 +41,7 @@ async def start_image_to_3d_task(
     _: None = Depends(cookie_verification),
 ):
     background_tasks.add_task(
-        generate_image_to_3d_task_and_check_for_response_decoupled_ws, request, redis
+        generate_image_to_3d_and_stream, request, redis
     )
     logger.info("background task successfully added")
     return {"message": "Task started!", "task_id": request.port_id}

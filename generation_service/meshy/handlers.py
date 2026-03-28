@@ -17,6 +17,7 @@ from fitd_schemas.fitd_classes import (
     RefineTaskRequest,
 )
 from jwt_auth import generate_token
+from shared import publish
 from meshy.api import (
     generate_text_to_3d_task,
     get_image_to_3d_task_status,
@@ -34,13 +35,13 @@ logger = logging.getLogger(__name__)
 DB_SERVICE_URL = os.getenv("DB_SERVICE_URL", "http://localhost:8000")
 
 
-async def generate_task_and_check_for_response_decoupled_ws(
+async def generate_text_to_3d_and_stream(
     request: TaskRequest, redis: AsyncRedis
 ) -> Union[MeshyTaskStatusResponse, None]:
     try:
         generated_task = await generate_text_to_3d_task(request.meshy_payload)
         if not generated_task:
-            await redis.publish(f"task_progress:{request.port_id}", "Task Failed,,")
+            await publish(redis, request.port_id, "Task Failed,,")
             return None
 
         task_id = generated_task.result
@@ -48,8 +49,7 @@ async def generate_task_and_check_for_response_decoupled_ws(
 
         async for event in stream_text_to_3d_progress(task_id):
             if event.get("_error"):
-                await redis.publish(
-                    f"task_progress:{request.port_id}",
+                await publish(redis, request.port_id,
                     f"Task Failed,{task_id},{request.meshy_payload.prompt}",
                 )
                 return None
@@ -64,8 +64,7 @@ async def generate_task_and_check_for_response_decoupled_ws(
                 )
                 task_posted = True
 
-            await redis.publish(
-                f"task_progress:{request.port_id}",
+            await publish(redis, request.port_id,
                 f"{progress},{task_id},{request.meshy_payload.prompt}",
             )
 
@@ -74,30 +73,27 @@ async def generate_task_and_check_for_response_decoupled_ws(
                 complete = await add_file_response(response)
                 if isinstance(complete, MeshyTaskStatusResponse):
                     await send_file_to_storage(complete)
-                await redis.publish(
-                    f"task_progress:{request.port_id}",
+                await publish(redis, request.port_id,
                     f"Task Completed,{task_id},{request.meshy_payload.prompt}",
                 )
                 return response
 
             elif status == "FAILED":
                 logger.error(f"Meshy task failed: {task_id}")
-                await redis.publish(
-                    f"task_progress:{request.port_id}",
+                await publish(redis, request.port_id,
                     f"Task Failed,{task_id},{request.meshy_payload.prompt}",
                 )
                 return None
 
     except Exception:
         logger.exception(f"SSE error for task {request.port_id}")
-        await redis.publish(
-            f"task_progress:{request.port_id}",
+        await publish(redis, request.port_id,
             "Task Failed,,An error occurred during processing",
         )
         return None
 
 
-async def generate_image_to_3d_task_and_check_for_response_decoupled_ws(
+async def generate_image_to_3d_and_stream(
     request: ImageTo3DTaskRequest, redis: AsyncRedis
 ) -> Union[ImageTo3DMeshyTaskStatusResponse, None]:
     try:
@@ -105,8 +101,7 @@ async def generate_image_to_3d_task_and_check_for_response_decoupled_ws(
             request.meshy_image_to_3d_payload
         )
         if not generated_task:
-            await redis.publish(
-                f"task_progress:{request.port_id}", "Task Failed,,"
+            await publish(redis, request.port_id, "Task Failed,,"
             )
             return None
 
@@ -115,8 +110,7 @@ async def generate_image_to_3d_task_and_check_for_response_decoupled_ws(
 
         async for event in stream_image_to_3d_progress(task_id):
             if event.get("_error"):
-                await redis.publish(
-                    f"task_progress:{request.port_id}",
+                await publish(redis, request.port_id,
                     f"Task Failed,{task_id},{request.filename}",
                 )
                 return None
@@ -134,8 +128,7 @@ async def generate_image_to_3d_task_and_check_for_response_decoupled_ws(
                 )
                 task_posted = True
 
-            await redis.publish(
-                f"task_progress:{request.port_id}",
+            await publish(redis, request.port_id,
                 f"{progress},{task_id},{request.filename}",
             )
 
@@ -143,24 +136,21 @@ async def generate_image_to_3d_task_and_check_for_response_decoupled_ws(
                 response = ImageTo3DMeshyTaskStatusResponse(**event)
                 complete = await add_file_response(response)
                 await send_obj_from_image_to_file_to_storage(complete)
-                await redis.publish(
-                    f"task_progress:{request.port_id}",
+                await publish(redis, request.port_id,
                     f"Task Completed,{task_id},{request.filename}",
                 )
                 return response
 
             elif status == "FAILED":
                 logger.error(f"Meshy image task failed: {task_id}")
-                await redis.publish(
-                    f"task_progress:{request.port_id}",
+                await publish(redis, request.port_id,
                     f"Task Failed,{task_id},{request.filename}",
                 )
                 return None
 
     except Exception:
         logger.exception(f"SSE error for image task {request.port_id}")
-        await redis.publish(
-            f"task_progress:{request.port_id}",
+        await publish(redis, request.port_id,
             "Task Failed,,An error occurred during processing",
         )
         return None
@@ -172,8 +162,7 @@ async def generate_refine_task_and_stream(
     try:
         generated_task = await generate_meshy_refine_task(request.meshy_refine_payload)
         if not generated_task:
-            await redis.publish(
-                f"task_progress:{request.port_id}", "Task Failed,,"
+            await publish(redis, request.port_id, "Task Failed,,"
             )
             return None
 
@@ -181,8 +170,7 @@ async def generate_refine_task_and_stream(
 
         async for event in stream_text_to_3d_progress(task_id):
             if event.get("_error"):
-                await redis.publish(
-                    f"task_progress:{request.port_id}",
+                await publish(redis, request.port_id,
                     f"Task Failed,{task_id},refine",
                 )
                 return None
@@ -190,8 +178,7 @@ async def generate_refine_task_and_stream(
             status = event.get("status")
             progress = event.get("progress", 0)
 
-            await redis.publish(
-                f"task_progress:{request.port_id}",
+            await publish(redis, request.port_id,
                 f"{progress},{task_id},refine",
             )
 
@@ -200,24 +187,21 @@ async def generate_refine_task_and_stream(
                 complete = await add_file_response(response)
                 if isinstance(complete, MeshyTaskStatusResponse):
                     await send_file_to_storage(complete)
-                await redis.publish(
-                    f"task_progress:{request.port_id}",
+                await publish(redis, request.port_id,
                     f"Task Completed,{task_id},refine",
                 )
                 return response
 
             elif status == "FAILED":
                 logger.error(f"Meshy refine task failed: {task_id}")
-                await redis.publish(
-                    f"task_progress:{request.port_id}",
+                await publish(redis, request.port_id,
                     f"Task Failed,{task_id},refine",
                 )
                 return None
 
     except Exception:
         logger.exception(f"SSE error for refine task {request.port_id}")
-        await redis.publish(
-            f"task_progress:{request.port_id}",
+        await publish(redis, request.port_id,
             "Task Failed,,An error occurred during processing",
         )
         return None
