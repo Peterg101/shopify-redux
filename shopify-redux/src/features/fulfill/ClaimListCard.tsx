@@ -21,7 +21,7 @@ import { Claim } from '../../app/utility/interfaces'
 import { setSelectedClaim, setUpdateClaimMode } from '../../services/userInterfaceSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
 import { useUpdateClaimQuantityMutation, useUpdateClaimStatusMutation } from '../../services/dbApi'
-import ModelThumbnail from '../display/ModelThumbnail'
+import PrintIcon from '@mui/icons-material/Print'
 import { monoFontFamily } from '../../theme'
 import { STATUS_PHASES } from './ClaimDashboardHeader'
 
@@ -154,22 +154,13 @@ export const ClaimListCard = React.memo(({ claim }: ClaimListCardProps) => {
           bgcolor: 'rgba(0, 229, 255, 0.04)',
         }}
       >
-        {isImage ? (
-          <Box
-            component="img"
-            src={order.selectedFile}
-            alt={order.name}
-            sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
-        ) : is3D && order.task_id ? (
-          <ModelThumbnail
-            taskId={order.task_id}
-            fileType={order.selectedFileType}
-            colour={order.colour}
-            name={order.name}
-          />
+        {is3D ? (
+          <ViewInArIcon sx={{ fontSize: 32, color: '#00E5FF', opacity: 0.5 }} />
+        ) : isImage ? (
+          <Box component="img" src={order.selectedFile} alt={order.name}
+            sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
-          <ViewInArIcon sx={{ fontSize: 32, color: 'text.secondary', opacity: 0.4 }} />
+          <PrintIcon sx={{ fontSize: 32, color: 'text.secondary', opacity: 0.3 }} />
         )}
       </Box>
 

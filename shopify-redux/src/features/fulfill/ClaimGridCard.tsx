@@ -22,7 +22,7 @@ import { Claim } from '../../app/utility/interfaces'
 import { setSelectedClaim, setUpdateClaimMode } from '../../services/userInterfaceSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
 import { useUpdateClaimQuantityMutation, useUpdateClaimStatusMutation } from '../../services/dbApi'
-import ModelThumbnail from '../display/ModelThumbnail'
+import PrintIcon from '@mui/icons-material/Print'
 import { monoFontFamily } from '../../theme'
 import { STATUS_PHASES } from './ClaimDashboardHeader'
 
@@ -156,22 +156,17 @@ export const ClaimGridCard = React.memo(({ claim }: ClaimGridCardProps) => {
             transition: 'transform 0.3s ease',
           }}
         >
-          {isImage ? (
-            <Box
-              component="img"
-              src={order.selectedFile}
-              alt={order.name}
-              sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          ) : is3D && order.task_id ? (
-            <ModelThumbnail
-              taskId={order.task_id}
-              fileType={order.selectedFileType}
-              colour={order.colour}
-              name={order.name}
-            />
+          {is3D ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+              <ViewInArIcon sx={{ fontSize: 48, color: '#00E5FF', opacity: 0.5 }} />
+              <Chip label={order.selectedFileType?.toUpperCase()} size="small" variant="outlined"
+                sx={{ height: 18, fontSize: '0.6rem', opacity: 0.6 }} />
+            </Box>
+          ) : isImage ? (
+            <Box component="img" src={order.selectedFile} alt={order.name}
+              sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
-            <ViewInArIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.4 }} />
+            <PrintIcon sx={{ fontSize: 48, color: 'text.secondary', opacity: 0.3 }} />
           )}
         </Box>
 
