@@ -50,7 +50,7 @@ services:
       HOST: "0.0.0.0"
       DATABASE_URL: postgresql://fitd:fitd_dev@postgres:5432/fitd
       FRONTEND_URL: http://localhost:3000
-      AUTH_SERVICE_URL: http://auth_backend:2468
+      AUTH_SERVICE_URL: http://db_service:8000
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       REDIS_HOST: redis
       REDIS_PORT: "6379"
@@ -68,23 +68,6 @@ services:
       redis:
         condition: service_started
 
-  auth_backend:
-    build:
-      context: .
-      dockerfile: Dockerfile.python
-      args: { SERVICE_DIR: auth_backend }
-    ports: ["2468:2468"]
-    environment:
-      HOST: "0.0.0.0"
-      REDIS_HOST: redis
-      DB_SERVICE_URL: http://db_service:8000
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-      GOOGLE_REDIRECT_URI: http://localhost:2468/auth/google/callback
-      FRONTEND_URL: http://localhost:3000
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-    depends_on: [redis, db_service]
-
   meshy_backend:
     build:
       context: .
@@ -95,29 +78,11 @@ services:
       HOST: "0.0.0.0"
       REDIS_HOST: redis
       DB_SERVICE_URL: http://db_service:8000
-      AUTH_SERVICE_URL: http://auth_backend:2468
+      AUTH_SERVICE_URL: http://db_service:8000
       MESHY_API_KEY: ${MESHY_API_KEY}
       FRONTEND_URL: http://localhost:3000
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-    depends_on: [redis, db_service, auth_backend]
-
-  stripe_service:
-    build:
-      context: .
-      dockerfile: Dockerfile.python
-      args: { SERVICE_DIR: stripe_service }
-    ports: ["100:100"]
-    environment:
-      HOST: "0.0.0.0"
-      DB_SERVICE_URL: http://db_service:8000
-      AUTH_SERVICE_URL: http://auth_backend:2468
-      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
-      STRIPE_ENDPOINT_SECRET: ${STRIPE_ENDPOINT_SECRET}
-      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
-      SHIPENGINE_API_KEY: ${SHIPENGINE_API_KEY}
-      FRONTEND_URL: http://localhost:3000
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-    depends_on: [db_service, auth_backend]
+    depends_on: [redis, db_service]
 
   step_service:
     platform: linux/amd64
@@ -161,7 +126,7 @@ services:
       OLLAMA_URL: http://ollama:11434/v1
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       DB_SERVICE_URL: http://db_service:8000
-      AUTH_SERVICE_URL: http://auth_backend:2468
+      AUTH_SERVICE_URL: http://db_service:8000
       STEP_SERVICE_URL: http://step_service:1235
       FRONTEND_URL: http://localhost:3000
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
