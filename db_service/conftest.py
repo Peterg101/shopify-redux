@@ -11,6 +11,9 @@ from db_setup import get_db
 from main import app
 from utils import cookie_verification, cookie_verification_user_only
 from jwt_auth import verify_jwt_token
+from dependencies import get_current_user
+from db_setup import get_redis
+from stripe_utils import validate_stripe_header
 
 # In-memory SQLite for tests — use StaticPool so the same in-memory DB is shared
 from sqlalchemy.pool import StaticPool
@@ -61,6 +64,19 @@ async def override_cookie_verification_claimant():
     return CLAIMANT_USER
 
 
+async def override_get_current_user():
+    return TEST_USER
+
+
+async def override_get_current_user_claimant():
+    return CLAIMANT_USER
+
+
+def override_get_redis():
+    """Return None for Redis in tests — cache/event operations gracefully degrade."""
+    return None
+
+
 @pytest.fixture(autouse=True)
 def setup_db():
     Base.metadata.create_all(bind=test_engine)
@@ -74,6 +90,8 @@ def client(setup_db):
     app.dependency_overrides[verify_jwt_token] = override_verify_jwt_token
     app.dependency_overrides[cookie_verification] = override_cookie_verification
     app.dependency_overrides[cookie_verification_user_only] = override_cookie_verification_user_only
+    app.dependency_overrides[get_current_user] = override_get_current_user
+    app.dependency_overrides[get_redis] = override_get_redis
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
@@ -86,6 +104,8 @@ def claimant_client(setup_db):
     app.dependency_overrides[verify_jwt_token] = override_verify_jwt_token
     app.dependency_overrides[cookie_verification] = override_cookie_verification
     app.dependency_overrides[cookie_verification_user_only] = override_cookie_verification_claimant
+    app.dependency_overrides[get_current_user] = override_get_current_user_claimant
+    app.dependency_overrides[get_redis] = override_get_redis
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
