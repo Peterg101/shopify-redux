@@ -10,3 +10,4 @@ openai
 docker>=7.0.0
 sqlalchemy
 pydantic==1.10.8
+sse-starlette>=2.0.0,<3.0.0

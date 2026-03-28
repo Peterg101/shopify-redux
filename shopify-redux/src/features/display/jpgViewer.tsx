@@ -17,7 +17,7 @@ import { startImageTo3DTask } from "../../services/fetchFileUtils";
 import { generateUUID } from "three/src/math/MathUtils";
 import { useFile } from '../../services/fileProvider';
 import { authApi } from '../../services/authApi';
-import { createWebsocketConnection } from "../../services/meshyWebsocket";
+import { connectProgressStream } from "../../services/progressStream";
 import { GenerationSettings } from './GenerationSettings';
 
 export const JpgViewer = () => {
@@ -72,7 +72,7 @@ export const JpgViewer = () => {
       setImage("")
       dispatch(setClearFileDisplay())
       dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
-      createWebsocketConnection(portId, dispatch, setActualFile)
+      connectProgressStream(portId, 'meshy', dispatch, setActualFile)
     };
   
   

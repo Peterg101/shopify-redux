@@ -2,7 +2,7 @@
 import os
 import logging
 import httpx
-from fastapi import Request, WebSocket
+from fastapi import Request
 from redis.asyncio import Redis as AsyncRedis
 
 from jwt_auth import generate_token
@@ -20,28 +20,6 @@ DB_SERVICE_URL = os.getenv("DB_SERVICE_URL", "http://localhost:8000")
 async def get_redis(request: Request) -> AsyncRedis:
     """FastAPI dependency -- returns the app-level Redis connection."""
     return request.app.state.redis
-
-
-# ---------------------------------------------------------------------------
-# Session validation (WebSocket)
-# ---------------------------------------------------------------------------
-
-async def validate_session(websocket: WebSocket) -> tuple[bool, str | None]:
-    """Validate session from WebSocket cookies.
-
-    Uses the CAD service's cleaner approach: extract the session cookie
-    directly from websocket.cookies rather than parsing the raw header.
-    """
-    session_id = websocket.cookies.get("fitd_session_data")
-    if not session_id:
-        return False, None
-
-    data = await _http_session_exists(session_id)
-    if data:
-        user = data.get("user")
-        user_id = user.get("user_id") if user else None
-        return True, user_id
-    return False, None
 
 
 # ---------------------------------------------------------------------------
@@ -132,11 +110,10 @@ async def mark_task_complete(task_id: str):
 
 
 async def publish(redis: AsyncRedis, port_id: str, message: str):
-    """Publish a progress message to the Redis channel.
+    """Publish a progress message and cache the latest state in Redis.
 
-    Also stores terminal states (Completed/Failed) in a Redis key so that
-    late-connecting WebSocket clients can retrieve the final status.
+    Every message is cached (not just terminal states) so SSE clients
+    can recover progress after a page refresh.
     """
     await redis.publish(f"task_progress:{port_id}", message)
-    if message.startswith("Task Completed") or message.startswith("Task Failed"):
-        await redis.set(f"task_result:{port_id}", message, ex=300)
+    await redis.set(f"task_state:{port_id}", message, ex=600)  # 10 min TTL

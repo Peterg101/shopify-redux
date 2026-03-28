@@ -7,7 +7,7 @@ import { ChangeEvent } from 'react';
 import { setFileNameBoxValue, resetDataState } from '../../services/dataSlice';
 import { setMeshyRefining, setMeshyPending, setMeshyPreviewTaskId } from '../../services/meshySlice';
 import { startRefineTask } from '../../services/fetchFileUtils';
-import { createWebsocketConnection } from '../../services/meshyWebsocket';
+import { connectProgressStream } from '../../services/progressStream';
 import { useFile } from '../../services/fileProvider';
 import { generateUuid } from '../../app/utility/collectionUtils';
 import { selectTotalCost } from '../../services/selectors';
@@ -39,7 +39,7 @@ export const ToolBar = () => {
     dispatch(setMeshyPending({ meshyPending: true }));
     dispatch(setMeshyPreviewTaskId({ meshyPreviewTaskId: null }));
     await startRefineTask(meshyPreviewTaskId, userInformation.user.user_id, portId);
-    createWebsocketConnection(portId, dispatch, setActualFile);
+    connectProgressStream(portId, 'meshy', dispatch, setActualFile);
   };
 
   return (

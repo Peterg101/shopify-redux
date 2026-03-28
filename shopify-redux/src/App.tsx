@@ -4,7 +4,7 @@ import { useGetSlimSessionQuery } from "./services/authApi";
 import { connectSSE } from "./services/sseListener";
 import { useSelector } from 'react-redux';
 import { RootState } from "./app/store";
-import { createWebsocketConnection } from "./services/meshyWebsocket";
+import { connectProgressStream } from "./services/progressStream";
 import { useDispatch} from "react-redux";
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -23,7 +23,9 @@ function App() {
     const portId = incompletePort?.port_id;
     useEffect(() => {
       if (incompletePort) {
-        const { cleanup } = createWebsocketConnection(portId!, dispatch, setActualFile);
+        // Determine task type from file_type: 'glb' = CAD, anything else = Meshy
+        const taskType = userInterfaceState.userInformation?.incomplete_task?.file_type === 'glb' ? 'cad' : 'meshy';
+        const cleanup = connectProgressStream(portId!, taskType, dispatch, setActualFile);
         return cleanup;
       }
     }, [incompletePort, portId, dispatch]);

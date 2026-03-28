@@ -129,10 +129,9 @@ services:
         REACT_APP_DB_SERVICE: http://localhost:8000
         REACT_APP_AUTH_SERVICE: http://localhost:8000
         REACT_APP_MESHY_SERVICE: http://localhost:1234
-        REACT_APP_MESHY_WEBSOCKET: ws://localhost:1234
+        REACT_APP_GENERATION_SERVICE: http://localhost:1234
         REACT_APP_STRIPE_SERVICE: http://localhost:8000
         REACT_APP_CAD_SERVICE: http://localhost:1234
-        REACT_APP_CAD_WEBSOCKET: ws://localhost:1234
         REACT_APP_STEP_SERVICE: http://localhost:1235
     ports: ["3000:3000"]
     depends_on: [api_service]

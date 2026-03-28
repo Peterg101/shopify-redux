@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 import { setCadPending } from '../../services/cadSlice';
 import { authApi } from '../../services/authApi';
-import { createCadWebsocketConnection } from '../../services/cadWebsocket';
+import { connectProgressStream } from '../../services/progressStream';
 import { startCadTask } from '../../services/fetchFileUtils';
 import { CadSettings } from './CadGenerationSettings';
 
@@ -44,7 +44,7 @@ const AiCadPrompt = () => {
       dispatch(setCadPending({ cadPending: true }));
       await startCadTask(value, userInformation.user.user_id, portId, cadState.cadGenerationSettings);
       dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
-      createCadWebsocketConnection(portId, dispatch, setActualFile);
+      connectProgressStream(portId, 'cad', dispatch, setActualFile);
     }
   };
 

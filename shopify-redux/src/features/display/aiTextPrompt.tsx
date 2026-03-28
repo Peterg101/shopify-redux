@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 import { setMeshyPending } from '../../services/meshySlice';
 import { authApi } from '../../services/authApi';
-import { createWebsocketConnection } from '../../services/meshyWebsocket';
+import { connectProgressStream } from '../../services/progressStream';
 import { startTask } from '../../services/fetchFileUtils';
 import { GenerationSettings } from './GenerationSettings';
 
@@ -44,7 +44,7 @@ const AiTextPrompt = () => {
       dispatch(setMeshyPending({ meshyPending: true }));
       await startTask(value, userInformation.user.user_id, portId, meshyState.meshyGenerationSettings);
       dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
-      createWebsocketConnection(portId, dispatch, setActualFile);
+      connectProgressStream(portId, 'meshy', dispatch, setActualFile);
     }
   };
 
