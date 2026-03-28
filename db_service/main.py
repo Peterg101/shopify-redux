@@ -7,10 +7,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import redis.asyncio as aioredis
 import httpx
+import stripe
 import uvicorn
 
 from config import FRONTEND_URL, REDIS_HOST, REDIS_PORT, MEDIA_SERVICE_URL
-from routes import users, files, orders, claims, disbursements, disputes, fulfiller, catalog, tasks, events
+from routes import auth, users, files, orders, claims, disbursements, disputes, fulfiller, catalog, tasks, events
+from routes import stripe as stripe_routes
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -23,6 +25,7 @@ async def lifespan(app: FastAPI):
         f"redis://{REDIS_HOST}:{REDIS_PORT}", decode_responses=True
     )
     app.state.media_client = httpx.AsyncClient(base_url=MEDIA_SERVICE_URL, timeout=30.0)
+    stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
     logger.info("API service started")
     yield
     # Shutdown
@@ -41,6 +44,7 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(files.router)
 app.include_router(orders.router)
@@ -51,6 +55,7 @@ app.include_router(fulfiller.router)
 app.include_router(catalog.router)
 app.include_router(tasks.router)
 app.include_router(events.router)
+app.include_router(stripe_routes.router)
 
 
 if __name__ == "__main__":

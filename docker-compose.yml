@@ -54,6 +54,12 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       REDIS_HOST: redis
       REDIS_PORT: "6379"
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_REDIRECT_URI: http://localhost:8000/auth/google/callback
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      SHIPENGINE_API_KEY: ${SHIPENGINE_API_KEY}
     volumes:
       - uploads:/app/uploads
     depends_on:
@@ -171,15 +177,15 @@ services:
       dockerfile: Dockerfile
       args:
         REACT_APP_DB_SERVICE: http://localhost:8000
-        REACT_APP_AUTH_SERVICE: http://localhost:2468
+        REACT_APP_AUTH_SERVICE: http://localhost:8000
         REACT_APP_MESHY_SERVICE: http://localhost:1234
         REACT_APP_MESHY_WEBSOCKET: ws://localhost:1234
-        REACT_APP_STRIPE_SERVICE: http://localhost:100
+        REACT_APP_STRIPE_SERVICE: http://localhost:8000
         REACT_APP_CAD_SERVICE: http://localhost:1236
         REACT_APP_CAD_WEBSOCKET: ws://localhost:1236
         REACT_APP_STEP_SERVICE: http://localhost:1235
     ports: ["3000:3000"]
-    depends_on: [db_service, auth_backend]
+    depends_on: [db_service]
 
 volumes:
   pgdata:
