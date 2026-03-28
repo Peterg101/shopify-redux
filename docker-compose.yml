@@ -134,6 +134,7 @@ services:
         REACT_APP_STRIPE_SERVICE: http://localhost:8000
         REACT_APP_CAD_SERVICE: http://localhost:1234
         REACT_APP_STEP_SERVICE: http://localhost:1235
+        REACT_APP_MOCK_GENERATION: ${MOCK_GENERATION:-false}
     ports: ["3000:3000"]
     depends_on: [api_service]
 

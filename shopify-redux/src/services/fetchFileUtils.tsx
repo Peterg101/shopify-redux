@@ -68,7 +68,22 @@ export const extractFileInfo = (fileResponse: FileResponse, filename: string): F
 
 }
 
+const MOCK_GENERATION = process.env.REACT_APP_MOCK_GENERATION === 'true';
+
+const startMockGeneration = async (name: string, type: 'meshy' | 'cad', userId: string, portId: string) => {
+  const response = await fetch(`${process.env.REACT_APP_GENERATION_SERVICE}/mock/generate`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, type, user_id: userId }),
+  });
+  if (!response.ok) throw new Error(`Mock generation failed: ${response.statusText}`);
+  return response.json();
+};
+
 export const startTask = async (prompt: string, userId: string, portId: string, settings?: MeshyGenerationSettings) => {
+  if (MOCK_GENERATION) return startMockGeneration(prompt, 'meshy', userId, portId);
+
   try {
     const payload: MeshyPayload = {
       mode: 'preview',
@@ -103,6 +118,8 @@ export const startTask = async (prompt: string, userId: string, portId: string, 
 };
 
 export const startImageTo3DTask = async (image_file: File, userId: string, portId: string, fileName: string, settings?: MeshyGenerationSettings) => {
+  if (MOCK_GENERATION) return startMockGeneration(fileName, 'meshy', userId, portId);
+
   try {
     const image_bytes = await convertFileToDataURI(image_file)
     const payload: MeshyImageTo3DPayload = {
@@ -233,6 +250,8 @@ export const startCadTask = async (
   portId: string,
   settings?: CadGenerationSettings
 ) => {
+  if (MOCK_GENERATION) return startMockGeneration(prompt, 'cad', userId, portId);
+
   try {
     const payload = {
       port_id: portId,
