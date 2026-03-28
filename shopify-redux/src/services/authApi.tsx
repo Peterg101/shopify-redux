@@ -56,6 +56,16 @@ export const authApi = createApi({
       }),
       invalidatesTags: ['sessionData'],
     }),
+    forgotPassword: builder.mutation<{ message: string }, { email: string }>({
+      query: (body) => ({ url: '/auth/forgot-password', method: 'POST', body }),
+    }),
+    resetPassword: builder.mutation<{ message: string }, { token: string; new_password: string }>({
+      query: (body) => ({ url: '/auth/reset-password', method: 'POST', body }),
+    }),
+    resendVerification: builder.mutation<{ message: string }, void>({
+      query: () => ({ url: '/auth/resend-verification', method: 'POST' }),
+      invalidatesTags: ['sessionData'],
+    }),
   }),
 });
 
@@ -69,4 +79,7 @@ export const {
   useLogOutMutation,
   useLoginMutation,
   useRegisterMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
+  useResendVerificationMutation,
 } = authApi;

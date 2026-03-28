@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { authApi } from '../../services/authApi';
 import { selectIsLoggedIn } from '../../services/selectors';
 import { CircularProgress, Box } from '@mui/material';
+import { VerifyEmailBanner } from '../auth/VerifyEmailBanner';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -27,7 +28,12 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     return <Navigate to="/login" replace />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <VerifyEmailBanner />
+      {children}
+    </>
+  );
 };
 
 export default ProtectedRoute;

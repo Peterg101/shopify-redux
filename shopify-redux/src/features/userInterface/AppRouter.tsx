@@ -10,6 +10,9 @@ import { CatalogPage } from "../catalog/CatalogPage";
 import { PartDetailPage } from "../catalog/PartDetailPage";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { NotFoundPage } from "../shared/NotFoundPage";
+import { ForgotPasswordPage } from "../auth/ForgotPasswordPage";
+import { ResetPasswordPage } from "../auth/ResetPasswordPage";
+import { VerifyEmailPage } from "../auth/VerifyEmailPage";
 import { authApi } from "../../services/authApi";
 import { CircularProgress, Box } from "@mui/material";
 
@@ -36,6 +39,9 @@ function AppRouter() {
       <Routes>
         <Route path="/" element={<RootRedirect />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/generate" element={<ProtectedRoute><LandingPage /></ProtectedRoute>} />
         <Route path="/fulfill" element={<ProtectedRoute><Fulfill /></ProtectedRoute>} />
         <Route path="/orders/:orderId" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />

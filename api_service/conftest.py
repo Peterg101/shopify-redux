@@ -12,7 +12,7 @@ from db_setup import get_db
 from main import app
 from utils import cookie_verification, cookie_verification_user_only
 from jwt_auth import verify_jwt_token
-from dependencies import get_current_user
+from dependencies import get_current_user, require_verified_email
 from db_setup import get_redis
 from stripe_utils import validate_stripe_header
 
@@ -48,12 +48,14 @@ TEST_USER = UserInformation(
     user_id="test-user-123",
     username="testuser",
     email="test@example.com",
+    email_verified=True,
 )
 
 CLAIMANT_USER = UserInformation(
     user_id="claimant-user-456",
     username="claimant",
     email="claimant@example.com",
+    email_verified=True,
 )
 
 
@@ -70,6 +72,14 @@ async def override_get_current_user():
 
 
 async def override_get_current_user_claimant():
+    return CLAIMANT_USER
+
+
+async def override_require_verified_email():
+    return TEST_USER
+
+
+async def override_require_verified_email_claimant():
     return CLAIMANT_USER
 
 
@@ -92,6 +102,7 @@ def client(setup_db):
     app.dependency_overrides[cookie_verification] = override_cookie_verification
     app.dependency_overrides[cookie_verification_user_only] = override_cookie_verification_user_only
     app.dependency_overrides[get_current_user] = override_get_current_user
+    app.dependency_overrides[require_verified_email] = override_require_verified_email
     app.dependency_overrides[get_redis] = override_get_redis
     with TestClient(app) as c:
         yield c
@@ -106,6 +117,7 @@ def claimant_client(setup_db):
     app.dependency_overrides[cookie_verification] = override_cookie_verification
     app.dependency_overrides[cookie_verification_user_only] = override_cookie_verification_claimant
     app.dependency_overrides[get_current_user] = override_get_current_user_claimant
+    app.dependency_overrides[require_verified_email] = override_require_verified_email_claimant
     app.dependency_overrides[get_redis] = override_get_redis
     with TestClient(app) as c:
         yield c
@@ -190,8 +202,12 @@ def seed_order(client, seed_task, db_session):
 def set_auth_as_buyer():
     """Switch the cookie auth override to the order owner (buyer)."""
     app.dependency_overrides[cookie_verification_user_only] = override_cookie_verification_user_only
+    app.dependency_overrides[get_current_user] = override_get_current_user
+    app.dependency_overrides[require_verified_email] = override_require_verified_email
 
 
 def set_auth_as_claimant():
     """Switch the cookie auth override to the claimant (fulfiller)."""
     app.dependency_overrides[cookie_verification_user_only] = override_cookie_verification_claimant
+    app.dependency_overrides[get_current_user] = override_get_current_user_claimant
+    app.dependency_overrides[require_verified_email] = override_require_verified_email_claimant

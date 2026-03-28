@@ -17,6 +17,7 @@ class UserInformation(BaseModel):
     email: Optional[str] = None
     password_hash: Optional[str] = None
     auth_provider: Optional[str] = "google"
+    email_verified: bool = False
 
     @validator('username')
     def validate_username_length(cls, v):
@@ -654,6 +655,7 @@ class SlimSessionResponse(BaseModel):
     user: UserResponse
     stripe_onboarded: bool = False
     has_fulfiller_profile: bool = False
+    email_verified: bool = False
     incomplete_task: Optional[IncompleteTaskResponse] = None
 
     class Config:

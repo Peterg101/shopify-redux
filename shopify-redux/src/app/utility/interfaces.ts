@@ -442,6 +442,7 @@ export interface SlimSession {
   user: UserInformation;
   stripe_onboarded: boolean;
   has_fulfiller_profile: boolean;
+  email_verified: boolean;
   incomplete_task: TaskInformationAndPortId | null;
 }
 

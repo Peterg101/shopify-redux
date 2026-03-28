@@ -180,6 +180,7 @@ export function createMockSlimSession(
     user: createMockUserInformation(),
     stripe_onboarded: false,
     has_fulfiller_profile: false,
+    email_verified: true,
     incomplete_task: null,
     ...overrides,
   }

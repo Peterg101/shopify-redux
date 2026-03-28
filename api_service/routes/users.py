@@ -153,6 +153,7 @@ def get_user_session(
         user=UserResponse.from_orm(user),
         stripe_onboarded=bool(user_stripe and user_stripe.onboarding_complete),
         has_fulfiller_profile=bool(fulfiller_profile),
+        email_verified=getattr(user, "email_verified", False),
         incomplete_task=IncompleteTaskResponse.from_orm(incomplete) if incomplete else None,
     )
 

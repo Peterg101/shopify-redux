@@ -15,6 +15,7 @@ import { useSelector } from 'react-redux';
 import { selectIsLoggedIn } from '../../services/selectors';
 import { useLoginMutation, useRegisterMutation } from '../../services/authApi';
 import GoogleButton from 'react-google-button';
+import { GitHub as GitHubIcon } from '@mui/icons-material';
 import { monoFontFamily } from '../../theme';
 
 export function LoginPage() {
@@ -158,6 +159,13 @@ export function LoginPage() {
               >
                 Sign In
               </Button>
+              <Typography
+                variant="body2"
+                sx={{ textAlign: 'center', mt: 1, cursor: 'pointer', color: 'primary.main' }}
+                onClick={() => navigate('/forgot-password')}
+              >
+                Forgot Password?
+              </Typography>
             </Box>
           )}
 
@@ -204,8 +212,17 @@ export function LoginPage() {
 
           <Divider sx={{ my: 3 }}>or</Divider>
 
-          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
             <GoogleButton onClick={handleGoogleLogin} />
+            <Button
+              variant="contained"
+              fullWidth
+              startIcon={<GitHubIcon />}
+              onClick={() => window.location.href = `${process.env.REACT_APP_AUTH_SERVICE}/auth/github`}
+              sx={{ bgcolor: '#24292e', color: '#fff', '&:hover': { bgcolor: '#1a1e22' }, maxWidth: 240, py: 1.2 }}
+            >
+              Continue with GitHub
+            </Button>
           </Box>
         </Paper>
       </Box>

@@ -17,7 +17,25 @@ class User(Base):
     email: Mapped[str] = mapped_column(String, unique=True, index=True)
     password_hash: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     auth_provider: Mapped[str] = mapped_column(String, default="google")
+    email_verified: Mapped[bool] = mapped_column(Boolean, default=False)
     tasks = relationship("Task", back_populates="owner", lazy="selectin")
+    oauth_accounts = relationship("UserOAuthAccount", back_populates="user", lazy="noload")
+
+
+class UserOAuthAccount(Base):
+    __tablename__ = "user_oauth_accounts"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.user_id"), nullable=False)
+    provider: Mapped[str] = mapped_column(String, nullable=False)
+    provider_user_id: Mapped[str] = mapped_column(String, nullable=False)
+    provider_email: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+
+    user = relationship("User", back_populates="oauth_accounts", lazy="noload")
+
+    __table_args__ = (
+        UniqueConstraint("provider", "provider_user_id", name="uq_provider_account"),
+    )
 
 
 class Task(Base):

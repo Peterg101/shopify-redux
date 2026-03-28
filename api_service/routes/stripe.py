@@ -13,7 +13,7 @@ import stripe
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session, selectinload
 
-from dependencies import get_db, get_redis, get_current_user
+from dependencies import get_db, get_redis, get_current_user, require_verified_email
 from cache import cache_invalidate, cache_invalidate_pattern
 from events import publish_event
 from stripe_utils import generate_stripe_account, generate_account_link, validate_stripe_header
@@ -40,7 +40,7 @@ router = APIRouter()
 async def create_checkout_session(
     request: Request,
     body: CheckoutRequest,
-    user=Depends(get_current_user),
+    user=Depends(require_verified_email),
     db: Session = Depends(get_db),
 ):
     """Creates a Stripe checkout session from the user's basket items."""

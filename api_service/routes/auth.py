@@ -1,9 +1,12 @@
 """
-Authentication routes — absorbed from auth_backend.
+Authentication routes — multi-provider OAuth, email auth, verification, password reset.
 
 Provides:
 - Google OAuth flow (redirect + callback)
+- GitHub OAuth flow (redirect + callback)
 - Email registration and login
+- Email verification
+- Password reset (forgot + reset)
 - Logout (session destruction)
 - Cookie-authenticated versions of user data endpoints
   (session, basket, orders, claims, claimable, tasks, events, user details)
@@ -13,6 +16,8 @@ import uuid
 import logging
 import asyncio
 import json
+import random
+import string
 
 import bcrypt
 import httpx
@@ -20,8 +25,6 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse, JSONResponse
 from starlette.responses import StreamingResponse
 from sqlalchemy.orm import Session, joinedload, selectinload
-from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
 
 from rate_limit import limiter
 from dependencies import get_db, get_redis, get_session_redis, get_current_user
@@ -29,8 +32,26 @@ from cache import cached
 from helpers import _order_to_response
 from utils import check_user_existence, add_user_to_db
 
+from oauth_providers import (
+    OAuthUserInfo,
+    get_google_authorize_url,
+    google_exchange_code,
+    google_get_user_info,
+    get_github_authorize_url,
+    github_exchange_code,
+    github_get_user_info,
+)
+from email_service import (
+    generate_verification_token,
+    verify_verification_token,
+    generate_reset_token,
+    verify_reset_token,
+    send_verification_email,
+    send_reset_email,
+)
+
 from fitd_schemas.fitd_db_schemas import (
-    User, Task, BasketItem, Order, UserStripeAccount, Claim, FulfillerProfile,
+    User, UserOAuthAccount, Task, BasketItem, Order, UserStripeAccount, Claim, FulfillerProfile,
 )
 from fitd_schemas.fitd_classes import (
     UserInformation,
@@ -54,12 +75,6 @@ router = APIRouter()
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 IS_PRODUCTION = os.getenv("ENV", "development") == "production"
-
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
-GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
-REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/google/callback")
 
 
 # ── Session helpers ──────────────────────────────────────────────────────
@@ -91,87 +106,147 @@ def _set_session_cookie(response, session_id: str):
     return response
 
 
+# ── Shared OAuth helpers ─────────────────────────────────────────────────
+
+def _generate_unique_username(db: Session, desired: str) -> str:
+    """Return `desired` if available, otherwise append a random suffix."""
+    if not desired:
+        desired = "user"
+    existing = db.query(User).filter(User.username == desired).first()
+    if not existing:
+        return desired
+    # Append random suffix until unique
+    for _ in range(10):
+        suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=4))
+        candidate = f"{desired}_{suffix}"
+        if not db.query(User).filter(User.username == candidate).first():
+            return candidate
+    # Fallback — extremely unlikely
+    return f"{desired}_{uuid.uuid4().hex[:8]}"
+
+
+def _find_or_create_oauth_user(oauth_info: OAuthUserInfo, db: Session) -> User:
+    """
+    Account linking logic:
+    1. Check if this OAuth account is already linked → return that user
+    2. If email is verified by provider and matches an existing user → auto-link
+    3. Otherwise → create a new user
+    """
+    # 1. Check existing OAuth link
+    existing_link = db.query(UserOAuthAccount).filter(
+        UserOAuthAccount.provider == oauth_info.provider,
+        UserOAuthAccount.provider_user_id == oauth_info.provider_user_id,
+    ).first()
+    if existing_link:
+        user = db.query(User).filter(User.user_id == existing_link.user_id).first()
+        if user:
+            return user
+
+    # 2. Check existing user by email (auto-link if email is verified by provider)
+    if oauth_info.email and oauth_info.email_verified:
+        existing_user = db.query(User).filter(User.email == oauth_info.email).first()
+        if existing_user:
+            db.add(UserOAuthAccount(
+                user_id=existing_user.user_id,
+                provider=oauth_info.provider,
+                provider_user_id=oauth_info.provider_user_id,
+                provider_email=oauth_info.email,
+            ))
+            if not existing_user.email_verified:
+                existing_user.email_verified = True
+            db.commit()
+            return existing_user
+
+    # 3. New user
+    user_id = oauth_info.provider_user_id if oauth_info.provider == "google" else str(uuid.uuid4())
+    username = _generate_unique_username(
+        db, oauth_info.name or (oauth_info.email.split("@")[0] if oauth_info.email else "user")
+    )
+
+    new_user = User(
+        user_id=user_id,
+        username=username,
+        email=oauth_info.email,
+        auth_provider=oauth_info.provider,
+        email_verified=oauth_info.email_verified,
+    )
+    db.add(new_user)
+    db.add(UserOAuthAccount(
+        user_id=user_id,
+        provider=oauth_info.provider,
+        provider_user_id=oauth_info.provider_user_id,
+        provider_email=oauth_info.email,
+    ))
+    db.commit()
+    db.refresh(new_user)
+    return new_user
+
+
+async def _handle_oauth_callback(provider: str, code: str, db: Session, session_redis):
+    """Shared logic for Google + GitHub OAuth callbacks."""
+    try:
+        if provider == "google":
+            token_data = await google_exchange_code(code)
+            oauth_info = await google_get_user_info(token_data)
+        elif provider == "github":
+            token_data = await github_exchange_code(code)
+            oauth_info = await github_get_user_info(token_data)
+        else:
+            raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
+    except httpx.HTTPStatusError:
+        raise HTTPException(status_code=400, detail=f"Failed to authenticate with {provider}")
+    except ValueError:
+        logger.exception(f"{provider} token verification failed")
+        raise HTTPException(status_code=400, detail=f"Invalid or expired {provider} token")
+
+    user = _find_or_create_oauth_user(oauth_info, db)
+
+    session_data = SessionData(user_id=user.user_id)
+    session_id = await create_session(session_redis, session_data)
+
+    response = RedirectResponse(url=f"{FRONTEND_URL}/generate")
+    _set_session_cookie(response, session_id)
+    return response
+
+
 # ── Google OAuth ─────────────────────────────────────────────────────────
 
 @router.get("/auth/google")
 @limiter.limit("10/minute")
 def auth_google(request: Request):
     """Redirect to Google OAuth consent screen."""
-    google_auth_url = (
-        f"{GOOGLE_AUTH_URL}"
-        f"?client_id={GOOGLE_CLIENT_ID}"
-        f"&redirect_uri={REDIRECT_URI}"
-        f"&response_type=code"
-        f"&scope=openid%20email%20profile"
-        f"&prompt=select_account"
-    )
-    return RedirectResponse(google_auth_url)
+    return RedirectResponse(get_google_authorize_url())
 
 
 @router.get("/auth/google/callback")
-async def auth_callback(
+async def auth_google_callback(
     code: str,
     request: Request,
     db: Session = Depends(get_db),
     session_redis=Depends(get_session_redis),
 ):
-    """Handle Google OAuth callback — create user if new, create session."""
-    data = {
-        "code": code,
-        "client_id": GOOGLE_CLIENT_ID,
-        "client_secret": GOOGLE_CLIENT_SECRET,
-        "redirect_uri": REDIRECT_URI,
-        "grant_type": "authorization_code",
-    }
+    """Handle Google OAuth callback."""
+    return await _handle_oauth_callback("google", code, db, session_redis)
 
-    # Step 1: Exchange code for token
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(GOOGLE_TOKEN_URL, data=data)
-            response.raise_for_status()
-            token_response = response.json()
-        except httpx.HTTPStatusError:
-            raise HTTPException(status_code=400, detail="Failed to retrieve token")
 
-    # Step 2: Get and verify the ID token
-    id_token_value = token_response.get("id_token")
-    if not id_token_value:
-        raise HTTPException(status_code=400, detail="Missing id_token in response.")
+# ── GitHub OAuth ─────────────────────────────────────────────────────────
 
-    try:
-        id_info = await asyncio.to_thread(
-            id_token.verify_oauth2_token,
-            id_token_value, google_requests.Request(), GOOGLE_CLIENT_ID
-        )
+@router.get("/auth/github")
+@limiter.limit("10/minute")
+def auth_github(request: Request):
+    """Redirect to GitHub OAuth consent screen."""
+    return RedirectResponse(get_github_authorize_url())
 
-        user_id = id_info["sub"]
-        email = id_info["email"]
-        username = id_info["name"]
 
-        # Step 3: Check if user exists — DIRECT DB query (no HTTP call)
-        user = db.query(User).filter(User.user_id == user_id).first()
-        if not user:
-            # Create user directly in DB
-            user_info = UserInformation(
-                user_id=user_id,
-                username=username,
-                email=email,
-                auth_provider="google",
-            )
-            user = add_user_to_db(db, user_info)
-
-        # Step 4: Create Redis session
-        session_data = SessionData(user_id=user_id)
-        session_id = await create_session(session_redis, session_data)
-
-        # Step 5: Redirect to frontend with session cookie
-        response = RedirectResponse(url=f"{FRONTEND_URL}/generate")
-        _set_session_cookie(response, session_id)
-        return response
-
-    except ValueError:
-        logger.exception("Google token verification failed")
-        raise HTTPException(status_code=400, detail="Invalid or expired Google token")
+@router.get("/auth/github/callback")
+async def auth_github_callback(
+    code: str,
+    request: Request,
+    db: Session = Depends(get_db),
+    session_redis=Depends(get_session_redis),
+):
+    """Handle GitHub OAuth callback."""
+    return await _handle_oauth_callback("github", code, db, session_redis)
 
 
 # ── Email Auth ───────────────────────────────────────────────────────────
@@ -200,22 +275,31 @@ async def email_register(
         bcrypt.hashpw, register_request.password.encode("utf-8"), bcrypt.gensalt()
     )
 
-    user_info = UserInformation(
-        user_id=str(uuid.uuid4()),
+    user_id = str(uuid.uuid4())
+    user = User(
+        user_id=user_id,
         username=register_request.username,
         email=register_request.email,
         password_hash=hashed.decode("utf-8"),
         auth_provider="email",
+        email_verified=False,
     )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
 
-    # Create user directly in DB
-    user = add_user_to_db(db, user_info)
+    # Send verification email
+    token = generate_verification_token(user.user_id, user.email)
+    await send_verification_email(user.email, token)
 
     # Create session
     session_data = SessionData(user_id=user.user_id)
     session_id = await create_session(session_redis, session_data)
 
-    resp = JSONResponse(content={"message": "Registration successful", "user_id": user.user_id})
+    resp = JSONResponse(content={
+        "message": "Registration successful. Please check your email to verify your account.",
+        "user_id": user.user_id,
+    })
     _set_session_cookie(resp, session_id)
     return resp
 
@@ -234,9 +318,12 @@ async def email_login(
     if not user:
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    # Check if this is a Google-only account
+    # Check if this is an OAuth-only account
     if not user.password_hash:
-        raise HTTPException(status_code=400, detail="This account uses Google sign-in")
+        raise HTTPException(
+            status_code=400,
+            detail=f"This account uses {user.auth_provider} sign-in. Please log in with {user.auth_provider}.",
+        )
 
     # Verify password directly
     is_valid = await asyncio.to_thread(
@@ -254,6 +341,140 @@ async def email_login(
     resp = JSONResponse(content={"message": "Login successful", "user_id": user.user_id})
     _set_session_cookie(resp, session_id)
     return resp
+
+
+# ── Email Verification ───────────────────────────────────────────────────
+
+@router.get("/auth/verify-email")
+async def verify_email(
+    token: str,
+    db: Session = Depends(get_db),
+):
+    """Verify email from token link — redirects to frontend."""
+    try:
+        payload = verify_verification_token(token)
+    except Exception:
+        return RedirectResponse(url=f"{FRONTEND_URL}/verify-email?status=invalid")
+
+    user = db.query(User).filter(User.user_id == payload["sub"]).first()
+    if not user:
+        return RedirectResponse(url=f"{FRONTEND_URL}/verify-email?status=invalid")
+
+    if user.email_verified:
+        return RedirectResponse(url=f"{FRONTEND_URL}/verify-email?status=already_verified")
+
+    # Verify the token email matches the user's current email
+    if user.email != payload.get("email"):
+        return RedirectResponse(url=f"{FRONTEND_URL}/verify-email?status=invalid")
+
+    user.email_verified = True
+    db.commit()
+
+    return RedirectResponse(url=f"{FRONTEND_URL}/verify-email?status=success")
+
+
+@router.post("/auth/resend-verification")
+@limiter.limit("2/minute")
+async def resend_verification(
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Resend verification email for the currently authenticated user."""
+    if user.email_verified:
+        return JSONResponse(content={"message": "Email already verified"})
+
+    token = generate_verification_token(user.user_id, user.email)
+    await send_verification_email(user.email, token)
+
+    return JSONResponse(content={"message": "Verification email sent"})
+
+
+# ── Password Reset ───────────────────────────────────────────────────────
+
+@router.post("/auth/forgot-password")
+@limiter.limit("3/minute")
+async def forgot_password(
+    request: Request,
+    body: dict,
+    db: Session = Depends(get_db),
+):
+    """Send password reset email. Always returns success to prevent email enumeration."""
+    email = body.get("email", "").strip().lower()
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required")
+
+    # Always return success — don't reveal whether account exists
+    user = db.query(User).filter(User.email == email).first()
+    if user and user.password_hash:
+        # Only send reset for accounts that have a password (not OAuth-only)
+        token = generate_reset_token(user.user_id, user.email)
+        await send_reset_email(user.email, token)
+
+    return JSONResponse(content={
+        "message": "If an account exists with that email, a reset link has been sent."
+    })
+
+
+@router.post("/auth/reset-password")
+@limiter.limit("5/minute")
+async def reset_password(
+    request: Request,
+    body: dict,
+    db: Session = Depends(get_db),
+    session_redis=Depends(get_session_redis),
+):
+    """Reset password using a valid reset token."""
+    token = body.get("token", "")
+    new_password = body.get("password", "")
+
+    if not token or not new_password:
+        raise HTTPException(status_code=400, detail="Token and password are required")
+
+    if len(new_password) < 12:
+        raise HTTPException(status_code=400, detail="Password must be at least 12 characters")
+
+    try:
+        payload = verify_reset_token(token)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+
+    user = db.query(User).filter(User.user_id == payload["sub"]).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+
+    # Verify the token email matches the user's current email
+    if user.email != payload.get("email"):
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+
+    # Hash and set new password
+    hashed = await asyncio.to_thread(
+        bcrypt.hashpw, new_password.encode("utf-8"), bcrypt.gensalt()
+    )
+    user.password_hash = hashed.decode("utf-8")
+    db.commit()
+
+    # Invalidate all existing sessions for this user by scanning Redis
+    # (best-effort — if Redis scan fails, user just needs to re-login)
+    try:
+        cursor = 0
+        while True:
+            cursor, keys = await session_redis.scan(cursor, match="session:*", count=100)
+            for key in keys:
+                raw = await session_redis.get(key)
+                if raw:
+                    try:
+                        data = json.loads(raw)
+                        if data.get("user_id") == user.user_id:
+                            await session_redis.delete(key)
+                    except (json.JSONDecodeError, ValueError):
+                        pass
+            if cursor == 0:
+                break
+    except Exception:
+        logger.warning(f"Failed to invalidate sessions for user {user.user_id} after password reset")
+
+    return JSONResponse(content={"message": "Password reset successful. Please log in."})
 
 
 # ── Logout ───────────────────────────────────────────────────────────────
@@ -303,6 +524,7 @@ async def user_details(user: User = Depends(get_current_user)):
         "username": user.username,
         "email": user.email,
         "auth_provider": user.auth_provider,
+        "email_verified": getattr(user, "email_verified", False),
     }
 
 
@@ -343,6 +565,7 @@ def get_slim_session_cookie(
         user=UserResponse.from_orm(user),
         stripe_onboarded=bool(user_stripe and user_stripe.onboarding_complete),
         has_fulfiller_profile=bool(fulfiller_profile),
+        email_verified=getattr(user, "email_verified", False),
         incomplete_task=IncompleteTaskResponse.from_orm(incomplete) if incomplete else None,
     )
 

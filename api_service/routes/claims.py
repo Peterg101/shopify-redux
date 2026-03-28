@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, selectinload
 
-from dependencies import get_db, get_redis
+from dependencies import get_db, get_redis, require_verified_email
 from cache import cache_invalidate, cache_invalidate_pattern
 from events import publish_event
 from config import UPLOAD_DIR, MAX_EVIDENCE_SIZE_MB, MAX_EVIDENCE_SIZE_B64
@@ -37,6 +37,7 @@ def claim_order(
     claimed_order: ClaimOrder,
     db: Session = Depends(get_db),
     user_information: None = Depends(cookie_verification_user_only),
+    _verified=Depends(require_verified_email),
     redis_client=Depends(get_redis),
 ):
     try:

@@ -17,3 +17,5 @@ google-auth-oauthlib
 bcrypt
 slowapi
 stripe
+resend
+PyJWT

@@ -173,8 +173,8 @@ class TestAuthGoogleRedirect:
 
 class TestAuthGoogleCallback:
 
-    @patch("routes.auth.httpx.AsyncClient")
-    @patch("routes.auth.id_token")
+    @patch("oauth_providers.httpx.AsyncClient")
+    @patch("oauth_providers.google_id_token")
     def test_google_callback_creates_session(
         self, mock_id_token, mock_async_client, auth_client, fake_session_redis, db_session,
     ):
@@ -187,6 +187,7 @@ class TestAuthGoogleCallback:
             "sub": "google-new-user-99",
             "email": "newgoogle@gmail.com",
             "name": "New Google User",
+            "email_verified": True,
         }
 
         resp = auth_client.get(
@@ -207,8 +208,8 @@ class TestAuthGoogleCallback:
         # Session was stored in Redis
         assert len(fake_session_redis.store) == 1
 
-    @patch("routes.auth.httpx.AsyncClient")
-    @patch("routes.auth.id_token")
+    @patch("oauth_providers.httpx.AsyncClient")
+    @patch("oauth_providers.google_id_token")
     def test_google_callback_existing_user(
         self, mock_id_token, mock_async_client, auth_client, fake_session_redis, db_session,
     ):
@@ -216,13 +217,23 @@ class TestAuthGoogleCallback:
         Valid Google token for an existing user: no duplicate user created,
         session still created.
         """
+        from fitd_schemas.fitd_db_schemas import UserOAuthAccount
         _seed_google_user(db_session, user_id="google-sub-123", email="existing@gmail.com", username="existinguser")
+        # Also seed an OAuth link so the lookup finds the existing user
+        db_session.add(UserOAuthAccount(
+            user_id="google-sub-123",
+            provider="google",
+            provider_user_id="google-sub-123",
+            provider_email="existing@gmail.com",
+        ))
+        db_session.commit()
 
         mock_async_client.return_value = _mock_httpx_token_exchange()
         mock_id_token.verify_oauth2_token.return_value = {
             "sub": "google-sub-123",
             "email": "existing@gmail.com",
             "name": "existinguser",
+            "email_verified": True,
         }
 
         resp = auth_client.get(
@@ -237,8 +248,8 @@ class TestAuthGoogleCallback:
         users = db_session.query(User).all()
         assert len(users) == 1
 
-    @patch("routes.auth.httpx.AsyncClient")
-    @patch("routes.auth.id_token")
+    @patch("oauth_providers.httpx.AsyncClient")
+    @patch("oauth_providers.google_id_token")
     def test_google_callback_invalid_token(
         self, mock_id_token, mock_async_client, auth_client,
     ):
@@ -252,9 +263,9 @@ class TestAuthGoogleCallback:
         )
 
         assert resp.status_code == 400
-        assert "Invalid or expired Google token" in resp.json()["detail"]
+        assert "Invalid or expired google token" in resp.json()["detail"]
 
-    @patch("routes.auth.httpx.AsyncClient")
+    @patch("oauth_providers.httpx.AsyncClient")
     def test_google_callback_token_exchange_fails(self, mock_async_client, auth_client):
         """If the code-for-token HTTP exchange fails, return 400."""
         mock_async_client.return_value = _mock_httpx_token_exchange(fail=True)
@@ -265,7 +276,7 @@ class TestAuthGoogleCallback:
         )
 
         assert resp.status_code == 400
-        assert "Failed to retrieve token" in resp.json()["detail"]
+        assert "Failed to authenticate with google" in resp.json()["detail"]
 
 
 # ===================================================================
@@ -284,7 +295,7 @@ class TestEmailRegister:
 
         assert resp.status_code == 200
         data = resp.json()
-        assert data["message"] == "Registration successful"
+        assert "Registration successful" in data["message"]
         assert "user_id" in data
         assert "fitd_session_data" in resp.cookies
 
@@ -398,7 +409,7 @@ class TestEmailLogin:
         })
 
         assert resp.status_code == 400
-        assert "Google sign-in" in resp.json()["detail"]
+        assert "google sign-in" in resp.json()["detail"].lower()
 
     def test_login_missing_fields(self, auth_client):
         """Missing password returns 422."""
