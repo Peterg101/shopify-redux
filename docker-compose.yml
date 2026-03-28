@@ -40,17 +40,16 @@ services:
 
   # ── Backend Services ────────────────────────────────────────────
 
-  db_service:
+  api_service:
     build:
       context: .
       dockerfile: Dockerfile.python
-      args: { SERVICE_DIR: db_service }
+      args: { SERVICE_DIR: api_service }
     ports: ["8000:8000"]
     environment:
       HOST: "0.0.0.0"
       DATABASE_URL: postgresql://fitd:fitd_dev@postgres:5432/fitd
       FRONTEND_URL: http://localhost:3000
-      AUTH_SERVICE_URL: http://db_service:8000
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       REDIS_HOST: redis
       REDIS_PORT: "6379"
@@ -60,6 +59,7 @@ services:
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
       SHIPENGINE_API_KEY: ${SHIPENGINE_API_KEY}
+      MEDIA_SERVICE_URL: http://media_service:1235
     volumes:
       - uploads:/app/uploads
     depends_on:
@@ -79,9 +79,9 @@ services:
     environment:
       HOST: "0.0.0.0"
       REDIS_HOST: redis
-      DB_SERVICE_URL: http://db_service:8000
-      AUTH_SERVICE_URL: http://db_service:8000
-      STEP_SERVICE_URL: http://step_service:1235
+      DB_SERVICE_URL: http://api_service:8000
+      AUTH_SERVICE_URL: http://api_service:8000
+      STEP_SERVICE_URL: http://media_service:1235
       MESHY_API_KEY: ${MESHY_API_KEY}
       CAD_PROVIDER: ${CAD_PROVIDER:-ollama}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5-coder:7b}
@@ -91,13 +91,13 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       CAD_SANDBOX_IMAGE: fitd-cad-sandbox:latest
       CAD_WORK_DIR: /tmp/cad_work
-    depends_on: [redis, ollama, db_service, step_service, cad_sandbox]
+    depends_on: [redis, ollama, api_service, media_service, cad_sandbox]
 
-  step_service:
+  media_service:
     platform: linux/amd64
     build:
       context: .
-      dockerfile: step_service/Dockerfile
+      dockerfile: media_service/Dockerfile
     ports: ["1235:1235"]
     environment:
       HOST: "0.0.0.0"
@@ -135,7 +135,7 @@ services:
         REACT_APP_CAD_WEBSOCKET: ws://localhost:1234
         REACT_APP_STEP_SERVICE: http://localhost:1235
     ports: ["3000:3000"]
-    depends_on: [db_service]
+    depends_on: [api_service]
 
 volumes:
   pgdata:
