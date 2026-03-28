@@ -69,7 +69,7 @@ async def register_task(
     if task_id is None:
         task_id = str(uuid.uuid4())
 
-    auth_token = generate_token("generation_service")
+    auth_token = generate_token("generation_service", audience="api_service")
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {auth_token}",
@@ -96,7 +96,7 @@ async def register_task(
 
 async def mark_task_complete(task_id: str):
     """Mark a task as complete in db_service (clears incomplete_task flag)."""
-    auth_token = generate_token("generation_service")
+    auth_token = generate_token("generation_service", audience="api_service")
     headers = {"Authorization": f"Bearer {auth_token}"}
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:

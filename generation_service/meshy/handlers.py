@@ -259,7 +259,7 @@ async def send_file_to_storage(
     complete_meshy_response: MeshyTaskStatusResponse,
 ):
     server_url = f"{DB_SERVICE_URL}/file_upload"
-    auth_token = generate_token("generation_service")
+    auth_token = generate_token("generation_service", audience="api_service")
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {auth_token}",
@@ -275,7 +275,7 @@ async def send_obj_from_image_to_file_to_storage(
     complete_meshy_response: ImageTo3DMeshyTaskStatusResponse,
 ):
     server_url = f"{DB_SERVICE_URL}/file_upload_from_image"
-    auth_token = generate_token("generation_service")
+    auth_token = generate_token("generation_service", audience="api_service")
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {auth_token}",

@@ -1,5 +1,6 @@
 """File upload and basket storage endpoints."""
 import os
+import re
 import logging
 import base64
 
@@ -20,6 +21,7 @@ from utils import (
     delete_port_id,
 )
 from jwt_auth import verify_jwt_token
+from rate_limit import limiter
 
 from fitd_schemas.fitd_db_schemas import Task, BasketItem
 from fitd_schemas.fitd_classes import (
@@ -32,6 +34,15 @@ from fitd_schemas.fitd_classes import (
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+SAFE_FILE_ID = re.compile(r'^[a-zA-Z0-9_-]+$')
+
+
+def _validate_file_id(file_id: str) -> str:
+    """Validate file_id to prevent path traversal."""
+    if not SAFE_FILE_ID.match(file_id) or '..' in file_id:
+        raise HTTPException(status_code=400, detail="Invalid file ID format")
+    return file_id
 
 
 @router.post("/file_upload")
@@ -112,6 +123,7 @@ def update_basket_quantity(
 def get_file_from_storage(
     request: Request, file_id: str, _: None = Depends(cookie_verification)
 ):
+    _validate_file_id(file_id)
     file_path = os.path.join("uploads", f"{file_id}.obj")
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
@@ -124,6 +136,7 @@ def get_file_from_storage(
 
 
 @router.post("/file_storage")
+@limiter.limit("30/minute")
 def post_basket_item_to_storage(
     request: Request,
     basket_item: BasketItemInformation,
@@ -175,6 +188,7 @@ def delete_basket_item(
     user_information: None = Depends(cookie_verification_user_only),
     redis_client=Depends(get_redis),
 ):
+    _validate_file_id(file_id)
     try:
         basket_item = db.query(BasketItem).filter(
             BasketItem.task_id == file_id

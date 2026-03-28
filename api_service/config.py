@@ -19,3 +19,5 @@ REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 
 MEDIA_SERVICE_URL = os.getenv("MEDIA_SERVICE_URL", os.getenv("STEP_SERVICE_URL", "http://localhost:1235"))
+
+IS_PRODUCTION = os.getenv("ENV", "development") == "production"

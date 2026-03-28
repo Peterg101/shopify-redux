@@ -12,17 +12,20 @@ if not SECRET_KEY:
 ALGORITHM = "HS256"  # JWT signing algorithm
 
 
-def generate_token(microservice_id: str):
+def generate_token(microservice_id: str, audience: str = None):
     """
     Generate a JWT token for inter-service communication.
     """
-    now = datetime.datetime.now(datetime.timezone.utc)  # Current UTC time
-    expiration = now + datetime.timedelta(hours=1)  # Expiration in 1 hour
+    now = datetime.datetime.now(datetime.timezone.utc)
+    expiration = now + datetime.timedelta(minutes=5)
     payload = {
-        "sub": microservice_id,  # Service identity
-        "exp": expiration,  # Expiration time
-        "iat": now,  # Issued at time
+        "sub": microservice_id,
+        "iss": microservice_id,
+        "exp": expiration,
+        "iat": now,
     }
+    if audience:
+        payload["aud"] = audience
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     return token
 
@@ -36,12 +39,10 @@ def verify_jwt_token(authorization: str = Header(None)):
             status_code=403, detail="Invalid or missing Authorization header"
         )
 
-    # Extract the JWT from the header
     token = authorization.split("Bearer ")[1]
 
     try:
-        # Decode the JWT token (PyJWT automatically validates `exp` and `iat`)
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_aud": False})
         return payload
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")

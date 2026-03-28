@@ -10,7 +10,7 @@ import logging
 from datetime import datetime
 
 import stripe
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session, selectinload
 
 from dependencies import get_db, get_redis, get_current_user
@@ -23,6 +23,7 @@ from fitd_schemas.fitd_db_schemas import (
     BasketItem, Order, UserStripeAccount, Claim, Disbursement,
 )
 from fitd_schemas.fitd_classes import CheckoutRequest
+from rate_limit import limiter
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +36,9 @@ router = APIRouter()
 
 
 @router.post("/stripe/checkout", status_code=201)
+@limiter.limit("5/minute")
 async def create_checkout_session(
+    request: Request,
     body: CheckoutRequest,
     user=Depends(get_current_user),
     db: Session = Depends(get_db),

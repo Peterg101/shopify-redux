@@ -155,7 +155,7 @@ async def get_obj_file_blob(url: str) -> BytesIO:
 
 
 async def create_task(task_information: TaskInformation):
-    auth_token = generate_token("generation_service")
+    auth_token = generate_token("generation_service", audience="api_service")
     url = f"{DB_SERVICE_URL}/tasks"
     headers = {
         "Content-Type": "application/json",

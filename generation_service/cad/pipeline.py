@@ -134,7 +134,7 @@ async def upload_step_file(
         with open(file_path, "rb") as f:
             file_content = f.read()
 
-        auth_token = generate_token("generation_service")
+        auth_token = generate_token("generation_service", audience="media_service")
         async with httpx.AsyncClient(timeout=60.0) as client:
             resp = await client.post(
                 f"{STEP_SERVICE_URL}/step/upload",

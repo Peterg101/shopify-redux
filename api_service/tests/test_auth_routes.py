@@ -95,7 +95,7 @@ def db_session(setup_db):
 
 
 def _seed_email_user(db_session, email="user@example.com", username="testuser",
-                     user_id="email-user-001", password="securepassword123"):
+                     user_id="email-user-001", password="SecurePassword123"):
     """Insert an email-auth user with a hashed password directly into the DB."""
     hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
     user = User(
@@ -279,7 +279,7 @@ class TestEmailRegister:
         resp = auth_client.post("/auth/register", json={
             "username": "newuser",
             "email": "new@example.com",
-            "password": "securepassword123",
+            "password": "SecurePassword123",
         })
 
         assert resp.status_code == 200
@@ -294,7 +294,7 @@ class TestEmailRegister:
         assert user.username == "newuser"
         assert user.auth_provider == "email"
         assert user.password_hash is not None
-        assert user.password_hash != "securepassword123"  # hashed, not plaintext
+        assert user.password_hash != "SecurePassword123"  # hashed, not plaintext
 
         # Session stored in Redis
         assert len(fake_session_redis.store) == 1
@@ -306,7 +306,7 @@ class TestEmailRegister:
         resp = auth_client.post("/auth/register", json={
             "username": "different",
             "email": "dup@example.com",
-            "password": "securepassword123",
+            "password": "SecurePassword123",
         })
 
         assert resp.status_code == 409
@@ -319,7 +319,7 @@ class TestEmailRegister:
         resp = auth_client.post("/auth/register", json={
             "username": "takenname",
             "email": "other@example.com",
-            "password": "securepassword123",
+            "password": "SecurePassword123",
         })
 
         assert resp.status_code == 409
@@ -337,7 +337,7 @@ class TestEmailRegister:
         resp = auth_client.post("/auth/register", json={
             "username": "valid",
             "email": "not-an-email",
-            "password": "securepassword123",
+            "password": "SecurePassword123",
         })
         assert resp.status_code == 422
 
@@ -354,7 +354,7 @@ class TestEmailLogin:
 
         resp = auth_client.post("/auth/login", json={
             "email": "user@example.com",
-            "password": "securepassword123",
+            "password": "SecurePassword123",
         })
 
         assert resp.status_code == 200
@@ -394,7 +394,7 @@ class TestEmailLogin:
 
         resp = auth_client.post("/auth/login", json={
             "email": "guser@gmail.com",
-            "password": "securepassword123",
+            "password": "SecurePassword123",
         })
 
         assert resp.status_code == 400
@@ -411,7 +411,7 @@ class TestEmailLogin:
         """Invalid email format returns 422."""
         resp = auth_client.post("/auth/login", json={
             "email": "bad-email",
-            "password": "securepassword123",
+            "password": "SecurePassword123",
         })
         assert resp.status_code == 422
 
@@ -431,7 +431,7 @@ class TestLogout:
         reg_resp = auth_client.post("/auth/register", json={
             "username": "logoutuser",
             "email": "logout@example.com",
-            "password": "securepassword123",
+            "password": "SecurePassword123",
         })
         assert reg_resp.status_code == 200
         session_cookie = reg_resp.cookies.get("fitd_session_data")

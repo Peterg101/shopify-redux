@@ -67,6 +67,11 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
 
   generation_service:
     build:
@@ -93,6 +98,11 @@ services:
       CAD_SANDBOX_IMAGE: fitd-cad-sandbox:latest
       CAD_WORK_DIR: /tmp/cad_work
     depends_on: [redis, ollama, api_service, media_service, cad_sandbox]
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
 
   media_service:
     platform: linux/amd64
@@ -110,6 +120,11 @@ services:
       S3_BUCKET_NAME: fitd-files
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
     depends_on: [minio]
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1.5G
 
   cad_sandbox:
     platform: linux/amd64

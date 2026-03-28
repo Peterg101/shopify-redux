@@ -23,6 +23,7 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
+from rate_limit import limiter
 from dependencies import get_db, get_redis, get_session_redis, get_current_user
 from cache import cached
 from helpers import _order_to_response
@@ -93,6 +94,7 @@ def _set_session_cookie(response, session_id: str):
 # ── Google OAuth ─────────────────────────────────────────────────────────
 
 @router.get("/auth/google")
+@limiter.limit("10/minute")
 def auth_google(request: Request):
     """Redirect to Google OAuth consent screen."""
     google_auth_url = (
@@ -175,7 +177,9 @@ async def auth_callback(
 # ── Email Auth ───────────────────────────────────────────────────────────
 
 @router.post("/auth/register")
+@limiter.limit("3/minute")
 async def email_register(
+    request: Request,
     register_request: EmailRegisterRequest,
     db: Session = Depends(get_db),
     session_redis=Depends(get_session_redis),
@@ -217,7 +221,9 @@ async def email_register(
 
 
 @router.post("/auth/login")
+@limiter.limit("5/minute")
 async def email_login(
+    request: Request,
     login_request: EmailLoginRequest,
     db: Session = Depends(get_db),
     session_redis=Depends(get_session_redis),
