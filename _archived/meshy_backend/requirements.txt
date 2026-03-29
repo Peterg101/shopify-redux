@@ -1,9 +1,0 @@
-fastapi
-uvicorn
-aiohttp
-redis[async]
-httpx
-httpx-sse
-python-dotenv
-pytest
-sqlalchemy
