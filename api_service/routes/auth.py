@@ -288,9 +288,12 @@ async def email_register(
     db.commit()
     db.refresh(user)
 
-    # Send verification email
-    token = generate_verification_token(user.user_id, user.email)
-    await send_verification_email(user.email, token)
+    # Send verification email (non-fatal — don't block registration if email fails)
+    try:
+        token = generate_verification_token(user.user_id, user.email)
+        await send_verification_email(user.email, token)
+    except Exception as e:
+        logger.warning(f"Verification email failed for {user.email}: {e}")
 
     # Create session
     session_data = SessionData(user_id=user.user_id)
