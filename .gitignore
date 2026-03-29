@@ -14,3 +14,4 @@ api_keys.txt
 .env.development
 .env.production
 start-dev.shapi_service/uploads/
+api_service/uploads/
