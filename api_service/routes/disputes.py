@@ -8,13 +8,12 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, selectinload
 
-from dependencies import get_db
+from dependencies import get_db, get_current_user
 from config import UPLOAD_DIR, MAX_EVIDENCE_SIZE_MB, MAX_EVIDENCE_SIZE_B64
 from helpers import check_and_auto_resolve, DISPUTE_BUYER_REVIEW_DAYS
-from utils import cookie_verification, cookie_verification_user_only
 
 from fitd_schemas.fitd_db_schemas import (
-    Claim, ClaimEvidence, ClaimStatusHistory, Disbursement, Dispute,
+    User, Claim, ClaimEvidence, ClaimStatusHistory, Disbursement, Dispute,
 )
 from fitd_schemas.fitd_classes import (
     DisputeFulfillerResponse,
@@ -32,7 +31,7 @@ router = APIRouter()
 def get_dispute(
     claim_id: str,
     db: Session = Depends(get_db),
-    _: None = Depends(cookie_verification),
+    _: User = Depends(get_current_user),
 ):
     dispute = db.query(Dispute).options(
         selectinload(Dispute.claim).selectinload(Claim.order)
@@ -48,7 +47,7 @@ def respond_to_dispute(
     dispute_id: str,
     payload: DisputeFulfillerResponse,
     db: Session = Depends(get_db),
-    user_information: None = Depends(cookie_verification_user_only),
+    user: User = Depends(get_current_user),
 ):
     dispute = db.query(Dispute).options(
         selectinload(Dispute.claim).selectinload(Claim.order)
@@ -57,7 +56,7 @@ def respond_to_dispute(
         raise HTTPException(status_code=404, detail="Dispute not found")
 
     claim = dispute.claim
-    if claim.claimant_user_id != user_information.user_id:
+    if claim.claimant_user_id != user.user_id:
         raise HTTPException(status_code=403, detail="Only the fulfiller can respond to a dispute")
 
     if dispute.status != "open":
@@ -82,7 +81,7 @@ def resolve_dispute(
     dispute_id: str,
     payload: DisputeResolveRequest,
     db: Session = Depends(get_db),
-    user_information: None = Depends(cookie_verification_user_only),
+    user: User = Depends(get_current_user),
 ):
     dispute = db.query(Dispute).options(
         selectinload(Dispute.claim).selectinload(Claim.order)
@@ -93,7 +92,7 @@ def resolve_dispute(
     claim = dispute.claim
     order = claim.order
 
-    if order.user_id != user_information.user_id:
+    if order.user_id != user.user_id:
         raise HTTPException(status_code=403, detail="Only the buyer can resolve a dispute")
 
     if payload.resolution not in ("accepted", "partial", "rejected"):
@@ -138,7 +137,7 @@ def resolve_dispute(
         claim_id=claim.id,
         previous_status=previous_status,
         new_status=claim.status,
-        changed_by=user_information.user_id,
+        changed_by=user.user_id,
     ))
     db.commit()
 
@@ -150,7 +149,7 @@ def upload_dispute_evidence(
     dispute_id: str,
     payload: EvidenceUploadRequest,
     db: Session = Depends(get_db),
-    user_information: None = Depends(cookie_verification_user_only),
+    user: User = Depends(get_current_user),
 ):
     dispute = db.query(Dispute).options(
         selectinload(Dispute.claim)
@@ -159,7 +158,7 @@ def upload_dispute_evidence(
         raise HTTPException(status_code=404, detail="Dispute not found")
 
     claim = dispute.claim
-    if claim.claimant_user_id != user_information.user_id:
+    if claim.claimant_user_id != user.user_id:
         raise HTTPException(status_code=403, detail="Only the fulfiller can upload counter-evidence")
 
     if len(payload.image_data) > MAX_EVIDENCE_SIZE_B64:

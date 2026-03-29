@@ -7,11 +7,10 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from dependencies import get_db
+from dependencies import get_db, get_current_user
 from config import UPLOAD_DIR
-from utils import cookie_verification, cookie_verification_user_only
 
-from fitd_schemas.fitd_db_schemas import Task, BasketItem, Part
+from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, Part
 from fitd_schemas.fitd_classes import (
     PartCreate,
     PartUpdate,
@@ -34,7 +33,7 @@ def list_parts(
     page: int = 1,
     page_size: int = 20,
     db: Session = Depends(get_db),
-    _: None = Depends(cookie_verification),
+    _: User = Depends(get_current_user),
 ):
     query = db.query(Part).filter(Part.status == "published", Part.is_public == True)
 
@@ -62,7 +61,7 @@ def list_parts(
 def get_part(
     part_id: str,
     db: Session = Depends(get_db),
-    _: None = Depends(cookie_verification),
+    _: User = Depends(get_current_user),
 ):
     part = db.query(Part).filter(Part.id == part_id).first()
     if not part:
@@ -74,16 +73,16 @@ def get_part(
 def create_part(
     part_data: PartCreate,
     db: Session = Depends(get_db),
-    user_information=Depends(cookie_verification_user_only),
+    user: User = Depends(get_current_user),
 ):
     task = db.query(Task).filter(Task.task_id == part_data.task_id).first()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
-    if task.user_id != user_information.user_id:
+    if task.user_id != user.user_id:
         raise HTTPException(status_code=403, detail="You can only publish parts from your own files")
 
     part = Part(
-        publisher_user_id=user_information.user_id,
+        publisher_user_id=user.user_id,
         name=part_data.name,
         description=part_data.description,
         category=part_data.category,
@@ -111,12 +110,12 @@ def update_part(
     part_id: str,
     part_data: PartUpdate,
     db: Session = Depends(get_db),
-    user_information=Depends(cookie_verification_user_only),
+    user: User = Depends(get_current_user),
 ):
     part = db.query(Part).filter(Part.id == part_id).first()
     if not part:
         raise HTTPException(status_code=404, detail="Part not found")
-    if part.publisher_user_id != user_information.user_id:
+    if part.publisher_user_id != user.user_id:
         raise HTTPException(status_code=403, detail="Not authorized to update this part")
 
     update_fields = part_data.dict(exclude_unset=True)
@@ -135,12 +134,12 @@ def update_part(
 def delete_part(
     part_id: str,
     db: Session = Depends(get_db),
-    user_information=Depends(cookie_verification_user_only),
+    user: User = Depends(get_current_user),
 ):
     part = db.query(Part).filter(Part.id == part_id).first()
     if not part:
         raise HTTPException(status_code=404, detail="Part not found")
-    if part.publisher_user_id != user_information.user_id:
+    if part.publisher_user_id != user.user_id:
         raise HTTPException(status_code=403, detail="Not authorized to delete this part")
 
     part.status = "archived"
@@ -153,7 +152,7 @@ def order_from_part(
     part_id: str,
     config: PartOrderConfig,
     db: Session = Depends(get_db),
-    user_information=Depends(cookie_verification_user_only),
+    user: User = Depends(get_current_user),
 ):
     part = db.query(Part).filter(Part.id == part_id, Part.status == "published").first()
     if not part:
@@ -171,7 +170,7 @@ def order_from_part(
 
     basket_item = BasketItem(
         task_id=f"catalog-{part.id}-{str(uuid.uuid4())[:8]}",
-        user_id=user_information.user_id,
+        user_id=user.user_id,
         name=part.name,
         material=material,
         technique=technique,

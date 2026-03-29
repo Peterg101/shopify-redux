@@ -5,14 +5,13 @@ from typing import Dict
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session, joinedload, selectinload
 
-from dependencies import get_db, get_redis
+from dependencies import get_db, get_redis, get_current_user
 from cache import cached, cache_invalidate
 from events import publish_event
 from helpers import _order_to_response
 from utils import (
     check_user_existence,
     add_user_to_db,
-    cookie_verification_user_only,
 )
 from jwt_auth import verify_jwt_token
 
@@ -507,9 +506,9 @@ def update_fulfiller_address(
     user_id: str,
     address: FulfillerAddressUpdate,
     db: Session = Depends(get_db),
-    user_information=Depends(cookie_verification_user_only),
+    user: User = Depends(get_current_user),
 ):
-    if user_information.user_id != user_id:
+    if user.user_id != user_id:
         raise HTTPException(status_code=403, detail="Not authorized to update this address")
 
     stripe_account = db.query(UserStripeAccount).filter(
@@ -532,7 +531,7 @@ def update_fulfiller_address(
 @router.get("/users/{user_id}/fulfiller_address")
 def get_fulfiller_address(
     user_id: str,
-    user_information=Depends(cookie_verification_user_only),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     stripe_account = db.query(UserStripeAccount).filter(

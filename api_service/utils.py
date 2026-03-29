@@ -1,22 +1,13 @@
-from typing import Union, Dict, List
-from api_calls import session_exists, session_exists_user_only
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound, IntegrityError
 from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, PortID, Claim, Order
 from fitd_schemas.fitd_classes import UserInformation, TaskInformation, BasketItemInformation, ClaimOrder
-from fitd_schemas.auth_utils import cookie_verification as _cookie_verification, cookie_verification_user_only as _cookie_verification_user_only
-from fastapi import HTTPException, Request
+from fastapi import HTTPException
 from datetime import datetime
 from pathlib import Path
 import base64
 
-
-async def check_session_token_active(session_token: Union[str, None]) -> bool:
-    if not session_token:
-        return False
-    active_session = await session_exists(session_token)
-    return active_session
 
 
 def check_user_existence(db: Session, user_id: str | None) -> bool:
@@ -165,13 +156,6 @@ def add_or_update_basket_item_in_db(
 
     return new_item
 
-
-async def cookie_verification(request: Request):
-    return await _cookie_verification(request, session_exists)
-
-
-async def cookie_verification_user_only(request: Request) -> UserInformation:
-    return await _cookie_verification_user_only(request, session_exists_user_only)
 
 
 def decode_file(file_blob: str, file_name: str, upload_dir: Path):

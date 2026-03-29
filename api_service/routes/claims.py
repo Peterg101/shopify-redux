@@ -8,17 +8,18 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, selectinload
 
-from dependencies import get_db, get_redis, require_verified_email
+from dependencies import get_db, get_redis, get_current_user, require_verified_email
 from cache import cache_invalidate, cache_invalidate_pattern
 from events import publish_event
 from config import UPLOAD_DIR, MAX_EVIDENCE_SIZE_MB, MAX_EVIDENCE_SIZE_B64
 from helpers import ALLOWED_STATUS_TRANSITIONS, DISPUTE_RESPONSE_DAYS, DISPUTE_BUYER_REVIEW_DAYS
-from utils import cookie_verification, cookie_verification_user_only, add_claim_to_db
+from utils import add_claim_to_db
 from jwt_auth import verify_jwt_token
 
 from fitd_schemas.fitd_db_schemas import (
-    Order, Claim, ClaimEvidence, ClaimStatusHistory, Disbursement, Dispute, FulfillerProfile,
+    User, Order, Claim, ClaimEvidence, ClaimStatusHistory, Disbursement, Dispute, FulfillerProfile,
 )
+
 from fitd_schemas.fitd_classes import (
     ClaimOrder,
     ClaimQuantityUpdate,
@@ -36,14 +37,13 @@ router = APIRouter()
 def claim_order(
     claimed_order: ClaimOrder,
     db: Session = Depends(get_db),
-    user_information: None = Depends(cookie_verification_user_only),
-    _verified=Depends(require_verified_email),
+    user: User = Depends(require_verified_email),
     redis_client=Depends(get_redis),
 ):
     try:
         existing_claim = db.query(Claim).filter(
             Claim.order_id == claimed_order.order_id,
-            Claim.claimant_user_id == user_information.user_id
+            Claim.claimant_user_id == user.user_id
         ).first()
 
         if existing_claim:
@@ -56,7 +56,7 @@ def claim_order(
         if order.process_id:
             import json as _json
             profile = db.query(FulfillerProfile).filter(
-                FulfillerProfile.user_id == user_information.user_id
+                FulfillerProfile.user_id == user.user_id
             ).first()
             if not profile:
                 raise HTTPException(
@@ -89,11 +89,11 @@ def claim_order(
                         detail=f"Order requires ±{order.tolerance_mm}mm tolerance but your profile minimum is ±{profile.min_tolerance_mm}mm"
                     )
 
-        add_claim_to_db(db, claimed_order, user_information)
-        cache_invalidate(redis_client, f"fitd:claims:{user_information.user_id}", f"fitd:orders:{order.user_id}")
+        add_claim_to_db(db, claimed_order, user)
+        cache_invalidate(redis_client, f"fitd:claims:{user.user_id}", f"fitd:orders:{order.user_id}")
         cache_invalidate_pattern(redis_client, "fitd:claimable:*")
-        publish_event(redis_client, "claim:status_changed", user_id=user_information.user_id)
-        if order.user_id != user_information.user_id:
+        publish_event(redis_client, "claim:status_changed", user_id=user.user_id)
+        if order.user_id != user.user_id:
             publish_event(redis_client, "order:claimed", user_id=order.user_id)
 
     except HTTPException:
@@ -109,13 +109,13 @@ def update_claim_quantity(
     claim_id: str,
     quantity_update: ClaimQuantityUpdate,
     db: Session = Depends(get_db),
-    user_information: None = Depends(cookie_verification_user_only),
+    user: User = Depends(get_current_user),
 ):
     claim = db.query(Claim).options(selectinload(Claim.order)).filter(Claim.id == claim_id).first()
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
 
-    if claim.claimant_user_id != user_information.user_id:
+    if claim.claimant_user_id != user.user_id:
         raise HTTPException(status_code=403, detail="Not authorized to update this claim")
 
     if claim.status not in ("pending", "in_progress"):
@@ -146,7 +146,7 @@ def update_claim_status(
     claim_id: str,
     status_update: ClaimStatusUpdate,
     db: Session = Depends(get_db),
-    user_information: None = Depends(cookie_verification_user_only),
+    user: User = Depends(get_current_user),
     redis_client=Depends(get_redis),
 ):
     claim = db.query(Claim).options(selectinload(Claim.order)).filter(Claim.id == claim_id).first()
@@ -156,10 +156,10 @@ def update_claim_status(
     order = claim.order
 
     if claim.status == "delivered":
-        if order.user_id != user_information.user_id:
+        if order.user_id != user.user_id:
             raise HTTPException(status_code=403, detail="Only the buyer can accept or dispute a delivered claim")
     else:
-        if claim.claimant_user_id != user_information.user_id:
+        if claim.claimant_user_id != user.user_id:
             raise HTTPException(status_code=403, detail="Not authorized to update this claim")
 
     allowed = ALLOWED_STATUS_TRANSITIONS.get(claim.status, [])
@@ -193,7 +193,7 @@ def update_claim_status(
         claim_id=claim.id,
         previous_status=previous_status,
         new_status=status_update.status,
-        changed_by=user_information.user_id,
+        changed_by=user.user_id,
     )
     db.add(history)
     db.commit()
@@ -221,7 +221,7 @@ def update_claim_status(
 
         dispute = Dispute(
             claim_id=claim.id,
-            opened_by=user_information.user_id,
+            opened_by=user.user_id,
             reason=status_update.reason,
             status="open",
             fulfiller_deadline=datetime.utcnow() + timedelta(days=DISPUTE_RESPONSE_DAYS),
@@ -241,13 +241,13 @@ def upload_claim_evidence(
     claim_id: str,
     payload: EvidenceUploadRequest,
     db: Session = Depends(get_db),
-    user_information: None = Depends(cookie_verification_user_only),
+    user: User = Depends(get_current_user),
 ):
     claim = db.query(Claim).filter(Claim.id == claim_id).first()
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
 
-    if claim.claimant_user_id != user_information.user_id:
+    if claim.claimant_user_id != user.user_id:
         raise HTTPException(status_code=403, detail="Only the fulfiller can upload evidence")
 
     if len(payload.image_data) > MAX_EVIDENCE_SIZE_B64:
@@ -282,7 +282,7 @@ def upload_claim_evidence(
 def get_claim_evidence(
     claim_id: str,
     db: Session = Depends(get_db),
-    _: None = Depends(cookie_verification),
+    _: User = Depends(get_current_user),
 ):
     evidence_list = db.query(ClaimEvidence).filter(ClaimEvidence.claim_id == claim_id).all()
     result = []
@@ -306,7 +306,7 @@ def get_claim_evidence(
 def get_claim_history(
     claim_id: str,
     db: Session = Depends(get_db),
-    _: None = Depends(cookie_verification),
+    _: User = Depends(get_current_user),
 ):
     history = db.query(ClaimStatusHistory).filter(
         ClaimStatusHistory.claim_id == claim_id

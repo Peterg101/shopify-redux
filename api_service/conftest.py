@@ -10,7 +10,6 @@ from fitd_schemas.fitd_db_schemas import Base
 from fitd_schemas.fitd_classes import UserInformation
 from db_setup import get_db
 from main import app
-from utils import cookie_verification, cookie_verification_user_only
 from jwt_auth import verify_jwt_token
 from dependencies import get_current_user, require_verified_email
 from db_setup import get_redis
@@ -40,10 +39,6 @@ def override_verify_jwt_token():
     return {"sub": "test_service"}
 
 
-async def override_cookie_verification():
-    return None
-
-
 TEST_USER = UserInformation(
     user_id="test-user-123",
     username="testuser",
@@ -57,14 +52,6 @@ CLAIMANT_USER = UserInformation(
     email="claimant@example.com",
     email_verified=True,
 )
-
-
-async def override_cookie_verification_user_only():
-    return TEST_USER
-
-
-async def override_cookie_verification_claimant():
-    return CLAIMANT_USER
 
 
 async def override_get_current_user():
@@ -99,8 +86,6 @@ def setup_db():
 def client(setup_db):
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[verify_jwt_token] = override_verify_jwt_token
-    app.dependency_overrides[cookie_verification] = override_cookie_verification
-    app.dependency_overrides[cookie_verification_user_only] = override_cookie_verification_user_only
     app.dependency_overrides[get_current_user] = override_get_current_user
     app.dependency_overrides[require_verified_email] = override_require_verified_email
     app.dependency_overrides[get_redis] = override_get_redis
@@ -114,8 +99,6 @@ def claimant_client(setup_db):
     """Client that authenticates as the claimant user."""
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[verify_jwt_token] = override_verify_jwt_token
-    app.dependency_overrides[cookie_verification] = override_cookie_verification
-    app.dependency_overrides[cookie_verification_user_only] = override_cookie_verification_claimant
     app.dependency_overrides[get_current_user] = override_get_current_user_claimant
     app.dependency_overrides[require_verified_email] = override_require_verified_email_claimant
     app.dependency_overrides[get_redis] = override_get_redis
@@ -200,14 +183,12 @@ def seed_order(client, seed_task, db_session):
 
 
 def set_auth_as_buyer():
-    """Switch the cookie auth override to the order owner (buyer)."""
-    app.dependency_overrides[cookie_verification_user_only] = override_cookie_verification_user_only
+    """Switch the auth override to the order owner (buyer)."""
     app.dependency_overrides[get_current_user] = override_get_current_user
     app.dependency_overrides[require_verified_email] = override_require_verified_email
 
 
 def set_auth_as_claimant():
-    """Switch the cookie auth override to the claimant (fulfiller)."""
-    app.dependency_overrides[cookie_verification_user_only] = override_cookie_verification_claimant
+    """Switch the auth override to the claimant (fulfiller)."""
     app.dependency_overrides[get_current_user] = override_get_current_user_claimant
     app.dependency_overrides[require_verified_email] = override_require_verified_email_claimant

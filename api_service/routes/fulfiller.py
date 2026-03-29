@@ -6,13 +6,12 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from dependencies import get_db, get_redis
+from dependencies import get_db, get_redis, get_current_user
 from cache import cached, cache_invalidate
 from events import publish_event
-from utils import cookie_verification, cookie_verification_user_only
 
 from fitd_schemas.fitd_db_schemas import (
-    ManufacturingProcess, ManufacturingMaterial, FulfillerProfile, FulfillerCapability,
+    User, ManufacturingProcess, ManufacturingMaterial, FulfillerProfile, FulfillerCapability,
 )
 from fitd_schemas.fitd_classes import (
     ManufacturingProcessResponse,
@@ -30,7 +29,7 @@ router = APIRouter()
 def get_fulfiller_profile(
     user_id: str,
     db: Session = Depends(get_db),
-    _: None = Depends(cookie_verification),
+    _: User = Depends(get_current_user),
 ):
     profile = db.query(FulfillerProfile).filter(FulfillerProfile.user_id == user_id).first()
     if not profile:
@@ -42,17 +41,17 @@ def get_fulfiller_profile(
 def create_fulfiller_profile(
     profile_data: FulfillerProfileCreate,
     db: Session = Depends(get_db),
-    user_information=Depends(cookie_verification_user_only),
+    user: User = Depends(get_current_user),
     redis_client=Depends(get_redis),
 ):
     existing = db.query(FulfillerProfile).filter(
-        FulfillerProfile.user_id == user_information.user_id
+        FulfillerProfile.user_id == user.user_id
     ).first()
     if existing:
         raise HTTPException(status_code=409, detail="Fulfiller profile already exists. Use PUT to update.")
 
     profile = FulfillerProfile(
-        user_id=user_information.user_id,
+        user_id=user.user_id,
         business_name=profile_data.business_name,
         description=profile_data.description,
         max_build_volume_x=profile_data.max_build_volume_x,
@@ -81,8 +80,8 @@ def create_fulfiller_profile(
 
     db.commit()
     db.refresh(profile)
-    cache_invalidate(redis_client, f"fitd:session:{user_information.user_id}")
-    publish_event(redis_client, "profile:updated", user_id=user_information.user_id)
+    cache_invalidate(redis_client, f"fitd:session:{user.user_id}")
+    publish_event(redis_client, "profile:updated", user_id=user.user_id)
     return profile
 
 
@@ -90,11 +89,11 @@ def create_fulfiller_profile(
 def update_fulfiller_profile(
     profile_data: FulfillerProfileCreate,
     db: Session = Depends(get_db),
-    user_information=Depends(cookie_verification_user_only),
+    user: User = Depends(get_current_user),
     redis_client=Depends(get_redis),
 ):
     profile = db.query(FulfillerProfile).filter(
-        FulfillerProfile.user_id == user_information.user_id
+        FulfillerProfile.user_id == user.user_id
     ).first()
     if not profile:
         raise HTTPException(status_code=404, detail="Fulfiller profile not found. Use POST to create.")
@@ -125,8 +124,8 @@ def update_fulfiller_profile(
 
     db.commit()
     db.refresh(profile)
-    cache_invalidate(redis_client, f"fitd:session:{user_information.user_id}")
-    publish_event(redis_client, "profile:updated", user_id=user_information.user_id)
+    cache_invalidate(redis_client, f"fitd:session:{user.user_id}")
+    publish_event(redis_client, "profile:updated", user_id=user.user_id)
     return profile
 
 
@@ -134,7 +133,7 @@ def update_fulfiller_profile(
 def list_manufacturing_processes(
     db: Session = Depends(get_db),
     redis_client=Depends(get_redis),
-    _: None = Depends(cookie_verification),
+    _: User = Depends(get_current_user),
 ):
     return cached(
         redis_client, "fitd:ref:processes", ttl=21600,
@@ -148,7 +147,7 @@ def list_manufacturing_materials(
     process_family: Optional[str] = None,
     db: Session = Depends(get_db),
     redis_client=Depends(get_redis),
-    _: None = Depends(cookie_verification),
+    _: User = Depends(get_current_user),
 ):
     cache_key = f"fitd:ref:materials:{process_family or 'all'}"
     query = db.query(ManufacturingMaterial)

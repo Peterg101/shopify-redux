@@ -5,11 +5,10 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from dependencies import get_db, get_redis
+from dependencies import get_db, get_redis, get_current_user
 from cache import cache_invalidate, cache_invalidate_pattern
 from events import publish_event
 from helpers import _order_to_response
-from utils import cookie_verification_user_only
 from jwt_auth import verify_jwt_token
 
 from fitd_schemas.fitd_db_schemas import (
@@ -94,7 +93,7 @@ def create_order_from_stripe(
 def get_order_detail(
     order_id: str,
     db: Session = Depends(get_db),
-    user_information: None = Depends(cookie_verification_user_only),
+    user: User = Depends(get_current_user),
 ):
     order = db.query(Order).filter(Order.order_id == order_id).first()
     if not order:
@@ -169,12 +168,12 @@ def get_order_detail(
 def toggle_order_visibility(
     order_id: str,
     db: Session = Depends(get_db),
-    user_information: None = Depends(cookie_verification_user_only),
+    user: User = Depends(get_current_user),
 ):
     order = db.query(Order).filter(Order.order_id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    if order.user_id != user_information.user_id:
+    if order.user_id != user.user_id:
         raise HTTPException(status_code=403, detail="Not authorized to modify this order")
     if not order.is_collaborative:
         pass
