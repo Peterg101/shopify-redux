@@ -44,12 +44,12 @@ PETER = "103968401714276034667"
 MARTA = "12233456778990008"
 
 
-def upsert_user(conn, user_id, username, email, auth_provider="google"):
+def upsert_user(conn, user_id, username, email, auth_provider="google", password_hash=None, email_verified=True):
     conn.execute(text("""
-        INSERT INTO users (user_id, username, email, auth_provider)
-        VALUES (:uid, :uname, :email, :auth)
+        INSERT INTO users (user_id, username, email, auth_provider, password_hash, email_verified)
+        VALUES (:uid, :uname, :email, :auth, :pw, :ev)
         ON CONFLICT (user_id) DO NOTHING
-    """), {"uid": user_id, "uname": username, "email": email, "auth": auth_provider})
+    """), {"uid": user_id, "uname": username, "email": email, "auth": auth_provider, "pw": password_hash, "ev": email_verified})
 
 
 def insert_task(conn, task_id, user_id, task_name, file_type="obj", complete=True, created_at=None):
@@ -286,11 +286,30 @@ def seed_manufacturing_taxonomy(conn):
         """), {"id": mid, "cat": category, "name": name, "pf": process_family})
 
 
+TEST_BUYER = "test-buyer-001"
+TEST_FULFILLER = "test-fulfiller-001"
+
+# Pre-hashed passwords (bcrypt, 12 rounds):
+# "TestBuyer123!" → hash below
+# "TestFulfiller123!" → hash below
+import bcrypt as _bcrypt
+_BUYER_PW = _bcrypt.hashpw(b"TestBuyer123!", _bcrypt.gensalt()).decode()
+_FULFILLER_PW = _bcrypt.hashpw(b"TestFulfiller123!", _bcrypt.gensalt()).decode()
+
+
 def seed_users(conn):
-    """Ensure Peter and Marta exist."""
+    """Ensure Peter, Marta, and test email users exist."""
     print("  Seeding users...")
     upsert_user(conn, PETER, "Peter Goon", "petergoon@gmail.com")
     upsert_user(conn, MARTA, "Marta Demo", "marta@demo.fitd.dev")
+
+    # Test email users (pre-verified, known passwords for dev login)
+    upsert_user(conn, TEST_BUYER, "Test Buyer", "buyer@test.fitd.dev",
+                auth_provider="email", password_hash=_BUYER_PW, email_verified=True)
+    upsert_user(conn, TEST_FULFILLER, "Test Fulfiller", "fulfiller@test.fitd.dev",
+                auth_provider="email", password_hash=_FULFILLER_PW, email_verified=True)
+    print("    Test accounts: buyer@test.fitd.dev / TestBuyer123!")
+    print("    Test accounts: fulfiller@test.fitd.dev / TestFulfiller123!")
 
 
 def seed_tasks(conn):
