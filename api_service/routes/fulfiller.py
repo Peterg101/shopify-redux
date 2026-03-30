@@ -6,7 +6,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from dependencies import get_db, get_redis, get_current_user
+from dependencies import get_db, get_redis, get_any_user
 from cache import cached, cache_invalidate
 from events import publish_event
 
@@ -29,7 +29,7 @@ router = APIRouter()
 def get_fulfiller_profile(
     user_id: str,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(get_any_user),
 ):
     profile = db.query(FulfillerProfile).filter(FulfillerProfile.user_id == user_id).first()
     if not profile:
@@ -41,7 +41,7 @@ def get_fulfiller_profile(
 def create_fulfiller_profile(
     profile_data: FulfillerProfileCreate,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
     redis_client=Depends(get_redis),
 ):
     existing = db.query(FulfillerProfile).filter(
@@ -89,7 +89,7 @@ def create_fulfiller_profile(
 def update_fulfiller_profile(
     profile_data: FulfillerProfileCreate,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
     redis_client=Depends(get_redis),
 ):
     profile = db.query(FulfillerProfile).filter(
@@ -133,7 +133,7 @@ def update_fulfiller_profile(
 def list_manufacturing_processes(
     db: Session = Depends(get_db),
     redis_client=Depends(get_redis),
-    _: User = Depends(get_current_user),
+    _: User = Depends(get_any_user),
 ):
     return cached(
         redis_client, "fitd:ref:processes", ttl=21600,
@@ -147,7 +147,7 @@ def list_manufacturing_materials(
     process_family: Optional[str] = None,
     db: Session = Depends(get_db),
     redis_client=Depends(get_redis),
-    _: User = Depends(get_current_user),
+    _: User = Depends(get_any_user),
 ):
     cache_key = f"fitd:ref:materials:{process_family or 'all'}"
     query = db.query(ManufacturingMaterial)

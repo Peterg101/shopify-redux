@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, selectinload
 
-from dependencies import get_db, get_redis, get_current_user, require_verified_email
+from dependencies import get_db, get_redis, get_any_user, require_verified_email
 from cache import cache_invalidate, cache_invalidate_pattern
 from events import publish_event
 from config import UPLOAD_DIR, MAX_EVIDENCE_SIZE_MB, MAX_EVIDENCE_SIZE_B64
@@ -109,7 +109,7 @@ def update_claim_quantity(
     claim_id: str,
     quantity_update: ClaimQuantityUpdate,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
 ):
     claim = db.query(Claim).options(selectinload(Claim.order)).filter(Claim.id == claim_id).first()
     if not claim:
@@ -146,7 +146,7 @@ def update_claim_status(
     claim_id: str,
     status_update: ClaimStatusUpdate,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
     redis_client=Depends(get_redis),
 ):
     claim = db.query(Claim).options(selectinload(Claim.order)).filter(Claim.id == claim_id).first()
@@ -241,7 +241,7 @@ def upload_claim_evidence(
     claim_id: str,
     payload: EvidenceUploadRequest,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
 ):
     claim = db.query(Claim).filter(Claim.id == claim_id).first()
     if not claim:
@@ -282,7 +282,7 @@ def upload_claim_evidence(
 def get_claim_evidence(
     claim_id: str,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(get_any_user),
 ):
     evidence_list = db.query(ClaimEvidence).filter(ClaimEvidence.claim_id == claim_id).all()
     result = []
@@ -306,7 +306,7 @@ def get_claim_evidence(
 def get_claim_history(
     claim_id: str,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(get_any_user),
 ):
     history = db.query(ClaimStatusHistory).filter(
         ClaimStatusHistory.claim_id == claim_id

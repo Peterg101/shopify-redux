@@ -13,7 +13,7 @@ import stripe
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session, selectinload
 
-from dependencies import get_db, get_redis, get_current_user, require_verified_email
+from dependencies import get_db, get_redis, get_any_user, require_verified_email
 from cache import cache_invalidate, cache_invalidate_pattern
 from events import publish_event
 from stripe_utils import generate_stripe_account, generate_account_link, validate_stripe_header
@@ -100,7 +100,7 @@ async def create_checkout_session(
 
 @router.post("/stripe/onboard")
 async def onboard_user(
-    user=Depends(get_current_user),
+    user=Depends(get_any_user),
     db: Session = Depends(get_db),
 ):
     """Creates or returns a Stripe Express account for the given user."""
@@ -342,7 +342,7 @@ def _handle_charge_refunded(event, db: Session):
 @router.post("/stripe/process_payout/{claim_id}")
 async def process_payout(
     claim_id: str,
-    user=Depends(get_current_user),
+    user=Depends(get_any_user),
     db: Session = Depends(get_db),
 ):
     """Processes a Stripe Transfer (payout) for a completed claim."""
@@ -422,7 +422,7 @@ async def process_payout(
 @router.post("/shipping/create_label/{claim_id}")
 async def create_label_for_claim(
     claim_id: str,
-    user=Depends(get_current_user),
+    user=Depends(get_any_user),
     db: Session = Depends(get_db),
 ):
     """Creates a ShipEngine shipping label for a claim."""

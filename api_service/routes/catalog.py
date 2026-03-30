@@ -7,7 +7,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from dependencies import get_db, get_current_user
+from dependencies import get_db, get_any_user
 from config import UPLOAD_DIR
 
 from fitd_schemas.fitd_db_schemas import User, Task, BasketItem, Part
@@ -33,7 +33,7 @@ def list_parts(
     page: int = 1,
     page_size: int = 20,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(get_any_user),
 ):
     query = db.query(Part).filter(Part.status == "published", Part.is_public == True)
 
@@ -61,7 +61,7 @@ def list_parts(
 def get_part(
     part_id: str,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(get_any_user),
 ):
     part = db.query(Part).filter(Part.id == part_id).first()
     if not part:
@@ -73,7 +73,7 @@ def get_part(
 def create_part(
     part_data: PartCreate,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
 ):
     task = db.query(Task).filter(Task.task_id == part_data.task_id).first()
     if not task:
@@ -110,7 +110,7 @@ def update_part(
     part_id: str,
     part_data: PartUpdate,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
 ):
     part = db.query(Part).filter(Part.id == part_id).first()
     if not part:
@@ -134,7 +134,7 @@ def update_part(
 def delete_part(
     part_id: str,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
 ):
     part = db.query(Part).filter(Part.id == part_id).first()
     if not part:
@@ -152,7 +152,7 @@ def order_from_part(
     part_id: str,
     config: PartOrderConfig,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
 ):
     part = db.query(Part).filter(Part.id == part_id, Part.status == "published").first()
     if not part:

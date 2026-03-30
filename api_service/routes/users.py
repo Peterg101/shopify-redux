@@ -5,7 +5,7 @@ from typing import Dict
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session, joinedload, selectinload
 
-from dependencies import get_db, get_redis, get_current_user
+from dependencies import get_db, get_redis, get_any_user
 from cache import cached, cache_invalidate
 from events import publish_event
 from helpers import _order_to_response
@@ -506,7 +506,7 @@ def update_fulfiller_address(
     user_id: str,
     address: FulfillerAddressUpdate,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
 ):
     if user.user_id != user_id:
         raise HTTPException(status_code=403, detail="Not authorized to update this address")
@@ -531,7 +531,7 @@ def update_fulfiller_address(
 @router.get("/users/{user_id}/fulfiller_address")
 def get_fulfiller_address(
     user_id: str,
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
     db: Session = Depends(get_db),
 ):
     stripe_account = db.query(UserStripeAccount).filter(

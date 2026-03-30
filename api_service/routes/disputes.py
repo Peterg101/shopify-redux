@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, selectinload
 
-from dependencies import get_db, get_current_user
+from dependencies import get_db, get_any_user
 from config import UPLOAD_DIR, MAX_EVIDENCE_SIZE_MB, MAX_EVIDENCE_SIZE_B64
 from helpers import check_and_auto_resolve, DISPUTE_BUYER_REVIEW_DAYS
 
@@ -31,7 +31,7 @@ router = APIRouter()
 def get_dispute(
     claim_id: str,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(get_any_user),
 ):
     dispute = db.query(Dispute).options(
         selectinload(Dispute.claim).selectinload(Claim.order)
@@ -47,7 +47,7 @@ def respond_to_dispute(
     dispute_id: str,
     payload: DisputeFulfillerResponse,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
 ):
     dispute = db.query(Dispute).options(
         selectinload(Dispute.claim).selectinload(Claim.order)
@@ -81,7 +81,7 @@ def resolve_dispute(
     dispute_id: str,
     payload: DisputeResolveRequest,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
 ):
     dispute = db.query(Dispute).options(
         selectinload(Dispute.claim).selectinload(Claim.order)
@@ -149,7 +149,7 @@ def upload_dispute_evidence(
     dispute_id: str,
     payload: EvidenceUploadRequest,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
 ):
     dispute = db.query(Dispute).options(
         selectinload(Dispute.claim)

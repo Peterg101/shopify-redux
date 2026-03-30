@@ -11,7 +11,7 @@ from fitd_schemas.fitd_classes import UserInformation
 from db_setup import get_db
 from main import app
 from jwt_auth import verify_jwt_token
-from dependencies import get_current_user, require_verified_email
+from dependencies import get_current_user, get_any_user, require_verified_email
 from db_setup import get_redis
 from stripe_utils import validate_stripe_header
 
@@ -87,6 +87,7 @@ def client(setup_db):
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[verify_jwt_token] = override_verify_jwt_token
     app.dependency_overrides[get_current_user] = override_get_current_user
+    app.dependency_overrides[get_any_user] = override_get_current_user
     app.dependency_overrides[require_verified_email] = override_require_verified_email
     app.dependency_overrides[get_redis] = override_get_redis
     with TestClient(app) as c:
@@ -100,6 +101,7 @@ def claimant_client(setup_db):
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[verify_jwt_token] = override_verify_jwt_token
     app.dependency_overrides[get_current_user] = override_get_current_user_claimant
+    app.dependency_overrides[get_any_user] = override_get_current_user_claimant
     app.dependency_overrides[require_verified_email] = override_require_verified_email_claimant
     app.dependency_overrides[get_redis] = override_get_redis
     with TestClient(app) as c:
@@ -185,10 +187,12 @@ def seed_order(client, seed_task, db_session):
 def set_auth_as_buyer():
     """Switch the auth override to the order owner (buyer)."""
     app.dependency_overrides[get_current_user] = override_get_current_user
+    app.dependency_overrides[get_any_user] = override_get_current_user
     app.dependency_overrides[require_verified_email] = override_require_verified_email
 
 
 def set_auth_as_claimant():
     """Switch the auth override to the claimant (fulfiller)."""
     app.dependency_overrides[get_current_user] = override_get_current_user_claimant
+    app.dependency_overrides[get_any_user] = override_get_current_user_claimant
     app.dependency_overrides[require_verified_email] = override_require_verified_email_claimant

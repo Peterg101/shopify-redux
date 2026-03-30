@@ -7,7 +7,7 @@ import base64
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
-from dependencies import get_db, get_redis, get_current_user
+from dependencies import get_db, get_redis, get_any_user
 from cache import cache_invalidate
 from events import publish_event
 from config import UPLOAD_DIR, MAX_FILE_SIZE_MB, MAX_FILE_SIZE_B64
@@ -95,7 +95,7 @@ def receive_meshy_task_from_image_generator(
 def update_basket_quantity(
     update_data: BasketQuantityUpdate,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
     redis_client=Depends(get_redis),
 ):
     basket_item = db.query(BasketItem).filter(
@@ -119,7 +119,7 @@ def update_basket_quantity(
 
 @router.get("/file_storage/{file_id}")
 def get_file_from_storage(
-    request: Request, file_id: str, _: User = Depends(get_current_user)
+    request: Request, file_id: str, _: User = Depends(get_any_user)
 ):
     _validate_file_id(file_id)
     file_path = os.path.join("uploads", f"{file_id}.obj")
@@ -139,7 +139,7 @@ def post_basket_item_to_storage(
     request: Request,
     basket_item: BasketItemInformation,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
     redis_client=Depends(get_redis),
 ):
     user_exists = check_user_existence(db, basket_item.user_id)
@@ -183,7 +183,7 @@ def delete_basket_item(
     request: Request,
     file_id: str,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
     redis_client=Depends(get_redis),
 ):
     _validate_file_id(file_id)

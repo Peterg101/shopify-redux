@@ -49,16 +49,6 @@ async def get_current_user(
     return user
 
 
-# Require verified email — for sensitive operations (checkout, claiming)
-async def require_verified_email(user: User = Depends(get_current_user)):
-    if not getattr(user, "email_verified", False):
-        raise HTTPException(
-            status_code=403,
-            detail="Please verify your email to perform this action",
-        )
-    return user
-
-
 # Authenticate mobile user via Bearer JWT token
 async def get_mobile_user(
     authorization: str = Header(None),
@@ -118,6 +108,16 @@ async def get_any_user(
             pass
 
     raise HTTPException(status_code=401, detail="Not authenticated")
+
+
+# Require verified email — for sensitive operations (checkout, claiming)
+async def require_verified_email(user: User = Depends(get_any_user)):
+    if not getattr(user, "email_verified", False):
+        raise HTTPException(
+            status_code=403,
+            detail="Please verify your email to perform this action",
+        )
+    return user
 
 
 # Media service client (for thumbnail gen, STEP processing)

@@ -5,7 +5,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from dependencies import get_db, get_redis, get_current_user
+from dependencies import get_db, get_redis, get_any_user
 from cache import cache_invalidate, cache_invalidate_pattern
 from events import publish_event
 from helpers import _order_to_response
@@ -93,7 +93,7 @@ def create_order_from_stripe(
 def get_order_detail(
     order_id: str,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
 ):
     order = db.query(Order).filter(Order.order_id == order_id).first()
     if not order:
@@ -168,7 +168,7 @@ def get_order_detail(
 def toggle_order_visibility(
     order_id: str,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
 ):
     order = db.query(Order).filter(Order.order_id == order_id).first()
     if not order:
