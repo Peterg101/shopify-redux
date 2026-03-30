@@ -515,6 +515,212 @@ async def logout(
     return response
 
 
+# ── Mobile Auth (Bearer token) ───────────────────────────────────────────
+# Mobile clients can't use HttpOnly cookies. These endpoints return JWTs.
+
+import secrets
+from datetime import timedelta
+from jose import jwt as jose_jwt
+from fitd_schemas.fitd_db_schemas import MobileRefreshToken
+
+MOBILE_JWT_SECRET = os.getenv("JWT_SECRET_KEY", "dev-secret-key")
+MOBILE_JWT_ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRY = timedelta(minutes=15)
+REFRESH_TOKEN_EXPIRY = timedelta(days=30)
+
+
+def _create_mobile_access_token(user_id: str) -> str:
+    from datetime import datetime, timezone
+    payload = {
+        "user_id": user_id,
+        "exp": datetime.now(timezone.utc) + ACCESS_TOKEN_EXPIRY,
+        "type": "access",
+    }
+    return jose_jwt.encode(payload, MOBILE_JWT_SECRET, algorithm=MOBILE_JWT_ALGORITHM)
+
+
+def _create_refresh_token(user_id: str, db: Session) -> str:
+    from datetime import datetime, timezone
+    raw_token = secrets.token_urlsafe(48)
+    token_hash = bcrypt.hashpw(raw_token.encode(), bcrypt.gensalt()).decode()
+
+    db_token = MobileRefreshToken(
+        user_id=user_id,
+        token_hash=token_hash,
+        expires_at=datetime.now(timezone.utc) + REFRESH_TOKEN_EXPIRY,
+    )
+    db.add(db_token)
+    db.commit()
+    return raw_token
+
+
+def _build_mobile_session_response(user: User, db: Session) -> dict:
+    """Build the mobile auth response with tokens + slim session data."""
+    access_token = _create_mobile_access_token(user.user_id)
+    refresh_token = _create_refresh_token(user.user_id, db)
+
+    user_stripe = db.query(UserStripeAccount).filter(UserStripeAccount.user_id == user.user_id).first()
+    fulfiller_profile = db.query(FulfillerProfile).filter(FulfillerProfile.user_id == user.user_id).first()
+
+    return {
+        "token": access_token,
+        "refresh_token": refresh_token,
+        "user": {
+            "user_id": user.user_id,
+            "username": user.username,
+            "email": user.email,
+        },
+        "stripe_onboarded": bool(user_stripe and user_stripe.onboarding_complete),
+        "has_fulfiller_profile": bool(fulfiller_profile),
+        "email_verified": getattr(user, "email_verified", False),
+    }
+
+
+@router.post("/auth/mobile/login")
+@limiter.limit("5/minute")
+async def mobile_login(
+    request: Request,
+    login_request: EmailLoginRequest,
+    db: Session = Depends(get_db),
+):
+    """Mobile login — returns JWT access + refresh tokens."""
+    user = db.query(User).filter(User.email == login_request.email).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    if not user.password_hash:
+        raise HTTPException(
+            status_code=400,
+            detail=f"This account uses {user.auth_provider} sign-in. Please log in with {user.auth_provider}.",
+        )
+
+    is_valid = await asyncio.to_thread(
+        bcrypt.checkpw, login_request.password.encode("utf-8"), user.password_hash.encode("utf-8"),
+    )
+    if not is_valid:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    return _build_mobile_session_response(user, db)
+
+
+@router.post("/auth/mobile/register")
+@limiter.limit("3/minute")
+async def mobile_register(
+    request: Request,
+    register_request: EmailRegisterRequest,
+    db: Session = Depends(get_db),
+):
+    """Mobile registration — returns JWT access + refresh tokens."""
+    existing_email = db.query(User).filter(User.email == register_request.email).first()
+    if existing_email:
+        raise HTTPException(status_code=409, detail="Email already registered")
+
+    existing_username = db.query(User).filter(User.username == register_request.username).first()
+    if existing_username:
+        raise HTTPException(status_code=409, detail="Username already taken")
+
+    hashed = await asyncio.to_thread(
+        bcrypt.hashpw, register_request.password.encode("utf-8"), bcrypt.gensalt()
+    )
+
+    user_id = str(uuid.uuid4())
+    user = User(
+        user_id=user_id,
+        username=register_request.username,
+        email=register_request.email,
+        password_hash=hashed.decode("utf-8"),
+        auth_provider="email",
+        email_verified=False,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    try:
+        token = generate_verification_token(user.user_id, user.email)
+        await send_verification_email(user.email, token)
+    except Exception as e:
+        logger.warning(f"Verification email failed for {user.email}: {e}")
+
+    return _build_mobile_session_response(user, db)
+
+
+@router.post("/auth/mobile/refresh")
+@limiter.limit("10/minute")
+async def mobile_refresh(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Refresh an access token using a refresh token."""
+    body = await request.json()
+    raw_token = body.get("refresh_token")
+    if not raw_token:
+        raise HTTPException(status_code=400, detail="Missing refresh_token")
+
+    # Find all non-revoked, non-expired tokens and check against hash
+    from datetime import datetime, timezone
+    tokens = db.query(MobileRefreshToken).filter(
+        MobileRefreshToken.revoked == False,
+        MobileRefreshToken.expires_at > datetime.now(timezone.utc),
+    ).all()
+
+    matched_token = None
+    for t in tokens:
+        if bcrypt.checkpw(raw_token.encode(), t.token_hash.encode()):
+            matched_token = t
+            break
+
+    if not matched_token:
+        raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
+
+    access_token = _create_mobile_access_token(matched_token.user_id)
+    return {"token": access_token}
+
+
+@router.post("/auth/mobile/google")
+@limiter.limit("10/minute")
+async def mobile_google_auth(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Exchange a Google OAuth authorization code for mobile tokens."""
+    body = await request.json()
+    code = body.get("code")
+    if not code:
+        raise HTTPException(status_code=400, detail="Missing authorization code")
+
+    try:
+        token_data = await google_exchange_code(code)
+        oauth_info = await google_get_user_info(token_data)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Failed to authenticate with Google")
+
+    user = _find_or_create_oauth_user(oauth_info, db)
+    return _build_mobile_session_response(user, db)
+
+
+@router.post("/auth/mobile/github")
+@limiter.limit("10/minute")
+async def mobile_github_auth(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Exchange a GitHub OAuth authorization code for mobile tokens."""
+    body = await request.json()
+    code = body.get("code")
+    if not code:
+        raise HTTPException(status_code=400, detail="Missing authorization code")
+
+    try:
+        token_data = await github_exchange_code(code)
+        oauth_info = await github_get_user_info(token_data)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Failed to authenticate with GitHub")
+
+    user = _find_or_create_oauth_user(oauth_info, db)
+    return _build_mobile_session_response(user, db)
+
+
 # ── Cookie-authenticated user data endpoints ─────────────────────────────
 # The frontend calls these directly with session cookies.
 

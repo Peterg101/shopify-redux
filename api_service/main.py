@@ -51,7 +51,7 @@ async def rate_limit_handler(request, exc):
 if IS_PRODUCTION:
     cors_origins = [FRONTEND_URL]
 else:
-    cors_origins = [FRONTEND_URL, "http://localhost:1234", "http://localhost:1235"]
+    cors_origins = [FRONTEND_URL, "http://localhost:1234", "http://localhost:1235", "http://localhost:8081"]
 
 app.add_middleware(
     CORSMiddleware,

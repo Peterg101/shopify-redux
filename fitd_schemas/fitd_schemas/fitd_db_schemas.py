@@ -359,3 +359,15 @@ class FileAsset(Base):
     user = relationship("User", backref=backref("file_assets", lazy="noload"), lazy="noload")
     preview_asset = relationship("FileAsset", foreign_keys=[preview_asset_id], remote_side="FileAsset.id", lazy="joined")
     thumbnail_asset = relationship("FileAsset", foreign_keys=[thumbnail_asset_id], remote_side="FileAsset.id", lazy="joined")
+
+
+class MobileRefreshToken(Base):
+    __tablename__ = "mobile_refresh_tokens"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.user_id"), nullable=False, index=True)
+    token_hash: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    revoked: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+
+    user = relationship("User", backref=backref("refresh_tokens", lazy="noload"), lazy="noload")
