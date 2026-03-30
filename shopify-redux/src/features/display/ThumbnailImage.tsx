@@ -11,12 +11,12 @@ interface ThumbnailImageProps {
  * Displays a server-rendered thumbnail image for a 3D model.
  * Falls back to a ViewInAr icon if the thumbnail isn't available.
  *
- * The image is served via step_service GET /thumbnail/{taskId},
+ * The image is served via media_service GET /thumbnail/{taskId},
  * which redirects to a presigned S3 URL (~30KB PNG vs 2.5MB model file).
  */
 export const ThumbnailImage = ({ taskId, alt = '3D model' }: ThumbnailImageProps) => {
   const [error, setError] = useState(false)
-  const thumbnailUrl = `${process.env.REACT_APP_STEP_SERVICE}/thumbnail/${taskId}`
+  const thumbnailUrl = `${process.env.REACT_APP_MEDIA_URL}/thumbnail/${taskId}`
 
   if (error) {
     return (

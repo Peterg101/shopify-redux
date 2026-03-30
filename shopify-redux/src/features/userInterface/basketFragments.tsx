@@ -34,7 +34,7 @@ import { BasketInformation } from "../../app/utility/interfaces";
 import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
 import { createStripeCheckoutAndRedirect } from "../../services/fetchFileUtils";
 import { selectTotalBasketValue } from "../../services/selectors";
-import { monoFontFamily } from "../../theme";
+import { monoFontFamily, borderSubtle, borderHover, glowSubtle, glowMedium, bgHighlight } from "../../theme";
 
 // Empty state
 export const EmptyBasket = () => (
@@ -110,11 +110,11 @@ function BasketItemCard(item: BasketInformation) {
   return (
     <Card
       sx={{
-        border: '1px solid rgba(0, 229, 255, 0.12)',
+        border: `1px solid ${borderSubtle}`,
         transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
         '&:hover': {
-          borderColor: 'rgba(0, 229, 255, 0.3)',
-          boxShadow: '0 0 16px rgba(0, 229, 255, 0.1)',
+          borderColor: borderHover,
+          boxShadow: `0 0 16px ${glowSubtle}`,
         },
       }}
     >
@@ -190,7 +190,7 @@ function BasketItemCard(item: BasketInformation) {
           {showDetails ? <ExpandLess sx={{ fontSize: 16 }} /> : <ExpandMore sx={{ fontSize: 16 }} />}
         </Box>
         <Collapse in={showDetails}>
-          <Box sx={{ mt: 1, pt: 1, borderTop: '1px solid rgba(0, 229, 255, 0.08)' }}>
+          <Box sx={{ mt: 1, pt: 1, borderTop: `1px solid ${glowSubtle}` }}>
             <DetailRow label="Sizing" value={`${item.sizing}x`} />
             <DetailRow label="Unit Price" value={`\u00a3${item.price.toFixed(2)}`} mono />
           </Box>
@@ -238,7 +238,7 @@ export const BasketSummary = () => {
     <Card
       sx={{
         p: 2.5,
-        border: '1px solid rgba(0, 229, 255, 0.15)',
+        border: `1px solid ${glowMedium}`,
         backdropFilter: "blur(6px)",
         background: "rgba(19, 25, 32, 0.85)",
         boxShadow: "0 8px 24px rgba(0, 0, 0, 0.3), 0 0 12px rgba(0, 229, 255, 0.05)",
@@ -293,7 +293,7 @@ export const BasketSummary = () => {
           fontWeight: 600,
           transition: 'all 0.2s ease',
           '&:hover': {
-            boxShadow: '0 0 20px rgba(0, 229, 255, 0.3)',
+            boxShadow: `0 0 20px ${borderHover}`,
           },
         }}
       >

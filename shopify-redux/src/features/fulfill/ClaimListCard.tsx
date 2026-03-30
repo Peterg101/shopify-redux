@@ -22,7 +22,7 @@ import { setSelectedClaim, setUpdateClaimMode } from '../../services/userInterfa
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
 import { useUpdateClaimQuantityMutation, useUpdateClaimStatusMutation } from '../../services/dbApi'
 import PrintIcon from '@mui/icons-material/Print'
-import { monoFontFamily } from '../../theme'
+import { monoFontFamily, glowMedium, bgHighlight } from '../../theme'
 import { STATUS_PHASES } from './ClaimDashboardHeader'
 
 const PHASE_ORDER = STATUS_PHASES.map((p) => p.label)
@@ -136,7 +136,7 @@ export const ClaimListCard = React.memo(({ claim }: ClaimListCardProps) => {
         transition: 'transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
         '&:hover': {
           borderColor: 'rgba(0, 229, 255, 0.35)',
-          boxShadow: '0 0 24px rgba(0, 229, 255, 0.15)',
+          boxShadow: `0 0 24px ${glowMedium}`,
         },
       }}
     >
@@ -151,7 +151,7 @@ export const ClaimListCard = React.memo(({ claim }: ClaimListCardProps) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          bgcolor: 'rgba(0, 229, 255, 0.04)',
+          bgcolor: bgHighlight,
         }}
       >
         {is3D ? (

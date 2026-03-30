@@ -38,9 +38,10 @@ describe('LoginPage', () => {
     expect(registerButton).toBeInTheDocument()
   })
 
-  it('shows Google sign-in button', () => {
+  it('shows Google and GitHub sign-in buttons', () => {
     renderWithProviders(<LoginPageWithRoutes />, { route: '/login' })
-    expect(screen.getByText(/sign in with google/i)).toBeInTheDocument()
+    expect(screen.getByText(/continue with google/i)).toBeInTheDocument()
+    expect(screen.getByText(/continue with github/i)).toBeInTheDocument()
   })
 
   it('Sign In button is enabled when email and password fields are filled', () => {

@@ -89,7 +89,7 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
             )
             return
 
-        # Step 3: Register task in db_service
+        # Step 3: Register task in api_service
         await publish(redis, port_id, f"70,registering,{task_name}")
         task_id = await register_task(
             user_id, task_name, port_id, file_type="step"

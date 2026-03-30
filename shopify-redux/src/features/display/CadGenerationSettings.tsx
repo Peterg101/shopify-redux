@@ -17,6 +17,7 @@ import { SelectChangeEvent } from '@mui/material/Select';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 import { setCadGenerationSettings } from '../../services/cadSlice';
+import { borderSubtle } from '../../theme';
 
 export const CadSettings = () => {
   const dispatch = useDispatch();
@@ -45,7 +46,7 @@ export const CadSettings = () => {
         backgroundImage: 'none',
         boxShadow: 'none',
         '&:before': { display: 'none' },
-        border: '1px solid rgba(0, 229, 255, 0.12)',
+        border: `1px solid ${borderSubtle}`,
         borderRadius: '8px !important',
       }}
     >

@@ -1,5 +1,5 @@
 """
-Shared helper functions and constants for db_service routes.
+Shared helper functions and constants for api_service routes.
 """
 import logging
 from datetime import datetime

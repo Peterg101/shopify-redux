@@ -1,4 +1,4 @@
-import { Box, Container, Grid, Paper } from '@mui/material';
+import { Box, Container } from '@mui/material';
 import { FileViewer } from './fileViewer';
 import { ToolBar } from './toolBar';
 import { ConfigurationPanel } from './ConfigurationPanel';
@@ -26,16 +26,12 @@ export const MainOptions = () => {
         }),
       }}
     >
-      <Container maxWidth="lg" sx={{ mt: 10, mb: 4 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', minHeight: '70vh' }}>
-              {has3DModel && <ToolBar />}
-              <FileViewer />
-            </Paper>
-            {has3DModel && !fulfillMode && <ConfigurationPanel />}
-          </Grid>
-        </Grid>
+      <Container maxWidth="lg" sx={{ mt: 12, mb: 4 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '75vh' }}>
+          {has3DModel && <ToolBar />}
+          <FileViewer />
+        </Box>
+        {has3DModel && !fulfillMode && <ConfigurationPanel />}
       </Container>
     </Box>
   );

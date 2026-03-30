@@ -17,7 +17,7 @@ import logger from '../../app/utility/logger'
 import { setClaimedOrder } from '../../services/userInterfaceSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
 import { ThumbnailImage } from '../display/ThumbnailImage'
-import { monoFontFamily } from '../../theme'
+import { monoFontFamily, glowMedium, bgHighlight, borderHover } from '../../theme'
 import { getScarcityColor } from '../../app/utility/fulfillUtils'
 
 interface MarketplaceCompactCardProps {
@@ -54,7 +54,7 @@ export const MarketplaceCompactCard = React.memo(({ order }: MarketplaceCompactC
           '&:hover': {
             transform: 'translateY(-2px)',
             borderColor: 'rgba(0, 229, 255, 0.35)',
-            boxShadow: '0 0 24px rgba(0, 229, 255, 0.15)',
+            boxShadow: `0 0 24px ${glowMedium}`,
             '& .compact-zoom': {
               transform: 'scale(1.02)',
             },
@@ -71,7 +71,7 @@ export const MarketplaceCompactCard = React.memo(({ order }: MarketplaceCompactC
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                bgcolor: 'rgba(0, 229, 255, 0.04)',
+                bgcolor: bgHighlight,
                 transition: 'transform 0.3s ease',
               }}
             >
@@ -131,12 +131,12 @@ export const MarketplaceCompactCard = React.memo(({ order }: MarketplaceCompactC
                   left: 8,
                   display: 'flex',
                   alignItems: 'center',
-                  bgcolor: 'rgba(0, 229, 255, 0.15)',
+                  bgcolor: glowMedium,
                   borderRadius: 1,
                   px: 0.5,
                   py: 0.25,
                   backdropFilter: 'blur(4px)',
-                  border: '1px solid rgba(0, 229, 255, 0.3)',
+                  border: `1px solid ${borderHover}`,
                 }}
               >
                 <VerifiedIcon sx={{ fontSize: 12, color: '#00E5FF' }} />

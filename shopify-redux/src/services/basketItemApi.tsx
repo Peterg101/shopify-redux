@@ -5,7 +5,7 @@ import { authApi } from './authApi';
 
 export const basketApi = createApi({
   reducerPath: 'basketApi',
-  baseQuery: createBaseQueryWithReauth(process.env.REACT_APP_DB_SERVICE!),
+  baseQuery: createBaseQueryWithReauth(process.env.REACT_APP_API_URL!),
   endpoints: (builder) => ({
     updateBasketQuantity: builder.mutation<void, BasketQuantityUpdate>({
       query: ({ task_id, quantity }) => ({

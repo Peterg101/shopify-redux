@@ -14,8 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectIsLoggedIn } from '../../services/selectors';
 import { useLoginMutation, useRegisterMutation } from '../../services/authApi';
-import GoogleButton from 'react-google-button';
-import { GitHub as GitHubIcon } from '@mui/icons-material';
+import { GitHub as GitHubIcon, Google as GoogleIcon } from '@mui/icons-material';
 import { monoFontFamily } from '../../theme';
 
 export function LoginPage() {
@@ -44,7 +43,7 @@ export function LoginPage() {
   }, [isLoggedIn, navigate]);
 
   const handleGoogleLogin = () => {
-    window.location.href = `${process.env.REACT_APP_AUTH_SERVICE}/auth/google`;
+    window.location.href = `${process.env.REACT_APP_API_URL}/auth/google`;
   };
 
   const handleSignIn = async () => {
@@ -212,14 +211,22 @@ export function LoginPage() {
 
           <Divider sx={{ my: 3 }}>or</Divider>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-            <GoogleButton onClick={handleGoogleLogin} />
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, width: '100%' }}>
+            <Button
+              variant="contained"
+              fullWidth
+              startIcon={<GoogleIcon />}
+              onClick={handleGoogleLogin}
+              sx={{ bgcolor: '#fff', color: '#3c4043', '&:hover': { bgcolor: '#f2f2f2' }, maxWidth: 240, py: 1.2, fontWeight: 500, textTransform: 'none', fontSize: '0.9rem' }}
+            >
+              Continue with Google
+            </Button>
             <Button
               variant="contained"
               fullWidth
               startIcon={<GitHubIcon />}
-              onClick={() => window.location.href = `${process.env.REACT_APP_AUTH_SERVICE}/auth/github`}
-              sx={{ bgcolor: '#24292e', color: '#fff', '&:hover': { bgcolor: '#1a1e22' }, maxWidth: 240, py: 1.2 }}
+              onClick={() => window.location.href = `${process.env.REACT_APP_API_URL}/auth/github`}
+              sx={{ bgcolor: '#24292e', color: '#fff', '&:hover': { bgcolor: '#1a1e22' }, maxWidth: 240, py: 1.2, fontWeight: 500, textTransform: 'none', fontSize: '0.9rem' }}
             >
               Continue with GitHub
             </Button>

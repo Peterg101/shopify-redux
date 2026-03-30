@@ -12,7 +12,7 @@ const EVENT_TO_TAGS: Record<string, string[]> = {
 }
 
 export function connectSSE(dispatch: AppDispatch): () => void {
-  const url = `${process.env.REACT_APP_AUTH_SERVICE}/events`
+  const url = `${process.env.REACT_APP_API_URL}/events`
   const abortController = new AbortController()
 
   async function connect() {

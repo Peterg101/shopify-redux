@@ -7,6 +7,7 @@ import { useDispatch } from 'react-redux';
 import {setFileProperties, setFromMeshyOrHistory} from '../../services/dataSlice';
 import { setLeftDrawerClosed } from '../../services/userInterfaceSlice';
 import { Box, Typography } from '@mui/material';
+import { borderHover, bgHighlight, bgHighlightHover } from '../../theme';
 
 export const DropArea = () => {
     const {setActualFile} = useFile()
@@ -38,20 +39,20 @@ export const DropArea = () => {
             {...getRootProps()}
             sx={{
                 border: '2px dashed',
-                borderColor: isDragActive ? 'primary.main' : 'rgba(0, 229, 255, 0.3)',
+                borderColor: isDragActive ? 'primary.main' : borderHover,
                 borderRadius: 2,
-                py: { xs: 5, md: 7 },
+                py: { xs: 6, md: 8 },
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexDirection: 'column',
                 cursor: 'pointer',
-                backgroundColor: isDragActive ? 'rgba(0, 229, 255, 0.04)' : 'transparent',
+                backgroundColor: isDragActive ? bgHighlight : 'transparent',
                 transition: 'all 0.2s ease',
                 '&:hover': {
                     borderColor: 'primary.main',
-                    backgroundColor: 'rgba(0, 229, 255, 0.04)',
-                    boxShadow: '0 0 20px rgba(0, 229, 255, 0.1)',
+                    backgroundColor: bgHighlight,
+                    boxShadow: `0 0 20px ${bgHighlightHover}`,
                 },
             }}
         >

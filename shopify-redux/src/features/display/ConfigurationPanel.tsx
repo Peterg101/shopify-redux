@@ -49,7 +49,7 @@ import { PricingConfig, ManufacturingProcess, ManufacturingMaterial } from '../.
 import pricingConfig from '../../config/pricingConfig.json';
 import { getPrice } from '../../app/utility/utils';
 import { useGetManufacturingProcessesQuery, useGetManufacturingMaterialsQuery } from '../../services/dbApi';
-import { monoFontFamily } from '../../theme';
+import { monoFontFamily, borderSubtle, bgHighlight, glowSubtle } from '../../theme';
 import { isCadFileType } from '../../services/fetchFileUtils';
 
 const config: PricingConfig = pricingConfig;
@@ -59,7 +59,7 @@ const sectionSx = {
   backgroundImage: 'none',
   boxShadow: 'none',
   '&:before': { display: 'none' },
-  border: '1px solid rgba(0, 229, 255, 0.12)',
+  border: `1px solid ${borderSubtle}`,
   borderRadius: '8px !important',
   mb: 1,
   '&.Mui-expanded': { mb: 1 },
@@ -186,7 +186,7 @@ export const ConfigurationPanel = () => {
     <Box
       sx={{
         mt: 2,
-        border: '1px solid rgba(0, 229, 255, 0.12)',
+        border: `1px solid ${borderSubtle}`,
         borderRadius: 2,
         overflow: 'hidden',
       }}
@@ -199,8 +199,8 @@ export const ConfigurationPanel = () => {
           gap: 1,
           px: 2,
           py: 1.5,
-          borderBottom: '1px solid rgba(0, 229, 255, 0.12)',
-          backgroundColor: 'rgba(0, 229, 255, 0.04)',
+          borderBottom: `1px solid ${borderSubtle}`,
+          backgroundColor: bgHighlight,
         }}
       >
         <Settings sx={{ color: 'primary.main', fontSize: 20 }} />
@@ -302,7 +302,7 @@ export const ConfigurationPanel = () => {
                   size="small"
                   label={isCad ? 'CAD model — all manufacturing techniques' : '3D printing only'}
                   sx={{
-                    backgroundColor: isCad ? 'rgba(0, 229, 255, 0.08)' : 'rgba(255, 255, 255, 0.05)',
+                    backgroundColor: isCad ? glowSubtle : 'rgba(255, 255, 255, 0.05)',
                     color: isCad ? 'primary.main' : 'text.secondary',
                     fontSize: '0.7rem',
                   }}
@@ -354,7 +354,7 @@ export const ConfigurationPanel = () => {
                 </Box>
               </Grid>
               <Grid item xs={12} md={5}>
-                <TableContainer component={Paper} sx={{ boxShadow: 'none', backgroundColor: 'transparent', border: '1px solid rgba(0, 229, 255, 0.12)' }}>
+                <TableContainer component={Paper} sx={{ boxShadow: 'none', backgroundColor: 'transparent', border: `1px solid ${borderSubtle}` }}>
                   <Table size="small">
                     <TableHead>
                       <TableRow>

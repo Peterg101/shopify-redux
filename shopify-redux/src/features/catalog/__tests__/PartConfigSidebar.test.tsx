@@ -71,12 +71,12 @@ describe('PartConfigSidebar', () => {
     expect(screen.getByText('Process & Material')).toBeInTheDocument();
   });
 
-  it('renders "Colour & Quantity" section', () => {
+  it('renders "Quantity" section (shows "Colour & Quantity" only for 3D printing)', () => {
     const part = mockPart();
     renderWithProviders(
       <PartConfigSidebar part={part} onColourChange={jest.fn()} />
     );
-    expect(screen.getByText('Colour & Quantity')).toBeInTheDocument();
+    expect(screen.getByText('Quantity')).toBeInTheDocument();
   });
 
   it('for STL file type, shows "3D printing only" chip', () => {

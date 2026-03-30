@@ -14,6 +14,7 @@ import { authApi } from '../../services/authApi';
 import { connectProgressStream } from '../../services/progressStream';
 import { startTask } from '../../services/fetchFileUtils';
 import { GenerationSettings } from './GenerationSettings';
+import { glowMedium } from '../../theme';
 
 const AiTextPrompt = () => {
   const userInformation = useSelector((state: RootState) => state.userInterfaceState.userInformation);
@@ -68,7 +69,7 @@ const AiTextPrompt = () => {
             '& .MuiOutlinedInput-root': {
               '&.Mui-focused fieldset': {
                 borderColor: 'primary.main',
-                boxShadow: '0 0 12px rgba(0, 229, 255, 0.15)',
+                boxShadow: `0 0 12px ${glowMedium}`,
               },
             },
           }}

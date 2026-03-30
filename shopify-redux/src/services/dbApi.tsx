@@ -17,7 +17,7 @@ import { authApi } from './authApi';
 
 export const dbApi = createApi({
   reducerPath: 'dbApi',
-  baseQuery: createBaseQueryWithReauth(process.env.REACT_APP_DB_SERVICE!),
+  baseQuery: createBaseQueryWithReauth(process.env.REACT_APP_API_URL!),
   tagTypes: ['OrderDetail', 'ClaimEvidence', 'ClaimHistory', 'Dispute', 'FulfillerAddress', 'FulfillerProfile', 'ManufacturingProcesses', 'ManufacturingMaterials'],
   endpoints: (builder) => ({
     // ── Queries ──────────────────────────────────────────────

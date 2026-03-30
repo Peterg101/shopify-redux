@@ -4,6 +4,11 @@ services:
   redis:
     image: redis:7-alpine
     ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   postgres:
     image: postgres:16-alpine
@@ -31,6 +36,11 @@ services:
       - "9001:9001"
     volumes:
       - minio_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   ollama:
     image: ollama/ollama:latest
@@ -67,11 +77,17 @@ services:
       MEDIA_SERVICE_URL: http://media_service:1235
     volumes:
       - uploads:/app/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     depends_on:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -90,7 +106,6 @@ services:
       HOST: "0.0.0.0"
       REDIS_HOST: redis
       DB_SERVICE_URL: http://api_service:8000
-      AUTH_SERVICE_URL: http://api_service:8000
       STEP_SERVICE_URL: http://media_service:1235
       MESHY_API_KEY: ${MESHY_API_KEY}
       CAD_PROVIDER: ${CAD_PROVIDER:-ollama}
@@ -102,7 +117,23 @@ services:
       MOCK_GENERATION: ${MOCK_GENERATION:-false}
       CAD_SANDBOX_IMAGE: fitd-cad-sandbox:latest
       CAD_WORK_DIR: /tmp/cad_work
-    depends_on: [redis, ollama, api_service, media_service, cad_sandbox]
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:1234/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    depends_on:
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+      api_service:
+        condition: service_healthy
+      media_service:
+        condition: service_healthy
+      cad_sandbox:
+        condition: service_completed_successfully
     deploy:
       resources:
         limits:
@@ -124,7 +155,15 @@ services:
       AWS_SECRET_ACCESS_KEY: minioadmin
       S3_BUCKET_NAME: fitd-files
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-    depends_on: [minio]
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:1235/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    depends_on:
+      minio:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -147,16 +186,14 @@ services:
       context: shopify-redux
       dockerfile: Dockerfile
       args:
-        REACT_APP_DB_SERVICE: http://localhost:8000
-        REACT_APP_AUTH_SERVICE: http://localhost:8000
-        REACT_APP_MESHY_SERVICE: http://localhost:1234
-        REACT_APP_GENERATION_SERVICE: http://localhost:1234
-        REACT_APP_STRIPE_SERVICE: http://localhost:8000
-        REACT_APP_CAD_SERVICE: http://localhost:1234
-        REACT_APP_STEP_SERVICE: http://localhost:1235
+        REACT_APP_API_URL: http://localhost:8000
+        REACT_APP_GENERATION_URL: http://localhost:1234
+        REACT_APP_MEDIA_URL: http://localhost:1235
         REACT_APP_MOCK_GENERATION: ${MOCK_GENERATION:-false}
     ports: ["3000:3000"]
-    depends_on: [api_service]
+    depends_on:
+      api_service:
+        condition: service_healthy
 
 volumes:
   pgdata:

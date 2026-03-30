@@ -27,6 +27,7 @@ import { OrderInfoCard } from './OrderInfoCard'
 import { StatusSelector } from './StatusSelector'
 import { StatusTransitionDialog } from './StatusTransitionDialog'
 import { selectSelectedClaim, selectUserInformation } from '../../services/selectors'
+import { borderSubtle } from '../../theme'
 
 // ── Status phase definitions ──────────────────────────────────────────
 const STATUS_PHASES = [
@@ -356,7 +357,7 @@ export const UpdateClaimStatus = () => {
             sx={{
               p: 2,
               borderRadius: 3,
-              border: '1px solid rgba(0, 229, 255, 0.12)',
+              border: `1px solid ${borderSubtle}`,
             }}
           >
             <Typography
@@ -393,7 +394,7 @@ export const UpdateClaimStatus = () => {
             sx={{
               borderRadius: 3,
               overflow: 'hidden',
-              border: '1px solid rgba(0, 229, 255, 0.12)',
+              border: `1px solid ${borderSubtle}`,
             }}
           >
             <OrientationControls />

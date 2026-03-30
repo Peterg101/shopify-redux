@@ -9,7 +9,25 @@ const bgDefault = "#0A0E14"
 const bgPaper = "#131920"
 const textPrimary = "#E4E8EE"
 const textSecondary = "#8899AA"
-const borderSubtle = "rgba(0, 229, 255, 0.12)"
+export const borderSubtle = "rgba(0, 229, 255, 0.12)"
+export const borderHover = "rgba(0, 229, 255, 0.3)"
+export const glowSubtle = "rgba(0, 229, 255, 0.08)"
+export const glowMedium = "rgba(0, 229, 255, 0.15)"
+export const bgHighlight = "rgba(0, 229, 255, 0.04)"
+export const bgHighlightHover = "rgba(0, 229, 255, 0.1)"
+export const textGlow = "0 0 8px rgba(0, 229, 255, 0.5)"
+
+export const statusColors = {
+  pending: '#8899AA',
+  in_progress: '#00E5FF',
+  printing: '#76FF03',
+  qa_check: '#FF9100',
+  shipped: '#448AFF',
+  delivered: '#B388FF',
+  accepted: '#69F0AE',
+  disputed: '#FF5252',
+  cancelled: '#FF5252',
+} as const
 
 export const theme = createTheme({
   palette: {
@@ -138,9 +156,9 @@ export const theme = createTheme({
             },
           },
           "&.Mui-disabled": {
-            color: "#445566",
+            color: "#667788",
             backgroundColor: "#1a2230",
-            borderColor: "#1a2230",
+            borderColor: "#2a3240",
           },
         },
       },
@@ -186,7 +204,7 @@ export const theme = createTheme({
           transition: "border-color 0.2s ease, box-shadow 0.2s ease",
           "&:hover": {
             borderColor: "rgba(0, 229, 255, 0.25)",
-            boxShadow: `0 0 20px rgba(0, 229, 255, 0.1)`,
+            boxShadow: `0 0 20px ${bgHighlightHover}`,
           },
         },
       },
@@ -198,7 +216,7 @@ export const theme = createTheme({
           backgroundColor: bgPaper,
           backgroundImage: "none",
           border: `1px solid ${borderSubtle}`,
-          boxShadow: `0 0 24px rgba(0, 229, 255, 0.1)`,
+          boxShadow: `0 0 24px ${bgHighlightHover}`,
         },
       },
     },
@@ -285,13 +303,13 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           "&.Mui-selected": {
-            backgroundColor: "rgba(0, 229, 255, 0.08)",
+            backgroundColor: glowSubtle,
             "&:hover": {
-              backgroundColor: "rgba(0, 229, 255, 0.12)",
+              backgroundColor: borderSubtle,
             },
           },
           "&:hover": {
-            backgroundColor: "rgba(0, 229, 255, 0.04)",
+            backgroundColor: bgHighlight,
           },
         },
       },

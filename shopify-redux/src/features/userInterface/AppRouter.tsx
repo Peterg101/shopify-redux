@@ -16,6 +16,7 @@ import { VerifyEmailPage } from "../auth/VerifyEmailPage";
 import { authApi } from "../../services/authApi";
 import { CircularProgress, Box } from "@mui/material";
 
+
 const selectSessionQuery = authApi.endpoints.getSlimSession.select();
 
 function RootRedirect() {
@@ -36,19 +37,19 @@ function RootRedirect() {
 function AppRouter() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<RootRedirect />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/verify-email" element={<VerifyEmailPage />} />
-        <Route path="/generate" element={<ProtectedRoute><LandingPage /></ProtectedRoute>} />
-        <Route path="/fulfill" element={<ProtectedRoute><Fulfill /></ProtectedRoute>} />
-        <Route path="/orders/:orderId" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />
-        <Route path="/catalog" element={<ProtectedRoute><CatalogPage /></ProtectedRoute>} />
-        <Route path="/catalog/:partId" element={<ProtectedRoute><PartDetailPage /></ProtectedRoute>} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+        <Routes>
+          <Route path="/" element={<RootRedirect />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
+          <Route path="/generate" element={<ProtectedRoute><LandingPage /></ProtectedRoute>} />
+          <Route path="/fulfill" element={<ProtectedRoute><Fulfill /></ProtectedRoute>} />
+          <Route path="/orders/:orderId" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />
+          <Route path="/catalog" element={<ProtectedRoute><CatalogPage /></ProtectedRoute>} />
+          <Route path="/catalog/:partId" element={<ProtectedRoute><PartDetailPage /></ProtectedRoute>} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
     </BrowserRouter>
   );
 };

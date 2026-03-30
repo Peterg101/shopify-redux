@@ -23,6 +23,7 @@ import TuneIcon from '@mui/icons-material/Tune';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../app/store';
 import { setMeshyGenerationSettings } from '../../services/meshySlice';
+import { borderSubtle } from '../../theme';
 
 interface GenerationSettingsProps {
   mode: 'text' | 'image';
@@ -33,7 +34,7 @@ const sectionSx = {
   backgroundImage: 'none',
   boxShadow: 'none',
   '&:before': { display: 'none' },
-  border: '1px solid rgba(0, 229, 255, 0.12)',
+  border: `1px solid ${borderSubtle}`,
   borderRadius: '8px !important',
   mb: 1,
   '&.Mui-expanded': { mb: 1 },
@@ -194,7 +195,7 @@ export const GenerationSettings: React.FC<GenerationSettingsProps> = ({ mode }) 
           {mode === 'image' && (
             <>
               <Grid item xs={12}>
-                <Divider sx={{ borderColor: 'rgba(0, 229, 255, 0.12)', my: 1 }} />
+                <Divider sx={{ borderColor: borderSubtle, my: 1 }} />
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                   Image-to-3D Options
                 </Typography>

@@ -5,7 +5,7 @@ import { SlimSession, BasketInformation, Order, Claim, TaskInformation } from '.
 
 export const authApi = createApi({
   reducerPath: 'authApi',
-  baseQuery: createBaseQueryWithReauth(process.env.REACT_APP_AUTH_SERVICE!),
+  baseQuery: createBaseQueryWithReauth(process.env.REACT_APP_API_URL!),
   refetchOnFocus: true,
   refetchOnReconnect: true,
   tagTypes: ['sessionData', 'BasketItems', 'UserOrders', 'UserClaims', 'UserTasks', 'ClaimableOrders'],

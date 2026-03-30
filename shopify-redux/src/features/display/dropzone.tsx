@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 import MeshyLoading from './meshyLoading';
 import CadLoading from './cadLoading';
+import { glowMedium, borderSubtle, borderHover, glowSubtle } from '../../theme';
 
 type GenerationMode = 'mesh' | 'cad';
 
@@ -34,24 +35,24 @@ export const Dropzone = () => {
   return (
     <Box
       sx={{
-        border: '1px solid rgba(0, 229, 255, 0.15)',
+        border: `1px solid ${glowMedium}`,
         borderRadius: 2,
         overflow: 'hidden',
         transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
         '&:hover': {
-          borderColor: 'rgba(0, 229, 255, 0.3)',
-          boxShadow: '0 0 20px rgba(0, 229, 255, 0.08)',
+          borderColor: borderHover,
+          boxShadow: `0 0 20px ${glowSubtle}`,
         },
       }}
     >
       {/* Upload / Loading Area */}
-      <Box sx={{ p: 2 }}>
+      <Box sx={{ p: 3 }}>
         {isGenerating ? renderLoadingArea() : <DropArea />}
       </Box>
 
       {/* OR Divider */}
-      <Box sx={{ px: 3 }}>
-        <Divider sx={{ borderColor: 'rgba(0, 229, 255, 0.12)' }}>
+      <Box sx={{ px: 4, py: 1 }}>
+        <Divider sx={{ borderColor: borderSubtle }}>
           <Typography variant="body2" color="text.secondary" sx={{ px: 2 }}>
             OR
           </Typography>
@@ -59,7 +60,7 @@ export const Dropzone = () => {
       </Box>
 
       {/* AI Generation Area */}
-      <Box sx={{ p: 3 }}>
+      <Box sx={{ p: 4 }}>
         {/* Mode Toggle */}
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
           <ToggleButtonGroup
@@ -73,11 +74,11 @@ export const Dropzone = () => {
                 px: 2,
                 py: 0.5,
                 fontSize: '0.85rem',
-                borderColor: 'rgba(0, 229, 255, 0.12)',
+                borderColor: borderSubtle,
                 '&.Mui-selected': {
-                  bgcolor: 'rgba(0, 229, 255, 0.12)',
+                  bgcolor: borderSubtle,
                   color: '#00E5FF',
-                  borderColor: 'rgba(0, 229, 255, 0.3)',
+                  borderColor: borderHover,
                 },
               },
             }}

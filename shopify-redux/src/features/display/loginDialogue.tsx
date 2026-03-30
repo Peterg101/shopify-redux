@@ -13,7 +13,7 @@ export default function LoginDialog() {
   const isLoggedIn = useSelector(selectIsLoggedIn);
 
   const handleLogin = () => {
-    window.location.href = `${process.env.REACT_APP_AUTH_SERVICE}/auth/google`;
+    window.location.href = `${process.env.REACT_APP_API_URL}/auth/google`;
   };
 
   return (

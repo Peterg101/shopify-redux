@@ -23,7 +23,7 @@ import { resetDataState } from '../../services/dataSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
 import OBJSTLViewer from '../display/objStlViewer'
 import { ThumbnailImage } from '../display/ThumbnailImage'
-import { monoFontFamily } from '../../theme'
+import { monoFontFamily, glowMedium, bgHighlight, borderHover } from '../../theme'
 import { getScarcityColor } from '../../app/utility/fulfillUtils'
 
 interface MarketplaceListCardProps {
@@ -81,7 +81,7 @@ export const MarketplaceListCard = React.memo(({ order }: MarketplaceListCardPro
           transition: 'transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
           '&:hover': {
             borderColor: 'rgba(0, 229, 255, 0.35)',
-            boxShadow: '0 0 24px rgba(0, 229, 255, 0.15)',
+            boxShadow: `0 0 24px ${glowMedium}`,
           },
         }}
       >
@@ -96,7 +96,7 @@ export const MarketplaceListCard = React.memo(({ order }: MarketplaceListCardPro
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            bgcolor: 'rgba(0, 229, 255, 0.04)',
+            bgcolor: bgHighlight,
           }}
         >
           {isImage ? (
@@ -147,10 +147,10 @@ export const MarketplaceListCard = React.memo(({ order }: MarketplaceListCardPro
                 sx={{
                   height: 20,
                   fontSize: '0.7rem',
-                  bgcolor: 'rgba(0, 229, 255, 0.15)',
+                  bgcolor: glowMedium,
                   color: '#00E5FF',
                   fontWeight: 600,
-                  borderColor: 'rgba(0, 229, 255, 0.3)',
+                  borderColor: borderHover,
                   border: '1px solid',
                 }}
               />

@@ -1,5 +1,6 @@
 import { Paper, Box, Typography, Divider, Chip } from '@mui/material'
 import { Order, Claim } from '../../app/utility/interfaces'
+import { borderSubtle } from '../../theme'
 
 const STATUS_PHASES = [
   { key: 'pending',      label: 'Pending',      color: '#8899AA' },
@@ -54,7 +55,7 @@ export const OrderInfoCard = ({ order, claim, currentStatus }: OrderInfoCardProp
             label={`${claim.quantity} units`}
             size="small"
             sx={{
-              backgroundColor: 'rgba(0, 229, 255, 0.12)',
+              backgroundColor: borderSubtle,
               color: '#00E5FF',
               fontWeight: 600,
             }}

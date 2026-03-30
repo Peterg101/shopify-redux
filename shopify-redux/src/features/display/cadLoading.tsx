@@ -1,14 +1,14 @@
 import React from 'react';
-import { Box, CircularProgress, LinearProgress, Typography, Alert } from '@mui/material';
+import { Box, LinearProgress, Typography, Alert } from '@mui/material';
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 import { keyframes } from '@mui/material/styles';
-import { monoFontFamily } from '../../theme';
+import { monoFontFamily, glowMedium, bgHighlightHover, borderHover } from '../../theme';
 
 const pulseGlow = keyframes`
-  0%, 100% { box-shadow: 0 0 20px rgba(0, 229, 255, 0.15); }
-  50% { box-shadow: 0 0 40px rgba(0, 229, 255, 0.3); }
+  0%, 100% { box-shadow: 0 0 20px ${glowMedium}; }
+  50% { box-shadow: 0 0 40px ${borderHover}; }
 `;
 
 const CadLoading = () => {
@@ -48,7 +48,7 @@ const CadLoading = () => {
   return (
     <Box
       sx={{
-        border: '1px solid rgba(0, 229, 255, 0.15)',
+        border: `1px solid ${glowMedium}`,
         borderRadius: 2,
         height: { xs: '300px', md: '500px' },
         display: 'flex',
@@ -60,14 +60,6 @@ const CadLoading = () => {
       }}
     >
       <PrecisionManufacturingIcon sx={{ fontSize: 40, color: 'primary.main', opacity: 0.6 }} />
-
-      <CircularProgress
-        variant={isLoading ? 'determinate' : 'indeterminate'}
-        value={percentage}
-        size={80}
-        thickness={3}
-        sx={{ color: 'primary.main' }}
-      />
 
       <Typography variant="h6" color="text.primary" fontWeight={600}>
         Generating CAD model...
@@ -95,7 +87,7 @@ const CadLoading = () => {
             sx={{
               height: 6,
               borderRadius: 3,
-              backgroundColor: 'rgba(0, 229, 255, 0.1)',
+              backgroundColor: bgHighlightHover,
               '& .MuiLinearProgress-bar': {
                 borderRadius: 3,
               },

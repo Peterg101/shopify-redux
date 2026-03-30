@@ -25,7 +25,18 @@ from jwt_auth import verify_jwt_token
 from step_processor import validate_step_file, extract_metadata, tessellate_to_glb, generate_thumbnail
 from s3_utils import upload_file, generate_presigned_url, ensure_bucket_exists, find_preview_key_by_task_id, find_thumbnail_key_by_task_id
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
+if os.getenv("ENV") == "production":
+    import sys
+    from pythonjsonlogger import jsonlogger
+    _handler = logging.StreamHandler(sys.stdout)
+    _handler.setFormatter(jsonlogger.JsonFormatter(
+        "%(asctime)s %(name)s %(levelname)s %(message)s",
+        rename_fields={"asctime": "timestamp", "levelname": "level"},
+    ))
+    logging.root.handlers = [_handler]
+    logging.root.setLevel(logging.INFO)
+else:
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
@@ -38,7 +49,7 @@ WORK_DIR = Path(tempfile.mkdtemp(prefix="step_service_"))
 app = FastAPI(title="STEP File Processing Service")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL, "http://localhost:3000", "http://localhost:8000"],
+    allow_origins=[FRONTEND_URL],
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],
@@ -340,7 +351,7 @@ async def generate_thumbnail_endpoint(
 
 @app.get("/health")
 async def health_check():
-    return {"status": "ok", "service": "step_service"}
+    return {"status": "ok", "service": "media_service"}
 
 
 if __name__ == "__main__":

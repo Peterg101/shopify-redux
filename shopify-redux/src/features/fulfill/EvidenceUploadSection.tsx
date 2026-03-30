@@ -3,6 +3,7 @@ import { useDropzone } from 'react-dropzone'
 import { Box, Typography, Button, TextField } from '@mui/material'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import { bgHighlight, glowSubtle } from '../../theme'
 
 interface EvidenceUploadSectionProps {
   qaLevel: string
@@ -97,8 +98,8 @@ export const EvidenceUploadSection = ({
             transition: 'all 0.2s ease',
             '&:hover': {
               borderColor: 'primary.main',
-              backgroundColor: 'rgba(0, 229, 255, 0.04)',
-              boxShadow: '0 0 20px rgba(0, 229, 255, 0.08)',
+              backgroundColor: bgHighlight,
+              boxShadow: `0 0 20px ${glowSubtle}`,
             },
           }}
         >

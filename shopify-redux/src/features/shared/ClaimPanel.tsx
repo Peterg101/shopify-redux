@@ -15,6 +15,7 @@ import { Add, Remove, OpenInFull } from '@mui/icons-material'
 import { useState } from 'react'
 import { Order } from '../../app/utility/interfaces'
 import OBJSTLViewer from '../display/objStlViewer'
+import { glowMedium } from '../../theme'
 
 interface ClaimPanelProps {
   order: Order
@@ -76,7 +77,7 @@ export function ClaimPanel({
                 position: 'absolute',
                 top: 12,
                 right: 12,
-                backgroundColor: 'rgba(0, 229, 255, 0.15)',
+                backgroundColor: glowMedium,
                 '&:hover': { backgroundColor: 'rgba(0, 229, 255, 0.25)' },
                 boxShadow: 2,
               }}

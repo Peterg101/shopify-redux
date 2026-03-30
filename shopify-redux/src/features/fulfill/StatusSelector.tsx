@@ -8,17 +8,18 @@ import {
   Chip,
 } from '@mui/material'
 import CancelIcon from '@mui/icons-material/Cancel'
+import { statusColors } from '../../theme'
 
 const STATUS_PHASES = [
-  { key: 'pending',      label: 'Pending',      color: '#8899AA', description: 'Claim submitted, awaiting fulfiller action' },
-  { key: 'in_progress',  label: 'In Progress',  color: '#00E5FF', description: 'Fulfiller is preparing the order' },
-  { key: 'printing',     label: 'Printing',     color: '#76FF03', description: 'Item is being printed / manufactured' },
-  { key: 'qa_check',     label: 'QA Check',     color: '#FF9100', description: 'Quality assurance inspection' },
-  { key: 'shipped',      label: 'Shipped',      color: '#448AFF', description: 'Package shipped to buyer' },
-  { key: 'delivered',    label: 'Delivered',     color: '#B388FF', description: 'Package delivered, awaiting buyer review' },
-  { key: 'accepted',     label: 'Accepted',     color: '#69F0AE', description: 'Buyer accepted the delivery' },
-  { key: 'disputed',     label: 'Disputed',     color: '#FF5252', description: 'Buyer opened a dispute' },
-  { key: 'cancelled',    label: 'Cancelled',    color: '#FF5252', description: 'Claim cancelled, items returned to marketplace' },
+  { key: 'pending',      label: 'Pending',      color: statusColors.pending,      description: 'Claim submitted, awaiting fulfiller action' },
+  { key: 'in_progress',  label: 'In Progress',  color: statusColors.in_progress,  description: 'Fulfiller is preparing the order' },
+  { key: 'printing',     label: 'Printing',     color: statusColors.printing,     description: 'Item is being printed / manufactured' },
+  { key: 'qa_check',     label: 'QA Check',     color: statusColors.qa_check,     description: 'Quality assurance inspection' },
+  { key: 'shipped',      label: 'Shipped',      color: statusColors.shipped,      description: 'Package shipped to buyer' },
+  { key: 'delivered',    label: 'Delivered',     color: statusColors.delivered,    description: 'Package delivered, awaiting buyer review' },
+  { key: 'accepted',     label: 'Accepted',     color: statusColors.accepted,     description: 'Buyer accepted the delivery' },
+  { key: 'disputed',     label: 'Disputed',     color: statusColors.disputed,     description: 'Buyer opened a dispute' },
+  { key: 'cancelled',    label: 'Cancelled',    color: statusColors.cancelled,    description: 'Claim cancelled, items returned to marketplace' },
 ] as const
 
 const getPhase = (key: string) => STATUS_PHASES.find((p) => p.key === key)

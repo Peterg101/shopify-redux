@@ -27,7 +27,7 @@ import { resetDataState } from '../../services/dataSlice'
 import { useOrderFileLoader } from '../../hooks/useOrderFileLoader'
 import OBJSTLViewer from '../display/objStlViewer'
 import { ThumbnailImage } from '../display/ThumbnailImage'
-import { monoFontFamily } from '../../theme'
+import { monoFontFamily, glowMedium, bgHighlight, borderHover } from '../../theme'
 import { getScarcityColor } from '../../app/utility/fulfillUtils'
 
 interface MarketplaceGridCardProps {
@@ -100,7 +100,7 @@ export const MarketplaceGridCard = React.memo(({ order }: MarketplaceGridCardPro
           '&:hover': {
             transform: 'translateY(-2px)',
             borderColor: 'rgba(0, 229, 255, 0.35)',
-            boxShadow: '0 0 24px rgba(0, 229, 255, 0.15)',
+            boxShadow: `0 0 24px ${glowMedium}`,
             '& .thumbnail-zoom': {
               transform: 'scale(1.02)',
             },
@@ -116,7 +116,7 @@ export const MarketplaceGridCard = React.memo(({ order }: MarketplaceGridCardPro
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              bgcolor: 'rgba(0, 229, 255, 0.04)',
+              bgcolor: bgHighlight,
               transition: 'transform 0.3s ease',
             }}
           >
@@ -172,12 +172,12 @@ export const MarketplaceGridCard = React.memo(({ order }: MarketplaceGridCardPro
                 label="Spec'd"
                 size="small"
                 sx={{
-                  bgcolor: 'rgba(0, 229, 255, 0.15)',
+                  bgcolor: glowMedium,
                   color: '#00E5FF',
                   fontWeight: 600,
                   fontSize: '0.7rem',
                   height: 22,
-                  borderColor: 'rgba(0, 229, 255, 0.3)',
+                  borderColor: borderHover,
                   border: '1px solid',
                 }}
               />

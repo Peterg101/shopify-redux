@@ -5,7 +5,7 @@ import { safeRedirect } from '../app/utility/urlValidation';
 
 export const fetchFile = async (fileId: string, signal?: AbortSignal): Promise<FileResponse> => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_DB_SERVICE}/file_storage/${fileId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/file_storage/${fileId}`, {
         method: 'GET',
         credentials: 'include',
         signal,
@@ -23,10 +23,10 @@ export const fetchFile = async (fileId: string, signal?: AbortSignal): Promise<F
     }
   };
 
-/** Fetch a CAD-generated file (glB preview) from step_service by task_id. */
+/** Fetch a CAD-generated file (glB preview) from media_service by task_id. */
 export const fetchCadFile = async (taskId: string, signal?: AbortSignal): Promise<{ file: File; fileUrl: string }> => {
   const previewResp = await fetch(
-    `${process.env.REACT_APP_STEP_SERVICE}/step/by_task/${taskId}/preview_url`,
+    `${process.env.REACT_APP_MEDIA_URL}/step/by_task/${taskId}/preview_url`,
     { signal }
   );
   if (!previewResp.ok) {
@@ -47,7 +47,7 @@ export const fetchCadFile = async (taskId: string, signal?: AbortSignal): Promis
 
 const CAD_FILE_TYPES = new Set(['glb', 'step', 'gltf']);
 
-/** Returns true if this file_type is served by step_service (CAD pipeline). */
+/** Returns true if this file_type is served by media_service (CAD pipeline). */
 export const isCadFileType = (fileType: string): boolean => CAD_FILE_TYPES.has(fileType);
 
 export const extractFileInfo = (fileResponse: FileResponse, filename: string): FileInformation => {
@@ -71,7 +71,7 @@ export const extractFileInfo = (fileResponse: FileResponse, filename: string): F
 const MOCK_GENERATION = process.env.REACT_APP_MOCK_GENERATION === 'true';
 
 const startMockGeneration = async (name: string, type: 'meshy' | 'cad', userId: string, portId: string) => {
-  const response = await fetch(`${process.env.REACT_APP_GENERATION_SERVICE}/mock/generate`, {
+  const response = await fetch(`${process.env.REACT_APP_GENERATION_URL}/mock/generate`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -96,7 +96,7 @@ export const startTask = async (prompt: string, userId: string, portId: string, 
       ...(settings?.symmetry_mode && { symmetry_mode: settings.symmetry_mode }),
     };
 
-    const response = await fetch(`${process.env.REACT_APP_MESHY_SERVICE}/start_task/`, {
+    const response = await fetch(`${process.env.REACT_APP_GENERATION_URL}/start_task/`, {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -134,7 +134,7 @@ export const startImageTo3DTask = async (image_file: File, userId: string, portI
       ...(settings?.texture_prompt && { texture_prompt: settings.texture_prompt }),
     };
 
-    const response = await fetch(`${process.env.REACT_APP_MESHY_SERVICE}/start_image_to_3d_task/`, {
+    const response = await fetch(`${process.env.REACT_APP_GENERATION_URL}/start_image_to_3d_task/`, {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -158,7 +158,7 @@ export const startImageTo3DTask = async (image_file: File, userId: string, portI
 
 export async function createStripeCheckoutAndRedirect(is_collaborative: boolean = false) {
   try {
-    const response = await fetch(`${process.env.REACT_APP_STRIPE_SERVICE}/stripe/checkout`, {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/stripe/checkout`, {
       method: "POST",
       credentials: "include",
       headers: {
@@ -184,7 +184,7 @@ export async function createStripeCheckoutAndRedirect(is_collaborative: boolean 
 
 export async function callStripeService() {
   try {
-    const response = await fetch(`${process.env.REACT_APP_STRIPE_SERVICE}/stripe/onboard`, {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/stripe/onboard`, {
       method: "POST",
       credentials: "include", // important if you're using cookies for auth
       headers: {
@@ -213,7 +213,7 @@ export async function createShippingLabel(claimId: string): Promise<{
   tracking_number: string;
   carrier_code: string;
 }> {
-  const response = await fetch(`${process.env.REACT_APP_STRIPE_SERVICE}/shipping/create_label/${claimId}`, {
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/shipping/create_label/${claimId}`, {
     method: 'POST',
     credentials: 'include',
   });
@@ -234,7 +234,7 @@ export const startRefineTask = async (
         preview_task_id: previewTaskId,
         ...options,
     };
-    const response = await fetch(`${process.env.REACT_APP_MESHY_SERVICE}/start_refine_task/`, {
+    const response = await fetch(`${process.env.REACT_APP_GENERATION_URL}/start_refine_task/`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -260,7 +260,7 @@ export const startCadTask = async (
       ...(settings && { settings }),
     };
 
-    const response = await fetch(`${process.env.REACT_APP_CAD_SERVICE}/start_cad_task/`, {
+    const response = await fetch(`${process.env.REACT_APP_GENERATION_URL}/start_cad_task/`, {
       method: 'POST',
       credentials: 'include',
       headers: {

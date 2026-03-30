@@ -36,7 +36,7 @@ export function connectProgressStream(
 
         try {
             const response = await fetch(
-                `${process.env.REACT_APP_GENERATION_SERVICE}/progress/${portId}`,
+                `${process.env.REACT_APP_GENERATION_URL}/progress/${portId}`,
                 { signal: abortController.signal }
             );
 
@@ -169,9 +169,9 @@ async function handleCadMessage(
         const jobId = parts[3];
 
         try {
-            // Fetch presigned glB preview URL from step_service
+            // Fetch presigned glB preview URL from media_service
             const previewResp = await fetch(
-                `${process.env.REACT_APP_STEP_SERVICE}/step/${jobId}/preview_url`,
+                `${process.env.REACT_APP_MEDIA_URL}/step/${jobId}/preview_url`,
                 { signal }
             );
             if (!previewResp.ok) {
@@ -197,10 +197,10 @@ async function handleCadMessage(
                 fileNameBoxValue: fileName,
             }));
 
-            // Fetch CAD metadata (volume, bounding box) from step_service
+            // Fetch CAD metadata (volume, bounding box) from media_service
             try {
                 const metaResp = await fetch(
-                    `${process.env.REACT_APP_STEP_SERVICE}/step/${jobId}/status`,
+                    `${process.env.REACT_APP_MEDIA_URL}/step/${jobId}/status`,
                     { signal }
                 );
                 if (metaResp.ok) {

@@ -18,6 +18,7 @@ import SearchIcon from '@mui/icons-material/Search'
 import ViewModuleIcon from '@mui/icons-material/ViewModule'
 import ViewListIcon from '@mui/icons-material/ViewList'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
+import { borderSubtle, borderHover } from '../../theme'
 import { Order } from '../../app/utility/interfaces'
 
 export type ViewMode = 'grid' | 'list' | 'compact'
@@ -153,11 +154,11 @@ export function MarketplaceToolbar({
               px: 1.5,
               py: 0.5,
               fontSize: '0.8rem',
-              borderColor: 'rgba(0, 229, 255, 0.12)',
+              borderColor: borderSubtle,
               '&.Mui-selected': {
-                bgcolor: 'rgba(0, 229, 255, 0.12)',
+                bgcolor: borderSubtle,
                 color: '#00E5FF',
-                borderColor: 'rgba(0, 229, 255, 0.3)',
+                borderColor: borderHover,
               },
             },
           }}
@@ -200,11 +201,11 @@ export function MarketplaceToolbar({
             '& .MuiToggleButton-root': {
               px: 1,
               py: 0.5,
-              borderColor: 'rgba(0, 229, 255, 0.12)',
+              borderColor: borderSubtle,
               '&.Mui-selected': {
-                bgcolor: 'rgba(0, 229, 255, 0.12)',
+                bgcolor: borderSubtle,
                 color: '#00E5FF',
-                borderColor: 'rgba(0, 229, 255, 0.3)',
+                borderColor: borderHover,
               },
             },
           }}
@@ -263,7 +264,7 @@ export function MarketplaceToolbar({
               onMaterialFilterChange([])
               onTechniqueFilterChange([])
             }}
-            sx={{ fontSize: '0.75rem', borderColor: 'rgba(0, 229, 255, 0.3)', color: '#00E5FF' }}
+            sx={{ fontSize: '0.75rem', borderColor: borderHover, color: '#00E5FF' }}
           />
         </Stack>
       )}

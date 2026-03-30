@@ -1,5 +1,5 @@
 """
-Tests for db_service/routes/auth.py — auth endpoints ported from auth_backend.
+Tests for api_service/routes/auth.py — auth endpoints.
 
 Covers:
   - Google OAuth redirect + callback
@@ -7,8 +7,7 @@ Covers:
   - Logout
   - Cookie-authenticated proxy endpoints (session, basket, orders)
 
-Key difference from old auth_backend tests: the auth routes now have direct DB
-access, so we don't mock HTTP calls to db_service. We only mock:
+Mocks:
   - Google OAuth token verification (google.oauth2.id_token)
   - The token-exchange HTTP call (httpx.AsyncClient)
   - Redis session operations (via get_session_redis dependency override)

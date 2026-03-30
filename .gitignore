@@ -6,12 +6,10 @@
 __pycache__/
 *.db
 *.egg-info/
-db_service/uploads
-db_service/basket_items
+
+api_service/uploads/
 
 api_keys.txt
 .env
 .env.development
 .env.production
-start-dev.shapi_service/uploads/
-api_service/uploads/

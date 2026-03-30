@@ -18,6 +18,7 @@ import SearchIcon from '@mui/icons-material/Search'
 import ViewModuleIcon from '@mui/icons-material/ViewModule'
 import ViewListIcon from '@mui/icons-material/ViewList'
 import { STATUS_PHASES } from './ClaimDashboardHeader'
+import { borderSubtle, borderHover } from '../../theme'
 
 export type ClaimViewMode = 'grid' | 'list'
 export type ClaimSortOption = 'newest' | 'oldest' | 'status' | 'value_desc'
@@ -147,11 +148,11 @@ export function ClaimToolbar({
             '& .MuiToggleButton-root': {
               px: 1,
               py: 0.5,
-              borderColor: 'rgba(0, 229, 255, 0.12)',
+              borderColor: borderSubtle,
               '&.Mui-selected': {
-                bgcolor: 'rgba(0, 229, 255, 0.12)',
+                bgcolor: borderSubtle,
                 color: '#00E5FF',
-                borderColor: 'rgba(0, 229, 255, 0.3)',
+                borderColor: borderHover,
               },
             },
           }}
@@ -197,7 +198,7 @@ export function ClaimToolbar({
               onSearchChange('')
               onStatusFilterChange([])
             }}
-            sx={{ fontSize: '0.75rem', borderColor: 'rgba(0, 229, 255, 0.3)', color: '#00E5FF' }}
+            sx={{ fontSize: '0.75rem', borderColor: borderHover, color: '#00E5FF' }}
           />
         </Stack>
       )}

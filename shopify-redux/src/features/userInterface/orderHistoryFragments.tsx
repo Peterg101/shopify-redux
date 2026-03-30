@@ -27,7 +27,7 @@ import { useNavigate } from "react-router-dom";
 import { Order } from "../../app/utility/interfaces";
 import { useToggleOrderVisibilityMutation } from "../../services/dbApi";
 import { useGetUserOrdersQuery } from "../../services/authApi";
-import { monoFontFamily } from "../../theme";
+import { monoFontFamily, borderSubtle, borderHover, glowSubtle } from "../../theme";
 
 export const EmptyOrderHistory = () => (
   <Box sx={{ textAlign: "center", py: 6 }}>
@@ -114,11 +114,11 @@ function OrderedItemCard(item: Order) {
   return (
     <Card
       sx={{
-        border: '1px solid rgba(0, 229, 255, 0.12)',
+        border: `1px solid ${borderSubtle}`,
         transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
         '&:hover': {
-          borderColor: 'rgba(0, 229, 255, 0.3)',
-          boxShadow: '0 0 16px rgba(0, 229, 255, 0.1)',
+          borderColor: borderHover,
+          boxShadow: `0 0 16px ${glowSubtle}`,
         },
       }}
     >
@@ -192,7 +192,7 @@ function OrderedItemCard(item: Order) {
               {showDetails ? <ExpandLess sx={{ fontSize: 16 }} /> : <ExpandMore sx={{ fontSize: 16 }} />}
             </Box>
             <Collapse in={showDetails}>
-              <Box sx={{ mt: 1, pt: 1, borderTop: '1px solid rgba(0, 229, 255, 0.08)' }}>
+              <Box sx={{ mt: 1, pt: 1, borderTop: `1px solid ${glowSubtle}` }}>
                 {item.claims.map((claim) => (
                   <Box
                     key={claim.id}

@@ -2,6 +2,7 @@ import React from 'react'
 import { Box, Typography, Button, Paper } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import HomeIcon from '@mui/icons-material/Home'
+import { glowMedium, borderHover } from '../../theme'
 
 export const NotFoundPage = () => {
   const navigate = useNavigate()
@@ -25,7 +26,7 @@ export const NotFoundPage = () => {
           maxWidth: 480,
           backdropFilter: 'blur(12px)',
           background: 'rgba(19, 25, 32, 0.85)',
-          border: '1px solid rgba(0, 229, 255, 0.15)',
+          border: `1px solid ${glowMedium}`,
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 24px rgba(0, 229, 255, 0.05)',
         }}
       >
@@ -59,7 +60,7 @@ export const NotFoundPage = () => {
             borderRadius: 2,
             fontWeight: 600,
             '&:hover': {
-              boxShadow: '0 0 20px rgba(0, 229, 255, 0.3)',
+              boxShadow: `0 0 20px ${borderHover}`,
             },
           }}
         >

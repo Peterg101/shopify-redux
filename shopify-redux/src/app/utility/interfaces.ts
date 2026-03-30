@@ -553,5 +553,5 @@ export interface MeshyTaskStatusResponse {
   video_url: string;
   texture_urls?: { [key: string]: string } | null;
   preceding_tasks?: number | null;
-  obj_file_blob?: Base64URLString;
+  obj_file_blob?: string;
 }

@@ -20,7 +20,7 @@ interface ListPartsParams {
 
 export const catalogApi = createApi({
   reducerPath: 'catalogApi',
-  baseQuery: createBaseQueryWithReauth(process.env.REACT_APP_DB_SERVICE!),
+  baseQuery: createBaseQueryWithReauth(process.env.REACT_APP_API_URL!),
   tagTypes: ['Parts', 'PartDetail'],
   endpoints: (builder) => ({
     getParts: builder.query<PartListResponse, ListPartsParams | void>({

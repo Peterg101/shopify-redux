@@ -1,0 +1,107 @@
+# Production overrides — use with:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Requires: .env with production values (see .env.production.example)
+
+services:
+  # ── Reverse Proxy ──────────────────────────────────────────────
+
+  traefik:
+    image: traefik:v3.1
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+    restart: unless-stopped
+
+  # ── Backend Services (override ports + add Traefik labels) ─────
+
+  api_service:
+    ports: []
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.${DOMAIN}`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.api.loadbalancer.server.port=8000"
+    environment:
+      ENV: production
+      FRONTEND_URL: https://${DOMAIN}
+      GOOGLE_REDIRECT_URI: https://api.${DOMAIN}/auth/google/callback
+      GITHUB_REDIRECT_URI: https://api.${DOMAIN}/auth/github/callback
+      MEDIA_SERVICE_URL: http://media_service:1235
+    restart: unless-stopped
+
+  generation_service:
+    ports: []
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.generation.rule=Host(`gen.${DOMAIN}`)"
+      - "traefik.http.routers.generation.entrypoints=websecure"
+      - "traefik.http.routers.generation.tls.certresolver=letsencrypt"
+      - "traefik.http.services.generation.loadbalancer.server.port=1234"
+    environment:
+      ENV: production
+      FRONTEND_URL: https://${DOMAIN}
+      CAD_PROVIDER: anthropic
+    restart: unless-stopped
+
+  media_service:
+    ports: []
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.media.rule=Host(`media.${DOMAIN}`)"
+      - "traefik.http.routers.media.entrypoints=websecure"
+      - "traefik.http.routers.media.tls.certresolver=letsencrypt"
+      - "traefik.http.services.media.loadbalancer.server.port=1235"
+    environment:
+      ENV: production
+      FRONTEND_URL: https://${DOMAIN}
+    restart: unless-stopped
+
+  # ── Frontend ───────────────────────────────────────────────────
+
+  frontend:
+    ports: []
+    build:
+      args:
+        REACT_APP_API_URL: https://api.${DOMAIN}
+        REACT_APP_GENERATION_URL: https://gen.${DOMAIN}
+        REACT_APP_MEDIA_URL: https://media.${DOMAIN}
+        REACT_APP_MOCK_GENERATION: "false"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+    restart: unless-stopped
+
+  # ── Infrastructure overrides ───────────────────────────────────
+
+  postgres:
+    restart: unless-stopped
+
+  redis:
+    restart: unless-stopped
+
+  # Remove dev-only services
+  ollama:
+    profiles: ["dev-only"]
+
+  minio:
+    profiles: ["dev-only"]
+
+volumes:
+  letsencrypt:

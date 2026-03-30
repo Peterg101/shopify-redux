@@ -21,9 +21,10 @@ import { callStripeService } from "../../services/fetchFileUtils"
 import { FulfillerCapabilityForm } from "./FulfillerCapabilityForm"
 import { FulfillerCapabilityDisplay } from "./FulfillerCapabilityDisplay"
 import { FulfillerAddressForm } from "./FulfillerAddressForm"
+import { glowSubtle } from "../../theme"
 
 const sectionCard = {
-  border: "1px solid rgba(0, 229, 255, 0.08)",
+  border: `1px solid ${glowSubtle}`,
   background: "rgba(19, 25, 32, 0.6)",
   backdropFilter: "blur(4px)",
   borderRadius: 3,

@@ -14,10 +14,18 @@ from sse_starlette.sse import EventSourceResponse
 from meshy.routes import router as meshy_router
 from cad.routes import router as cad_router
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
-)
+if os.getenv("ENV") == "production":
+    import sys
+    from pythonjsonlogger import jsonlogger
+    _handler = logging.StreamHandler(sys.stdout)
+    _handler.setFormatter(jsonlogger.JsonFormatter(
+        "%(asctime)s %(name)s %(levelname)s %(message)s",
+        rename_fields={"asctime": "timestamp", "levelname": "level"},
+    ))
+    logging.root.handlers = [_handler]
+    logging.root.setLevel(logging.INFO)
+else:
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
@@ -102,7 +110,7 @@ if os.getenv("MOCK_GENERATION", "false").lower() == "true":
     import asyncio
     import uuid
     from fastapi import BackgroundTasks, Depends
-    from shared import get_redis, publish, register_task, mark_task_complete, cookie_verification
+    from shared import get_redis, publish, register_task, mark_task_complete, get_authenticated_user
 
     async def _mock_generation(redis, port_id: str, task_name: str, task_type: str, user_id: str):
         """Simulate a 15-second generation task with progress updates."""
@@ -143,7 +151,7 @@ if os.getenv("MOCK_GENERATION", "false").lower() == "true":
         background_tasks: BackgroundTasks,
         request: Request,
         redis=Depends(get_redis),
-        _=Depends(cookie_verification),
+        _=Depends(get_authenticated_user),
     ):
         """Start a mock generation task. Returns port_id for SSE progress tracking.
 

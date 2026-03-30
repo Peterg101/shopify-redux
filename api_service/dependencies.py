@@ -1,5 +1,5 @@
 """
-Centralised FastAPI dependencies for db_service.
+Centralised FastAPI dependencies for api_service.
 """
 import os
 import json

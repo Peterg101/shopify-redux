@@ -7,10 +7,10 @@ duplicating or deleting existing data.
 
 Usage:
   # Against Docker Postgres (from project root):
-  docker compose exec db_service python seed_dummy_data.py
+  docker compose exec api_service python seed_dummy_data.py
 
   # Locally (requires DATABASE_URL env var or defaults to Postgres):
-  cd db_service && DATABASE_URL=postgresql://fitd:fitd_dev@localhost:5432/fitd python seed_dummy_data.py
+  cd api_service && DATABASE_URL=postgresql://fitd:fitd_dev@localhost:5432/fitd python seed_dummy_data.py
 """
 import os
 import uuid

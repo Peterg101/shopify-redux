@@ -1,7 +1,7 @@
 """
 Stripe endpoints — checkout, onboarding, webhooks, payouts, shipping.
 
-Consolidated from stripe_service into db_service for direct DB access.
+Handles all Stripe interactions with direct DB access.
 """
 import asyncio
 import os

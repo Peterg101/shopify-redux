@@ -46,11 +46,11 @@ describe('urlValidation', () => {
       const originalEnv = process.env.NODE_ENV
 
       beforeEach(() => {
-        process.env.NODE_ENV = 'development'
+        (process.env as Record<string, string>).NODE_ENV = 'development'
       })
 
       afterEach(() => {
-        process.env.NODE_ENV = originalEnv
+        (process.env as Record<string, string>).NODE_ENV = originalEnv as string
       })
 
       it('accepts https URLs', () => {

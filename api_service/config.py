@@ -1,5 +1,5 @@
 """
-Shared configuration constants for db_service.
+Shared configuration constants for api_service.
 """
 import os
 from pathlib import Path

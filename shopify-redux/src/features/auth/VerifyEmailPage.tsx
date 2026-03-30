@@ -25,7 +25,7 @@ export function VerifyEmailPage() {
     const verifyEmail = async () => {
       try {
         const response = await fetch(
-          `${process.env.REACT_APP_AUTH_SERVICE}/auth/verify-email?token=${encodeURIComponent(token)}`,
+          `${process.env.REACT_APP_API_URL}/auth/verify-email?token=${encodeURIComponent(token)}`,
           { credentials: 'include' }
         );
         if (response.ok) {

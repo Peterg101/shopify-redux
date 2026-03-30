@@ -30,14 +30,14 @@ import { Part, ManufacturingProcess, ManufacturingMaterial } from '../../app/uti
 import { useGetManufacturingProcessesQuery, useGetManufacturingMaterialsQuery } from '../../services/dbApi';
 import { useOrderFromPartMutation } from '../../services/catalogApi';
 import { isCadFileType } from '../../services/fetchFileUtils';
-import { monoFontFamily } from '../../theme';
+import { monoFontFamily, borderSubtle, bgHighlight, glowSubtle } from '../../theme';
 
 const sectionSx = {
   backgroundColor: 'transparent',
   backgroundImage: 'none',
   boxShadow: 'none',
   '&:before': { display: 'none' },
-  border: '1px solid rgba(0, 229, 255, 0.12)',
+  border: `1px solid ${borderSubtle}`,
   borderRadius: '8px !important',
   mb: 1,
   '&.Mui-expanded': { mb: 1 },
@@ -156,7 +156,7 @@ export const PartConfigSidebar = ({ part, onColourChange }: PartConfigSidebarPro
         overflow: 'auto',
         backgroundColor: 'rgba(19, 25, 32, 0.95)',
         backdropFilter: 'blur(8px)',
-        borderLeft: '1px solid rgba(0, 229, 255, 0.12)',
+        borderLeft: `1px solid ${borderSubtle}`,
       }}
     >
       {/* Header */}
@@ -167,8 +167,8 @@ export const PartConfigSidebar = ({ part, onColourChange }: PartConfigSidebarPro
           gap: 1,
           px: 2,
           py: 1.5,
-          borderBottom: '1px solid rgba(0, 229, 255, 0.12)',
-          backgroundColor: 'rgba(0, 229, 255, 0.04)',
+          borderBottom: `1px solid ${borderSubtle}`,
+          backgroundColor: bgHighlight,
         }}
       >
         <Settings sx={{ color: 'primary.main', fontSize: 20 }} />
@@ -221,7 +221,7 @@ export const PartConfigSidebar = ({ part, onColourChange }: PartConfigSidebarPro
                 size="small"
                 label={isCad ? 'CAD model — all manufacturing techniques' : '3D printing only'}
                 sx={{
-                  backgroundColor: isCad ? 'rgba(0, 229, 255, 0.08)' : 'rgba(255, 255, 255, 0.05)',
+                  backgroundColor: isCad ? glowSubtle : 'rgba(255, 255, 255, 0.05)',
                   color: isCad ? 'primary.main' : 'text.secondary',
                   fontSize: '0.7rem',
                 }}
@@ -351,7 +351,7 @@ export const PartConfigSidebar = ({ part, onColourChange }: PartConfigSidebarPro
         {(part.bounding_box_x || part.volume_cm3) && (
           <Box
             sx={{
-              border: '1px solid rgba(0, 229, 255, 0.12)',
+              border: `1px solid ${borderSubtle}`,
               borderRadius: 2,
               p: 2,
               mt: 1,
@@ -380,7 +380,7 @@ export const PartConfigSidebar = ({ part, onColourChange }: PartConfigSidebarPro
       </Box>
 
       {/* Sticky Add to Basket button */}
-      <Box sx={{ p: 2, borderTop: '1px solid rgba(0, 229, 255, 0.12)' }}>
+      <Box sx={{ p: 2, borderTop: `1px solid ${borderSubtle}` }}>
         {error && (
           <Alert severity="error" sx={{ mb: 1, fontSize: '0.8rem' }}>
             {error}

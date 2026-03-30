@@ -12,6 +12,7 @@ import { resetCadState } from "../../services/cadSlice";
 import { resetMeshyState } from "../../services/meshySlice";
 import { downloadBlob } from "../../app/utility/utils";
 import { useGetUserTasksQuery } from "../../services/authApi";
+import { borderSubtle, borderHover, bgHighlightHover } from "../../theme";
 
 const formatRelativeTime = (dateString: string): string => {
   const now = new Date();
@@ -39,11 +40,11 @@ export function LeftDrawerTask(task: TaskInformation) {
       sx={{
         mb: 1.5,
         overflow: "hidden",
-        border: '1px solid rgba(0, 229, 255, 0.12)',
+        border: `1px solid ${borderSubtle}`,
         transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
         '&:hover': {
-          borderColor: 'rgba(0, 229, 255, 0.3)',
-          boxShadow: '0 0 16px rgba(0, 229, 255, 0.1)',
+          borderColor: borderHover,
+          boxShadow: `0 0 16px ${bgHighlightHover}`,
         },
       }}
     >
@@ -161,7 +162,7 @@ export function LeftDrawerTaskLoading() {
         sx={{
           height: 4,
           borderRadius: 2,
-          backgroundColor: 'rgba(0, 229, 255, 0.1)',
+          backgroundColor: bgHighlightHover,
           '& .MuiLinearProgress-bar': { borderRadius: 2 },
         }}
       />

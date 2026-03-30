@@ -516,8 +516,7 @@ async def logout(
 
 
 # ── Cookie-authenticated user data endpoints ─────────────────────────────
-# These replace the auth_backend proxy endpoints. The frontend calls these
-# directly with cookies instead of going through auth_backend.
+# The frontend calls these directly with session cookies.
 
 @router.get("/get_just_user_details")
 async def user_details(user: User = Depends(get_current_user)):

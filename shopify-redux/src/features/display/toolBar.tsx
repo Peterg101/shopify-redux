@@ -11,7 +11,7 @@ import { connectProgressStream } from '../../services/progressStream';
 import { useFile } from '../../services/fileProvider';
 import { generateUuid } from '../../app/utility/collectionUtils';
 import { selectTotalCost } from '../../services/selectors';
-import { monoFontFamily } from '../../theme';
+import { monoFontFamily, borderSubtle, bgHighlightHover, glowSubtle, glowMedium } from '../../theme';
 import { AddToBasket } from '../userInterface/addToBasket';
 
 export const ToolBar = () => {
@@ -50,9 +50,9 @@ export const ToolBar = () => {
         alignItems: 'center',
         gap: 1.5,
         p: 1.5,
-        mb: 2,
+        mb: 3,
         borderRadius: 2,
-        border: '1px solid rgba(0, 229, 255, 0.12)',
+        border: `1px solid ${borderSubtle}`,
         backgroundColor: 'rgba(0, 229, 255, 0.02)',
       }}
     >
@@ -88,12 +88,12 @@ export const ToolBar = () => {
         sx={{
           display: 'flex',
           alignItems: 'center',
-          backgroundColor: 'rgba(0, 229, 255, 0.1)',
+          backgroundColor: bgHighlightHover,
           border: '1px solid rgba(0, 229, 255, 0.25)',
           borderRadius: 2,
           px: 2,
           py: 0.75,
-          boxShadow: '0 0 12px rgba(0, 229, 255, 0.08)',
+          boxShadow: `0 0 12px ${glowSubtle}`,
         }}
       >
         <Typography
@@ -120,7 +120,7 @@ export const ToolBar = () => {
             transition: 'all 0.2s ease',
             '&:hover': {
               borderColor: 'primary.main',
-              boxShadow: '0 0 12px rgba(0, 229, 255, 0.15)',
+              boxShadow: `0 0 12px ${glowMedium}`,
             },
           }}
         >

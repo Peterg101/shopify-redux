@@ -9,6 +9,7 @@ import {
   Card,
   CardContent,
   CircularProgress,
+  Skeleton,
   IconButton,
   useTheme,
 } from "@mui/material";
@@ -58,8 +59,15 @@ export const PartDetailPage = () => {
       <Box>
         <HeaderBar />
         <UpdatedUserInterface visibleItems={["Basket"]} />
-        <Box sx={{ display: "flex", justifyContent: "center", py: 6, ...transitionSx }}>
-          <CircularProgress />
+        <Box sx={{ pt: 12, px: { xs: 2, md: 4 }, ...transitionSx }}>
+          <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 3 }}>
+            <Box sx={{ flex: 1 }}>
+              <Skeleton variant="text" width={200} height={40} sx={{ mb: 2 }} />
+              <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 2, mb: 2 }} />
+              <Skeleton variant="rectangular" height={120} sx={{ borderRadius: 2 }} />
+            </Box>
+            <Skeleton variant="rectangular" height={500} sx={{ borderRadius: 2, width: { xs: '100%', md: 320 } }} />
+          </Box>
         </Box>
       </Box>
     );
@@ -86,7 +94,8 @@ export const PartDetailPage = () => {
       <UpdatedUserInterface />
       <Box sx={{
         display: "flex",
-        height: "calc(100vh - 64px)",
+        flexDirection: { xs: "column", md: "row" },
+        minHeight: "calc(100vh - 64px)",
         ...transitionSx,
       }}>
         {/* Left panel — viewer + metadata */}
@@ -111,7 +120,7 @@ export const PartDetailPage = () => {
           </Box>
 
           {/* 3D Viewer */}
-          <Box sx={{ flex: 1, minHeight: 400 }}>
+          <Box sx={{ flex: { xs: 'none', md: 1 }, height: { xs: 400, md: 'auto' }, minHeight: 400 }}>
             <PartDetailViewer
               taskId={part.task_id}
               fileType={part.file_type}

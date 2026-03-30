@@ -4,6 +4,7 @@ import { ThreeDRotation } from '@mui/icons-material';
 import { useDispatch } from 'react-redux';
 import { setXFLip, setYFLip, setZFLip } from '../../services/dataSlice';
 import { degreesToRadians } from '../../app/utility/utils';
+import { bgHighlight } from '../../theme';
 
 export const OrientationControls = () => {
   const dispatch = useDispatch();
@@ -40,7 +41,7 @@ export const OrientationControls = () => {
         gap: 2,
         px: 2,
         py: 1,
-        backgroundColor: 'rgba(0, 229, 255, 0.04)',
+        backgroundColor: bgHighlight,
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
