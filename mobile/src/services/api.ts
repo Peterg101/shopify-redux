@@ -92,7 +92,7 @@ export const api = createApi({
       query: (body: { order_id: string; quantity: number }) => ({
         url: '/claims/claim_order',
         method: 'POST',
-        body,
+        body: { ...body, status: 'pending' },
       }),
       invalidatesTags: ['ClaimableOrders', 'UserClaims'],
     }),

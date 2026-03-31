@@ -3,10 +3,14 @@ import os
 import json
 import logging
 import httpx
-from fastapi import Cookie, HTTPException, Request
+from fastapi import Cookie, Header, HTTPException, Request
 from redis.asyncio import Redis as AsyncRedis
+from jose import jwt, JWTError
 
 from jwt_auth import generate_token
+
+JWT_SECRET = os.getenv("JWT_SECRET_KEY", "dev-secret-key")
+JWT_ALGORITHM = "HS256"
 
 logger = logging.getLogger(__name__)
 
@@ -29,21 +33,30 @@ async def get_redis(request: Request) -> AsyncRedis:
 async def get_authenticated_user(
     request: Request,
     fitd_session_data: str = Cookie(None),
+    authorization: str = Header(None),
 ) -> dict:
-    """Verify session cookie via direct Redis lookup. Returns session dict."""
-    if not fitd_session_data:
-        raise HTTPException(status_code=401, detail="Not authenticated")
+    """Verify session cookie OR Bearer JWT token. Returns session dict."""
+    # Try cookie first (web)
+    if fitd_session_data:
+        redis: AsyncRedis = request.app.state.redis
+        session_data = await redis.get(f"session:{fitd_session_data}")
+        if session_data:
+            parsed = json.loads(session_data)
+            if parsed.get("user_id"):
+                return parsed
 
-    redis: AsyncRedis = request.app.state.redis
-    session_data = await redis.get(f"session:{fitd_session_data}")
-    if not session_data:
-        raise HTTPException(status_code=401, detail="Session expired")
+    # Try Bearer token (mobile)
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization[7:]
+        try:
+            payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM], options={"verify_aud": False})
+            user_id = payload.get("user_id")
+            if user_id:
+                return {"user_id": user_id}
+        except JWTError:
+            pass
 
-    parsed = json.loads(session_data)
-    if not parsed.get("user_id"):
-        raise HTTPException(status_code=401, detail="Invalid session data")
-
-    return parsed
+    raise HTTPException(status_code=401, detail="Not authenticated")
 
 
 # ---------------------------------------------------------------------------

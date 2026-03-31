@@ -27,7 +27,7 @@ from starlette.responses import StreamingResponse
 from sqlalchemy.orm import Session, joinedload, selectinload
 
 from rate_limit import limiter
-from dependencies import get_db, get_redis, get_session_redis, get_current_user
+from dependencies import get_db, get_redis, get_session_redis, get_current_user, get_any_user
 from cache import cached
 from helpers import _order_to_response
 from utils import check_user_existence, add_user_to_db
@@ -380,7 +380,7 @@ async def verify_email(
 @limiter.limit("2/minute")
 async def resend_verification(
     request: Request,
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
     db: Session = Depends(get_db),
 ):
     """Resend verification email for the currently authenticated user."""
@@ -725,7 +725,7 @@ async def mobile_github_auth(
 # The frontend calls these directly with session cookies.
 
 @router.get("/get_just_user_details")
-async def user_details(user: User = Depends(get_current_user)):
+async def user_details(user: User = Depends(get_any_user)):
     """Return basic user info from cookie auth."""
     return {
         "user_id": user.user_id,
@@ -738,7 +738,7 @@ async def user_details(user: User = Depends(get_current_user)):
 
 @router.get("/session")
 def get_slim_session_cookie(
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
     db: Session = Depends(get_db),
     redis_client=Depends(get_redis),
 ):
@@ -788,7 +788,7 @@ def get_slim_session_cookie(
 
 @router.get("/user_basket")
 def get_user_basket_cookie(
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
     db: Session = Depends(get_db),
     redis_client=Depends(get_redis),
 ):
@@ -803,7 +803,7 @@ def get_user_basket_cookie(
 
 @router.get("/user_orders")
 def get_user_orders_cookie(
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
     db: Session = Depends(get_db),
     redis_client=Depends(get_redis),
 ):
@@ -818,7 +818,7 @@ def get_user_orders_cookie(
 
 @router.get("/user_claims")
 def get_user_claims_cookie(
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
     db: Session = Depends(get_db),
     redis_client=Depends(get_redis),
 ):
@@ -863,7 +863,7 @@ def get_user_claims_cookie(
 
 @router.get("/user_claimable")
 def get_user_claimable_cookie(
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
     db: Session = Depends(get_db),
     redis_client=Depends(get_redis),
 ):
@@ -925,7 +925,7 @@ def get_user_claimable_cookie(
 
 @router.get("/user_tasks")
 def get_user_tasks_cookie(
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
     db: Session = Depends(get_db),
     redis_client=Depends(get_redis),
 ):
@@ -943,7 +943,7 @@ def get_user_tasks_cookie(
 @router.get("/events")
 async def user_events_cookie(
     request: Request,
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
 ):
     """Cookie-authenticated SSE endpoint — directly subscribes to Redis pubsub."""
     import redis.asyncio as aioredis

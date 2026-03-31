@@ -20,7 +20,7 @@ from fastapi.testclient import TestClient
 from httpx import Request as HttpxRequest, HTTPStatusError
 
 from main import app
-from dependencies import get_db, get_session_redis, get_current_user, get_redis
+from dependencies import get_db, get_session_redis, get_current_user, get_any_user, get_redis
 from fitd_schemas.fitd_db_schemas import Base, User, BasketItem, Order
 from fitd_schemas.fitd_classes import UserInformation
 
@@ -512,6 +512,7 @@ class TestCookieProxyEndpoints:
         app.dependency_overrides[get_session_redis] = lambda: fake_session_redis
         app.dependency_overrides[get_redis] = lambda: None
         app.dependency_overrides[get_current_user] = _override_get_current_user
+        app.dependency_overrides[get_any_user] = _override_get_current_user
         with TestClient(app) as c:
             yield c
         app.dependency_overrides.clear()

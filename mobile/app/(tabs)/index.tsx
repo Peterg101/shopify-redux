@@ -139,14 +139,37 @@ export default function GenerateScreen() {
       const token = await getToken();
       const portId = `mobile-${Date.now()}`;
 
-      // Start generation task
-      const endpoint = mode === 'cad'
-        ? `${GENERATION_URL}/start_cad_task/`
-        : `${GENERATION_URL}/start_task/`;
+      // Start generation task — use mock endpoint if MOCK_GENERATION is on
+      const isMock = process.env.EXPO_PUBLIC_MOCK_GENERATION === 'true';
 
-      const body = mode === 'cad'
-        ? { prompt: prompt.trim(), user_id: user.user_id, port_id: portId }
-        : { prompt: prompt.trim(), user_id: user.user_id, port_id: portId, art_style: 'realistic' };
+      let endpoint: string;
+      let body: any;
+
+      if (isMock) {
+        endpoint = `${GENERATION_URL}/mock/generate`;
+        body = {
+          name: prompt.trim(),
+          type: mode === 'cad' ? 'cad' : 'meshy',
+          user_id: user.user_id,
+          port_id: portId,
+        };
+      } else if (mode === 'cad') {
+        endpoint = `${GENERATION_URL}/start_cad_task/`;
+        body = { prompt: prompt.trim(), user_id: user.user_id, port_id: portId };
+      } else {
+        endpoint = `${GENERATION_URL}/start_task/`;
+        body = {
+          user_id: user.user_id,
+          port_id: portId,
+          meshy_payload: {
+            mode: 'preview',
+            prompt: prompt.trim(),
+            art_style: 'realistic',
+            negative_prompt: '',
+            ai_model: 'meshy-4',
+          },
+        };
+      }
 
       const res = await fetch(endpoint, {
         method: 'POST',
