@@ -938,3 +938,44 @@ class PartOrderConfig(BaseModel):
         if v < 1:
             raise ValueError('Quantity must be at least 1')
         return v
+
+
+# ── Messaging ────────────────────────────────────────────────
+
+class MessageCreate(BaseModel):
+    body: str
+
+    @validator('body')
+    def validate_body(cls, v):
+        v = v.strip()
+        if not v:
+            raise ValueError('Message body cannot be empty')
+        if len(v) > 2000:
+            raise ValueError('Message body must be at most 2000 characters')
+        return v
+
+
+class MessageResponse(BaseModel):
+    id: str
+    conversation_id: str
+    sender_user_id: str
+    body: str
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class ConversationResponse(BaseModel):
+    id: str
+    claim_id: str
+    buyer_user_id: str
+    fulfiller_user_id: str
+    created_at: datetime
+    updated_at: datetime
+    last_message: Optional[MessageResponse] = None
+    unread_count: int = 0
+
+
+class UnreadCountResponse(BaseModel):
+    total_unread: int

@@ -2,7 +2,6 @@ README.md
 pyproject.toml
 setup.py
 fitd_schemas/__init__.py
-fitd_schemas/auth_utils.py
 fitd_schemas/fitd_classes.py
 fitd_schemas/fitd_db_schemas.py
 fitd_schemas.egg-info/PKG-INFO

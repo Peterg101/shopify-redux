@@ -169,4 +169,47 @@ export const handlers = [
   http.post(`${API_BASE}/auth/resend-verification`, () => {
     return HttpResponse.json({ message: 'Verification email sent' })
   }),
+
+  // Messaging
+  http.get(`${API_BASE}/claims/:claimId/messages`, () => {
+    return HttpResponse.json([
+      {
+        id: 'msg-1',
+        conversation_id: 'conv-1',
+        sender_user_id: 'other-user-id',
+        body: 'Hello, I have a question about the specs.',
+        created_at: '2026-03-30T10:00:00Z',
+      },
+      {
+        id: 'msg-2',
+        conversation_id: 'conv-1',
+        sender_user_id: 'user-1',
+        body: 'Sure, what would you like to know?',
+        created_at: '2026-03-30T10:01:00Z',
+      },
+    ])
+  }),
+
+  http.post(`${API_BASE}/claims/:claimId/messages`, async ({ request }) => {
+    const body = await request.json() as { body: string }
+    return HttpResponse.json({
+      id: 'msg-new',
+      conversation_id: 'conv-1',
+      sender_user_id: 'user-1',
+      body: (body as any).body,
+      created_at: new Date().toISOString(),
+    }, { status: 201 })
+  }),
+
+  http.patch(`${API_BASE}/claims/:claimId/messages/read`, () => {
+    return HttpResponse.json({ message: 'Messages marked as read' })
+  }),
+
+  http.get(`${API_BASE}/conversations`, () => {
+    return HttpResponse.json([])
+  }),
+
+  http.get(`${API_BASE}/messages/unread_count`, () => {
+    return HttpResponse.json({ total_unread: 0 })
+  }),
 ]

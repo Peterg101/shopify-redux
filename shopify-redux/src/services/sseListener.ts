@@ -1,4 +1,5 @@
 import { authApi } from './authApi'
+import { dbApi } from './dbApi'
 import type { AppDispatch } from '../app/store'
 
 const EVENT_TO_TAGS: Record<string, string[]> = {
@@ -10,6 +11,8 @@ const EVENT_TO_TAGS: Record<string, string[]> = {
   'task:completed': ['UserTasks', 'sessionData'],
   'profile:updated': ['sessionData'],
 }
+
+const MESSAGE_EVENTS = new Set(['message:received', 'message:read'])
 
 export function connectSSE(dispatch: AppDispatch): () => void {
   const url = `${process.env.REACT_APP_API_URL}/events`
@@ -41,6 +44,12 @@ export function connectSSE(dispatch: AppDispatch): () => void {
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6))
+              if (MESSAGE_EVENTS.has(data.event)) {
+                const claimId = data.data?.claim_id
+                const messageTags: any[] = ['Conversations', 'UnreadCount']
+                if (claimId) messageTags.push({ type: 'ClaimMessages', id: claimId })
+                dispatch(dbApi.util.invalidateTags(messageTags))
+              }
               const tags = EVENT_TO_TAGS[data.event]
               if (tags) {
                 dispatch(authApi.util.invalidateTags(tags as any))

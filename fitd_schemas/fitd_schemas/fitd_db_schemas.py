@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Boolean, Text, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Boolean, Text, UniqueConstraint, Index
 from sqlalchemy.orm import backref, declarative_base
 from datetime import datetime
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -371,3 +371,49 @@ class MobileRefreshToken(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
 
     user = relationship("User", backref=backref("refresh_tokens", lazy="noload"), lazy="noload")
+
+
+class Conversation(Base):
+    __tablename__ = "conversations"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
+    claim_id: Mapped[str] = mapped_column(String, ForeignKey("claims.id"), nullable=False, unique=True)
+    buyer_user_id: Mapped[str] = mapped_column(String, ForeignKey("users.user_id"), nullable=False)
+    fulfiller_user_id: Mapped[str] = mapped_column(String, ForeignKey("users.user_id"), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    claim = relationship("Claim", backref=backref("conversation", uselist=False, lazy="noload"), lazy="noload")
+    messages: Mapped[list["Message"]] = relationship("Message", back_populates="conversation", lazy="noload", cascade="all, delete-orphan")
+    read_positions: Mapped[list["ConversationReadPosition"]] = relationship("ConversationReadPosition", back_populates="conversation", lazy="noload", cascade="all, delete-orphan")
+
+
+class Message(Base):
+    __tablename__ = "messages"
+    __table_args__ = (
+        Index("ix_messages_conversation_created", "conversation_id", "created_at"),
+    )
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
+    conversation_id: Mapped[str] = mapped_column(String, ForeignKey("conversations.id"), nullable=False)
+    sender_user_id: Mapped[str] = mapped_column(String, ForeignKey("users.user_id"), nullable=False)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+
+    conversation = relationship("Conversation", back_populates="messages", lazy="noload")
+    sender = relationship("User", lazy="noload")
+
+
+class ConversationReadPosition(Base):
+    __tablename__ = "conversation_read_positions"
+    __table_args__ = (
+        UniqueConstraint("conversation_id", "user_id", name="uq_conversation_user_read"),
+    )
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
+    conversation_id: Mapped[str] = mapped_column(String, ForeignKey("conversations.id"), nullable=False)
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.user_id"), nullable=False)
+    last_read_message_id: Mapped[Optional[str]] = mapped_column(String, ForeignKey("messages.id"), nullable=True)
+    last_read_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    conversation = relationship("Conversation", back_populates="read_positions", lazy="noload")

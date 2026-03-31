@@ -12,13 +12,16 @@ import {
   ManufacturingMaterial,
   FulfillerProfile,
   FulfillerProfileCreate,
+  MessageResponse,
+  ConversationListItem,
+  UnreadCountResponse,
 } from '../app/utility/interfaces';
 import { authApi } from './authApi';
 
 export const dbApi = createApi({
   reducerPath: 'dbApi',
   baseQuery: createBaseQueryWithReauth(process.env.REACT_APP_API_URL!),
-  tagTypes: ['OrderDetail', 'ClaimEvidence', 'ClaimHistory', 'Dispute', 'FulfillerAddress', 'FulfillerProfile', 'ManufacturingProcesses', 'ManufacturingMaterials'],
+  tagTypes: ['OrderDetail', 'ClaimEvidence', 'ClaimHistory', 'Dispute', 'FulfillerAddress', 'FulfillerProfile', 'ManufacturingProcesses', 'ManufacturingMaterials', 'ClaimMessages', 'Conversations', 'UnreadCount'],
   endpoints: (builder) => ({
     // ── Queries ──────────────────────────────────────────────
     getOrderDetail: builder.query<OrderDetail, string>({
@@ -255,6 +258,51 @@ export const dbApi = createApi({
         } catch { /* mutation failed */ }
       },
     }),
+
+    // ── Messaging ──────────────────────────────────────────────
+    getClaimMessages: builder.query<MessageResponse[], { claimId: string; before?: string; limit?: number }>({
+      query: ({ claimId, before, limit = 50 }) => {
+        let url = `/claims/${claimId}/messages?limit=${limit}`;
+        if (before) url += `&before=${before}`;
+        return url;
+      },
+      providesTags: (_result, _error, { claimId }) => [{ type: 'ClaimMessages', id: claimId }],
+    }),
+
+    sendMessage: builder.mutation<MessageResponse, { claimId: string; body: string }>({
+      query: ({ claimId, body }) => ({
+        url: `/claims/${claimId}/messages`,
+        method: 'POST',
+        body: { body },
+      }),
+      invalidatesTags: (_result, _error, { claimId }) => [
+        { type: 'ClaimMessages', id: claimId },
+        'Conversations',
+        'UnreadCount',
+      ],
+    }),
+
+    markMessagesRead: builder.mutation<void, string>({
+      query: (claimId) => ({
+        url: `/claims/${claimId}/messages/read`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: (_result, _error, claimId) => [
+        { type: 'ClaimMessages', id: claimId },
+        'Conversations',
+        'UnreadCount',
+      ],
+    }),
+
+    getConversations: builder.query<ConversationListItem[], void>({
+      query: () => '/conversations',
+      providesTags: ['Conversations'],
+    }),
+
+    getUnreadCount: builder.query<UnreadCountResponse, void>({
+      query: () => '/messages/unread_count',
+      providesTags: ['UnreadCount'],
+    }),
   }),
 });
 
@@ -280,4 +328,9 @@ export const {
   useGetFulfillerProfileQuery,
   useCreateFulfillerProfileMutation,
   useUpdateFulfillerProfileMutation,
+  useGetClaimMessagesQuery,
+  useSendMessageMutation,
+  useMarkMessagesReadMutation,
+  useGetConversationsQuery,
+  useGetUnreadCountQuery,
 } = dbApi;

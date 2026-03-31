@@ -16,7 +16,7 @@ from slowapi.errors import RateLimitExceeded
 from config import FRONTEND_URL, REDIS_HOST, REDIS_PORT, MEDIA_SERVICE_URL, IS_PRODUCTION
 from rate_limit import limiter
 from logging_config import setup_logging
-from routes import auth, users, files, orders, claims, disbursements, disputes, fulfiller, catalog, tasks, events
+from routes import auth, users, files, orders, claims, disbursements, disputes, fulfiller, catalog, tasks, events, messages
 from routes import stripe as stripe_routes
 
 setup_logging()
@@ -95,6 +95,7 @@ app.include_router(fulfiller.router)
 app.include_router(catalog.router)
 app.include_router(tasks.router)
 app.include_router(events.router)
+app.include_router(messages.router)
 app.include_router(stripe_routes.router)
 
 

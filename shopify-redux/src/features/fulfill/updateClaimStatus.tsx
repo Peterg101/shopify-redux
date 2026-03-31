@@ -5,6 +5,8 @@ import { resetDataState } from '../../services/dataSlice'
 import { createShippingLabel } from '../../services/fetchFileUtils'
 import { useUpdateClaimStatusMutation, useUploadClaimEvidenceMutation } from '../../services/dbApi'
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
+import ChatIcon from '@mui/icons-material/Chat'
+import { ClaimChat } from '../messaging/ClaimChat'
 import {
   Box,
   Typography,
@@ -176,6 +178,7 @@ export const UpdateClaimStatus = () => {
   } | null>(null)
   const [labelError, setLabelError] = useState('')
 
+  const [chatOpen, setChatOpen] = useState(false)
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
@@ -377,6 +380,17 @@ export const UpdateClaimStatus = () => {
             currentStatus={currentStatus}
           />
 
+          {/* ── Chat with Buyer ──────────────────────────────────── */}
+          <Button
+            variant="outlined"
+            startIcon={<ChatIcon />}
+            onClick={() => setChatOpen(true)}
+            fullWidth
+            sx={{ borderRadius: 2 }}
+          >
+            Message Buyer
+          </Button>
+
           {/* ── Shipping Label Display ───────────────────────────── */}
           {shippingLabel && (
             <ShippingLabelCard
@@ -494,6 +508,10 @@ export const UpdateClaimStatus = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      {selectedClaim && (
+        <ClaimChat claimId={selectedClaim.id} open={chatOpen} onClose={() => setChatOpen(false)} />
+      )}
     </Box>
   )
 }
