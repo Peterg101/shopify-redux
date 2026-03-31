@@ -39,6 +39,7 @@ export default function RootLayout() {
             <Stack.Screen name="order/[id]" options={{ headerShown: true, title: 'Order Detail' }} />
             <Stack.Screen name="catalog/[partId]" options={{ headerShown: true, title: 'Part Detail' }} />
             <Stack.Screen name="claim/[id]" options={{ headerShown: true, title: 'Manage Claim' }} />
+            <Stack.Screen name="messages/[claimId]" options={{ headerShown: true, title: 'Chat' }} />
             <Stack.Screen name="fulfiller-settings" options={{ headerShown: true, title: 'Fulfiller Settings', presentation: 'modal' }} />
           </Stack>
           <StatusBar style="light" />

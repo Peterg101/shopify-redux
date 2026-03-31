@@ -162,6 +162,16 @@ export default function ClaimDetailScreen() {
           {order?.qa_level && <MetaRow label="QA Level" value={order.qa_level} />}
         </View>
 
+        {/* Chat Button */}
+        <TouchableOpacity
+          style={styles.chatButton}
+          onPress={() => router.push(`/messages/${id}`)}
+        >
+          <FontAwesome name="comments" size={18} color={colors.cyan} />
+          <Text style={styles.chatButtonText}>Chat with {order?.user_id === claim.claimant_user_id ? 'Buyer' : 'Fulfiller'}</Text>
+          <FontAwesome name="chevron-right" size={12} color={colors.textDisabled} />
+        </TouchableOpacity>
+
         {/* Evidence */}
         {evidence && evidence.length > 0 && (
           <View style={styles.card}>
@@ -348,4 +358,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   advanceButtonText: { color: colors.bgBase, fontSize: fontSizes.body, fontWeight: '600', textTransform: 'capitalize' },
+  chatButton: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.md,
+    backgroundColor: colors.bgSurface, borderColor: colors.cyanSubtle, borderWidth: 1,
+    borderRadius: borderRadius.lg, padding: spacing.lg, marginBottom: spacing.lg,
+  },
+  chatButtonText: { flex: 1, fontSize: fontSizes.body, color: colors.textPrimary, fontWeight: '500' },
 });

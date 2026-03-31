@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import and_, func, or_
 from sqlalchemy.orm import Session, selectinload
 
-from dependencies import get_db, get_redis, get_current_user
+from dependencies import get_db, get_redis, get_any_user
 from cache import cache_invalidate
 from events import publish_event
 from rate_limit import limiter
@@ -73,7 +73,7 @@ def send_message(
     claim_id: str,
     payload: MessageCreate,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
     redis_client=Depends(get_redis),
 ):
     claim, order = _get_claim_and_verify_participant(claim_id, user, db)
@@ -102,7 +102,7 @@ def get_messages(
     before: Optional[str] = Query(None, description="Cursor: message ID to fetch before"),
     limit: int = Query(50, ge=1, le=100),
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
 ):
     claim, order = _get_claim_and_verify_participant(claim_id, user, db)
     conversation = db.query(Conversation).filter(Conversation.claim_id == claim.id).first()
@@ -126,7 +126,7 @@ def get_messages(
 def mark_messages_read(
     claim_id: str,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
     redis_client=Depends(get_redis),
 ):
     claim, order = _get_claim_and_verify_participant(claim_id, user, db)
@@ -170,7 +170,7 @@ def mark_messages_read(
 @router.get("/conversations", response_model=list[ConversationResponse])
 def list_conversations(
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
 ):
     conversations = db.query(Conversation).filter(
         or_(
@@ -219,7 +219,7 @@ def list_conversations(
 @router.get("/messages/unread_count", response_model=UnreadCountResponse)
 def get_unread_count(
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_any_user),
 ):
     conversations = db.query(Conversation).filter(
         or_(

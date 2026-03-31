@@ -63,6 +63,9 @@ export const api = createApi({
     'ManufacturingMaterials',
     'Parts',
     'PartDetail',
+    'ClaimMessages',
+    'Conversations',
+    'UnreadCount',
   ],
   endpoints: (builder) => ({
     // Auth
@@ -174,6 +177,42 @@ export const api = createApi({
         body,
       }),
       invalidatesTags: ['BasketItems'],
+    }),
+
+    // Messaging
+    getClaimMessages: builder.query({
+      query: ({ claimId, limit = 50 }: { claimId: string; limit?: number }) =>
+        `/claims/${claimId}/messages?limit=${limit}`,
+      providesTags: (_r: any, _e: any, { claimId }: { claimId: string }) => [{ type: 'ClaimMessages' as const, id: claimId }],
+    }),
+    sendMessage: builder.mutation({
+      query: ({ claimId, body }: { claimId: string; body: string }) => ({
+        url: `/claims/${claimId}/messages`,
+        method: 'POST',
+        body: { body },
+      }),
+      invalidatesTags: (_r: any, _e: any, { claimId }: { claimId: string }) => [
+        { type: 'ClaimMessages' as const, id: claimId },
+        'Conversations' as const,
+      ],
+    }),
+    markMessagesRead: builder.mutation({
+      query: (claimId: string) => ({
+        url: `/claims/${claimId}/messages/read`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: (_r: any, _e: any, claimId: string) => [
+        { type: 'ClaimMessages' as const, id: claimId },
+        'Conversations' as const,
+      ],
+    }),
+    getConversations: builder.query({
+      query: () => '/conversations',
+      providesTags: ['Conversations'],
+    }),
+    getUnreadCount: builder.query({
+      query: () => '/messages/unread_count',
+      providesTags: ['UnreadCount'],
     }),
 
     // Fulfiller Address

@@ -131,6 +131,9 @@ export default function OrderDetailScreen() {
                     <Text style={styles.claimUser}>{claim.claimant_username || 'Fulfiller'}</Text>
                     <Text style={styles.claimDetail}>×{claim.quantity}</Text>
                   </View>
+                  <TouchableOpacity onPress={() => router.push(`/messages/${claim.id}`)} style={{ padding: spacing.xs }}>
+                    <FontAwesome name="comment-o" size={18} color={colors.cyan} />
+                  </TouchableOpacity>
                   <View style={[styles.claimStatusChip, { borderColor: claimColor }]}>
                     <View style={[styles.claimStatusDot, { backgroundColor: claimColor }]} />
                     <Text style={[styles.claimStatusText, { color: claimColor }]}>

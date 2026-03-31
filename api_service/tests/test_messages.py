@@ -56,13 +56,14 @@ def test_send_message_non_participant_returns_403(client, seed_claim, db_session
 
     # Override auth to the third user
     from main import app
-    from dependencies import get_current_user
+    from dependencies import get_current_user, get_any_user
     from fitd_schemas.fitd_classes import UserInformation
 
     async def override():
         return UserInformation(user_id="outsider-789", username="outsider", email="outsider@test.com", email_verified=True)
 
     app.dependency_overrides[get_current_user] = override
+    app.dependency_overrides[get_any_user] = override
     try:
         response = client.post(
             f"/claims/{seed_claim.id}/messages",
@@ -125,13 +126,14 @@ def test_get_messages_non_participant_returns_403(client, seed_claim, db_session
     db_session.commit()
 
     from main import app
-    from dependencies import get_current_user
+    from dependencies import get_current_user, get_any_user
     from fitd_schemas.fitd_classes import UserInformation
 
     async def override():
         return UserInformation(user_id="outsider-789", username="outsider", email="outsider@test.com", email_verified=True)
 
     app.dependency_overrides[get_current_user] = override
+    app.dependency_overrides[get_any_user] = override
     try:
         response = client.get(f"/claims/{seed_claim.id}/messages")
         assert response.status_code == 403
