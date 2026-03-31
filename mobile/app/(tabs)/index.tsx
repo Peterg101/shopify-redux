@@ -20,6 +20,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useSelector } from 'react-redux';
 import { colors, spacing, fontSizes, borderRadius } from '../../src/theme';
 import { API_URL, GENERATION_URL, MEDIA_URL } from '../../src/services/config';
+import { GenerationHistory } from '../../src/components/GenerationHistory';
 import { getToken } from '../../src/services/auth';
 import { api } from '../../src/services/api';
 import type { RootState } from '../../src/store';
@@ -386,6 +387,17 @@ export default function GenerateScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
+          )}
+
+          {/* Generation History */}
+          {!selectedFile && genState === 'idle' && (
+            <GenerationHistory
+              onSelectTask={(task) => {
+                setPreviewUrl(`${MEDIA_URL}/thumbnail/${task.task_id}`);
+                setFileName(task.task_name);
+                setGenState('done');
+              }}
+            />
           )}
 
           {/* Done state */}
