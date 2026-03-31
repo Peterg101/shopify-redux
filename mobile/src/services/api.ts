@@ -175,5 +175,15 @@ export const api = createApi({
       }),
       invalidatesTags: ['BasketItems'],
     }),
+
+    // Fulfiller Address
+    updateFulfillerAddress: builder.mutation({
+      query: ({ userId, address }: { userId: string; address: any }) => ({
+        url: `/users/${userId}/fulfiller_address`,
+        method: 'PUT',
+        body: address,
+      }),
+      invalidatesTags: ['FulfillerAddress'],
+    }),
   }),
 });
