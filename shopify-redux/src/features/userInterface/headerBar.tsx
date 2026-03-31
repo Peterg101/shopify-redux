@@ -4,8 +4,9 @@ import { Box, Typography, Toolbar, Button, IconButton, Drawer, List, ListItemBut
 import MenuIcon from '@mui/icons-material/Menu';
 import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { monoFontFamily, textGlow } from "../../theme";
+import { UnreadBadge } from '../messaging/UnreadBadge';
 
 const navItems = [
   { label: 'Generate', path: '/generate' },
@@ -28,6 +29,7 @@ export const HeaderBar = () => {
     (state: RootState) => state.userInterfaceState
   );
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const isSmall = useMediaQuery('(max-width:600px)');
 
@@ -63,6 +65,9 @@ export const HeaderBar = () => {
           </Box>
 
           <Box sx={{ flexGrow: 1 }} />
+
+          {/* Messages badge */}
+          <UnreadBadge onClick={() => navigate('/messages')} />
 
           {/* Mobile hamburger */}
           {isSmall && (

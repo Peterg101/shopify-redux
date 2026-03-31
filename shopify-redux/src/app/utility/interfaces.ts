@@ -555,3 +555,28 @@ export interface MeshyTaskStatusResponse {
   preceding_tasks?: number | null;
   obj_file_blob?: string;
 }
+
+// ── Messaging ────────────────────────────────────────────────
+
+export interface MessageResponse {
+  id: string;
+  conversation_id: string;
+  sender_user_id: string;
+  body: string;
+  created_at: string;
+}
+
+export interface ConversationListItem {
+  id: string;
+  claim_id: string;
+  buyer_user_id: string;
+  fulfiller_user_id: string;
+  created_at: string;
+  updated_at: string;
+  last_message?: MessageResponse;
+  unread_count: number;
+}
+
+export interface UnreadCountResponse {
+  total_unread: number;
+}

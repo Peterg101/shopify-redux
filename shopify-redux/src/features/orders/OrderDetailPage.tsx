@@ -37,12 +37,14 @@ import {
   Gavel,
   Public,
   Lock,
+  Chat,
 } from '@mui/icons-material'
 import { useTheme } from '@mui/material/styles'
 import { RootState } from '../../app/store'
 import { ClaimDetail, Dispute } from '../../app/utility/interfaces'
 import { setLeftDrawerClosed, setSelectedComponent } from '../../services/userInterfaceSlice'
 import { HeaderBar } from '../userInterface/headerBar'
+import { ClaimChat } from '../messaging/ClaimChat'
 import { UpdatedUserInterface } from '../userInterface/updatedUserInterface'
 import { DRAWER_WIDTH } from '../userInterface/uiComponents'
 
@@ -316,6 +318,7 @@ function ClaimTracker({ claim, order, isOwner }: ClaimTrackerProps) {
   const [responseText, setResponseText] = useState('')
   const [partialAmount, setPartialAmount] = useState('')
   const [actionError, setActionError] = useState('')
+  const [chatOpen, setChatOpen] = useState(false)
   const acting = statusLoading || respondLoading || resolveLoading
 
   const isBuyer = userInformation?.user?.user_id === order.user_id
@@ -381,6 +384,14 @@ function ClaimTracker({ claim, order, isOwner }: ClaimTrackerProps) {
             {claim.claimant_username}
           </Typography>
           <Chip label={`Qty: ${claim.quantity}`} size="small" variant="outlined" />
+          <Button
+            size="small"
+            startIcon={<Chat />}
+            onClick={() => setChatOpen(true)}
+            sx={{ ml: 1 }}
+          >
+            Chat
+          </Button>
         </Box>
         <Chip
           label={STEP_LABELS[claim.status] || claim.status.replace(/_/g, ' ')}
@@ -545,6 +556,8 @@ function ClaimTracker({ claim, order, isOwner }: ClaimTrackerProps) {
 
       {/* ── Dispute Section ── */}
       {claim.dispute && <DisputeSection claim={claim} dispute={claim.dispute} isBuyer={isBuyer} isFulfiller={isFulfiller} responseText={responseText} setResponseText={setResponseText} partialAmount={partialAmount} setPartialAmount={setPartialAmount} acting={acting} onRespond={handleRespond} onResolve={handleResolve} />}
+
+      <ClaimChat claimId={claim.id} open={chatOpen} onClose={() => setChatOpen(false)} />
     </Paper>
   )
 }
