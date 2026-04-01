@@ -32,7 +32,10 @@ const formatRelativeTime = (dateString: string): string => {
 };
 
 export function GenerationHistory({ onSelectTask }: GenerationHistoryProps) {
-  const { data: tasks, isLoading } = api.useGetUserTasksQuery(undefined);
+  const { data: tasks, isLoading } = api.useGetUserTasksQuery(undefined, {
+    refetchOnFocus: true,
+    refetchOnMountOrArgChange: true,
+  });
 
   if (isLoading) return null;
   if (!tasks || tasks.length === 0) return null;
