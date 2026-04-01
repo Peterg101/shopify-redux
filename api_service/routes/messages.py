@@ -202,6 +202,12 @@ def list_conversations(
                 unread_query = unread_query.filter(Message.created_at > read_msg.created_at)
         unread_count = unread_query.scalar() or 0
 
+        # Enrich with order name, other username, claim status
+        claim = db.query(Claim).filter(Claim.id == conv.claim_id).first()
+        order = db.query(Order).filter(Order.order_id == claim.order_id).first() if claim else None
+        other_user_id = conv.fulfiller_user_id if user.user_id == conv.buyer_user_id else conv.buyer_user_id
+        other_user = db.query(User).filter(User.user_id == other_user_id).first()
+
         results.append(ConversationResponse(
             id=conv.id,
             claim_id=conv.claim_id,
@@ -211,6 +217,9 @@ def list_conversations(
             updated_at=conv.updated_at,
             last_message=MessageResponse.from_orm(last_msg) if last_msg else None,
             unread_count=unread_count,
+            order_name=order.name if order else None,
+            other_username=other_user.username if other_user else None,
+            claim_status=claim.status if claim else None,
         ))
 
     return results

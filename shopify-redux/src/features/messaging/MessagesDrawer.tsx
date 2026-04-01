@@ -114,28 +114,37 @@ export const MessagesDrawer = ({ open, onClose }: MessagesDrawerProps) => {
                   <ListItemText
                     primary={
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography variant="body1" fontWeight={conv.unread_count > 0 ? 700 : 400}>
-                          Claim
+                        <Typography variant="body1" fontWeight={conv.unread_count > 0 ? 700 : 400} noWrap sx={{ flex: 1 }}>
+                          {conv.order_name || 'Order'}
                         </Typography>
-                        <Chip
-                          label={conv.claim_id.slice(0, 8)}
-                          size="small"
-                          sx={{
-                            height: 22,
-                            fontSize: '0.7rem',
-                            backgroundColor: glowMedium,
-                            color: 'primary.main',
-                          }}
-                        />
+                        {conv.claim_status && (
+                          <Chip
+                            label={conv.claim_status.replace(/_/g, ' ')}
+                            size="small"
+                            sx={{
+                              height: 20,
+                              fontSize: '0.65rem',
+                              textTransform: 'capitalize',
+                              backgroundColor: glowMedium,
+                              color: 'primary.main',
+                            }}
+                          />
+                        )}
                         {timeStr && (
-                          <Typography variant="caption" color="text.secondary" sx={{ ml: 'auto' }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>
                             {timeStr}
                           </Typography>
                         )}
                       </Box>
                     }
                     secondary={
-                      conv.last_message ? (
+                      <Box>
+                        {conv.other_username && (
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                            with {conv.other_username}
+                          </Typography>
+                        )}
+                        {conv.last_message ? (
                         <Typography
                           variant="body2"
                           noWrap
@@ -147,7 +156,8 @@ export const MessagesDrawer = ({ open, onClose }: MessagesDrawerProps) => {
                         >
                           {conv.last_message.body}
                         </Typography>
-                      ) : null
+                      ) : null}
+                      </Box>
                     }
                   />
                   {conv.unread_count > 0 && (

@@ -975,6 +975,10 @@ class ConversationResponse(BaseModel):
     updated_at: datetime
     last_message: Optional[MessageResponse] = None
     unread_count: int = 0
+    # Enriched fields for display
+    order_name: Optional[str] = None
+    other_username: Optional[str] = None
+    claim_status: Optional[str] = None
 
 
 class UnreadCountResponse(BaseModel):
