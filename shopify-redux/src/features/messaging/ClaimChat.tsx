@@ -4,6 +4,7 @@ import {
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
@@ -20,11 +21,12 @@ interface ClaimChatProps {
   claimId: string;
   open: boolean;
   onClose: () => void;
+  onBack?: () => void;
 }
 
 const selectSessionQuery = authApi.endpoints.getSlimSession.select();
 
-export const ClaimChat = ({ claimId, open, onClose }: ClaimChatProps) => {
+export const ClaimChat = ({ claimId, open, onClose, onBack }: ClaimChatProps) => {
   const [messageText, setMessageText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { data: session } = useSelector(selectSessionQuery);
@@ -90,9 +92,16 @@ export const ClaimChat = ({ claimId, open, onClose }: ClaimChatProps) => {
           borderBottom: `1px solid ${borderSubtle}`,
         }}
       >
-        <Typography variant="h6" fontWeight={600}>
-          Messages
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {onBack && (
+            <IconButton onClick={onBack} size="small" sx={{ color: 'text.secondary' }}>
+              <ArrowBackIcon />
+            </IconButton>
+          )}
+          <Typography variant="h6" fontWeight={600}>
+            Messages
+          </Typography>
+        </Box>
         <IconButton onClick={onClose} size="small" sx={{ color: 'text.secondary' }}>
           <CloseIcon />
         </IconButton>

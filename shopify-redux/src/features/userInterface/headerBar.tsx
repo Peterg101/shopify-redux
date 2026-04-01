@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { AppBar } from './uiComponents';
 import { Box, Typography, Toolbar, Button, IconButton, Drawer, List, ListItemButton, ListItemText, useMediaQuery } from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../app/store";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { monoFontFamily, textGlow } from "../../theme";
 import { UnreadBadge } from '../messaging/UnreadBadge';
+import { MessagesDrawer } from '../messaging/MessagesDrawer';
+import { setLeftDrawerClosed } from '../../services/userInterfaceSlice';
 
 const navItems = [
   { label: 'Generate', path: '/generate' },
@@ -28,10 +30,16 @@ export const HeaderBar = () => {
   const userInterfaceState = useSelector(
     (state: RootState) => state.userInterfaceState
   );
+  const dispatch = useDispatch();
   const location = useLocation();
-  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [messagesOpen, setMessagesOpen] = useState(false);
   const isSmall = useMediaQuery('(max-width:600px)');
+
+  const handleMessagesOpen = () => {
+    dispatch(setLeftDrawerClosed());
+    setMessagesOpen(true);
+  };
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -67,7 +75,7 @@ export const HeaderBar = () => {
           <Box sx={{ flexGrow: 1 }} />
 
           {/* Messages badge */}
-          <UnreadBadge onClick={() => navigate('/messages')} />
+          <UnreadBadge onClick={handleMessagesOpen} />
 
           {/* Mobile hamburger */}
           {isSmall && (
@@ -102,6 +110,9 @@ export const HeaderBar = () => {
           ))}
         </List>
       </Drawer>
+
+      {/* Messages drawer (right side) */}
+      <MessagesDrawer open={messagesOpen} onClose={() => setMessagesOpen(false)} />
     </>
   );
 };
