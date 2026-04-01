@@ -11,7 +11,6 @@ import { UnreadBadge } from '../messaging/UnreadBadge';
 import { MessagesDrawer } from '../messaging/MessagesDrawer';
 import { selectUserInformation } from '../../services/selectors';
 import { useLogOutMutation } from '../../services/authApi';
-import { OrdersDrawer } from '../orders/OrdersDrawer';
 
 const navItems = [
   { label: 'Generate', path: '/generate' },
@@ -34,7 +33,6 @@ export const HeaderBar = () => {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [messagesOpen, setMessagesOpen] = useState(false);
-  const [ordersOpen, setOrdersOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isSmall = useMediaQuery('(max-width:600px)');
   const userInfo = useSelector(selectUserInformation);
@@ -128,7 +126,7 @@ export const HeaderBar = () => {
           <Typography variant="body2" color="text.secondary">{userInfo?.user?.email}</Typography>
         </Box>
         <Divider />
-        <MenuItem onClick={() => { setOrdersOpen(true); setAnchorEl(null); }}>
+        <MenuItem onClick={() => { navigate('/orders'); setAnchorEl(null); }}>
           <ListItemIcon><LocalShippingIcon fontSize="small" /></ListItemIcon>
           <ListItemText>My Orders</ListItemText>
         </MenuItem>
@@ -142,9 +140,6 @@ export const HeaderBar = () => {
           <ListItemText sx={{ color: 'error.main' }}>Log Out</ListItemText>
         </MenuItem>
       </Menu>
-
-      {/* Orders drawer (right side) */}
-      <OrdersDrawer open={ordersOpen} onClose={() => setOrdersOpen(false)} />
 
       {/* Messages drawer (right side) */}
       <MessagesDrawer open={messagesOpen} onClose={() => setMessagesOpen(false)} />

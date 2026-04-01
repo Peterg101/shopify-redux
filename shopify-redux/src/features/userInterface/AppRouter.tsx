@@ -15,6 +15,7 @@ import { ResetPasswordPage } from "../auth/ResetPasswordPage";
 import { VerifyEmailPage } from "../auth/VerifyEmailPage";
 import { ConversationsPage } from "../messaging/ConversationsPage";
 import { FulfillerSettingsPage } from "../fulfill/FulfillerSettingsPage";
+import { OrdersPage } from "../orders/OrdersPage";
 import { authApi } from "../../services/authApi";
 import { CircularProgress, Box } from "@mui/material";
 import FloatingBasketBar from "../basket/FloatingBasketBar";
@@ -48,6 +49,7 @@ function AppRouter() {
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/generate" element={<ProtectedRoute><LandingPage /></ProtectedRoute>} />
           <Route path="/fulfill" element={<ProtectedRoute><Fulfill /></ProtectedRoute>} />
+          <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
           <Route path="/orders/:orderId" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />
           <Route path="/catalog" element={<ProtectedRoute><CatalogPage /></ProtectedRoute>} />
           <Route path="/catalog/:partId" element={<ProtectedRoute><PartDetailPage /></ProtectedRoute>} />
