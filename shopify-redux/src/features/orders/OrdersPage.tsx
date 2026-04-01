@@ -482,9 +482,6 @@ export const OrdersPage = () => {
 
         {/* ── Header ──────────────────────────────────────────── */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-          <IconButton onClick={() => navigate(-1)} size="small" sx={{ color: 'text.secondary' }}>
-            <ArrowBackIcon />
-          </IconButton>
           <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.02em' }}>
             {activeLabel}
           </Typography>
@@ -497,7 +494,7 @@ export const OrdersPage = () => {
             }}
           />
         </Box>
-        <Typography variant="body1" color="text.secondary" sx={{ ml: 6, mb: 3 }}>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
           {subtitle}
         </Typography>
 

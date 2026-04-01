@@ -69,9 +69,6 @@ export const FulfillerSettingsPage = () => {
         {/* Page Header */}
         <Box sx={{ mb: 5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-            <IconButton onClick={() => navigate(-1)} size="small" sx={{ color: 'text.secondary' }}>
-              <ArrowBackIcon />
-            </IconButton>
             <Typography
               variant="h4"
               sx={{
@@ -85,7 +82,7 @@ export const FulfillerSettingsPage = () => {
               Fulfiller Onboarding
             </Typography>
           </Box>
-          <Typography variant="body1" color="text.secondary" sx={{ ml: 6 }}>
+          <Typography variant="body1" color="text.secondary">
             Complete these steps to start claiming and fulfilling manufacturing orders.
           </Typography>
         </Box>
