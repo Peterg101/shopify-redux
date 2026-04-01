@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
 import {
   Box,
   Typography,
@@ -11,15 +10,10 @@ import {
   CircularProgress,
   Skeleton,
   IconButton,
-  useTheme,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DownloadIcon from "@mui/icons-material/Download";
-import { RootState } from "../../app/store";
-import { setLeftDrawerClosed, setSelectedComponent } from "../../services/userInterfaceSlice";
 import { HeaderBar } from "../userInterface/headerBar";
-import { UpdatedUserInterface } from "../userInterface/updatedUserInterface";
-import { DRAWER_WIDTH } from "../userInterface/uiComponents";
 import { useGetPartDetailQuery } from "../../services/catalogApi";
 import PartDetailViewer from "./PartDetailViewer";
 import { PartConfigSidebar } from "./PartConfigSidebar";
@@ -27,39 +21,17 @@ import { PartConfigSidebar } from "./PartConfigSidebar";
 export const PartDetailPage = () => {
   const { partId } = useParams<{ partId: string }>();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const theme = useTheme();
-  const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
-  const collapsedWidth = `calc(${theme.spacing(8)} + 1px)`;
   const [viewerColour, setViewerColour] = useState("white");
-
-  useEffect(() => {
-    dispatch(setLeftDrawerClosed());
-    dispatch(setSelectedComponent({ selectedComponent: "" }));
-  }, [dispatch]);
 
   const { data: part, isLoading, error } = useGetPartDetailQuery(partId!, {
     skip: !partId,
   });
 
-  const contentMargin = userInterfaceState.leftDrawerOpen
-    ? `${DRAWER_WIDTH}px`
-    : collapsedWidth;
-
-  const transitionSx = {
-    marginLeft: contentMargin,
-    transition: theme.transitions.create(["margin"], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  };
-
   if (isLoading) {
     return (
       <Box>
         <HeaderBar />
-        <UpdatedUserInterface visibleItems={["Basket"]} />
-        <Box sx={{ pt: 12, px: { xs: 2, md: 4 }, ...transitionSx }}>
+        <Box sx={{ pt: 12, px: { xs: 2, md: 4 },  }}>
           <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 3 }}>
             <Box sx={{ flex: 1 }}>
               <Skeleton variant="text" width={200} height={40} sx={{ mb: 2 }} />
@@ -77,8 +49,7 @@ export const PartDetailPage = () => {
     return (
       <Box>
         <HeaderBar />
-        <UpdatedUserInterface visibleItems={["Basket"]} />
-        <Box sx={{ pt: 12, px: 4, ...transitionSx }}>
+        <Box sx={{ pt: 12, px: 4,  }}>
           <Typography color="error">Part not found</Typography>
           <Button onClick={() => navigate("/catalog")} sx={{ mt: 1 }}>
             Back to Catalog
@@ -91,12 +62,10 @@ export const PartDetailPage = () => {
   return (
     <Box>
       <HeaderBar />
-      <UpdatedUserInterface />
       <Box sx={{
         display: "flex",
         flexDirection: { xs: "column", md: "row" },
         minHeight: "calc(100vh - 64px)",
-        ...transitionSx,
       }}>
         {/* Left panel — viewer + metadata */}
         <Box sx={{

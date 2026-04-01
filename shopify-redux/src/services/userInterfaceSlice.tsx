@@ -16,30 +16,23 @@ export const userInterfaceSlice = createSlice({
     name: "userInterfaceState",
     initialState,
     reducers: {
-        setLeftDrawerOpen: (state) => {
-            state.leftDrawerOpen = !state.leftDrawerOpen
-        },
-        setLeftDrawerClosed: (state) => {
-            state.leftDrawerOpen = false
-        },
+        // Legacy — kept for any remaining references during migration
+        setLeftDrawerOpen: (state) => { state.leftDrawerOpen = !state.leftDrawerOpen },
+        setLeftDrawerClosed: (state) => { state.leftDrawerOpen = false },
         setSelectedComponent: (state, action: PayloadAction<{selectedComponent: string}>) => {
-            const {selectedComponent} = action.payload
-            state.selectedComponent = selectedComponent
+            state.selectedComponent = action.payload.selectedComponent
         },
         setClaimedOrder: (state, action: PayloadAction<{claimedOrder: Order}>) => {
-            const {claimedOrder} = action.payload
-            state.claimedOrder = claimedOrder
+            state.claimedOrder = action.payload.claimedOrder
         },
         setSelectedClaim: (state, action: PayloadAction<{selectedClaim: Claim | null}>) => {
             state.selectedClaim = action.payload.selectedClaim
         },
         setFulfillMode: (state, action: PayloadAction<{fulfillMode: boolean}>) => {
-            const {fulfillMode} = action.payload
-            state.fulfillMode = fulfillMode
+            state.fulfillMode = action.payload.fulfillMode
         },
         setUpdateClaimMode: (state, action: PayloadAction<{updateClaimMode: boolean}>) => {
-            const {updateClaimMode} = action.payload
-            state.updateClaimMode = updateClaimMode
+            state.updateClaimMode = action.payload.updateClaimMode
         },
         resetSidebar: (state) => {
             state.leftDrawerOpen = false;

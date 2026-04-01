@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
+
 import {
   useGetOrderDetailQuery,
   useToggleOrderVisibilityMutation,
@@ -42,11 +43,8 @@ import {
 import { useTheme } from '@mui/material/styles'
 import { RootState } from '../../app/store'
 import { ClaimDetail, Dispute } from '../../app/utility/interfaces'
-import { setLeftDrawerClosed, setSelectedComponent } from '../../services/userInterfaceSlice'
 import { HeaderBar } from '../userInterface/headerBar'
 import { ClaimChat } from '../messaging/ClaimChat'
-import { UpdatedUserInterface } from '../userInterface/updatedUserInterface'
-import { DRAWER_WIDTH } from '../userInterface/uiComponents'
 
 const CLAIM_STEPS = [
   'pending',
@@ -89,11 +87,8 @@ const STATUS_COLOR: Record<string, 'error' | 'warning' | 'success' | 'default' |
 export const OrderDetailPage = () => {
   const { orderId } = useParams<{ orderId: string }>()
   const navigate = useNavigate()
-  const dispatch = useDispatch()
-  const theme = useTheme()
   const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState)
   const { userInformation } = userInterfaceState
-  const collapsedWidth = `calc(${theme.spacing(8)} + 1px)`
 
   const { data: order, isLoading: loading, error: queryError } = useGetOrderDetailQuery(orderId!, { skip: !orderId })
   const [toggleVisibility, { isLoading: toggling }] = useToggleOrderVisibilityMutation()
@@ -101,33 +96,18 @@ export const OrderDetailPage = () => {
 
   const isOwner = userInformation?.user?.user_id === order?.user_id
 
-  // Close the drawer by default when landing on this page
-  useEffect(() => {
-    dispatch(setLeftDrawerClosed())
-    dispatch(setSelectedComponent({ selectedComponent: '' }))
-  }, [dispatch])
-
   const handleToggleVisibility = async () => {
     if (!order) return
     await toggleVisibility(order.order_id)
   }
 
-  const contentMargin = userInterfaceState.leftDrawerOpen
-    ? `${DRAWER_WIDTH}px`
-    : collapsedWidth
-
   if (loading) {
     return (
       <Box>
         <HeaderBar />
-        <UpdatedUserInterface />
         <Box sx={{
           display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh',
-          marginLeft: contentMargin,
-          transition: theme.transitions.create(['margin'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
-          }),
+          pt: 10,
         }}>
           <CircularProgress />
         </Box>
@@ -139,15 +119,7 @@ export const OrderDetailPage = () => {
     return (
       <Box>
         <HeaderBar />
-        <UpdatedUserInterface />
-        <Box sx={{
-          pt: 12, px: 4,
-          marginLeft: contentMargin,
-          transition: theme.transitions.create(['margin'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
-          }),
-        }}>
+        <Box sx={{ pt: 10, px: 4 }}>
           <Alert severity="error">{error || 'Order not found'}</Alert>
           <Button startIcon={<ArrowBack />} onClick={() => navigate(-1)} sx={{ mt: 2 }}>
             Go Back
@@ -160,14 +132,8 @@ export const OrderDetailPage = () => {
   return (
     <Box>
       <HeaderBar />
-      <UpdatedUserInterface />
       <Box sx={{
         pt: 10, pb: 6, px: { xs: 2, md: 4 }, maxWidth: 1100, mx: 'auto',
-        marginLeft: contentMargin,
-        transition: theme.transitions.create(['margin'], {
-          easing: theme.transitions.easing.sharp,
-          duration: theme.transitions.duration.enteringScreen,
-        }),
       }}>
         {/* Back button */}
         <Button startIcon={<ArrowBack />} onClick={() => navigate(-1)} sx={{ mb: 3 }}>

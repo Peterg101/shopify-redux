@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { AppBar } from './uiComponents';
-import { Box, Typography, Toolbar, Button, IconButton, Drawer, List, ListItemButton, ListItemText, useMediaQuery } from "@mui/material";
+import { AppBar, Box, Typography, Toolbar, Button, IconButton, Drawer, List, ListItemButton, ListItemText, useMediaQuery, Avatar, Menu, MenuItem, ListItemIcon, Divider } from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
-import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "../../app/store";
-import { Link, useLocation } from "react-router-dom";
+import SettingsIcon from '@mui/icons-material/Settings';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { useSelector } from "react-redux";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { monoFontFamily, textGlow } from "../../theme";
 import { UnreadBadge } from '../messaging/UnreadBadge';
 import { MessagesDrawer } from '../messaging/MessagesDrawer';
-import { setLeftDrawerClosed } from '../../services/userInterfaceSlice';
+import { selectUserInformation } from '../../services/selectors';
+import { useLogOutMutation } from '../../services/authApi';
 
 const navItems = [
   { label: 'Generate', path: '/generate' },
@@ -27,17 +29,16 @@ const navButtonSx = (active: boolean) => ({
 });
 
 export const HeaderBar = () => {
-  const userInterfaceState = useSelector(
-    (state: RootState) => state.userInterfaceState
-  );
-  const dispatch = useDispatch();
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [messagesOpen, setMessagesOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isSmall = useMediaQuery('(max-width:600px)');
+  const userInfo = useSelector(selectUserInformation);
+  const [logOut] = useLogOutMutation();
 
   const handleMessagesOpen = () => {
-    dispatch(setLeftDrawerClosed());
     setMessagesOpen(true);
   };
 
@@ -47,7 +48,7 @@ export const HeaderBar = () => {
     <>
       <AppBar
         position="fixed"
-        open={userInterfaceState.leftDrawerOpen}
+        sx={{ bgcolor: 'background.paper' }}
       >
         <Toolbar sx={{ display: "flex", gap: 3 }}>
           <Typography
@@ -76,6 +77,13 @@ export const HeaderBar = () => {
 
           {/* Messages badge */}
           <UnreadBadge onClick={handleMessagesOpen} />
+
+          {/* Profile avatar */}
+          <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
+            <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: 14, color: '#0A0E14' }}>
+              {userInfo?.user?.username?.[0]?.toUpperCase() || 'U'}
+            </Avatar>
+          </IconButton>
 
           {/* Mobile hamburger */}
           {isSmall && (
@@ -110,6 +118,28 @@ export const HeaderBar = () => {
           ))}
         </List>
       </Drawer>
+
+      {/* Profile menu */}
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+        <Box sx={{ px: 2, py: 1 }}>
+          <Typography variant="body1" fontWeight={600}>{userInfo?.user?.username}</Typography>
+          <Typography variant="body2" color="text.secondary">{userInfo?.user?.email}</Typography>
+        </Box>
+        <Divider />
+        <MenuItem onClick={() => { navigate('/orders'); setAnchorEl(null); }}>
+          <ListItemIcon><LocalShippingIcon fontSize="small" /></ListItemIcon>
+          <ListItemText>My Orders</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => { navigate('/fulfill'); setAnchorEl(null); }}>
+          <ListItemIcon><SettingsIcon fontSize="small" /></ListItemIcon>
+          <ListItemText>Fulfiller Settings</ListItemText>
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={() => { logOut(); setAnchorEl(null); }}>
+          <ListItemIcon><LogoutIcon fontSize="small" color="error" /></ListItemIcon>
+          <ListItemText sx={{ color: 'error.main' }}>Log Out</ListItemText>
+        </MenuItem>
+      </Menu>
 
       {/* Messages drawer (right side) */}
       <MessagesDrawer open={messagesOpen} onClose={() => setMessagesOpen(false)} />

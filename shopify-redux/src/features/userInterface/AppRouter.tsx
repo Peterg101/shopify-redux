@@ -16,6 +16,7 @@ import { VerifyEmailPage } from "../auth/VerifyEmailPage";
 import { ConversationsPage } from "../messaging/ConversationsPage";
 import { authApi } from "../../services/authApi";
 import { CircularProgress, Box } from "@mui/material";
+import FloatingBasketBar from "../basket/FloatingBasketBar";
 
 
 const selectSessionQuery = authApi.endpoints.getSlimSession.select();
@@ -52,6 +53,7 @@ function AppRouter() {
           <Route path="/messages" element={<ProtectedRoute><ConversationsPage /></ProtectedRoute>} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
+        <FloatingBasketBar />
     </BrowserRouter>
   );
 };

@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
 import {
   Box,
   Typography,
@@ -10,14 +9,9 @@ import {
   InputAdornment,
   CircularProgress,
   Pagination,
-  useTheme,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { RootState } from "../../app/store";
-import { setLeftDrawerClosed, setSelectedComponent } from "../../services/userInterfaceSlice";
 import { HeaderBar } from "../userInterface/headerBar";
-import { UpdatedUserInterface } from "../userInterface/updatedUserInterface";
-import { DRAWER_WIDTH } from "../userInterface/uiComponents";
 import { useGetPartsQuery } from "../../services/catalogApi";
 import { PartCard } from "./PartCard";
 
@@ -26,19 +20,10 @@ const PAGE_SIZE = 12;
 
 export const CatalogPage = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const theme = useTheme();
-  const userInterfaceState = useSelector((state: RootState) => state.userInterfaceState);
-  const collapsedWidth = `calc(${theme.spacing(8)} + 1px)`;
   const [search, setSearch] = useState("");
   const [fileType, setFileType] = useState("");
   const [category, setCategory] = useState("");
   const [page, setPage] = useState(1);
-
-  useEffect(() => {
-    dispatch(setLeftDrawerClosed());
-    dispatch(setSelectedComponent({ selectedComponent: "" }));
-  }, [dispatch]);
 
   const { data, isLoading } = useGetPartsQuery({
     q: search || undefined,
@@ -50,22 +35,12 @@ export const CatalogPage = () => {
 
   const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 0;
 
-  const contentMargin = userInterfaceState.leftDrawerOpen
-    ? `${DRAWER_WIDTH}px`
-    : collapsedWidth;
-
   return (
     <Box>
       <HeaderBar />
-      <UpdatedUserInterface visibleItems={["Basket"]} />
       <Box sx={{
         display: "flex", flexDirection: "column", gap: 3,
         pt: 10, pb: 6, px: { xs: 2, md: 4 },
-        marginLeft: contentMargin,
-        transition: theme.transitions.create(["margin"], {
-          easing: theme.transitions.easing.sharp,
-          duration: theme.transitions.duration.enteringScreen,
-        }),
       }}>
       <Typography variant="h5" fontWeight={600}>
         Parts Catalog
