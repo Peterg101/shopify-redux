@@ -14,6 +14,7 @@ import { ForgotPasswordPage } from "../auth/ForgotPasswordPage";
 import { ResetPasswordPage } from "../auth/ResetPasswordPage";
 import { VerifyEmailPage } from "../auth/VerifyEmailPage";
 import { ConversationsPage } from "../messaging/ConversationsPage";
+import { FulfillerSettingsPage } from "../fulfill/FulfillerSettingsPage";
 import { authApi } from "../../services/authApi";
 import { CircularProgress, Box } from "@mui/material";
 import FloatingBasketBar from "../basket/FloatingBasketBar";
@@ -50,6 +51,7 @@ function AppRouter() {
           <Route path="/orders/:orderId" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />
           <Route path="/catalog" element={<ProtectedRoute><CatalogPage /></ProtectedRoute>} />
           <Route path="/catalog/:partId" element={<ProtectedRoute><PartDetailPage /></ProtectedRoute>} />
+          <Route path="/fulfiller-settings" element={<ProtectedRoute><FulfillerSettingsPage /></ProtectedRoute>} />
           <Route path="/messages" element={<ProtectedRoute><ConversationsPage /></ProtectedRoute>} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

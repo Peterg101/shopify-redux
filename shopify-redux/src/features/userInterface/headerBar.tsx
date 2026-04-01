@@ -132,9 +132,9 @@ export const HeaderBar = () => {
           <ListItemIcon><LocalShippingIcon fontSize="small" /></ListItemIcon>
           <ListItemText>My Orders</ListItemText>
         </MenuItem>
-        <MenuItem onClick={() => { navigate('/fulfill'); setAnchorEl(null); }}>
+        <MenuItem onClick={() => { navigate('/fulfiller-settings'); setAnchorEl(null); }}>
           <ListItemIcon><SettingsIcon fontSize="small" /></ListItemIcon>
-          <ListItemText>Fulfiller</ListItemText>
+          <ListItemText>Fulfiller Settings</ListItemText>
         </MenuItem>
         <Divider />
         <MenuItem onClick={() => { logOut(); setAnchorEl(null); }}>
