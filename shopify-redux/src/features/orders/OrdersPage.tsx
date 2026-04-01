@@ -538,26 +538,24 @@ export const OrdersPage = () => {
           </ToggleButton>
         </ToggleButtonGroup>
 
-        {/* ── Search Bar (full width) ─────────────────────────── */}
-        <TextField
-          size="small"
-          fullWidth
-          placeholder={`Search ${activeTab === 'orders' ? 'orders' : 'claims'} by name, material, or technique...`}
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-              </InputAdornment>
-            ),
-          }}
-          sx={{ mb: 2 }}
-        />
-
-        {/* ── Toolbar Row ─────────────────────────────────────── */}
+        {/* ── Search + Sort + View Mode (single row) ────────── */}
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', mb: 3 }}>
-          <FormControl size="small" sx={{ minWidth: 180 }}>
+          <TextField
+            size="small"
+            placeholder={`Search ${activeTab === 'orders' ? 'orders' : 'claims'}...`}
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ flex: 1, minWidth: 200 }}
+          />
+
+          <FormControl size="small" sx={{ minWidth: 160 }}>
             <InputLabel>Sort</InputLabel>
             <Select value={sortBy} onChange={handleSortChange} label="Sort">
               <MenuItem value="newest">Newest</MenuItem>
@@ -567,10 +565,8 @@ export const OrdersPage = () => {
             </Select>
           </FormControl>
 
-          <Box sx={{ flexGrow: 1 }} />
-
-          <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
-            Showing {paginated.length} of {filtered.length}
+          <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap', display: { xs: 'none', md: 'block' } }}>
+            {filtered.length} result{filtered.length !== 1 ? 's' : ''}
           </Typography>
 
           <ToggleButtonGroup
