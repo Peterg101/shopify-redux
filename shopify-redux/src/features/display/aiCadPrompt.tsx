@@ -13,7 +13,7 @@ import { setCadPending } from '../../services/cadSlice';
 import { authApi } from '../../services/authApi';
 import { connectProgressStream } from '../../services/progressStream';
 import { startCadTask } from '../../services/fetchFileUtils';
-import { CadSettings } from './CadGenerationSettings';
+import { CadDesignIntent, CadFeatureSettings } from './CadGenerationSettings';
 import { glowMedium } from '../../theme';
 
 const AiCadPrompt = () => {
@@ -51,6 +51,7 @@ const AiCadPrompt = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
+      <CadDesignIntent />
       <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
         <TextField
           disabled={disabledField}
@@ -99,7 +100,7 @@ const AiCadPrompt = () => {
       </Typography>
       <Collapse in={value.length > 0}>
         <Box sx={{ mt: 1.5 }}>
-          <CadSettings />
+          <CadFeatureSettings />
         </Box>
       </Collapse>
     </Box>

@@ -57,6 +57,10 @@ export interface CadGenerationSettings {
   max_iterations: number;
   timeout_seconds: number;
   target_units: string;
+  process: string;
+  approximate_size: { width: number | null; depth: number | null; height: number | null } | null;
+  material_hint: string;
+  features: string[];
 }
 
 export interface CadState {

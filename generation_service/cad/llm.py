@@ -293,19 +293,58 @@ def _anthropic_generate(user_messages: list[dict]) -> str:
 # ---------------------------------------------------------------------------
 
 
-async def generate_cadquery_code(
-    prompt: str, target_units: str = "mm", process: str = "fdm"
-) -> str:
-    """Generate CadQuery code from a text prompt using the configured LLM."""
-    units_note = (
-        f"\nUse {target_units} as the unit system." if target_units != "mm" else ""
-    )
-    process_note = PROCESS_CONSTRAINTS.get(process.lower(), PROCESS_CONSTRAINTS["fdm"])
+MATERIAL_HINTS = {
+    "plastic": "MATERIAL: Plastic — wall thickness 1-2mm, FDM-friendly geometry, consider snap-fits and self-tapping screw bosses.",
+    "metal": "MATERIAL: Metal — wall thickness 2-3mm, consider CNC tool access, internal corners need tool radius (min 1.5mm).",
+    "rubber": "MATERIAL: Rubber/flexible — generous fillets everywhere, avoid thin features, account for material flex.",
+}
 
-    user_content = (
-        f"Create a CadQuery model: {prompt}\n\n"
-        f"{process_note}{units_note}"
-    )
+FEATURE_DESCRIPTIONS = {
+    "hollow": "Make the part hollow/shelled with appropriate wall thickness for the target process.",
+    "fillets": "Add fillets to all edges — internal edges for strength (radius >= wall thickness), external for handling.",
+    "mounting_holes": "Include 4 mounting holes (M4 clearance, 4.5mm diameter) near the corners.",
+    "text_engraving": "Add text engraving on the top face — engrave 0.5mm deep with a descriptive label.",
+}
+
+
+async def generate_cadquery_code(
+    prompt: str,
+    target_units: str = "mm",
+    process: str = "fdm",
+    approximate_size: dict | None = None,
+    material_hint: str = "plastic",
+    features: list[str] | None = None,
+) -> str:
+    """Generate CadQuery code from a text prompt with structured context."""
+    context_parts = [f"Create a CadQuery model: {prompt}"]
+
+    # Process constraints
+    context_parts.append(PROCESS_CONSTRAINTS.get(process.lower(), PROCESS_CONSTRAINTS["fdm"]))
+
+    # Approximate dimensions
+    if approximate_size:
+        w = approximate_size.get("width")
+        d = approximate_size.get("depth")
+        h = approximate_size.get("height")
+        if any(v for v in [w, d, h]):
+            dims = f"{w or '?'} x {d or '?'} x {h or '?'}"
+            context_parts.append(f"TARGET SIZE: approximately {dims} mm. Use these as the starting dimensions for the main body.")
+
+    # Material hint
+    if material_hint and material_hint in MATERIAL_HINTS:
+        context_parts.append(MATERIAL_HINTS[material_hint])
+
+    # Feature requests
+    if features:
+        feature_notes = [FEATURE_DESCRIPTIONS[f] for f in features if f in FEATURE_DESCRIPTIONS]
+        if feature_notes:
+            context_parts.append("REQUIRED FEATURES:\n" + "\n".join(f"- {n}" for n in feature_notes))
+
+    # Units
+    if target_units != "mm":
+        context_parts.append(f"Use {target_units} as the unit system.")
+
+    user_content = "\n\n".join(context_parts)
 
     if CAD_PROVIDER == "anthropic":
         logger.info(f"Using Anthropic ({ANTHROPIC_MODEL}) for code generation")

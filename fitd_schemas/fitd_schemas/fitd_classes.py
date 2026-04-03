@@ -888,6 +888,9 @@ class CadGenerationSettings(BaseModel):
     timeout_seconds: int = 30
     target_units: str = "mm"
     process: str = "fdm"  # fdm, sla, sls, cnc, injection
+    approximate_size: Optional[dict] = None  # {width, depth, height} in mm
+    material_hint: str = "plastic"  # plastic, metal, rubber
+    features: list = []  # hollow, fillets, mounting_holes, text_engraving
 
 
 class CadTaskRequest(BaseModel):

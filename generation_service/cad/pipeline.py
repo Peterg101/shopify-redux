@@ -33,7 +33,10 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
     max_iterations = settings.max_iterations if settings else 3
     timeout_seconds = settings.timeout_seconds if settings else 30
     target_units = settings.target_units if settings else "mm"
-    process = settings.process if settings and hasattr(settings, 'process') else "fdm"
+    process = getattr(settings, 'process', 'fdm') if settings else 'fdm'
+    approximate_size = getattr(settings, 'approximate_size', None) if settings else None
+    material_hint = getattr(settings, 'material_hint', 'plastic') if settings else 'plastic'
+    features = getattr(settings, 'features', []) if settings else []
 
     task_name = prompt[:50].replace(",", " ")
 
@@ -42,7 +45,9 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
         await publish(redis, port_id, f"10,generating,{task_name}")
         logger.info(f"[{port_id}] Generating CadQuery code for: {prompt[:80]}")
 
-        code = await generate_cadquery_code(prompt, target_units, process)
+        code = await generate_cadquery_code(
+            prompt, target_units, process, approximate_size, material_hint, features
+        )
         await publish(redis, port_id, f"25,generating,{task_name}")
 
         # Step 2: Execute with retry loop
