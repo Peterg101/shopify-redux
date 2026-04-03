@@ -5,6 +5,10 @@ import * as THREE from "three";
 import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 
+const EDGE_COLOR = 0x00e5ff;    // cyan accent for edges
+const EDGE_OPACITY = 0.35;
+const EDGE_THRESHOLD = 15;      // degrees — only show edges sharper than this
+
 const GLTFScene = () => {
   const dataState = useSelector((state: RootState) => state.dataState);
   const { camera } = useThree();
@@ -22,15 +26,32 @@ const GLTFScene = () => {
 
     const clonedScene = scene.clone();
 
-    // Apply colour
+    // Apply material + edge lines to every mesh
     const color = new THREE.Color(dataState.modelColour);
     clonedScene.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-        child.material = new THREE.MeshStandardMaterial({
+        // Solid material — slightly brighter for better edge contrast
+        child.material = new THREE.MeshPhysicalMaterial({
           color,
-          metalness: 0.3,
-          roughness: 0.7,
+          metalness: 0.15,
+          roughness: 0.6,
+          clearcoat: 0.1,
+          clearcoatRoughness: 0.4,
         });
+
+        // Edge lines overlay — only sharp edges (CAD-style wireframe)
+        const edgesGeometry = new THREE.EdgesGeometry(
+          child.geometry,
+          EDGE_THRESHOLD
+        );
+        const edgesMaterial = new THREE.LineBasicMaterial({
+          color: EDGE_COLOR,
+          transparent: true,
+          opacity: EDGE_OPACITY,
+          depthTest: true,
+        });
+        const edgeLines = new THREE.LineSegments(edgesGeometry, edgesMaterial);
+        child.add(edgeLines);
       }
     });
 

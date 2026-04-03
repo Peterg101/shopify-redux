@@ -35,7 +35,11 @@ const OBJSTLViewer = ({ hideOrientationControls = false }: OBJSTLViewerProps) =>
               ) : (
                 <STLScene />
               )}
-              <pointLight position={[10, 10, 10]} />
+              {/* 3-point lighting for CAD model visibility */}
+              <ambientLight intensity={0.4} />
+              <directionalLight position={[60, 80, 50]} intensity={0.7} />   {/* Key light */}
+              <directionalLight position={[-40, 20, -30]} intensity={0.3} /> {/* Fill light */}
+              <directionalLight position={[0, -20, 60]} intensity={0.2} />   {/* Rim light */}
               <OrbitControls
                 enableZoom
                 enablePan
@@ -46,8 +50,6 @@ const OBJSTLViewer = ({ hideOrientationControls = false }: OBJSTLViewerProps) =>
                 target={[0, 0, 0]}
               />
               <Environment files="HdrSkyOvercast001_HDR_2K.exr" />
-              <ambientLight intensity={0.5} />
-              <directionalLight position={[10, 10, 10]} intensity={0.5} />
             </Suspense>
           </Canvas>
         </ViewerErrorBoundary>
