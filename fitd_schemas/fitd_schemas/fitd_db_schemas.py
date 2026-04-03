@@ -46,6 +46,8 @@ class Task(Base):
     file_type: Mapped[str] = mapped_column(String, default="obj")
     complete: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[str] = mapped_column(String, default=lambda: datetime.now().isoformat())
+    cadquery_script: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    generation_prompt: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     owner = relationship("User", back_populates="tasks", lazy="noload")
 
     # Optional one-to-one relationship to PortID

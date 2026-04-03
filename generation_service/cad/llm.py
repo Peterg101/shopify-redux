@@ -221,6 +221,41 @@ ERROR_CATEGORIES = {
 }
 
 
+def extract_parameters(script: str) -> list[dict]:
+    """Parse named dimension variables from the top of a CadQuery script using AST."""
+    import ast as _ast
+    params = []
+    try:
+        tree = _ast.parse(script)
+        for node in _ast.iter_child_nodes(tree):
+            if isinstance(node, _ast.Assign) and len(node.targets) == 1:
+                target = node.targets[0]
+                if isinstance(target, _ast.Name) and isinstance(node.value, _ast.Constant):
+                    value = node.value.value
+                    if isinstance(value, (int, float)):
+                        params.append({
+                            "name": target.id,
+                            "value": value,
+                            "type": "float" if isinstance(value, float) else "int",
+                        })
+    except SyntaxError:
+        pass
+    return params
+
+
+def apply_parameter_changes(script: str, changes: dict) -> str:
+    """Modify parameter values in a CadQuery script using AST transformation."""
+    import ast as _ast
+    tree = _ast.parse(script)
+    for node in _ast.walk(tree):
+        if isinstance(node, _ast.Assign) and len(node.targets) == 1:
+            target = node.targets[0]
+            if isinstance(target, _ast.Name) and target.id in changes:
+                new_val = changes[target.id]
+                node.value = _ast.Constant(value=float(new_val))
+    return _ast.unparse(tree)
+
+
 def classify_error(error: str) -> str:
     """Add structured diagnostic hints to raw error messages."""
     hints = []

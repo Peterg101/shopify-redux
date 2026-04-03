@@ -9,9 +9,9 @@ from redis.asyncio import Redis as AsyncRedis
 from fitd_schemas.fitd_classes import CadTaskRequest
 from jwt_auth import generate_token
 
-from cad.llm import generate_cadquery_code, fix_cadquery_code
+from cad.llm import generate_cadquery_code, fix_cadquery_code, apply_parameter_changes
 from cad.executor import execute_cadquery
-from shared import publish, register_task, mark_task_complete
+from shared import publish, register_task, mark_task_complete, DB_SERVICE_URL
 
 logger = logging.getLogger(__name__)
 
@@ -113,6 +113,9 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
             )
             return
 
+        # Step 3b: Save the CadQuery script for parametric editing
+        await save_task_script(task_id, code, prompt)
+
         # Step 4: Upload STEP file to step_service
         await publish(redis, port_id, f"80,uploading,{task_name}")
         job_id = await upload_step_file(output_path, user_id, task_id)
@@ -170,3 +173,85 @@ async def upload_step_file(
     except Exception as e:
         logger.error(f"STEP upload error: {e}")
     return None
+
+
+async def regenerate_cad_task(
+    task_id: str, port_id: str, user_id: str,
+    parameter_changes: dict, redis: AsyncRedis,
+):
+    """Regenerate a CAD model with modified parameters."""
+    try:
+        # Step 1: Fetch stored script
+        await publish(redis, port_id, f"10,fetching script,regenerating")
+        auth_token = generate_token("generation_service", audience="api_service")
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(
+                f"{DB_SERVICE_URL}/tasks/{task_id}/script",
+                headers={"Authorization": f"Bearer {auth_token}"},
+            )
+        if resp.status_code != 200 or not resp.json().get("cadquery_script"):
+            await publish(redis, port_id, "Task Failed,No stored script found for this task")
+            return
+
+        original_script = resp.json()["cadquery_script"]
+
+        # Step 2: Apply parameter changes
+        await publish(redis, port_id, f"25,modifying parameters,regenerating")
+        modified_script = apply_parameter_changes(original_script, parameter_changes)
+        logger.info(f"[{port_id}] Applied {len(parameter_changes)} parameter changes")
+
+        # Step 3: Execute modified script
+        await publish(redis, port_id, f"40,executing,regenerating")
+        success, output_path, error, metadata = await asyncio.to_thread(
+            execute_cadquery, modified_script, 30
+        )
+
+        if not success:
+            await publish(redis, port_id, f"Task Failed,Regeneration failed: {error[:200]}")
+            return
+
+        if metadata:
+            bb = metadata.get("bbox", {})
+            logger.info(
+                f"[{port_id}] Regeneration succeeded: "
+                f"{bb.get('xlen', 0):.1f}x{bb.get('ylen', 0):.1f}x{bb.get('zlen', 0):.1f}mm"
+            )
+
+        # Step 4: Upload new STEP file (replaces existing for same task_id)
+        await publish(redis, port_id, f"70,uploading,regenerating")
+        job_id = await upload_step_file(output_path, user_id, task_id)
+
+        if not job_id:
+            await publish(redis, port_id, "Task Failed,Could not upload regenerated STEP file")
+            return
+
+        # Step 5: Save updated script
+        await save_task_script(task_id, modified_script, resp.json().get("generation_prompt", ""))
+
+        # Step 6: Done
+        task_name = "regenerated"
+        await publish(redis, port_id, f"100,complete,{task_name}")
+        await publish(redis, port_id, f"Task Completed,{task_id},{task_name},{job_id}")
+        logger.info(f"[{port_id}] Regeneration completed for task {task_id}")
+
+    except Exception as e:
+        logger.error(f"[{port_id}] Regeneration error: {e}", exc_info=True)
+        await publish(redis, port_id, f"Task Failed,{str(e)[:200]}")
+
+
+async def save_task_script(task_id: str, script: str, prompt: str):
+    """Save the CadQuery script to the task record for parametric editing."""
+    try:
+        auth_token = generate_token("generation_service", audience="api_service")
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.patch(
+                f"{DB_SERVICE_URL}/tasks/{task_id}/script",
+                json={"cadquery_script": script, "generation_prompt": prompt},
+                headers={"Authorization": f"Bearer {auth_token}"},
+            )
+            if resp.status_code == 200:
+                logger.info(f"Script saved for task {task_id}")
+            else:
+                logger.warning(f"Failed to save script: {resp.status_code} {resp.text}")
+    except Exception as e:
+        logger.warning(f"Script save error (non-fatal): {e}")
