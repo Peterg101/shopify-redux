@@ -2,7 +2,7 @@ import { AppDispatch } from "../app/store";
 import { authApi } from "./authApi";
 import logger from '../app/utility/logger';
 import { setMeshyLoadedPercentage, setMeshyLoading, setMeshyPending, setMeshyQueueItems, setMeshyPreviewTaskId } from "./meshySlice";
-import { setCadLoadedPercentage, setCadLoading, setCadStatusMessage, setCadError } from "./cadSlice";
+import { setCadLoadedPercentage, setCadLoading, setCadPending, setCadStatusMessage, setCadError } from "./cadSlice";
 import { extractFileInfo, fetchFile } from "./fetchFileUtils";
 import { setFileProperties, setFromMeshyOrHistory, setStepMetadata, setModelVolume, setModelDimensions } from "./dataSlice";
 
@@ -15,6 +15,7 @@ export function connectProgressStream(
     setActualFile: React.Dispatch<React.SetStateAction<File | null>>,
 ): () => void {
     let disposed = false;
+    let taskTerminated = false;
     let reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
     const abortController = new AbortController();
     const blobUrls: string[] = [];
@@ -72,6 +73,11 @@ export function connectProgressStream(
                     } else {
                         await handleCadMessage(data, dispatch, setActualFile, abortController.signal, blobUrls, disposed);
                     }
+
+                    // Mark as terminated so we don't reconnect
+                    if (data.startsWith('Task Completed') || data.startsWith('Task Failed')) {
+                        taskTerminated = true;
+                    }
                 }
             }
         } catch (err: any) {
@@ -79,8 +85,8 @@ export function connectProgressStream(
             logger.error(`SSE ${taskType} error:`, err);
         }
 
-        // Stream ended or errored — reconnect unless disposed
-        if (!disposed) {
+        // Stream ended or errored — reconnect unless disposed or task finished
+        if (!disposed && !taskTerminated) {
             if (taskType === 'meshy') {
                 dispatch(setMeshyLoading({ meshyLoading: false }));
             } else {
@@ -159,6 +165,7 @@ async function handleCadMessage(
         const errorMsg = data.replace("Task Failed,", "");
         dispatch(setCadError({ cadError: errorMsg }));
         dispatch(setCadLoading({ cadLoading: false }));
+        dispatch(setCadPending({ cadPending: false }));
         return;
     }
 
