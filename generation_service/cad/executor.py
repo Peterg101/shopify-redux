@@ -219,21 +219,18 @@ print(f"VALIDATION_OK: {_bb.xlen:.1f} x {_bb.ylen:.1f} x {_bb.zlen:.1f} mm, volu
 '''
 
 
-def _sanitize_code(code: str) -> str:
-    """Strip export lines and print statements from LLM-generated code, then append validation."""
+def _strip_llm_code(code: str) -> str:
+    """Strip export lines and print statements from LLM-generated code."""
     lines = code.split('\n')
     cleaned = []
     for line in lines:
         stripped = line.strip()
-        # Remove export/save lines — validation suffix handles this
         if 'cq.exporters.export' in stripped or 'exporters.export' in stripped:
             continue
         if stripped.startswith('print(') and 'VALIDATION' not in stripped:
             continue
         cleaned.append(line)
-
-    sanitized = '\n'.join(cleaned)
-    return sanitized + '\n' + VALIDATION_SUFFIX
+    return '\n'.join(cleaned)
 
 
 # ---------------------------------------------------------------------------
@@ -249,17 +246,16 @@ def execute_cadquery(code: str, timeout_seconds: int = 30) -> tuple[bool, str, s
         - On success: (True, "/path/to/output.step", "", {volume, bbox, valid})
         - On failure: (False, "", "error message", None)
     """
-    # Sanitize: strip export lines, append validation suffix
-    sanitized_code = _sanitize_code(code)
-
-    # AST validation on sanitized code (defense-in-depth)
-    valid, reason = validate_code(sanitized_code)
+    # AST validation on LLM code BEFORE appending our validation suffix
+    # (suffix uses open/print which are in the forbidden list — that's fine for our code, not theirs)
+    stripped_code = _strip_llm_code(code)
+    valid, reason = validate_code(stripped_code)
     if not valid:
         logger.warning(f"Code validation failed: {reason}")
         return False, "", f"Code validation failed: {reason}", None
 
-    # Use sanitized code from here on
-    code = sanitized_code
+    # Now append our trusted validation suffix
+    code = stripped_code + '\n' + VALIDATION_SUFFIX
 
     # Ensure work dir exists
     os.makedirs(CAD_WORK_DIR, exist_ok=True)
