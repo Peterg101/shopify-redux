@@ -33,6 +33,7 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
     max_iterations = settings.max_iterations if settings else 3
     timeout_seconds = settings.timeout_seconds if settings else 30
     target_units = settings.target_units if settings else "mm"
+    process = settings.process if settings and hasattr(settings, 'process') else "fdm"
 
     task_name = prompt[:50].replace(",", " ")
 
@@ -41,7 +42,7 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
         await publish(redis, port_id, f"10,generating,{task_name}")
         logger.info(f"[{port_id}] Generating CadQuery code for: {prompt[:80]}")
 
-        code = await generate_cadquery_code(prompt, target_units)
+        code = await generate_cadquery_code(prompt, target_units, process)
         await publish(redis, port_id, f"25,generating,{task_name}")
 
         # Step 2: Execute with retry loop
@@ -57,14 +58,20 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
             await publish(redis, port_id, f"{iter_progress},{status_msg},{task_name}")
             logger.info(f"[{port_id}] {status_msg}")
 
-            success, output_path, error = await asyncio.to_thread(
+            success, output_path, error, metadata = await asyncio.to_thread(
                 execute_cadquery, code, timeout_seconds
             )
 
             if success:
-                logger.info(
-                    f"[{port_id}] CadQuery succeeded on attempt {attempt + 1}"
-                )
+                if metadata:
+                    bb = metadata.get("bbox", {})
+                    logger.info(
+                        f"[{port_id}] CadQuery succeeded on attempt {attempt + 1}: "
+                        f"{bb.get('xlen', 0):.1f}x{bb.get('ylen', 0):.1f}x{bb.get('zlen', 0):.1f}mm, "
+                        f"volume={metadata.get('volume_mm3', 0):.1f}mm³"
+                    )
+                else:
+                    logger.info(f"[{port_id}] CadQuery succeeded on attempt {attempt + 1}")
                 break
 
             last_error = error

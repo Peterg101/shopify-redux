@@ -68,7 +68,7 @@ def _cleanup_stale_containers():
 # Static code validation -- AST-based allowlist
 # ---------------------------------------------------------------------------
 
-ALLOWED_MODULES = {"cadquery", "cq", "math", "os"}
+ALLOWED_MODULES = {"cadquery", "cq", "math", "os", "json", "sys"}
 
 FORBIDDEN_NAMES = {
     "__import__",
@@ -167,23 +167,99 @@ def validate_code(code: str) -> tuple[bool, str]:
 
 
 # ---------------------------------------------------------------------------
+# Validation suffix — injected after LLM code, handles export + checks
+# ---------------------------------------------------------------------------
+
+VALIDATION_SUFFIX = '''
+# === FITD AUTO-VALIDATION (injected by executor) ===
+import json as _json
+import sys as _sys
+import os as _os
+
+_solid = result.val()
+_valid = _solid.isValid()
+_bb = _solid.BoundingBox()
+_vol = _solid.Volume()
+
+_meta = {
+    "valid": _valid,
+    "volume_mm3": round(_vol, 4),
+    "bbox": {
+        "xlen": round(_bb.xlen, 4),
+        "ylen": round(_bb.ylen, 4),
+        "zlen": round(_bb.zlen, 4),
+    },
+}
+
+if not _valid:
+    print(f"VALIDATION_FAILED: Solid is not valid (BRep check failed)", file=_sys.stderr)
+    _sys.exit(1)
+
+if _vol < 1.0:
+    print(f"VALIDATION_FAILED: Volume too small ({_vol:.2f} mm^3)", file=_sys.stderr)
+    _sys.exit(1)
+
+if _bb.xlen > 500 or _bb.ylen > 500 or _bb.zlen > 500:
+    print(f"VALIDATION_FAILED: Part too large ({_bb.xlen:.1f} x {_bb.ylen:.1f} x {_bb.zlen:.1f} mm)", file=_sys.stderr)
+    _sys.exit(1)
+
+if _bb.xlen < 0.1 or _bb.ylen < 0.1 or _bb.zlen < 0.1:
+    print(f"VALIDATION_FAILED: Part too thin ({_bb.xlen:.1f} x {_bb.ylen:.1f} x {_bb.zlen:.1f} mm)", file=_sys.stderr)
+    _sys.exit(1)
+
+# Write metadata
+_meta_path = _os.environ["OUTPUT_PATH"].replace(".step", ".meta.json")
+with open(_meta_path, "w") as _f:
+    _json.dump(_meta, _f)
+
+# Export STEP
+import cadquery as _cq
+_cq.exporters.export(result, _os.environ["OUTPUT_PATH"])
+print(f"VALIDATION_OK: {_bb.xlen:.1f} x {_bb.ylen:.1f} x {_bb.zlen:.1f} mm, volume={_vol:.1f} mm^3")
+'''
+
+
+def _sanitize_code(code: str) -> str:
+    """Strip export lines and print statements from LLM-generated code, then append validation."""
+    lines = code.split('\n')
+    cleaned = []
+    for line in lines:
+        stripped = line.strip()
+        # Remove export/save lines — validation suffix handles this
+        if 'cq.exporters.export' in stripped or 'exporters.export' in stripped:
+            continue
+        if stripped.startswith('print(') and 'VALIDATION' not in stripped:
+            continue
+        cleaned.append(line)
+
+    sanitized = '\n'.join(cleaned)
+    return sanitized + '\n' + VALIDATION_SUFFIX
+
+
+# ---------------------------------------------------------------------------
 # Docker-sandboxed execution
 # ---------------------------------------------------------------------------
 
 
-def execute_cadquery(code: str, timeout_seconds: int = 30) -> tuple[bool, str, str]:
+def execute_cadquery(code: str, timeout_seconds: int = 30) -> tuple[bool, str, str, dict | None]:
     """Execute CadQuery code in a throwaway Docker container.
 
     Returns:
-        (success, output_path_or_error, stderr)
-        - On success: (True, "/path/to/output.step", "")
-        - On failure: (False, "", "error message")
+        (success, output_path_or_error, stderr, metadata)
+        - On success: (True, "/path/to/output.step", "", {volume, bbox, valid})
+        - On failure: (False, "", "error message", None)
     """
-    # AST validation first (defense-in-depth)
-    valid, reason = validate_code(code)
+    # Sanitize: strip export lines, append validation suffix
+    sanitized_code = _sanitize_code(code)
+
+    # AST validation on sanitized code (defense-in-depth)
+    valid, reason = validate_code(sanitized_code)
     if not valid:
         logger.warning(f"Code validation failed: {reason}")
-        return False, "", f"Code validation failed: {reason}"
+        return False, "", f"Code validation failed: {reason}", None
+
+    # Use sanitized code from here on
+    code = sanitized_code
 
     # Ensure work dir exists
     os.makedirs(CAD_WORK_DIR, exist_ok=True)
@@ -241,7 +317,7 @@ def execute_cadquery(code: str, timeout_seconds: int = 30) -> tuple[bool, str, s
             logger.warning(
                 f"CadQuery sandbox execution failed (exit {exit_code}): {error_msg[:200]}"
             )
-            return False, "", error_msg
+            return False, "", error_msg, None
 
         # Check output file exists
         if not Path(output_path).exists():
@@ -249,38 +325,51 @@ def execute_cadquery(code: str, timeout_seconds: int = 30) -> tuple[bool, str, s
                 False,
                 "",
                 "Code ran successfully but no STEP file was produced at OUTPUT_PATH",
+                None,
             )
 
         file_size = Path(output_path).stat().st_size
         if file_size == 0:
-            return False, "", "STEP file was created but is empty (0 bytes)"
+            return False, "", "STEP file was created but is empty (0 bytes)", None
+
+        # Read validation metadata if available
+        import json
+        metadata = None
+        meta_path = output_path.replace(".step", ".meta.json")
+        if Path(meta_path).exists():
+            try:
+                with open(meta_path) as mf:
+                    metadata = json.load(mf)
+            except Exception:
+                pass
 
         logger.info(
             f"CadQuery sandbox execution succeeded, STEP file: {file_size} bytes"
+            + (f", dims: {metadata['bbox']['xlen']:.1f}x{metadata['bbox']['ylen']:.1f}x{metadata['bbox']['zlen']:.1f}mm" if metadata else "")
         )
-        return True, output_path, ""
+        return True, output_path, "", metadata
 
     except ConnectionError as e:
-        return False, "", f"Docker connection failed: {e}"
+        return False, "", f"Docker connection failed: {e}", None
     except ImageNotFound:
         return (
             False,
             "",
             f"Sandbox image '{CAD_SANDBOX_IMAGE}' not found. Run: docker compose build cad_sandbox",
+            None,
         )
     except APIError as e:
-        return False, "", f"Docker API error: {e}"
+        return False, "", f"Docker API error: {e}", None
     except Exception as e:
         error_type = type(e).__name__
-        # container.wait() raises ConnectionError on timeout in some docker-py versions,
-        # but may also raise requests.exceptions.ReadTimeout
         if "timeout" in str(e).lower() or "timed out" in str(e).lower():
             return (
                 False,
                 "",
                 f"Execution timed out after {timeout_seconds} seconds",
+                None,
             )
-        return False, "", f"Execution error ({error_type}): {e}"
+        return False, "", f"Execution error ({error_type}): {e}", None
     finally:
         # Always clean up the container
         if container is not None:

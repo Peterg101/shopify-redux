@@ -21,78 +21,235 @@ OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/v1")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 ANTHROPIC_MODEL = os.getenv("CAD_MODEL", "claude-sonnet-4-20250514")
 
-SYSTEM_PROMPT = """You are a CadQuery expert. Generate Python code that uses CadQuery to create the requested 3D model.
+# ---------------------------------------------------------------------------
+# System prompt — comprehensive CadQuery generation guide
+# ---------------------------------------------------------------------------
 
-## Rules
-1. Import cadquery as cq at the top
-2. Your code MUST define a variable called `result` containing the final CadQuery Workplane object
-3. At the end, export to STEP: `cq.exporters.export(result, OUTPUT_PATH)`
-4. OUTPUT_PATH is provided as an environment variable -- use `os.environ["OUTPUT_PATH"]`
-5. Use millimeters as the default unit
-6. All dimensions should be realistic for manufacturing
+SYSTEM_PROMPT = """You are an expert CadQuery engineer generating manufacturing-ready 3D models.
+Generate Python code that uses CadQuery to create the requested part.
 
-## Manufacturing Constraints
-- Minimum wall thickness: 1mm
-- No unsupported overhangs greater than 45 degrees (design for 3D printing)
-- Avoid extremely thin features (< 0.5mm)
-- Prefer chamfers over sharp external edges
-
-## CadQuery Quick Reference
-- Box: `cq.Workplane("XY").box(length, width, height)`
-- Cylinder: `cq.Workplane("XY").cylinder(height, radius)`
-- Sphere: `cq.Workplane("XY").sphere(radius)`
-- Holes: `.faces(">Z").workplane().hole(diameter)`
-- Fillets: `.edges("|Z").fillet(radius)`
-- Chamfers: `.edges("|Z").chamfer(distance)`
-- Shell: `.shell(thickness)` (negative = inward)
-- Extrude: `.extrude(distance)`
-- Cut: `.cut(other_shape)`
-- Union: `.union(other_shape)`
-- Translate: `.translate((x, y, z))`
-- Rotate: `.rotate((0,0,0), (0,0,1), angle_degrees)`
-- Mirror: `.mirror("XY")`
-- Loft: `.loft()` between multiple sketches
-- Sweep: `.sweep(path)`
-- Text: `.text("text", fontsize, distance)` for engraving
-
-## Allowed Imports
-You may ONLY use these imports:
-- import cadquery as cq
-- import math
-- import os (ONLY for os.environ["OUTPUT_PATH"])
-
-Do NOT use: subprocess, socket, requests, httpx, open(), eval(), exec(), or any other standard library modules.
-Any code using forbidden imports will be rejected by the validator.
-
-## Output Format
-Return ONLY a Python code block. No explanation before or after.
+## MANDATORY CODE STRUCTURE
+Your code MUST follow this exact pattern:
 
 ```python
 import cadquery as cq
+import math
 import os
 
-# ... your code here ...
+# === PARAMETERS (all dimensions in millimeters) ===
+# Define ALL dimensions as named variables. No magic numbers in geometry calls.
+length = 50.0
+width = 30.0
+height = 20.0
+wall_thickness = 2.0  # MINIMUM 1.0mm for FDM
+fillet_radius = 1.0   # MINIMUM 0.5mm
 
-result = ...
-cq.exporters.export(result, os.environ["OUTPUT_PATH"])
-```"""
+# === BUILD GEOMETRY ===
+# Use simple sketch-extrude-modify workflow.
+# Build the main body first, then add features.
+result = (
+    cq.Workplane("XY")
+    .box(length, width, height)
+)
+
+# === ADD FEATURES ===
+# Apply fillets/chamfers LAST, after all boolean operations.
+# ALWAYS wrap fillets in try/except — they frequently fail on complex geometry.
+try:
+    result = result.edges("|Z").fillet(fillet_radius)
+except Exception:
+    pass  # Part is still valid without fillets
+
+# The variable holding the final shape MUST be named `result`.
+# Do NOT include any export/save line — the system handles export automatically.
+```
+
+## RELIABLE OPERATIONS (use freely)
+- `cq.Workplane("XY").box(l, w, h)` — rectangular prism
+- `cq.Workplane("XY").cylinder(height, radius)` — cylinder
+- `cq.Workplane("XY").sphere(radius)` — sphere
+- `.faces(">Z").workplane().hole(diameter)` — through hole on top face
+- `.faces(">Z").workplane().hole(diameter, depth)` — blind hole
+- `.faces(">Z").workplane().cboreHole(d, cbd, cbd_depth)` — counterbore
+- `.chamfer(distance)` — MORE RELIABLE than fillet
+- `.extrude(distance)` — linear extrusion
+- `.cut(other)` — boolean subtraction
+- `.union(other)` — boolean addition
+- `.translate((x, y, z))` — move
+- `.rotate((0,0,0), (0,0,1), angle)` — rotate around axis
+- `.mirror("XY")` — mirror across plane
+- `.shell(-thickness)` — hollow out (negative = inward)
+- `.clean()` — repair topology after booleans (call before fillets)
+
+## UNRELIABLE OPERATIONS (use with extreme care)
+- `.fillet()` — FAILS ~30% of the time on complex geometry.
+  ALWAYS wrap in try/except. Apply LAST after ALL booleans.
+  Use small radii (< 20% of smallest adjacent edge length).
+  Call `.clean()` on the shape before applying fillets.
+  PREFER `.chamfer()` when appearance doesn't matter.
+- `.sweep(path)` — fails on complex paths. Keep paths simple (lines, arcs only).
+- `.loft()` — fails when cross-sections differ too much. Ensure same edge count.
+- `.text()` — unreliable. Keep text short, use large font sizes, engrave (negative) is more reliable.
+- Boolean operations on COPLANAR FACES — offset one solid by 0.01mm to avoid.
+
+## FEATURE ORDERING (critical)
+1. Build the main solid body (box, cylinder, etc.)
+2. Shell the body (if making an enclosure) — shell BEFORE cutting holes
+3. Cut holes and pockets
+4. Call `.clean()` to repair topology
+5. Apply fillets/chamfers LAST, in try/except
+
+## CRITICAL RULES
+1. ALL dimensions as named variables at the top — no magic numbers.
+2. All units are MILLIMETERS. If user says inches, convert: 1 inch = 25.4mm.
+3. Minimum wall thickness: 1.0mm (FDM). See process constraints if specified.
+4. Minimum feature size: 0.5mm.
+5. Maximum part size: 300x300x300mm unless user specifies larger.
+6. Fillets/chamfers ALWAYS in try/except, applied LAST.
+7. After booleans (.cut, .union), call `.clean()` before fillets.
+8. Shell with NEGATIVE thickness: `.shell(-thickness)`.
+9. The final shape variable MUST be named `result`.
+10. Do NOT include any export/save/write line — the system handles this.
+11. Do NOT use print() statements.
+
+## COMMON PATTERNS
+
+### Enclosure with lid:
+Build as solid box, shell, cut in half, add mounting features.
+
+### L-bracket:
+Union of two boxes at 90 degrees, fillet at junction (in try/except).
+
+### Cylinder with bolt pattern:
+Build cylinder, use for loop with .pushPoints() for hole circle.
+
+### Snap-fit features:
+Add small cantilever beams with .rect().extrude(), chamfer tips.
+
+## FORBIDDEN
+- No imports except: cadquery (as cq), math, os
+- No file I/O, no export lines (system handles export)
+- No subprocess, socket, network calls
+- No eval, exec, __import__, open, print
+
+## OUTPUT
+Return ONLY a Python code block. No explanation before or after."""
+
+
+# ---------------------------------------------------------------------------
+# Process-specific manufacturing constraints
+# ---------------------------------------------------------------------------
+
+PROCESS_CONSTRAINTS = {
+    "fdm": (
+        "TARGET PROCESS: FDM 3D Printing. "
+        "Min wall: 1.0mm. Max overhang: 45 degrees from vertical. "
+        "Min hole: 1.0mm (vertical), 2.0mm (horizontal/bridged). "
+        "Tolerance: +/-0.3mm. Layer lines visible on angled surfaces. "
+        "Prefer chamfers over fillets on downward-facing edges (self-supporting)."
+    ),
+    "sla": (
+        "TARGET PROCESS: SLA/DLP Resin Printing. "
+        "Min wall: 0.5mm. Min feature: 0.2mm. "
+        "Support marks on overhanging surfaces. "
+        "Excellent detail resolution. Post-curing required."
+    ),
+    "sls": (
+        "TARGET PROCESS: SLS (Powder Bed Fusion). "
+        "Min wall: 0.8mm. No supports needed (powder supports part). "
+        "Escape holes >= 4mm diameter for powder removal from cavities. "
+        "Tolerance: +/-0.3mm. Grainy surface texture."
+    ),
+    "cnc": (
+        "TARGET PROCESS: CNC Machining. "
+        "Min wall: 0.8mm (metal), 1.5mm (plastic). Min hole: 1.6mm. "
+        "Internal corners ALWAYS have tool radius (min 1.5mm). "
+        "No undercuts unless T-slot cutter accessible. "
+        "Design for 3 setup orientations max. Tolerance: +/-0.13mm standard."
+    ),
+    "injection": (
+        "TARGET PROCESS: Injection Moulding. "
+        "Min wall: 1.2mm, UNIFORM thickness critical (variation causes warping). "
+        "Draft angle: 1-2 degrees per side on all vertical surfaces. "
+        "No undercuts without side actions. "
+        "Gate location affects flow - keep geometry simple."
+    ),
+}
+
+
+# ---------------------------------------------------------------------------
+# Structured error classification for retries
+# ---------------------------------------------------------------------------
+
+ERROR_CATEGORIES = {
+    "BRep_API: command not done": (
+        "HINT: A fillet or chamfer radius is too large for the geometry. "
+        "Reduce the radius significantly, or switch from fillet to chamfer, "
+        "or remove the fillet entirely (wrap in try/except and let it skip)."
+    ),
+    "StdFail_NotDone": (
+        "HINT: A geometry operation failed. Common causes: "
+        "fillet radius too large, sweep path has sharp corners, "
+        "loft cross-sections have different edge counts, "
+        "or shell thickness exceeds half the smallest face dimension."
+    ),
+    "Standard_NullObject": (
+        "HINT: An operation returned a null shape. "
+        "A selector (.faces(), .edges()) probably matched nothing. "
+        "Check selector strings - the geometry may have changed after a boolean."
+    ),
+    "gp_IsNullified": (
+        "HINT: A geometric primitive has zero dimensions. "
+        "Check that ALL dimensions are > 0."
+    ),
+    "Wire is not closed": (
+        "HINT: A sketch wire is not closed. "
+        "Ensure all line/arc segments connect end-to-end to form a closed loop."
+    ),
+    "Shapes is empty": (
+        "HINT: A selector returned no results. "
+        "Check face/edge selector syntax ('>Z' = topmost Z face, '|Z' = edges parallel to Z)."
+    ),
+    "VALIDATION_FAILED": (
+        "HINT: The code executed without errors but the output geometry is invalid. "
+        "Check the specific validation message for details."
+    ),
+    "name 'result' is not defined": (
+        "HINT: The code does not define a variable called `result`. "
+        "The final CadQuery Workplane must be assigned to `result`."
+    ),
+}
+
+
+def classify_error(error: str) -> str:
+    """Add structured diagnostic hints to raw error messages."""
+    hints = []
+    for pattern, hint in ERROR_CATEGORIES.items():
+        if pattern in error:
+            hints.append(hint)
+
+    if hints:
+        return "ERROR DIAGNOSIS:\n" + "\n".join(hints) + "\n\nRAW ERROR:\n" + error
+    return "RAW ERROR:\n" + error
+
+
+# ---------------------------------------------------------------------------
+# Code extraction
+# ---------------------------------------------------------------------------
 
 
 def extract_code(response_text: str) -> str:
     """Extract Python code from LLM response."""
-    # Try to find a Python code block
     pattern = r"```python\s*\n(.*?)```"
     match = re.search(pattern, response_text, re.DOTALL)
     if match:
         return match.group(1).strip()
 
-    # Try generic code block
     pattern = r"```\s*\n(.*?)```"
     match = re.search(pattern, response_text, re.DOTALL)
     if match:
         return match.group(1).strip()
 
-    # If no code blocks, return the raw text (might be valid Python)
     return response_text.strip()
 
 
@@ -102,7 +259,6 @@ def extract_code(response_text: str) -> str:
 
 
 def _ollama_generate(messages: list[dict]) -> str:
-    """Call Ollama via the OpenAI-compatible chat completions endpoint."""
     from openai import OpenAI
 
     client = OpenAI(base_url=OLLAMA_URL, api_key="ollama")
@@ -120,13 +276,12 @@ def _ollama_generate(messages: list[dict]) -> str:
 
 
 def _anthropic_generate(user_messages: list[dict]) -> str:
-    """Call the Anthropic Messages API."""
     import anthropic
 
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
     message = client.messages.create(
         model=ANTHROPIC_MODEL,
-        max_tokens=4096,
+        max_tokens=8192,
         system=SYSTEM_PROMPT,
         messages=user_messages,
     )
@@ -134,16 +289,23 @@ def _anthropic_generate(user_messages: list[dict]) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Public API -- dispatch based on CAD_PROVIDER
+# Public API
 # ---------------------------------------------------------------------------
 
 
-async def generate_cadquery_code(prompt: str, target_units: str = "mm") -> str:
+async def generate_cadquery_code(
+    prompt: str, target_units: str = "mm", process: str = "fdm"
+) -> str:
     """Generate CadQuery code from a text prompt using the configured LLM."""
     units_note = (
         f"\nUse {target_units} as the unit system." if target_units != "mm" else ""
     )
-    user_content = f"Create a CadQuery model: {prompt}{units_note}"
+    process_note = PROCESS_CONSTRAINTS.get(process.lower(), PROCESS_CONSTRAINTS["fdm"])
+
+    user_content = (
+        f"Create a CadQuery model: {prompt}\n\n"
+        f"{process_note}{units_note}"
+    )
 
     if CAD_PROVIDER == "anthropic":
         logger.info(f"Using Anthropic ({ANTHROPIC_MODEL}) for code generation")
@@ -167,12 +329,21 @@ async def generate_cadquery_code(prompt: str, target_units: str = "mm") -> str:
 async def fix_cadquery_code(
     original_prompt: str, code: str, error: str, target_units: str = "mm"
 ) -> str:
-    """Fix broken CadQuery code using the configured LLM."""
+    """Fix broken CadQuery code using structured error diagnostics."""
+    classified = classify_error(error)
+
     user_msg_1 = f"Create a CadQuery model: {original_prompt}"
     assistant_msg = f"```python\n{code}\n```"
     fix_msg = (
-        f"The code above failed with this error:\n\n```\n{error}\n```\n\n"
-        "Please fix the code. Return ONLY the corrected Python code block."
+        f"The code above failed:\n\n{classified}\n\n"
+        "Fix the code following these rules:\n"
+        "- If a fillet failed, reduce the radius or remove it (try/except)\n"
+        "- If a selector failed, check that the face/edge exists after prior operations\n"
+        "- If a boolean failed, try adding tol=0.01 or offset shapes by 0.01mm\n"
+        "- If validation failed, fix the specific issue mentioned\n"
+        "- Keep ALL dimensions as named variables\n"
+        "- Do NOT include any export line\n"
+        "Return ONLY the corrected Python code block."
     )
 
     if CAD_PROVIDER == "anthropic":

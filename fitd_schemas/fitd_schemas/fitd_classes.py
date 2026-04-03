@@ -887,6 +887,7 @@ class CadGenerationSettings(BaseModel):
     max_iterations: int = 3
     timeout_seconds: int = 30
     target_units: str = "mm"
+    process: str = "fdm"  # fdm, sla, sls, cnc, injection
 
 
 class CadTaskRequest(BaseModel):
