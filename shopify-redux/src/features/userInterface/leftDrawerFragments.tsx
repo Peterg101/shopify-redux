@@ -114,10 +114,12 @@ export function LeftDrawerButtons(task: TaskInformation) {
     } else {
       setActualFile(file);
       dispatch(setFromMeshyOrHistory({ fromMeshyOrHistory: true }));
+      // CAD files are fetched as GLB previews — tell the viewer to use GLTFScene
+      const viewerFileType = isCadFileType(fileType) ? 'glb' : fileType;
       dispatch(
         setFileProperties({
           selectedFile: fileUrl,
-          selectedFileType: fileType,
+          selectedFileType: viewerFileType,
           fileNameBoxValue: filename,
         })
       );
