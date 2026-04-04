@@ -933,7 +933,7 @@ def get_user_tasks_cookie(
     user_id = user.user_id
     return cached(
         redis_client, f"fitd:tasks:{user_id}", ttl=120,
-        loader=lambda: [TaskResponse.from_orm(t) for t in db.query(Task).filter(Task.user_id == user_id).options(joinedload(Task.port)).all()],
+        loader=lambda: [TaskResponse.from_orm(t) for t in db.query(Task).filter(Task.user_id == user_id).options(joinedload(Task.port)).order_by(Task.created_at.desc()).all()],
         model_class=TaskResponse, is_list=True,
     )
 

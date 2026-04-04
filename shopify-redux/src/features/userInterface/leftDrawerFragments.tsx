@@ -16,7 +16,9 @@ import { borderSubtle, borderHover, bgHighlightHover } from "../../theme";
 
 const formatRelativeTime = (dateString: string): string => {
   const now = new Date();
-  const date = new Date(dateString);
+  // Backend stores UTC timestamps without 'Z' suffix — normalize
+  const normalized = dateString.endsWith('Z') || dateString.includes('+') ? dateString : dateString + 'Z';
+  const date = new Date(normalized);
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
   if (diffMins < 1) return "Just now";
