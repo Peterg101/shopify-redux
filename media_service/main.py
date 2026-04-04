@@ -23,7 +23,7 @@ from pydantic import BaseModel
 
 from jwt_auth import verify_jwt_token
 from step_processor import validate_step_file, extract_metadata, tessellate_to_glb, generate_thumbnail
-from s3_utils import upload_file, generate_presigned_url, ensure_bucket_exists, find_preview_key_by_task_id, find_thumbnail_key_by_task_id
+from s3_utils import upload_file, generate_presigned_url, ensure_bucket_exists, find_preview_key_by_task_id, find_thumbnail_key_by_task_id, find_original_key_by_task_id
 
 if os.getenv("ENV") == "production":
     import sys
@@ -272,6 +272,26 @@ def get_download_url(job_id: str):
     try:
         url = generate_presigned_url(job.s3_key_original)
         return {"url": url, "filename": job.original_filename}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate URL: {e}")
+
+
+@app.get("/step/by_task/{task_id}/download_url")
+def get_download_url_by_task(task_id: str):
+    """Get a signed URL for downloading the original STEP file, looked up by task_id."""
+    # Check in-memory jobs first
+    job = next((j for j in jobs.values() if j.task_id == task_id), None)
+    if job and job.s3_key_original:
+        s3_key = job.s3_key_original
+    else:
+        # Fallback: search S3 directly
+        s3_key = find_original_key_by_task_id(task_id)
+        if not s3_key:
+            raise HTTPException(status_code=404, detail="No STEP file found for this task_id")
+
+    try:
+        url = generate_presigned_url(s3_key)
+        return {"url": url, "filename": f"{task_id}.step"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate URL: {e}")
 

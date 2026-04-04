@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { useFile } from "../../services/fileProvider";
 import { resetDataState, setFileProperties, setFromMeshyOrHistory } from "../../services/dataSlice";
-import { extractFileInfo, fetchFile, fetchCadFile, isCadFileType } from "../../services/fetchFileUtils";
+import { extractFileInfo, fetchFile, fetchCadFile, isCadFileType, downloadCadStepFile } from "../../services/fetchFileUtils";
 import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
 import { resetCadState } from "../../services/cadSlice";
 import { resetMeshyState } from "../../services/meshySlice";
@@ -104,6 +104,11 @@ export function LeftDrawerButtons(task: TaskInformation) {
     }
 
     if (shouldDownload) {
+      if (fileType === 'step') {
+        // Download original STEP file, not the GLB preview
+        await downloadCadStepFile(fileId, filename);
+        return;
+      }
       const ext = isCadFileType(fileType) ? '.glb' : '.obj';
       downloadBlob(file, filename.endsWith(ext) ? filename : `${filename}${ext}`);
     } else {

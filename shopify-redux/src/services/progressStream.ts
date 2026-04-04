@@ -186,12 +186,19 @@ async function handleCadMessage(
             }
             const { url: presignedUrl } = await previewResp.json();
 
+            if (!presignedUrl) {
+                throw new Error('No presigned URL returned from media_service');
+            }
+
             // Fetch the glB binary from MinIO
             const glbResp = await fetch(presignedUrl, { signal });
             if (!glbResp.ok) {
                 throw new Error(`glB fetch failed: ${glbResp.status}`);
             }
             const glbBlob = await glbResp.blob();
+            if (glbBlob.size === 0) {
+                throw new Error('GLB blob is empty — STEP tessellation may have failed');
+            }
             const glbFile = new File([glbBlob], `${fileName}.glb`, { type: "model/gltf-binary" });
             const blobUrl = URL.createObjectURL(glbBlob);
             blobUrls.push(blobUrl);

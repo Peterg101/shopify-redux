@@ -45,6 +45,30 @@ export const fetchCadFile = async (taskId: string, signal?: AbortSignal): Promis
   return { file, fileUrl };
 };
 
+/** Download the original STEP file (not the GLB preview) from media_service by task_id. */
+export const downloadCadStepFile = async (taskId: string, filename: string): Promise<void> => {
+  const resp = await fetch(
+    `${process.env.REACT_APP_MEDIA_URL}/step/by_task/${taskId}/download_url`,
+  );
+  if (!resp.ok) {
+    throw new Error(`No STEP file found for task ${taskId}`);
+  }
+  const { url: presignedUrl } = await resp.json();
+  const binaryResp = await fetch(presignedUrl);
+  if (!binaryResp.ok) {
+    throw new Error(`Failed to fetch STEP file: ${binaryResp.status}`);
+  }
+  const blob = await binaryResp.blob();
+  const stepFilename = filename.endsWith('.step') ? filename : `${filename}.step`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = stepFilename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+};
+
 const CAD_FILE_TYPES = new Set(['glb', 'step', 'gltf']);
 
 /** Returns true if this file_type is served by media_service (CAD pipeline). */
