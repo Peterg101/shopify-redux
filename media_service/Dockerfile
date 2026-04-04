@@ -14,7 +14,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV PYOPENGL_PLATFORM=osmesa
 
 COPY media_service/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir --no-deps pyrender==0.1.45
 
 # Install shared packages
 COPY fitd_schemas/ /packages/fitd_schemas/
