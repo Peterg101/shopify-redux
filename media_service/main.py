@@ -172,29 +172,41 @@ def _process_step_file(job_id: str, file_path: str, user_id: str, task_id: str):
         # Step 3: Tessellate to glTF
         job_dir = Path(file_path).parent
         preview_path = str(job_dir / "preview.glb")
-        if tessellate_to_glb(file_path, preview_path):
+        logger.info(f"Job {job_id}: Starting tessellation...")
+        tess_ok = tessellate_to_glb(file_path, preview_path)
+        if tess_ok:
             preview_key = f"files/{user_id}/{task_id}/preview.glb"
             try:
                 upload_file(preview_path, preview_key, content_type="model/gltf-binary")
                 job.s3_key_preview = preview_key
+                logger.info(f"Job {job_id}: GLB preview uploaded to S3: {preview_key}")
             except Exception as e:
-                logger.warning(f"Preview S3 upload failed: {e}")
+                logger.error(f"Job {job_id}: Preview S3 upload FAILED: {e}")
+        else:
+            logger.error(f"Job {job_id}: Tessellation FAILED — no GLB preview will be available")
         job.progress = 80
 
         # Step 4: Generate thumbnail
         thumbnail_path = str(job_dir / "thumbnail.png")
-        if generate_thumbnail(file_path, thumbnail_path):
+        logger.info(f"Job {job_id}: Starting thumbnail generation...")
+        thumb_ok = generate_thumbnail(file_path, thumbnail_path)
+        if thumb_ok:
             thumb_key = f"files/{user_id}/{task_id}/thumbnail.png"
             try:
                 upload_file(thumbnail_path, thumb_key, content_type="image/png")
                 job.s3_key_thumbnail = thumb_key
+                logger.info(f"Job {job_id}: Thumbnail uploaded to S3: {thumb_key}")
             except Exception as e:
-                logger.warning(f"Thumbnail S3 upload failed: {e}")
+                logger.error(f"Job {job_id}: Thumbnail S3 upload FAILED: {e}")
+        else:
+            logger.error(f"Job {job_id}: Thumbnail generation FAILED")
         job.progress = 100
 
         job.status = "complete"
         job.completed_at = datetime.utcnow().isoformat()
-        logger.info(f"Job {job_id} completed successfully")
+        has_preview = "yes" if job.s3_key_preview else "NO"
+        has_thumb = "yes" if job.s3_key_thumbnail else "NO"
+        logger.info(f"Job {job_id} completed — preview: {has_preview}, thumbnail: {has_thumb}")
 
     except Exception as e:
         logger.error(f"Job {job_id} failed: {e}")
