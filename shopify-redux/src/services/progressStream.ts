@@ -213,6 +213,13 @@ async function handleCadMessage(
                 taskId: cadTaskId,
             }));
 
+            // Set step metadata as complete — we're in the "Task Completed" handler
+            // so we know processing finished. Metadata fetch enriches with dimensions.
+            dispatch(setStepMetadata({
+                jobId,
+                processingStatus: 'complete',
+            }));
+
             // Fetch CAD metadata (volume, bounding box) from media_service
             try {
                 const metaResp = await fetch(
@@ -223,7 +230,7 @@ async function handleCadMessage(
                     const meta = await metaResp.json();
                     dispatch(setStepMetadata({
                         jobId,
-                        processingStatus: meta.status,
+                        processingStatus: 'complete',
                         boundingBox: meta.bounding_box_x != null ? {
                             x: meta.bounding_box_x,
                             y: meta.bounding_box_y,

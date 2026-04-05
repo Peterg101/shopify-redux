@@ -5,7 +5,7 @@ import { TaskInformation } from "../../app/utility/interfaces";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { useFile } from "../../services/fileProvider";
-import { resetDataState, setFileProperties, setFromMeshyOrHistory } from "../../services/dataSlice";
+import { resetDataState, setFileProperties, setFromMeshyOrHistory, setStepMetadata } from "../../services/dataSlice";
 import { extractFileInfo, fetchFile, fetchCadFile, isCadFileType, downloadCadStepFile } from "../../services/fetchFileUtils";
 import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
 import { resetCadState } from "../../services/cadSlice";
@@ -126,6 +126,10 @@ export function LeftDrawerButtons(task: TaskInformation) {
           taskId: fileId,
         })
       );
+      // Mark as complete so ParameterEditor and RefinementInput appear
+      if (isCadFileType(fileType)) {
+        dispatch(setStepMetadata({ processingStatus: 'complete' }));
+      }
     }
   };
 
