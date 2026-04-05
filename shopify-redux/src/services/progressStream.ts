@@ -172,6 +172,7 @@ async function handleCadMessage(
     // Handle completion: "Task Completed,{task_id},{name},{job_id}"
     if (data.startsWith("Task Completed")) {
         const parts = data.split(",");
+        const cadTaskId = parts[1];
         const fileName = parts[2] || "generated";
         const jobId = parts[3];
 
@@ -209,6 +210,7 @@ async function handleCadMessage(
                 selectedFile: blobUrl,
                 selectedFileType: 'glb',
                 fileNameBoxValue: fileName,
+                taskId: cadTaskId,
             }));
 
             // Fetch CAD metadata (volume, bounding box) from media_service
