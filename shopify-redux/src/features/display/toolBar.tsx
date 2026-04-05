@@ -5,7 +5,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 import { ChangeEvent } from 'react';
 import { setFileNameBoxValue, resetDataState } from '../../services/dataSlice';
-import { setMeshyRefining, setMeshyPending, setMeshyPreviewTaskId } from '../../services/meshySlice';
+import { resetCadState } from '../../services/cadSlice';
+import { setMeshyRefining, setMeshyPending, setMeshyPreviewTaskId, resetMeshyState } from '../../services/meshySlice';
 import { startRefineTask } from '../../services/fetchFileUtils';
 import { connectProgressStream } from '../../services/progressStream';
 import { useFile } from '../../services/fileProvider';
@@ -30,6 +31,8 @@ export const ToolBar = () => {
 
   const handleClear = () => {
     dispatch(resetDataState());
+    dispatch(resetCadState());
+    dispatch(resetMeshyState());
   };
 
   const handleRefine = async () => {

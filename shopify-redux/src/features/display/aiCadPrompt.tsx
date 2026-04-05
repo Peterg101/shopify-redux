@@ -4,7 +4,7 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Collapse from '@mui/material/Collapse';
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
-import React, { useState, ChangeEvent, KeyboardEvent, useRef } from 'react';
+import React, { useState, useEffect, ChangeEvent, KeyboardEvent, useRef } from 'react';
 import { generateUUID } from 'three/src/math/MathUtils';
 import { useFile } from '../../services/fileProvider';
 import { useDispatch, useSelector } from 'react-redux';
@@ -26,6 +26,13 @@ const AiCadPrompt = () => {
   const [value, setValue] = useState('');
 
   const isGenerating = cadState.cadPending || cadState.cadLoading;
+
+  // Reset disabled field when generation completes, fails, or is cleared
+  useEffect(() => {
+    if (!cadState.cadPending && !cadState.cadLoading) {
+      setDisabledField(false);
+    }
+  }, [cadState.cadPending, cadState.cadLoading]);
 
   const handleKeyPress = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Enter' && !event.shiftKey && value.trim()) {

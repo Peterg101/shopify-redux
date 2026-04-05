@@ -9,7 +9,7 @@ from redis.asyncio import Redis as AsyncRedis
 from fitd_schemas.fitd_classes import CadTaskRequest
 from jwt_auth import generate_token
 
-from cad.llm import generate_cadquery_code, fix_cadquery_code, apply_parameter_changes
+from cad.llm import generate_cadquery_code, fix_cadquery_code, apply_parameter_changes, refine_cadquery_code
 from cad.executor import execute_cadquery
 from shared import publish, register_task, mark_task_complete, DB_SERVICE_URL
 
@@ -236,6 +236,89 @@ async def regenerate_cad_task(
 
     except Exception as e:
         logger.error(f"[{port_id}] Regeneration error: {e}", exc_info=True)
+        await publish(redis, port_id, f"Task Failed,{str(e)[:200]}")
+
+
+async def refine_cad_task(
+    task_id: str, port_id: str, user_id: str,
+    instruction: str, redis: AsyncRedis,
+):
+    """Refine a CAD model using an LLM instruction on the stored script."""
+    try:
+        # Step 1: Fetch stored script
+        await publish(redis, port_id, f"10,fetching script,refining")
+        auth_token = generate_token("generation_service", audience="api_service")
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(
+                f"{DB_SERVICE_URL}/tasks/{task_id}/script",
+                headers={"Authorization": f"Bearer {auth_token}"},
+            )
+        if resp.status_code != 200 or not resp.json().get("cadquery_script"):
+            await publish(redis, port_id, "Task Failed,No stored script found for this task")
+            return
+
+        original_script = resp.json()["cadquery_script"]
+        original_prompt = resp.json().get("generation_prompt", "")
+
+        # Step 2: Send to LLM for refinement
+        await publish(redis, port_id, f"20,refining with AI,refining")
+        logger.info(f"[{port_id}] Refining: {instruction[:80]}")
+        refined_script = await refine_cadquery_code(original_prompt, original_script, instruction)
+
+        # Step 3: Execute refined script (with retry)
+        max_retries = 2
+        success = False
+        last_error = ""
+
+        for attempt in range(max_retries):
+            pct = 40 + (attempt * 15)
+            await publish(redis, port_id, f"{pct},executing (attempt {attempt+1}),refining")
+
+            success, output_path, error, metadata = await asyncio.to_thread(
+                execute_cadquery, refined_script, 30
+            )
+
+            if success:
+                if metadata:
+                    bb = metadata.get("bbox", {})
+                    logger.info(
+                        f"[{port_id}] Refinement succeeded: "
+                        f"{bb.get('xlen', 0):.1f}x{bb.get('ylen', 0):.1f}x{bb.get('zlen', 0):.1f}mm"
+                    )
+                break
+
+            last_error = error
+            logger.warning(f"[{port_id}] Refinement attempt {attempt+1} failed: {error[:200]}")
+
+            if attempt < max_retries - 1:
+                await publish(redis, port_id, f"{pct+10},fixing code,refining")
+                refined_script = await fix_cadquery_code(
+                    original_prompt, refined_script, error
+                )
+
+        if not success:
+            await publish(redis, port_id, f"Task Failed,Refinement failed: {last_error[:200]}")
+            return
+
+        # Step 4: Upload new STEP
+        await publish(redis, port_id, f"75,uploading,refining")
+        job_id = await upload_step_file(output_path, user_id, task_id)
+
+        if not job_id:
+            await publish(redis, port_id, "Task Failed,Could not upload refined STEP file")
+            return
+
+        # Step 5: Save updated script
+        await save_task_script(task_id, refined_script, original_prompt)
+
+        # Step 6: Done
+        task_name = "refined"
+        await publish(redis, port_id, f"100,complete,{task_name}")
+        await publish(redis, port_id, f"Task Completed,{task_id},{task_name},{job_id}")
+        logger.info(f"[{port_id}] Refinement completed for task {task_id}")
+
+    except Exception as e:
+        logger.error(f"[{port_id}] Refinement error: {e}", exc_info=True)
         await publish(redis, port_id, f"Task Failed,{str(e)[:200]}")
 
 

@@ -7,7 +7,7 @@ from redis.asyncio import Redis as AsyncRedis
 
 from fitd_schemas.fitd_classes import CadTaskRequest
 from shared import get_redis, get_authenticated_user
-from cad.pipeline import generate_cad_task, regenerate_cad_task
+from cad.pipeline import generate_cad_task, regenerate_cad_task, refine_cad_task
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class RegenerateRequest(BaseModel):
     task_id: str
     port_id: str
     user_id: str
-    parameter_changes: dict  # {"length": 60.0, "hole_diameter": 6.0}
+    parameter_changes: dict
 
 
 @router.post("/regenerate")
@@ -42,10 +42,30 @@ async def regenerate(
     """Regenerate a CAD model with modified parameters."""
     background_tasks.add_task(
         regenerate_cad_task,
-        request.task_id,
-        request.port_id,
-        request.user_id,
-        request.parameter_changes,
-        redis,
+        request.task_id, request.port_id, request.user_id,
+        request.parameter_changes, redis,
     )
     return {"message": "Regeneration started!", "port_id": request.port_id}
+
+
+class RefineRequest(BaseModel):
+    task_id: str
+    port_id: str
+    user_id: str
+    instruction: str
+
+
+@router.post("/refine")
+async def refine(
+    request: RefineRequest,
+    background_tasks: BackgroundTasks,
+    redis: AsyncRedis = Depends(get_redis),
+    _: dict = Depends(get_authenticated_user),
+):
+    """Refine a CAD model with a natural language instruction."""
+    background_tasks.add_task(
+        refine_cad_task,
+        request.task_id, request.port_id, request.user_id,
+        request.instruction, redis,
+    )
+    return {"message": "Refinement started!", "port_id": request.port_id}

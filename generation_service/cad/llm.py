@@ -451,3 +451,47 @@ async def fix_cadquery_code(
         )
 
     return extract_code(response_text)
+
+
+async def refine_cadquery_code(
+    original_prompt: str, script: str, instruction: str
+) -> str:
+    """Refine existing CadQuery code with a user instruction."""
+    user_msg_1 = f"Create a CadQuery model: {original_prompt}"
+    assistant_msg = f"```python\n{script}\n```"
+    refine_msg = (
+        f"The code above produces a working model. Now modify it:\n\n"
+        f"{instruction}\n\n"
+        "Rules:\n"
+        "- Keep the existing geometry intact unless the instruction says to change it\n"
+        "- Add the requested features to the existing model\n"
+        "- Keep ALL dimensions as named variables at the top\n"
+        "- Fillets/chamfers in try/except, applied last\n"
+        "- Do NOT include any export line\n"
+        "- The final variable MUST still be named `result`\n"
+        "Return ONLY the complete updated Python code block."
+    )
+
+    if CAD_PROVIDER == "anthropic":
+        logger.info(f"Using Anthropic ({ANTHROPIC_MODEL}) for refinement")
+        response_text = await asyncio.to_thread(
+            _anthropic_generate,
+            [
+                {"role": "user", "content": user_msg_1},
+                {"role": "assistant", "content": assistant_msg},
+                {"role": "user", "content": refine_msg},
+            ],
+        )
+    else:
+        logger.info(f"Using Ollama ({OLLAMA_MODEL}) for refinement")
+        response_text = await asyncio.to_thread(
+            _ollama_generate,
+            [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_msg_1},
+                {"role": "assistant", "content": assistant_msg},
+                {"role": "user", "content": refine_msg},
+            ],
+        )
+
+    return extract_code(response_text)
