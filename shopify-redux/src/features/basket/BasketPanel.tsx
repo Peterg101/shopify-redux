@@ -18,11 +18,13 @@ import {
   Close,
   Remove,
   Add,
+  Delete,
   ShoppingCartCheckout,
   ShoppingBasketOutlined,
 } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 import { useGetUserBasketQuery } from "../../services/authApi";
+import { useDeleteBasketItemMutation } from "../../services/dbApi";
 import { useUpdateBasketQuantityMutation } from "../../services/basketItemApi";
 import { selectTotalBasketValue } from "../../services/selectors";
 import { createStripeCheckoutAndRedirect } from "../../services/fetchFileUtils";
@@ -203,6 +205,7 @@ function BasketPanel({ open, onClose }: BasketPanelProps) {
 function PanelItemCard({ item }: { item: BasketInformation }) {
   const [quantity, setQuantity] = useState(item.quantity);
   const [updateBasketQuantity] = useUpdateBasketQuantityMutation();
+  const [deleteItem] = useDeleteBasketItemMutation();
 
   const handleQuantityChange = (delta: number) => {
     const newQty = quantity + delta;
@@ -285,6 +288,15 @@ function PanelItemCard({ item }: { item: BasketInformation }) {
           />
           <IconButton size="small" onClick={() => handleQuantityChange(1)} aria-label="increase quantity">
             <Add sx={{ fontSize: 16 }} />
+          </IconButton>
+          <Box sx={{ flexGrow: 1 }} />
+          <IconButton
+            size="small"
+            onClick={() => deleteItem(item.task_id)}
+            aria-label="remove item"
+            sx={{ color: 'error.main', '&:hover': { backgroundColor: 'rgba(255, 82, 82, 0.08)' } }}
+          >
+            <Delete sx={{ fontSize: 16 }} />
           </IconButton>
         </Box>
       </CardContent>
