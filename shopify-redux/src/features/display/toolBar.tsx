@@ -12,7 +12,7 @@ import { connectProgressStream } from '../../services/progressStream';
 import { useFile } from '../../services/fileProvider';
 import { generateUuid } from '../../app/utility/collectionUtils';
 import { selectTotalCost } from '../../services/selectors';
-import { monoFontFamily, borderSubtle, bgHighlightHover, glowSubtle, glowMedium } from '../../theme';
+import { monoFontFamily, borderSubtle, borderHover, bgHighlight, bgHighlightHover, glowSubtle, glowMedium } from '../../theme';
 import { AddToBasket } from '../userInterface/addToBasket';
 
 export const ToolBar = () => {
@@ -56,7 +56,8 @@ export const ToolBar = () => {
         mb: 3,
         borderRadius: 2,
         border: `1px solid ${borderSubtle}`,
-        backgroundColor: 'rgba(0, 229, 255, 0.02)',
+        backgroundColor: bgHighlight,
+        backdropFilter: 'blur(8px)',
       }}
     >
       {/* Clear Button */}
@@ -92,7 +93,7 @@ export const ToolBar = () => {
           display: 'flex',
           alignItems: 'center',
           backgroundColor: bgHighlightHover,
-          border: '1px solid rgba(0, 229, 255, 0.25)',
+          border: `1px solid ${borderHover}`,
           borderRadius: 2,
           px: 2,
           py: 0.75,

@@ -77,7 +77,7 @@ export const Dropzone = () => {
                 borderColor: borderSubtle,
                 '&.Mui-selected': {
                   bgcolor: borderSubtle,
-                  color: '#00E5FF',
+                  color: 'primary.main',
                   borderColor: borderHover,
                 },
               },

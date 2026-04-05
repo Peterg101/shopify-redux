@@ -9,7 +9,7 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import HistoryIcon from '@mui/icons-material/History';
 import { useGetUserTasksQuery } from '../../services/authApi';
 import { LeftDrawerTask } from '../userInterface/leftDrawerFragments';
-import { borderSubtle } from '../../theme';
+import { borderSubtle, bgHighlight } from '../../theme';
 
 const PAGE_SIZE = 5;
 
@@ -40,14 +40,14 @@ export const GenerationHistoryPanel = () => {
   if (tasks.length === 0) return null;
 
   return (
-    <Box sx={{ mt: 3, border: `1px solid ${borderSubtle}`, borderRadius: 2, overflow: 'hidden' }}>
+    <Box sx={{ mt: 3, border: `1px solid ${borderSubtle}`, borderRadius: 3, overflow: 'hidden' }}>
       {/* Header — always visible, click to toggle */}
       <Box
         onClick={() => setExpanded(!expanded)}
         sx={{
           display: 'flex', alignItems: 'center', gap: 1.5,
           px: 2.5, py: 1.5, cursor: 'pointer',
-          '&:hover': { backgroundColor: 'rgba(0, 229, 255, 0.04)' },
+          '&:hover': { backgroundColor: bgHighlight },
         }}
       >
         <HistoryIcon sx={{ color: 'primary.main', fontSize: 20 }} />
@@ -57,7 +57,7 @@ export const GenerationHistoryPanel = () => {
         <Chip
           label={tasks.length}
           size="small"
-          sx={{ height: 22, fontSize: '0.75rem', backgroundColor: 'rgba(0, 229, 255, 0.12)', color: 'primary.main' }}
+          sx={{ height: 22, fontSize: '0.75rem', backgroundColor: borderSubtle, color: 'primary.main' }}
         />
         <IconButton size="small" sx={{ color: 'text.secondary' }}>
           {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
@@ -73,7 +73,7 @@ export const GenerationHistoryPanel = () => {
               <TextField
                 size="small"
                 fullWidth
-                placeholder="Search generations..."
+                placeholder="Search by name or file type..."
                 value={search}
                 onChange={(e) => handleSearch(e.target.value)}
                 InputProps={{
@@ -110,7 +110,7 @@ export const GenerationHistoryPanel = () => {
                 size="small"
                 sx={{
                   '& .MuiPaginationItem-root': { color: 'text.secondary' },
-                  '& .Mui-selected': { backgroundColor: 'rgba(0, 229, 255, 0.12) !important', color: 'primary.main' },
+                  '& .Mui-selected': { backgroundColor: `${borderSubtle} !important`, color: 'primary.main' },
                 }}
               />
             </Box>

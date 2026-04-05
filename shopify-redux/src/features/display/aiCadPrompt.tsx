@@ -100,8 +100,13 @@ const AiCadPrompt = () => {
       </Box>
       <Typography
         variant="caption"
-        color="text.secondary"
-        sx={{ mt: 0.5, display: 'block', textAlign: 'right', opacity: 0.5 }}
+        sx={{
+          mt: 0.5,
+          display: 'block',
+          textAlign: 'right',
+          opacity: value.length > 500 ? 1 : 0.5,
+          color: value.length >= 600 ? 'error.main' : value.length >= 550 ? 'warning.main' : 'text.secondary',
+        }}
       >
         {value.length}/600
       </Typography>

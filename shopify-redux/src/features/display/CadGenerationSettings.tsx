@@ -24,7 +24,7 @@ import { SelectChangeEvent } from '@mui/material/Select';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 import { setCadGenerationSettings } from '../../services/cadSlice';
-import { borderSubtle, bgHighlight } from '../../theme';
+import { borderSubtle, bgHighlight, glowSubtle } from '../../theme';
 
 const PROCESS_OPTIONS = [
   { value: 'fdm', label: 'FDM', icon: <LayersIcon sx={{ fontSize: 14 }} /> },
@@ -53,6 +53,9 @@ const toggleButtonSx = {
   fontSize: '0.75rem',
   textTransform: 'none' as const,
   borderColor: borderSubtle,
+  '&:hover': {
+    backgroundColor: glowSubtle,
+  },
   '&.Mui-selected': {
     backgroundColor: bgHighlight,
     borderColor: 'primary.main',
@@ -126,7 +129,7 @@ export const CadDesignIntent = () => {
           <TextField
             type="number"
             size="small"
-            placeholder="W"
+            placeholder="Width"
             value={size.width ?? ''}
             onChange={handleSizeChange('width')}
             sx={{ width: 70 }}
@@ -136,7 +139,7 @@ export const CadDesignIntent = () => {
           <TextField
             type="number"
             size="small"
-            placeholder="D"
+            placeholder="Depth"
             value={size.depth ?? ''}
             onChange={handleSizeChange('depth')}
             sx={{ width: 70 }}
@@ -146,7 +149,7 @@ export const CadDesignIntent = () => {
           <TextField
             type="number"
             size="small"
-            placeholder="H"
+            placeholder="Height"
             value={size.height ?? ''}
             onChange={handleSizeChange('height')}
             sx={{ width: 70 }}

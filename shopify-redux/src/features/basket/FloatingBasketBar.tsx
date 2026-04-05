@@ -4,11 +4,10 @@ import { ShoppingBasket } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 import { useGetUserBasketQuery } from "../../services/authApi";
 import { selectTotalBasketValue, selectIsLoggedIn } from "../../services/selectors";
-import { monoFontFamily, borderSubtle } from "../../theme";
+import { monoFontFamily, borderSubtle, borderHover } from "../../theme";
 import BasketPanel from "./BasketPanel";
 
 const bgSurface = "#131920";
-const cyanSubtle = "rgba(0, 229, 255, 0.20)";
 
 function FloatingBasketBar() {
   const [panelOpen, setPanelOpen] = useState(false);
@@ -35,7 +34,7 @@ function FloatingBasketBar() {
             px: 2.5,
             gap: 1.5,
             backgroundColor: bgSurface,
-            borderTop: `1px solid ${cyanSubtle}`,
+            borderTop: `1px solid ${borderHover}`,
             backdropFilter: "blur(12px)",
             boxShadow: "0 -4px 20px rgba(0, 0, 0, 0.4)",
           }}

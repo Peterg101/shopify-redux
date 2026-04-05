@@ -166,8 +166,9 @@ export const ParameterEditor: React.FC = () => {
       sx={{
         mt: 2,
         border: `1px solid ${borderSubtle}`,
-        borderRadius: 2,
+        borderRadius: 3,
         overflow: 'hidden',
+        backdropFilter: 'blur(8px)',
       }}
     >
       {/* Header */}
