@@ -223,7 +223,7 @@ async function handleCadMessage(
                     const meta = await metaResp.json();
                     dispatch(setStepMetadata({
                         jobId,
-                        processingStatus: meta.processing_status,
+                        processingStatus: meta.status,
                         boundingBox: meta.bounding_box_x != null ? {
                             x: meta.bounding_box_x,
                             y: meta.bounding_box_y,
