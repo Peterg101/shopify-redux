@@ -28,6 +28,14 @@ ANTHROPIC_MODEL = os.getenv("CAD_MODEL", "claude-sonnet-4-20250514")
 SYSTEM_PROMPT = """You are an expert CadQuery engineer generating manufacturing-ready 3D models.
 Generate Python code that uses CadQuery to create the requested part.
 
+## INTERPRETING THE PROMPT
+The user will provide geometric specifications — shapes, dimensions, positions, and features.
+Focus on EXACTLY what is described. Do not add features that were not requested.
+If a dimension is specified, use it precisely. If a position is described ("centered",
+"8mm from edge", "on a 65mm bolt circle"), calculate the exact coordinates.
+When the user says "through-hole", it goes all the way through. "Blind hole" has a depth.
+"Counterbore" and "countersink" have specific standard geometries — use .cboreHole() or .cskHole().
+
 ## MANDATORY CODE STRUCTURE
 Your code MUST follow this exact pattern:
 

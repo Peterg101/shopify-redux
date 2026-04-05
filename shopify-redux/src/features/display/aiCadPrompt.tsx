@@ -55,7 +55,7 @@ const AiCadPrompt = () => {
       <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
         <TextField
           disabled={disabledField}
-          placeholder="Describe a CAD model (e.g. M6 hex bolt, 20mm washer, phone stand...)"
+          placeholder="Describe geometry with specific dimensions, e.g: A rectangular plate 100×60×5mm with four 4.5mm through-holes 8mm from each corner and a 40×20mm rectangular cutout centered on the top face"
           variant="outlined"
           fullWidth
           value={value}
