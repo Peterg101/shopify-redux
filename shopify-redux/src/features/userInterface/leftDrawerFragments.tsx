@@ -123,6 +123,7 @@ export function LeftDrawerButtons(task: TaskInformation) {
           selectedFile: fileUrl,
           selectedFileType: viewerFileType,
           fileNameBoxValue: filename,
+          taskId: fileId,
         })
       );
     }
