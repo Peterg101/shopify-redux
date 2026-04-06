@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import {
   Box,
@@ -72,6 +72,11 @@ export const FulfillerSettingsPanel = () => {
 
   const [showCapabilityForm, setShowCapabilityForm] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout>>()
+
+  useEffect(() => {
+    return () => clearTimeout(refreshTimerRef.current)
+  }, [])
 
   const stripeReady = !!userInfo?.stripe_onboarded
   const profileReady = !!fulfillerProfile
@@ -79,7 +84,7 @@ export const FulfillerSettingsPanel = () => {
   const handleRefreshSession = () => {
     setRefreshing(true)
     dispatch(authApi.util.invalidateTags(["sessionData"]))
-    setTimeout(() => setRefreshing(false), 2000)
+    refreshTimerRef.current = setTimeout(() => setRefreshing(false), 2000)
   }
 
   return (

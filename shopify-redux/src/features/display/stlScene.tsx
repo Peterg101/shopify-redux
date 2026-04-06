@@ -39,7 +39,6 @@ const STLScene = (
     useEffect(() => {
         const measuredLoader = new STLLoader();
         measuredLoader.load(dataState.selectedFile, (geometry) => {
-            // Create a Mesh from the loaded geometry
             const material = new THREE.MeshStandardMaterial({ color: dataState.modelColour, wireframeLinewidth: 2 });
             const otherLoadedStl = new THREE.Mesh(geometry, material);
             setMeasuredStl(otherLoadedStl)
@@ -54,26 +53,33 @@ const STLScene = (
         }, undefined, (error) => {
             logger.error("Error loading STL file:", error);
         });
-    }, [dataState.selectedFile, dataState.modelColour, dataState.fromMeshyOrHistory, dataState.multiplierValue, isMultiplierInitialized, dispatch]);
-    
+    }, [dataState.selectedFile, dataState.fromMeshyOrHistory, isMultiplierInitialized, dispatch]);
+
 useEffect(() => {
     if (stl && measuredStl) {
         stl.rotation.x = dataState.xFlip
         stl.rotation.y = dataState.yFlip
         stl.rotation.z = dataState.zFlip
-        stl.scale.set(1*dataState.multiplierValue,1*dataState.multiplierValue,1*dataState.multiplierValue)
+        stl.scale.set(dataState.multiplierValue, dataState.multiplierValue, dataState.multiplierValue)
         stl.traverse((child) => {
             const mesh = child as THREE.Mesh;
             if (!mesh.material) {
                 mesh.material = new THREE.MeshStandardMaterial({ color: dataState.modelColour, wireframeLinewidth: 2 });
             }
-            measuredStl.geometry.scale(1*dataState.multiplierValue,1*dataState.multiplierValue,1*dataState.multiplierValue)
-            const measuredVolume = calculateThreeVolume(measuredStl, true)
-            dispatch(setModelVolume({modelVolume: measuredVolume}))
-            const measuredSize = calculateSize(measuredStl)
-            dispatch(setModelDimensions({modelDimensions: measuredSize}))  
         });
-    } 
+
+        // Compute volume & dimensions from unscaled geometry, apply multiplier mathematically
+        const baseVolume = calculateThreeVolume(measuredStl, true)
+        const scale3 = Math.pow(dataState.multiplierValue, 3)
+        dispatch(setModelVolume({modelVolume: baseVolume * scale3}))
+        const baseSize = calculateSize(measuredStl)
+        const scaledSize = new THREE.Vector3(
+            baseSize.x * dataState.multiplierValue,
+            baseSize.y * dataState.multiplierValue,
+            baseSize.z * dataState.multiplierValue
+        )
+        dispatch(setModelDimensions({modelDimensions: scaledSize}))
+    }
 }, [stl, measuredStl, dataState.modelColour, dataState.multiplierValue, dataState.xFlip, dataState.yFlip, dataState.zFlip, dispatch]);
 
 return (

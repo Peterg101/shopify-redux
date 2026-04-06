@@ -54,7 +54,7 @@ export const ToolBar = () => {
         gap: 1.5,
         p: 1.5,
         mb: 3,
-        borderRadius: 2,
+        borderRadius: 3,
         border: `1px solid ${borderSubtle}`,
         backgroundColor: bgHighlight,
         backdropFilter: 'blur(8px)',

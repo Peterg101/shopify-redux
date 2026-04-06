@@ -22,6 +22,7 @@ export function VerifyEmailPage() {
       return;
     }
 
+    let timerId: ReturnType<typeof setTimeout>;
     const verifyEmail = async () => {
       try {
         const response = await fetch(
@@ -30,7 +31,7 @@ export function VerifyEmailPage() {
         );
         if (response.ok) {
           setStatus('success');
-          setTimeout(() => navigate('/generate'), 2000);
+          timerId = setTimeout(() => navigate('/generate'), 2000);
         } else {
           const data = await response.json().catch(() => ({}));
           setStatus('error');
@@ -43,6 +44,7 @@ export function VerifyEmailPage() {
     };
 
     verifyEmail();
+    return () => clearTimeout(timerId);
   }, [token, navigate]);
 
   return (

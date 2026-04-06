@@ -61,12 +61,14 @@ export const downloadCadStepFile = async (taskId: string, filename: string): Pro
   const blob = await binaryResp.blob();
   const stepFilename = filename.endsWith('.step') ? filename : `${filename}.step`;
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
+  const blobUrl = URL.createObjectURL(blob);
+  a.href = blobUrl;
   a.download = stepFilename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  URL.revokeObjectURL(a.href);
+  // Delay revocation so the browser has time to start the download
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
 };
 
 const CAD_FILE_TYPES = new Set(['glb', 'step', 'gltf']);

@@ -9,13 +9,19 @@ import {
 import { AutoFixHigh } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../app/store';
-import { borderSubtle, bgHighlight, glowSubtle } from '../../theme';
+import { borderSubtle, borderHover, bgHighlight, bgHighlightHover, glowSubtle, glowMedium } from '../../theme';
+import { keyframes } from '@mui/material/styles';
 import { useFile } from '../../services/fileProvider';
 import { connectProgressStream } from '../../services/progressStream';
 import { setCadPending, setCadLoading } from '../../services/cadSlice';
 import { authApi } from '../../services/authApi';
 import { generateUuid } from '../../app/utility/collectionUtils';
 import logger from '../../app/utility/logger';
+
+const pulseIcon = keyframes`
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(0, 229, 255, 0.3)); }
+  50% { filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.7)); }
+`;
 
 const GENERATION_URL = process.env.REACT_APP_GENERATION_URL || 'http://localhost:1234';
 
@@ -93,10 +99,16 @@ export const RefinementInput: React.FC = () => {
     <Box
       sx={{
         mt: 2,
-        border: `1px solid ${borderSubtle}`,
+        border: `1px solid ${borderHover}`,
         borderRadius: 3,
         overflow: 'hidden',
         backdropFilter: 'blur(8px)',
+        boxShadow: `0 0 16px ${glowMedium}, inset 0 0 16px ${glowSubtle}`,
+        transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
+        '&:hover': {
+          borderColor: 'primary.main',
+          boxShadow: `0 0 24px ${borderHover}, inset 0 0 20px ${glowSubtle}`,
+        },
       }}
     >
       {/* Header */}
@@ -107,12 +119,16 @@ export const RefinementInput: React.FC = () => {
           gap: 1,
           px: 2,
           py: 1.5,
-          borderBottom: `1px solid ${borderSubtle}`,
-          backgroundColor: bgHighlight,
+          borderBottom: `1px solid ${borderHover}`,
+          background: `linear-gradient(135deg, ${bgHighlightHover} 0%, ${bgHighlight} 100%)`,
         }}
       >
-        <AutoFixHigh sx={{ color: 'primary.main', fontSize: 20 }} />
-        <Typography variant="subtitle1" fontWeight={600}>
+        <AutoFixHigh sx={{
+          color: 'primary.main',
+          fontSize: 22,
+          animation: `${pulseIcon} 3s ease-in-out infinite`,
+        }} />
+        <Typography variant="subtitle1" fontWeight={600} sx={{ color: 'primary.main' }}>
           Refine Model
         </Typography>
       </Box>

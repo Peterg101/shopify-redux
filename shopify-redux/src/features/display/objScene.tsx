@@ -64,26 +64,32 @@ const OBJScene = () => {
             (error) => {
                 logger.error('Error loading OBJ file:', error);
             }
-        ); },[dataState.selectedFile, dataState.multiplierValue, dataState.modelColour, dataState.fromMeshyOrHistory, dispatch, isMultiplierInitialized])
-    
-    
+        ); },[dataState.selectedFile, dataState.fromMeshyOrHistory, dispatch, isMultiplierInitialized])
+
+
         useEffect(() => {
             if (obj && measuredObj) {
                 obj.rotation.x = dataState.xFlip
                 obj.rotation.y = dataState.yFlip
                 obj.rotation.z = dataState.zFlip
-                obj.scale.set(1*dataState.multiplierValue,1*dataState.multiplierValue,1*dataState.multiplierValue)
+                obj.scale.set(dataState.multiplierValue, dataState.multiplierValue, dataState.multiplierValue)
                 obj.traverse((child) => {
                     const mesh = child as THREE.Mesh;
                     mesh.material = new THREE.MeshStandardMaterial({ color: dataState.modelColour });
-                    
-                    measuredObj.geometry.scale(1*dataState.multiplierValue,1*dataState.multiplierValue,1*dataState.multiplierValue)
-                    const measuredVolume = calculateThreeVolume(measuredObj, true)
-                    dispatch(setModelVolume({modelVolume: measuredVolume}))
-                    const measuredSize = calculateSize(measuredObj)
-                    dispatch(setModelDimensions({modelDimensions: measuredSize}))     
                 });
-            } 
+
+                // Compute volume & dimensions from unscaled geometry, apply multiplier mathematically
+                const baseVolume = calculateThreeVolume(measuredObj, true)
+                const scale3 = Math.pow(dataState.multiplierValue, 3)
+                dispatch(setModelVolume({modelVolume: baseVolume * scale3}))
+                const baseSize = calculateSize(measuredObj)
+                const scaledSize = new THREE.Vector3(
+                    baseSize.x * dataState.multiplierValue,
+                    baseSize.y * dataState.multiplierValue,
+                    baseSize.z * dataState.multiplierValue
+                )
+                dispatch(setModelDimensions({modelDimensions: scaledSize}))
+            }
         }, [obj, measuredObj, dataState.modelColour, dataState.multiplierValue, dataState.xFlip, dataState.yFlip, dataState.zFlip, dispatch]);
 
     useEffect(() => {

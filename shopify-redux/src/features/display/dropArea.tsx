@@ -40,7 +40,7 @@ export const DropArea = () => {
             sx={{
                 border: '2px dashed',
                 borderColor: isDragActive ? 'primary.main' : borderHover,
-                borderRadius: 2,
+                borderRadius: 3,
                 py: { xs: 6, md: 8 },
                 display: 'flex',
                 alignItems: 'center',

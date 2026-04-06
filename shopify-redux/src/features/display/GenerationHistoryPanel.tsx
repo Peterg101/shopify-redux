@@ -40,7 +40,7 @@ export const GenerationHistoryPanel = () => {
   if (tasks.length === 0) return null;
 
   return (
-    <Box sx={{ mt: 3, border: `1px solid ${borderSubtle}`, borderRadius: 3, overflow: 'hidden' }}>
+    <Box sx={{ mt: 3, border: `1px solid ${borderSubtle}`, borderRadius: 3, overflow: 'hidden', backdropFilter: 'blur(8px)' }}>
       {/* Header — always visible, click to toggle */}
       <Box
         onClick={() => setExpanded(!expanded)}

@@ -36,8 +36,9 @@ export const Dropzone = () => {
     <Box
       sx={{
         border: `1px solid ${glowMedium}`,
-        borderRadius: 2,
+        borderRadius: 3,
         overflow: 'hidden',
+        backdropFilter: 'blur(8px)',
         transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
         '&:hover': {
           borderColor: borderHover,

@@ -264,6 +264,7 @@ async function handleCadMessage(
             }
         }
         dispatch(setCadLoading({ cadLoading: false }));
+        dispatch(setCadPending({ cadPending: false }));
         return;
     }
 

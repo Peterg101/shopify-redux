@@ -4,7 +4,7 @@ import { ThreeDRotation } from '@mui/icons-material';
 import { useDispatch } from 'react-redux';
 import { setXFLip, setYFLip, setZFLip } from '../../services/dataSlice';
 import { degreesToRadians } from '../../app/utility/utils';
-import { bgHighlight } from '../../theme';
+import { bgHighlight, monoFontFamily } from '../../theme';
 
 export const OrientationControls = () => {
   const dispatch = useDispatch();
@@ -31,7 +31,7 @@ export const OrientationControls = () => {
     }
   };
 
-  const labelSx = { fontFamily: 'monospace', fontSize: '0.8rem', minWidth: 42, textAlign: 'right' as const };
+  const labelSx = { fontFamily: monoFontFamily, fontSize: '0.8rem', minWidth: 42, textAlign: 'right' as const };
 
   return (
     <Box

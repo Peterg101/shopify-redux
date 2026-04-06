@@ -23,8 +23,10 @@ const CadLoading = () => {
     return (
       <Box
         sx={{
-          border: '1px solid rgba(255, 82, 82, 0.3)',
-          borderRadius: 2,
+          border: '1px solid',
+          borderColor: 'error.main',
+          borderRadius: 3,
+          backdropFilter: 'blur(8px)',
           height: { xs: '300px', md: '500px' },
           display: 'flex',
           alignItems: 'center',
@@ -49,7 +51,8 @@ const CadLoading = () => {
     <Box
       sx={{
         border: `1px solid ${glowMedium}`,
-        borderRadius: 2,
+        borderRadius: 3,
+        backdropFilter: 'blur(8px)',
         height: { xs: '300px', md: '500px' },
         display: 'flex',
         alignItems: 'center',

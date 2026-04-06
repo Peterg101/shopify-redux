@@ -14,6 +14,11 @@ export function ResetPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const redirectTimerRef = React.useRef<ReturnType<typeof setTimeout>>();
+
+  React.useEffect(() => {
+    return () => clearTimeout(redirectTimerRef.current);
+  }, []);
 
   const handleSubmit = async () => {
     setError('');
@@ -36,7 +41,7 @@ export function ResetPasswordPage() {
     try {
       await resetPassword({ token, new_password: password }).unwrap();
       setSuccess(true);
-      setTimeout(() => navigate('/login'), 2000);
+      redirectTimerRef.current = setTimeout(() => navigate('/login'), 2000);
     } catch (err: any) {
       setError(err.data?.detail || 'Reset link is invalid or has expired.');
     }

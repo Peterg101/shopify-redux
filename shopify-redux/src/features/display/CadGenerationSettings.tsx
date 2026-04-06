@@ -20,11 +20,12 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import TuneIcon from '@mui/icons-material/Tune';
 import LayersIcon from '@mui/icons-material/Layers';
 import ConstructionIcon from '@mui/icons-material/Construction';
+import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 import { setCadGenerationSettings } from '../../services/cadSlice';
-import { borderSubtle, bgHighlight, glowSubtle } from '../../theme';
+import { borderSubtle, borderHover, bgHighlight, bgHighlightHover, glowSubtle, panelContainerSx, panelHeaderSx, panelBodySx, monoFontFamily } from '../../theme';
 
 const PROCESS_OPTIONS = [
   { value: 'fdm', label: 'FDM', icon: <LayersIcon sx={{ fontSize: 14 }} /> },
@@ -48,19 +49,31 @@ const FEATURE_OPTIONS = [
 ];
 
 const toggleButtonSx = {
-  px: 1.5,
-  py: 0.25,
-  fontSize: '0.75rem',
+  px: 2,
+  py: 0.75,
+  fontSize: '0.8rem',
+  fontWeight: 500,
   textTransform: 'none' as const,
   borderColor: borderSubtle,
   '&:hover': {
-    backgroundColor: glowSubtle,
+    backgroundColor: bgHighlightHover,
+    borderColor: borderHover,
   },
   '&.Mui-selected': {
-    backgroundColor: bgHighlight,
+    backgroundColor: bgHighlightHover,
     borderColor: 'primary.main',
     color: 'primary.main',
+    boxShadow: `0 0 8px ${glowSubtle}`,
   },
+};
+
+const sectionLabelSx = {
+  mb: 1,
+  display: 'block',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.05em',
+  fontSize: '0.7rem',
+  fontWeight: 600,
 };
 
 export const CadDesignIntent = () => {
@@ -91,90 +104,97 @@ export const CadDesignIntent = () => {
   };
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'flex-end',
-        gap: 2,
-        mb: 1.5,
-      }}
-    >
-      {/* Process */}
-      <Box>
-        <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
-          Process
+    <Box sx={{ ...panelContainerSx, mb: 2 }}>
+      {/* Header */}
+      <Box sx={panelHeaderSx}>
+        <PrecisionManufacturingIcon sx={{ color: 'primary.main', fontSize: 20 }} />
+        <Typography variant="subtitle1" fontWeight={600}>
+          Design Intent
         </Typography>
-        <ToggleButtonGroup
-          value={settings.process}
-          exclusive
-          onChange={handleProcessChange}
-          size="small"
-        >
-          {PROCESS_OPTIONS.map((opt) => (
-            <ToggleButton key={opt.value} value={opt.value} sx={toggleButtonSx}>
-              {opt.icon && <Box component="span" sx={{ mr: 0.5, display: 'inline-flex', alignItems: 'center' }}>{opt.icon}</Box>}
-              {opt.label}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
       </Box>
 
-      {/* Approximate size */}
-      <Box>
-        <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
-          Approx. size (mm)
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          <TextField
-            type="number"
-            size="small"
-            placeholder="Width"
-            value={size.width ?? ''}
-            onChange={handleSizeChange('width')}
-            sx={{ width: 70 }}
-            inputProps={{ min: 0, step: 1 }}
-          />
-          <Typography variant="caption" color="text.secondary">&times;</Typography>
-          <TextField
-            type="number"
-            size="small"
-            placeholder="Depth"
-            value={size.depth ?? ''}
-            onChange={handleSizeChange('depth')}
-            sx={{ width: 70 }}
-            inputProps={{ min: 0, step: 1 }}
-          />
-          <Typography variant="caption" color="text.secondary">&times;</Typography>
-          <TextField
-            type="number"
-            size="small"
-            placeholder="Height"
-            value={size.height ?? ''}
-            onChange={handleSizeChange('height')}
-            sx={{ width: 70 }}
-            inputProps={{ min: 0, step: 1 }}
-          />
+      {/* Body */}
+      <Box sx={{ ...panelBodySx, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+        {/* Row: Process + Material */}
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+          {/* Process */}
+          <Box sx={{ flex: '1 1 auto' }}>
+            <Typography variant="caption" color="text.secondary" sx={sectionLabelSx}>
+              Process
+            </Typography>
+            <ToggleButtonGroup
+              value={settings.process}
+              exclusive
+              onChange={handleProcessChange}
+              size="small"
+              sx={{ flexWrap: 'wrap' }}
+            >
+              {PROCESS_OPTIONS.map((opt) => (
+                <ToggleButton key={opt.value} value={opt.value} sx={toggleButtonSx}>
+                  {opt.icon && <Box component="span" sx={{ mr: 0.5, display: 'inline-flex', alignItems: 'center' }}>{opt.icon}</Box>}
+                  {opt.label}
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
+          </Box>
+
+          {/* Material */}
+          <Box sx={{ flex: '0 0 auto' }}>
+            <Typography variant="caption" color="text.secondary" sx={sectionLabelSx}>
+              Material
+            </Typography>
+            <ToggleButtonGroup
+              value={settings.material_hint}
+              exclusive
+              onChange={handleMaterialChange}
+              size="small"
+            >
+              {MATERIAL_OPTIONS.map((opt) => (
+                <ToggleButton key={opt.value} value={opt.value} sx={toggleButtonSx}>
+                  {opt.label}
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
+          </Box>
         </Box>
-      </Box>
 
-      {/* Material */}
-      <Box>
-        <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
-          Material
-        </Typography>
-        <ToggleButtonGroup
-          value={settings.material_hint}
-          exclusive
-          onChange={handleMaterialChange}
-          size="small"
-        >
-          {MATERIAL_OPTIONS.map((opt) => (
-            <ToggleButton key={opt.value} value={opt.value} sx={toggleButtonSx}>
-              {opt.label}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
+        {/* Approximate size */}
+        <Box>
+          <Typography variant="caption" color="text.secondary" sx={sectionLabelSx}>
+            Approximate Size (mm)
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <TextField
+              type="number"
+              size="small"
+              placeholder="Width"
+              value={size.width ?? ''}
+              onChange={handleSizeChange('width')}
+              sx={{ width: 100 }}
+              inputProps={{ min: 0, step: 1, style: { fontFamily: monoFontFamily } }}
+            />
+            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>&times;</Typography>
+            <TextField
+              type="number"
+              size="small"
+              placeholder="Depth"
+              value={size.depth ?? ''}
+              onChange={handleSizeChange('depth')}
+              sx={{ width: 100 }}
+              inputProps={{ min: 0, step: 1, style: { fontFamily: monoFontFamily } }}
+            />
+            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>&times;</Typography>
+            <TextField
+              type="number"
+              size="small"
+              placeholder="Height"
+              value={size.height ?? ''}
+              onChange={handleSizeChange('height')}
+              sx={{ width: 100 }}
+              inputProps={{ min: 0, step: 1, style: { fontFamily: monoFontFamily } }}
+            />
+          </Box>
+        </Box>
       </Box>
     </Box>
   );
@@ -212,6 +232,7 @@ export const CadFeatureSettings = () => {
         backgroundColor: 'transparent',
         backgroundImage: 'none',
         boxShadow: 'none',
+        backdropFilter: 'blur(8px)',
         '&:before': { display: 'none' },
         border: `1px solid ${borderSubtle}`,
         borderRadius: '8px !important',

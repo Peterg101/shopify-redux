@@ -335,3 +335,25 @@ export const theme = createTheme({
 
 // Monospace font for technical data (dimensions, costs, IDs)
 export const monoFontFamily = "'Roboto Mono', 'Consolas', 'Courier New', monospace"
+
+// Shared panel styling — use across all card/panel containers for consistency
+export const panelContainerSx = {
+  border: `1px solid ${borderSubtle}`,
+  borderRadius: 3,
+  overflow: 'hidden',
+  backdropFilter: 'blur(8px)',
+} as const;
+
+export const panelHeaderSx = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 1,
+  px: 2,
+  py: 1.5,
+  borderBottom: `1px solid ${borderSubtle}`,
+  backgroundColor: bgHighlight,
+} as const;
+
+export const panelBodySx = {
+  p: 2,
+} as const;
