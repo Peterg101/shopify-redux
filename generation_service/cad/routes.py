@@ -53,6 +53,8 @@ class RefineRequest(BaseModel):
     port_id: str
     user_id: str
     instruction: str
+    max_iterations: int = 3
+    timeout_seconds: int = 30
 
 
 @router.post("/refine")
@@ -67,5 +69,6 @@ async def refine(
         refine_cad_task,
         request.task_id, request.port_id, request.user_id,
         request.instruction, redis,
+        request.max_iterations, request.timeout_seconds,
     )
     return {"message": "Refinement started!", "port_id": request.port_id}

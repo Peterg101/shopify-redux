@@ -5,7 +5,11 @@ import { RootState } from "../../app/store";
 import { JpgObjStlViewer } from "./jpgObjStlViewer";
 import { RefiningOverlay } from "./RefiningOverlay";
 
-export const FileViewer = () => {
+interface FileViewerProps {
+    onTagClick?: (text: string) => void;
+}
+
+export const FileViewer = ({ onTagClick }: FileViewerProps) => {
     const dataState = useSelector(
         (state: RootState) => state.dataState
     )
@@ -21,7 +25,7 @@ export const FileViewer = () => {
 
     return (
         <Box sx={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-            <JpgObjStlViewer />
+            <JpgObjStlViewer onTagClick={onTagClick} />
             {isRefining && <RefiningOverlay />}
         </Box>
     );

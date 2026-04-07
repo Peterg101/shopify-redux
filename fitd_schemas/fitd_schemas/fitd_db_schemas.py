@@ -48,6 +48,7 @@ class Task(Base):
     created_at: Mapped[str] = mapped_column(String, default=lambda: datetime.now().isoformat())
     cadquery_script: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     generation_prompt: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    geometry_metadata: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     owner = relationship("User", back_populates="tasks", lazy="noload")
 
     # Optional one-to-one relationship to PortID

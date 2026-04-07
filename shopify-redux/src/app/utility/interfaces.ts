@@ -72,6 +72,28 @@ export interface CadState {
   cadStatusMessage: string | null;
 }
 
+export interface CadFeature {
+  tag: string;
+  type: string;
+  position: [number, number, number];
+  dimensions?: Record<string, number>;
+}
+
+export interface CadFace {
+  id: string;
+  type: string;
+  center: [number, number, number];
+  area: number;
+  normal?: [number, number, number];
+}
+
+export interface CadEdge {
+  id: string;
+  type: string;
+  center: [number, number, number];
+  length: number;
+}
+
 export interface StepMetadata {
   jobId?: string;
   processingStatus?: "pending" | "processing" | "complete" | "failed";
@@ -80,6 +102,9 @@ export interface StepMetadata {
   boundingBox?: { x: number; y: number; z: number };
   volumeMm3?: number;
   surfaceAreaMm2?: number;
+  features?: CadFeature[];
+  faces?: CadFace[];
+  edges?: CadEdge[];
 }
 
 export interface DataState {

@@ -72,13 +72,65 @@ except Exception:
 # Do NOT include any export/save line — the system handles export automatically.
 ```
 
+## FEATURE TAGGING (mandatory)
+Every geometric operation MUST be tagged with CadQuery's .tag() method using descriptive
+snake_case names. Build a `_features` list that records each feature's metadata.
+
+```python
+_features = []
+
+# Tag the main body:
+result = cq.Workplane("XY").box(length, width, height).tag("main_body")
+_features.append({
+    "tag": "main_body",
+    "type": "box",
+    "position": [0, 0, height/2],
+    "dimensions": {"length": length, "width": width, "height": height}
+})
+
+# Tag a hole:
+result = result.faces(">Z").workplane().hole(hole_diameter).tag("mounting_hole_top_left")
+_features.append({
+    "tag": "mounting_hole_top_left",
+    "type": "hole",
+    "position": [x_pos, y_pos, height],
+    "dimensions": {"diameter": hole_diameter}
+})
+
+# Tag a fillet (inside try/except):
+try:
+    result = result.edges("|Z").fillet(fillet_radius).tag("body_edge_fillets")
+    _features.append({
+        "tag": "body_edge_fillets",
+        "type": "fillet",
+        "position": [0, 0, height/2],
+        "dimensions": {"radius": fillet_radius}
+    })
+except Exception:
+    pass
+```
+
+Feature types: box, cylinder, sphere, hole, blind_hole, counterbore, countersink, fillet,
+chamfer, cut, boss, slot, shell, pocket, groove, thread, text, extrusion, revolve.
+
+Tag naming: `{type}_{location}` — e.g. "mounting_hole_top_left", "fillet_body_edges",
+"cable_slot_rear", "shell_body". Tags MUST be unique.
+
+IMPORTANT: `.tag()` saves workplane state for metadata tracking. It does NOT make edges
+or faces selectable by tag name. To modify a specific feature's edges later, use CadQuery's
+geometric selectors (NearestToPointSelector, face selectors, etc.) — see EDGE/FACE SELECTION below.
+
+The `_features` list variable MUST exist at the top of your script (after parameters)
+even if empty. The system reads it after execution to extract spatial metadata.
+
 ## RELIABLE OPERATIONS (use freely)
 - `cq.Workplane("XY").box(l, w, h)` — rectangular prism
 - `cq.Workplane("XY").cylinder(height, radius)` — cylinder
 - `cq.Workplane("XY").sphere(radius)` — sphere
 - `.faces(">Z").workplane().hole(diameter)` — through hole on top face
 - `.faces(">Z").workplane().hole(diameter, depth)` — blind hole
-- `.faces(">Z").workplane().cboreHole(d, cbd, cbd_depth)` — counterbore
+- `.faces(">Z").workplane().cboreHole(d, cbd, cbd_depth)` — counterbore hole
+- `.faces(">Z").workplane().cskHole(d, csk_d, csk_angle)` — countersunk hole (BEST way to chamfer a hole)
 - `.chamfer(distance)` — MORE RELIABLE than fillet
 - `.extrude(distance)` — linear extrusion
 - `.cut(other)` — boolean subtraction
@@ -95,10 +147,22 @@ except Exception:
   Use small radii (< 20% of smallest adjacent edge length).
   Call `.clean()` on the shape before applying fillets.
   PREFER `.chamfer()` when appearance doesn't matter.
+- `.chamfer()` on specific edges — can fail if edge selection is wrong.
+  ALWAYS wrap in try/except. Use `.clean()` before chamfering.
 - `.sweep(path)` — fails on complex paths. Keep paths simple (lines, arcs only).
 - `.loft()` — fails when cross-sections differ too much. Ensure same edge count.
 - `.text()` — unreliable. Keep text short, use large font sizes, engrave (negative) is more reliable.
 - Boolean operations on COPLANAR FACES — offset one solid by 0.01mm to avoid.
+
+IMPORTANT: When a fillet/chamfer fails in try/except, do NOT use bare `pass`.
+Instead, record the failure so the user knows:
+```python
+try:
+    result = result.edges(...).chamfer(size)
+    _features.append({"tag": "chamfer_name", "type": "chamfer", ...})
+except Exception as _e:
+    _features.append({"tag": "chamfer_name", "type": "chamfer_failed", "position": [...], "dimensions": {"size": size}, "error": str(_e)})
+```
 
 ## FEATURE ORDERING (critical)
 1. Build the main solid body (box, cylinder, etc.)
@@ -118,7 +182,51 @@ except Exception:
 8. Shell with NEGATIVE thickness: `.shell(-thickness)`.
 9. The final shape variable MUST be named `result`.
 10. Do NOT include any export/save/write line — the system handles this.
-11. Do NOT use print() statements.
+11. Do NOT include print() or export/save lines — the system handles all output.
+12. ALWAYS define `_features = []` after parameters and append to it as you create features.
+
+## EDGE/FACE SELECTION REFERENCE
+These selectors are for REFINEMENT ONLY — do NOT add chamfers or fillets unless the user asks.
+
+### Chamfering a specific hole (ranked by reliability):
+
+1. BEST — Replace `.hole()` with `.cskHole()` (native countersink, no edge selection needed):
+```python
+# Instead of: result.faces(">Z").workplane().pushPoints([(x, y)]).hole(diameter)
+# Use:        result.faces(">Z").workplane().pushPoints([(x, y)]).cskHole(diameter, csk_diameter, 90)
+# cskHole(hole_d, countersink_d, angle_degrees, depth=None) — depth=None means through-hole
+# For a chamfer of size C on hole diameter D: cskHole(D, D + 2*C, 90)
+# Example: 1mm chamfer on 5mm hole → cskHole(5.0, 7.0, 90)
+```
+
+2. GOOD — For a flat chamfer on hole edges, chain face + circle selectors:
+```python
+try:
+    result = (
+        result.faces(">Z")           # pick the face the hole exits
+        .edges("%Circle")             # narrow to circular edges only
+        .edges(cq.selectors.NearestToPointSelector((x, y, z)))  # pick nearest circle
+        .chamfer(chamfer_size)
+    )
+except Exception:
+    pass  # record failure in _features
+```
+NOTE: This chamfers only ONE face's edge. For both faces of a through-hole, repeat for `faces("<Z")`.
+
+3. Use `.cboreHole()` for counterbore (flat-bottomed recess):
+```python
+result.faces(">Z").workplane().pushPoints([(x, y)]).cboreHole(hole_d, cbore_d, cbore_depth)
+```
+
+### General face/edge selectors:
+- `.faces(">Z")` / `.faces("<Z")` / `.faces(">X")` — faces by direction (top, bottom, right)
+- `.edges(">Z")` / `.edges("|Z")` — edges by direction
+- `.edges("%Circle")` — only circular edges
+- `.faces(">Z").edges()` — all edges on a specific face
+
+IMPORTANT: When asked to "chamfer a hole", the BEST approach is to rebuild that hole as a
+`.cskHole()` in the existing code. This is far more reliable than selecting edges after the fact.
+Do NOT use .tag() names as CadQuery edge selectors — tags save workplane state only.
 
 ## COMMON PATTERNS
 
@@ -138,10 +246,38 @@ Add small cantilever beams with .rect().extrude(), chamfer tips.
 - No imports except: cadquery (as cq), math, os
 - No file I/O, no export lines (system handles export)
 - No subprocess, socket, network calls
-- No eval, exec, __import__, open, print
+- No eval, exec, __import__, open
+- No print() statements (system handles all output)
 
 ## OUTPUT
 Return ONLY a Python code block. No explanation before or after."""
+
+
+REFINEMENT_SYSTEM_PROMPT = """You are a CadQuery code editor. You receive working CadQuery code and a modification instruction. Your job is to make the MINIMUM change to implement the instruction.
+
+ABSOLUTE RULES:
+1. ONLY change what the instruction asks for. Do not "improve" or "clean up" other code.
+2. Do NOT add chamfers, fillets, or edge treatments that were not requested.
+3. Do NOT modify geometry that was not mentioned in the instruction.
+4. Keep all existing variables, structure, and _features list entries intact.
+5. The final variable MUST be named `result`. Do NOT include export lines.
+
+CadQuery reference for common refinement operations:
+- Chamfer a hole: replace .hole(d) with .cskHole(d, d + 2*chamfer_size, 90)
+- Fillet edges: result.edges(selector).fillet(radius) — wrap in try/except
+- Add a hole: result.faces(">Z").workplane().pushPoints([(x,y)]).hole(diameter)
+- Cut a slot: result.faces(face).workplane().slot2D(length, width).cutThruAll()
+- Shell: result.shell(-thickness)
+
+Edge selectors:
+- .faces(">Z").edges("%Circle") — circular edges on top face
+- .faces(">Z").edges() — all edges on top face
+- .edges("|Z") — vertical edges
+- cq.selectors.NearestToPointSelector((x,y,z)) — nearest edge to a point
+
+Feature tagging: tag new features with .tag() and append to _features list.
+
+Return ONLY the complete updated Python code block. No explanation."""
 
 
 # ---------------------------------------------------------------------------
@@ -318,14 +454,14 @@ def _ollama_generate(messages: list[dict]) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _anthropic_generate(user_messages: list[dict]) -> str:
+def _anthropic_generate(user_messages: list[dict], system_prompt: str | None = None) -> str:
     import anthropic
 
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
     message = client.messages.create(
         model=ANTHROPIC_MODEL,
         max_tokens=8192,
-        system=SYSTEM_PROMPT,
+        system=system_prompt or SYSTEM_PROMPT,
         messages=user_messages,
     )
     return message.content[0].text
@@ -453,23 +589,79 @@ async def fix_cadquery_code(
     return extract_code(response_text)
 
 
+def build_geometry_context(metadata: dict) -> str:
+    """Build tiered spatial context string for refinement prompts."""
+    from collections import Counter
+    sections = []
+
+    # Tier 1: Feature tags (always included — compact, semantic)
+    features = metadata.get("features", [])
+    if features:
+        lines = [
+            f"  - {f['tag']} ({f['type']}): position {f['position']}, dims {f.get('dimensions', {})}"
+            for f in features
+        ]
+        sections.append("Tagged features:\n" + "\n".join(lines))
+
+    # Tier 2: Face/edge summary by type (always included)
+    faces = metadata.get("faces", [])
+    edges = metadata.get("edges", [])
+    if faces:
+        face_types = Counter(f["type"] for f in faces)
+        summary = ", ".join(f"{count} {ftype}" for ftype, count in face_types.items())
+        sections.append(f"Face summary ({len(faces)} total): {summary}")
+    if edges:
+        edge_types = Counter(e["type"] for e in edges)
+        summary = ", ".join(f"{count} {etype}" for etype, count in edge_types.items())
+        sections.append(f"Edge summary ({len(edges)} total): {summary}")
+
+    # Tier 3: Full inventory when geometry is simple enough
+    if 0 < len(faces) < 50:
+        face_lines = [
+            f"  {f['id']}: {f['type']} at ({f['center'][0]}, {f['center'][1]}, {f['center'][2]})"
+            f" area={f['area']}mm\u00b2"
+            + (f" normal=({f['normal'][0]}, {f['normal'][1]}, {f['normal'][2]})" if "normal" in f else "")
+            for f in faces
+        ]
+        sections.append("All faces:\n" + "\n".join(face_lines))
+    if 0 < len(edges) < 80:
+        edge_lines = [
+            f"  {e['id']}: {e['type']} at ({e['center'][0]}, {e['center'][1]}, {e['center'][2]})"
+            f" length={e['length']}mm"
+            for e in edges
+        ]
+        sections.append("All edges:\n" + "\n".join(edge_lines))
+
+    if not sections:
+        return ""
+
+    return (
+        "\n\nGeometry context for the current model:\n"
+        + "\n\n".join(sections)
+        + "\n\nTo chamfer a specific hole, replace the .hole() call with .cskHole() in the code — "
+        "this is the most reliable approach. For other edge modifications, use chained selectors: "
+        ".faces(direction).edges('%Circle').edges(NearestToPointSelector((x,y,z))).chamfer(size). "
+        "Do NOT use .tag() names as CadQuery edge/face selectors — tags save workplane state only. "
+        "If the instruction is ambiguous (e.g. 'chamfer the hole' when multiple holes exist), "
+        "respond with ONLY: CLARIFICATION: <list the available features and ask which one>. "
+        "Do NOT guess."
+    )
+
+
 async def refine_cadquery_code(
-    original_prompt: str, script: str, instruction: str
+    original_prompt: str, script: str, instruction: str,
+    geometry_metadata: dict | None = None,
 ) -> str:
-    """Refine existing CadQuery code with a user instruction."""
+    """Refine existing CadQuery code with a user instruction and geometry context."""
     user_msg_1 = f"Create a CadQuery model: {original_prompt}"
     assistant_msg = f"```python\n{script}\n```"
+
+    geometry_context = build_geometry_context(geometry_metadata) if geometry_metadata else ""
+
     refine_msg = (
-        f"The code above produces a working model. Now modify it:\n\n"
-        f"{instruction}\n\n"
-        "Rules:\n"
-        "- Keep the existing geometry intact unless the instruction says to change it\n"
-        "- Add the requested features to the existing model\n"
-        "- Keep ALL dimensions as named variables at the top\n"
-        "- Fillets/chamfers in try/except, applied last\n"
-        "- Do NOT include any export line\n"
-        "- The final variable MUST still be named `result`\n"
-        "Return ONLY the complete updated Python code block."
+        f"The code above produces a working model.{geometry_context}\n\n"
+        f"Modification requested: {instruction}\n\n"
+        "Make the MINIMUM code change to implement this. Do NOT modify any other geometry."
     )
 
     if CAD_PROVIDER == "anthropic":
@@ -481,13 +673,14 @@ async def refine_cadquery_code(
                 {"role": "assistant", "content": assistant_msg},
                 {"role": "user", "content": refine_msg},
             ],
+            REFINEMENT_SYSTEM_PROMPT,
         )
     else:
         logger.info(f"Using Ollama ({OLLAMA_MODEL}) for refinement")
         response_text = await asyncio.to_thread(
             _ollama_generate,
             [
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": REFINEMENT_SYSTEM_PROMPT},
                 {"role": "user", "content": user_msg_1},
                 {"role": "assistant", "content": assistant_msg},
                 {"role": "user", "content": refine_msg},

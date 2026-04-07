@@ -204,8 +204,8 @@ export const dataSlice = createSlice({
         setSurfaceFinish: (state, action: PayloadAction<{surfaceFinish: string | undefined}>) => {
             state.surfaceFinish = action.payload.surfaceFinish
         },
-        setStepMetadata: (state, action: PayloadAction<StepMetadata>) => {
-            state.stepMetadata = action.payload
+        setStepMetadata: (state, action: PayloadAction<Partial<StepMetadata>>) => {
+            state.stepMetadata = { ...state.stepMetadata, ...action.payload }
         }
     }
 })

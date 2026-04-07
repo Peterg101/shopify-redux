@@ -1,6 +1,7 @@
 """Main CAD generation pipeline -- orchestrates LLM code generation,
 sandboxed execution, and STEP file upload."""
 import asyncio
+import json
 import os
 import logging
 import httpx
@@ -113,8 +114,8 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
             )
             return
 
-        # Step 3b: Save the CadQuery script for parametric editing
-        await save_task_script(task_id, code, prompt)
+        # Step 3b: Save the CadQuery script and geometry metadata for parametric editing
+        await save_task_script(task_id, code, prompt, metadata)
 
         # Step 4: Upload STEP file to step_service
         await publish(redis, port_id, f"80,uploading,{task_name}")
@@ -225,8 +226,8 @@ async def regenerate_cad_task(
             await publish(redis, port_id, "Task Failed,Could not upload regenerated STEP file")
             return
 
-        # Step 5: Save updated script
-        await save_task_script(task_id, modified_script, resp.json().get("generation_prompt", ""))
+        # Step 5: Save updated script and geometry metadata
+        await save_task_script(task_id, modified_script, resp.json().get("generation_prompt", ""), metadata)
 
         # Step 6: Done
         task_name = "regenerated"
@@ -242,6 +243,7 @@ async def regenerate_cad_task(
 async def refine_cad_task(
     task_id: str, port_id: str, user_id: str,
     instruction: str, redis: AsyncRedis,
+    max_iterations: int = 3, timeout_seconds: int = 30,
 ):
     """Refine a CAD model using an LLM instruction on the stored script."""
     try:
@@ -257,25 +259,38 @@ async def refine_cad_task(
             await publish(redis, port_id, "Task Failed,No stored script found for this task")
             return
 
-        original_script = resp.json()["cadquery_script"]
-        original_prompt = resp.json().get("generation_prompt", "")
+        script_data = resp.json()
+        original_script = script_data["cadquery_script"]
+        original_prompt = script_data.get("generation_prompt", "")
 
-        # Step 2: Send to LLM for refinement
+        # Parse geometry metadata for spatial context
+        geo_json = script_data.get("geometry_metadata")
+        geometry_metadata = json.loads(geo_json) if geo_json else None
+
+        # Step 2: Send to LLM for refinement (with geometry context)
         await publish(redis, port_id, f"20,refining with AI,refining")
         logger.info(f"[{port_id}] Refining: {instruction[:80]}")
-        refined_script = await refine_cadquery_code(original_prompt, original_script, instruction)
+        refined_script = await refine_cadquery_code(
+            original_prompt, original_script, instruction, geometry_metadata
+        )
+
+        # Handle CLARIFICATION responses (LLM needs more info from user)
+        if refined_script.strip().startswith("CLARIFICATION:"):
+            clarification_msg = refined_script.strip()
+            logger.info(f"[{port_id}] LLM requested clarification: {clarification_msg[:100]}")
+            await publish(redis, port_id, f"Clarification Needed,{clarification_msg}")
+            return
 
         # Step 3: Execute refined script (with retry)
-        max_retries = 2
         success = False
         last_error = ""
 
-        for attempt in range(max_retries):
-            pct = 40 + (attempt * 15)
-            await publish(redis, port_id, f"{pct},executing (attempt {attempt+1}),refining")
+        for attempt in range(max_iterations):
+            pct = 40 + int((attempt / max_iterations) * 30)
+            await publish(redis, port_id, f"{pct},executing (attempt {attempt+1}/{max_iterations}),refining")
 
             success, output_path, error, metadata = await asyncio.to_thread(
-                execute_cadquery, refined_script, 30
+                execute_cadquery, refined_script, timeout_seconds
             )
 
             if success:
@@ -290,7 +305,7 @@ async def refine_cad_task(
             last_error = error
             logger.warning(f"[{port_id}] Refinement attempt {attempt+1} failed: {error[:200]}")
 
-            if attempt < max_retries - 1:
+            if attempt < max_iterations - 1:
                 await publish(redis, port_id, f"{pct+10},fixing code,refining")
                 refined_script = await fix_cadquery_code(
                     original_prompt, refined_script, error
@@ -308,8 +323,8 @@ async def refine_cad_task(
             await publish(redis, port_id, "Task Failed,Could not upload refined STEP file")
             return
 
-        # Step 5: Save updated script
-        await save_task_script(task_id, refined_script, original_prompt)
+        # Step 5: Save updated script and geometry metadata
+        await save_task_script(task_id, refined_script, original_prompt, metadata)
 
         # Step 6: Done
         task_name = "refined"
@@ -322,14 +337,23 @@ async def refine_cad_task(
         await publish(redis, port_id, f"Task Failed,{str(e)[:200]}")
 
 
-async def save_task_script(task_id: str, script: str, prompt: str):
-    """Save the CadQuery script to the task record for parametric editing."""
+async def save_task_script(
+    task_id: str, script: str, prompt: str, geometry_metadata: dict | None = None
+):
+    """Save the CadQuery script, prompt, and geometry metadata to the task record."""
     try:
+        payload: dict = {"cadquery_script": script, "generation_prompt": prompt}
+        if geometry_metadata:
+            payload["geometry_metadata"] = json.dumps({
+                "features": geometry_metadata.get("features", []),
+                "faces": geometry_metadata.get("faces", []),
+                "edges": geometry_metadata.get("edges", []),
+            })
         auth_token = generate_token("generation_service", audience="api_service")
         async with httpx.AsyncClient(timeout=10.0) as client:
             resp = await client.patch(
                 f"{DB_SERVICE_URL}/tasks/{task_id}/script",
-                json={"cadquery_script": script, "generation_prompt": prompt},
+                json=payload,
                 headers={"Authorization": f"Bearer {auth_token}"},
             )
             if resp.status_code == 200:

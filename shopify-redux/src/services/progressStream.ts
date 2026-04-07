@@ -169,6 +169,16 @@ async function handleCadMessage(
         return;
     }
 
+    // Handle clarification request (LLM needs more info from user)
+    if (data.startsWith("Clarification Needed,")) {
+        const clarification = data.substring("Clarification Needed,".length);
+        dispatch(setCadError({ cadError: null }));
+        dispatch(setCadLoading({ cadLoading: false }));
+        dispatch(setCadPending({ cadPending: false }));
+        dispatch(setCadStatusMessage({ cadStatusMessage: clarification }));
+        return;
+    }
+
     // Handle completion: "Task Completed,{task_id},{name},{job_id}"
     if (data.startsWith("Task Completed")) {
         const parts = data.split(",");
@@ -256,6 +266,22 @@ async function handleCadMessage(
             } catch (metaErr) {
                 if (!disposed) {
                     logger.warn("Could not fetch CAD metadata:", metaErr);
+                }
+            }
+
+            // Fetch geometry metadata (features, faces, edges) from api_service
+            try {
+                const geoResp = await fetch(
+                    `${process.env.REACT_APP_API_URL}/tasks/${cadTaskId}/geometry`,
+                    { credentials: 'include', signal }
+                );
+                if (geoResp.ok) {
+                    const { features, faces, edges } = await geoResp.json();
+                    dispatch(setStepMetadata({ features, faces, edges }));
+                }
+            } catch (geoErr) {
+                if (!disposed) {
+                    logger.warn("Could not fetch geometry metadata:", geoErr);
                 }
             }
         } catch (err) {

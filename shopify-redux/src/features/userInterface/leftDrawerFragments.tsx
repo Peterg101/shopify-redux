@@ -129,6 +129,17 @@ export function LeftDrawerButtons(task: TaskInformation) {
       // Mark as complete so ParameterEditor and RefinementInput appear
       if (isCadFileType(fileType)) {
         dispatch(setStepMetadata({ processingStatus: 'complete' }));
+        // Fetch geometry metadata for feature overlay
+        try {
+          const geoResp = await fetch(
+            `${process.env.REACT_APP_API_URL}/tasks/${fileId}/geometry`,
+            { credentials: 'include' }
+          );
+          if (geoResp.ok) {
+            const { features, faces, edges } = await geoResp.json();
+            dispatch(setStepMetadata({ features, faces, edges }));
+          }
+        } catch { /* non-critical — overlay just won't show */ }
       }
     }
   };

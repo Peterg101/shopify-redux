@@ -1,14 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import {
+  Alert,
   Box,
+  Collapse,
+  IconButton,
+  List,
+  ListItemButton,
+  ListItemText,
+  MenuItem,
+  Paper,
+  Popper,
+  Select,
+  Tooltip,
   Typography,
   Button,
   TextField,
   CircularProgress,
 } from '@mui/material';
-import { AutoFixHigh } from '@mui/icons-material';
+import { AutoFixHigh, Tune } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../app/store';
+import { CadGenerationSettings } from '../../app/utility/interfaces';
+import { setCadGenerationSettings } from '../../services/cadSlice';
 import { borderSubtle, borderHover, bgHighlight, bgHighlightHover, glowSubtle, glowMedium } from '../../theme';
 import { keyframes } from '@mui/material/styles';
 import { useFile } from '../../services/fileProvider';
@@ -25,7 +38,11 @@ const pulseIcon = keyframes`
 
 const GENERATION_URL = process.env.REACT_APP_GENERATION_URL || 'http://localhost:1234';
 
-export const RefinementInput: React.FC = () => {
+export interface RefinementInputHandle {
+  insertTag: (text: string) => void;
+}
+
+export const RefinementInput = forwardRef<RefinementInputHandle>((_props, ref) => {
   const dispatch = useDispatch<AppDispatch>();
   const { setActualFile } = useFile();
 
@@ -35,12 +52,65 @@ export const RefinementInput: React.FC = () => {
   );
   const cadPending = useSelector((state: RootState) => state.cadState.cadPending);
   const cadLoading = useSelector((state: RootState) => state.cadState.cadLoading);
+  const cadStatusMessage = useSelector((state: RootState) => state.cadState.cadStatusMessage);
+  const cadSettings = useSelector((state: RootState) => state.cadState.cadGenerationSettings);
 
   const taskId = dataState.taskId;
   const isComplete = dataState.stepMetadata?.processingStatus === 'complete';
 
   const [instruction, setInstruction] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [mentionState, setMentionState] = useState<{
+    query: string;
+    startIndex: number;
+  } | null>(null);
+  const [mentionIndex, setMentionIndex] = useState(0);
+  const textFieldRef = useRef<HTMLDivElement>(null);
+
+  const features = dataState.stepMetadata?.features ?? [];
+  const filteredFeatures = mentionState
+    ? features.filter(f => f.tag.toLowerCase().includes(mentionState.query.toLowerCase()))
+    : [];
+
+  // Expose insertTag for FeatureOverlay clicks
+  useImperativeHandle(ref, () => ({
+    insertTag: (text: string) => {
+      setInstruction((prev) => {
+        const prefix = prev.trim() ? `${prev.trim()} ` : '';
+        return `${prefix}${text}: `;
+      });
+    },
+  }));
+
+  const handleMentionSelect = (tag: string) => {
+    if (!mentionState) return;
+    const before = instruction.slice(0, mentionState.startIndex);
+    const after = instruction.slice(mentionState.startIndex + 1 + mentionState.query.length);
+    setInstruction(`${before}${tag}${after} `);
+    setMentionState(null);
+    setMentionIndex(0);
+  };
+
+  const handleInstructionChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    const cursorPos = (e.target as HTMLInputElement).selectionStart ?? value.length;
+    setInstruction(value);
+
+    // Detect @ mention
+    const textBeforeCursor = value.slice(0, cursorPos);
+    const atIndex = textBeforeCursor.lastIndexOf('@');
+
+    if (atIndex >= 0 && (atIndex === 0 || textBeforeCursor[atIndex - 1] === ' ')) {
+      const query = textBeforeCursor.slice(atIndex + 1);
+      if (!query.includes(' ') && !query.includes('\n')) {
+        setMentionState({ query, startIndex: atIndex });
+        setMentionIndex(0);
+        return;
+      }
+    }
+    setMentionState(null);
+  };
 
   const isDisabled = cadPending || cadLoading || submitting;
 
@@ -64,6 +134,8 @@ export const RefinementInput: React.FC = () => {
           port_id: portId,
           user_id: userInformation.user.user_id,
           instruction: trimmed,
+          max_iterations: cadSettings.max_iterations,
+          timeout_seconds: cadSettings.timeout_seconds,
         }),
       });
 
@@ -84,6 +156,30 @@ export const RefinementInput: React.FC = () => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Mention dropdown keyboard navigation
+    if (mentionState && filteredFeatures.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setMentionIndex(prev => Math.min(prev + 1, filteredFeatures.length - 1));
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setMentionIndex(prev => Math.max(prev - 1, 0));
+        return;
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleMentionSelect(filteredFeatures[mentionIndex].tag);
+        return;
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setMentionState(null);
+        return;
+      }
+    }
+
     if (e.key === 'Enter' && !e.shiftKey && !isDisabled && instruction.trim()) {
       e.preventDefault();
       handleRefine();
@@ -135,16 +231,20 @@ export const RefinementInput: React.FC = () => {
 
       {/* Body */}
       <Box sx={{ p: 2 }}>
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start', position: 'relative' }}>
           <TextField
+            ref={textFieldRef}
             fullWidth
             size="small"
             multiline
             minRows={1}
             maxRows={2}
-            placeholder='Describe changes: "Add 4mm holes at each corner"'
+            placeholder={features.length > 0
+              ? 'Type @ to reference features — e.g. "Chamfer @mounting_hole"'
+              : 'Describe changes: "Add 4mm holes at each corner"'
+            }
             value={instruction}
-            onChange={(e) => setInstruction(e.target.value)}
+            onChange={handleInstructionChange}
             onKeyDown={handleKeyDown}
             disabled={isDisabled}
             sx={{
@@ -155,6 +255,64 @@ export const RefinementInput: React.FC = () => {
               },
             }}
           />
+          {/* @ Mention dropdown */}
+          <Popper
+            open={!!mentionState && filteredFeatures.length > 0}
+            anchorEl={textFieldRef.current}
+            placement="bottom-start"
+            style={{ zIndex: 1300 }}
+          >
+            <Paper
+              sx={{
+                maxHeight: 200,
+                overflow: 'auto',
+                border: `1px solid ${borderHover}`,
+                backgroundColor: '#131920',
+                backdropFilter: 'blur(8px)',
+                mt: 0.5,
+                minWidth: 240,
+              }}
+            >
+              <List dense disablePadding>
+                {filteredFeatures.map((f, i) => {
+                  const dimStr = f.dimensions?.diameter
+                    ? ` ⌀${f.dimensions.diameter}`
+                    : f.dimensions?.radius
+                      ? ` R${f.dimensions.radius}`
+                      : '';
+                  return (
+                    <ListItemButton
+                      key={f.tag}
+                      selected={i === mentionIndex}
+                      onClick={() => handleMentionSelect(f.tag)}
+                      sx={{
+                        py: 0.5,
+                        '&.Mui-selected': {
+                          backgroundColor: bgHighlightHover,
+                        },
+                        '&:hover': {
+                          backgroundColor: bgHighlightHover,
+                        },
+                      }}
+                    >
+                      <ListItemText
+                        primary={
+                          <Typography variant="body2" sx={{ fontFamily: "'Roboto Mono', monospace", fontSize: '0.8rem', color: '#00E5FF' }}>
+                            {f.tag}
+                          </Typography>
+                        }
+                        secondary={
+                          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+                            {f.type}{dimStr}
+                          </Typography>
+                        }
+                      />
+                    </ListItemButton>
+                  );
+                })}
+              </List>
+            </Paper>
+          </Popper>
           <Button
             variant="contained"
             size="small"
@@ -174,13 +332,60 @@ export const RefinementInput: React.FC = () => {
           </Button>
         </Box>
 
-        <Typography
-          variant="caption"
-          sx={{ color: 'text.secondary', mt: 1, display: 'block' }}
-        >
-          Build complex models step by step — each refinement modifies the existing geometry.
-        </Typography>
+        {/* Settings toggle + collapsible row */}
+        <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, gap: 0.5 }}>
+          <Tooltip title={showSettings ? 'Hide settings' : 'Refinement settings'}>
+            <IconButton
+              size="small"
+              onClick={() => setShowSettings(!showSettings)}
+              sx={{ color: showSettings ? 'primary.main' : 'text.secondary', p: 0.5 }}
+            >
+              <Tune sx={{ fontSize: 16 }} />
+            </IconButton>
+          </Tooltip>
+          <Typography variant="caption" sx={{ color: 'text.secondary', flex: 1 }}>
+            Each refinement modifies the existing geometry step by step.
+          </Typography>
+        </Box>
+
+        <Collapse in={showSettings}>
+          <Box sx={{ display: 'flex', gap: 2, mt: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Typography variant="caption" color="text.secondary">Retries:</Typography>
+              <Select
+                size="small"
+                value={cadSettings.max_iterations}
+                onChange={(e) => dispatch(setCadGenerationSettings({ settings: { max_iterations: Number(e.target.value) } }))}
+                sx={{ minWidth: 55, '& .MuiSelect-select': { py: 0.25, fontSize: '0.8rem' } }}
+              >
+                {[1, 2, 3, 4, 5].map((v) => (
+                  <MenuItem key={v} value={v}>{v}</MenuItem>
+                ))}
+              </Select>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Typography variant="caption" color="text.secondary">Timeout:</Typography>
+              <Select
+                size="small"
+                value={cadSettings.timeout_seconds}
+                onChange={(e) => dispatch(setCadGenerationSettings({ settings: { timeout_seconds: Number(e.target.value) } }))}
+                sx={{ minWidth: 65, '& .MuiSelect-select': { py: 0.25, fontSize: '0.8rem' } }}
+              >
+                {[10, 20, 30, 45, 60].map((v) => (
+                  <MenuItem key={v} value={v}>{v}s</MenuItem>
+                ))}
+              </Select>
+            </Box>
+          </Box>
+        </Collapse>
+
+        {/* Clarification message from LLM */}
+        {cadStatusMessage && cadStatusMessage.startsWith('CLARIFICATION:') && (
+          <Alert severity="info" sx={{ mt: 1.5, fontSize: '0.8rem' }}>
+            {cadStatusMessage.replace('CLARIFICATION:', '').trim()}
+          </Alert>
+        )}
       </Box>
     </Box>
   );
-};
+});

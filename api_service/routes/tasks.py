@@ -65,6 +65,7 @@ def complete_task(
 class ScriptUpdate(BaseModel):
     cadquery_script: str
     generation_prompt: str
+    geometry_metadata: Optional[str] = None  # JSON string: {"features": [...], "faces": [...], "edges": [...]}
 
 
 @router.patch("/tasks/{task_id}/script", status_code=200)
@@ -74,13 +75,15 @@ def save_task_script(
     db: Session = Depends(get_db),
     authorization: str = Depends(verify_jwt_token),
 ):
-    """Save the CadQuery script and prompt for a task (inter-service only)."""
+    """Save the CadQuery script, prompt, and geometry metadata for a task (inter-service only)."""
     task = db.query(Task).filter(Task.task_id == task_id).first()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
 
     task.cadquery_script = payload.cadquery_script
     task.generation_prompt = payload.generation_prompt
+    if payload.geometry_metadata is not None:
+        task.geometry_metadata = payload.geometry_metadata
     db.commit()
 
     logger.info(f"Script saved for task {task_id} ({len(payload.cadquery_script)} chars)")
@@ -140,4 +143,30 @@ def get_task_script(
     return {
         "cadquery_script": task.cadquery_script,
         "generation_prompt": task.generation_prompt,
+        "geometry_metadata": task.geometry_metadata,
     }
+
+
+@router.get("/tasks/{task_id}/geometry")
+def get_task_geometry(
+    task_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_any_user),
+):
+    """Get geometry metadata (features, faces, edges) for a task."""
+    task = db.query(Task).filter(Task.task_id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    if not task.geometry_metadata:
+        return {"features": [], "faces": [], "edges": []}
+
+    try:
+        data = json.loads(task.geometry_metadata)
+        return {
+            "features": data.get("features", []),
+            "faces": data.get("faces", []),
+            "edges": data.get("edges", []),
+        }
+    except (json.JSONDecodeError, TypeError):
+        return {"features": [], "faces": [], "edges": []}

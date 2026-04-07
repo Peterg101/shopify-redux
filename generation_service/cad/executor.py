@@ -191,6 +191,52 @@ _meta = {
     },
 }
 
+# --- Feature tags (LLM-generated _features list) ---
+try:
+    _feature_list = _features if '_features' in dir() else []
+    if isinstance(_feature_list, list):
+        _meta["features"] = _feature_list
+    else:
+        _meta["features"] = []
+except Exception:
+    _meta["features"] = []
+
+# --- Face inventory (extracted from solid topology) ---
+try:
+    _faces = []
+    for _i, _face in enumerate(_solid.Faces()):
+        _fc = _face.Center()
+        _face_info = {
+            "id": f"face_{_i}",
+            "type": _face.geomType(),
+            "center": [round(_fc.x, 2), round(_fc.y, 2), round(_fc.z, 2)],
+            "area": round(_face.Area(), 2),
+        }
+        try:
+            _n = _face.normalAt(_face.Center())
+            _face_info["normal"] = [round(_n.x, 3), round(_n.y, 3), round(_n.z, 3)]
+        except Exception:
+            pass
+        _faces.append(_face_info)
+    _meta["faces"] = _faces
+except Exception:
+    _meta["faces"] = []
+
+# --- Edge inventory (extracted from solid topology) ---
+try:
+    _edges = []
+    for _i, _edge in enumerate(_solid.Edges()):
+        _ec = _edge.Center()
+        _edges.append({
+            "id": f"edge_{_i}",
+            "type": _edge.geomType(),
+            "center": [round(_ec.x, 2), round(_ec.y, 2), round(_ec.z, 2)],
+            "length": round(_edge.Length(), 2),
+        })
+    _meta["edges"] = _edges
+except Exception:
+    _meta["edges"] = []
+
 if not _valid:
     print(f"VALIDATION_FAILED: Solid is not valid (BRep check failed)", file=_sys.stderr)
     _sys.exit(1)

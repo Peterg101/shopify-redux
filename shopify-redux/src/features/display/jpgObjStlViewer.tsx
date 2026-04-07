@@ -5,7 +5,11 @@ import { JpgViewer } from "./jpgViewer";
 
 const IMAGE_TYPES = ['jpg', 'jpeg', 'png', 'webp'];
 
-export const JpgObjStlViewer = () => {
+interface JpgObjStlViewerProps {
+    onTagClick?: (text: string) => void;
+}
+
+export const JpgObjStlViewer = ({ onTagClick }: JpgObjStlViewerProps) => {
     const dataState = useSelector(
         (state: RootState) => state.dataState
     )
@@ -14,7 +18,7 @@ export const JpgObjStlViewer = () => {
 
     return(
         <>
-        {isImage ? <JpgViewer/>:<OBJSTLViewer/>}
+        {isImage ? <JpgViewer/>:<OBJSTLViewer onTagClick={onTagClick} />}
         </>
 
     )
