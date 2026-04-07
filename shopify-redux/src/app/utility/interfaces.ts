@@ -77,6 +77,9 @@ export interface CadFeature {
   type: string;
   position: [number, number, number];
   dimensions?: Record<string, number>;
+  step?: number;
+  depends_on?: string[];
+  error?: string;
 }
 
 export interface CadFace {
@@ -104,6 +107,7 @@ export interface StepMetadata {
   surfaceAreaMm2?: number;
   features?: CadFeature[];
   faces?: CadFace[];
+  suppressed?: string[];
   edges?: CadEdge[];
 }
 

@@ -13,6 +13,7 @@ interface FeatureOverlayProps {
   mode: OverlayMode;
   onTagClick?: (text: string) => void;
   boundingBox?: { x: number; y: number; z: number };
+  suppressed?: string[];
 }
 
 const featureLabelStyle: React.CSSProperties = {
@@ -138,7 +139,8 @@ function useVisibleLabels(
 const FeatureLabel: React.FC<{
   feature: CadFeature;
   onTagClick?: (text: string) => void;
-}> = ({ feature, onTagClick }) => {
+  isSuppressed?: boolean;
+}> = ({ feature, onTagClick, isSuppressed }) => {
   const [hovered, setHovered] = useState(false);
   const [inserted, setInserted] = useState(false);
 
@@ -162,21 +164,31 @@ const FeatureLabel: React.FC<{
       <div
         style={{
           ...featureLabelStyle,
-          borderColor: inserted ? '#69F0AE' : hovered ? '#00E5FF' : featureLabelStyle.borderColor,
-          boxShadow: inserted
-            ? '0 0 12px rgba(105, 240, 174, 0.4)'
-            : hovered
-              ? '0 0 16px rgba(0, 229, 255, 0.4)'
-              : featureLabelStyle.boxShadow,
-          transform: hovered ? 'scale(1.06)' : 'scale(1)',
+          ...(isSuppressed ? {
+            borderStyle: 'dashed',
+            borderColor: '#667788',
+            color: '#667788',
+            opacity: 0.5,
+            boxShadow: 'none',
+            cursor: 'default',
+          } : {
+            borderColor: inserted ? '#69F0AE' : hovered ? '#00E5FF' : featureLabelStyle.borderColor,
+            boxShadow: inserted
+              ? '0 0 12px rgba(105, 240, 174, 0.4)'
+              : hovered
+                ? '0 0 16px rgba(0, 229, 255, 0.4)'
+                : featureLabelStyle.boxShadow,
+            transform: hovered ? 'scale(1.06)' : 'scale(1)',
+          }),
         }}
-        title="Click to insert into refinement"
-        onMouseEnter={() => setHovered(true)}
+        title={isSuppressed ? 'Feature suppressed' : 'Click to insert into refinement'}
+        onMouseEnter={() => !isSuppressed && setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        onClick={handleClick}
+        onClick={() => !isSuppressed && handleClick()}
       >
-        {hovered && !inserted && <span style={{ opacity: 0.5, marginRight: 3 }}>⊕</span>}
-        {inserted && <span style={{ color: '#69F0AE', marginRight: 3 }}>✓</span>}
+        {!isSuppressed && hovered && !inserted && <span style={{ opacity: 0.5, marginRight: 3 }}>⊕</span>}
+        {!isSuppressed && inserted && <span style={{ color: '#69F0AE', marginRight: 3 }}>✓</span>}
+        {isSuppressed && <span style={{ marginRight: 3 }}>⊘</span>}
         {label}
       </div>
     </Html>
@@ -189,7 +201,9 @@ export const FeatureOverlay: React.FC<FeatureOverlayProps> = ({
   mode,
   onTagClick,
   boundingBox,
+  suppressed = [],
 }) => {
+  const suppressedSet = new Set(suppressed);
   const featureItems = features.map(f => ({ id: f.tag, position: f.position }));
   const faceItems = faces.map(f => ({ id: f.id, position: f.center }));
 
@@ -203,7 +217,7 @@ export const FeatureOverlay: React.FC<FeatureOverlayProps> = ({
       {/* Feature tags — always shown in features/detailed mode */}
       {features.map((f) => (
         visibleFeatures.includes(f.tag) && (
-          <FeatureLabel key={f.tag} feature={f} onTagClick={onTagClick} />
+          <FeatureLabel key={f.tag} feature={f} onTagClick={onTagClick} isSuppressed={suppressedSet.has(f.tag)} />
         )
       ))}
 

@@ -12,6 +12,7 @@ from jwt_auth import generate_token
 
 from cad.llm import generate_cadquery_code, fix_cadquery_code, apply_parameter_changes, refine_cadquery_code
 from cad.executor import execute_cadquery
+from cad.suppressor import suppress_features, resolve_dependencies
 from shared import publish, register_task, mark_task_complete, DB_SERVICE_URL
 
 logger = logging.getLogger(__name__)
@@ -227,6 +228,9 @@ async def regenerate_cad_task(
             return
 
         # Step 5: Save updated script and geometry metadata
+        # Regeneration clears any suppression — full script was executed
+        if metadata:
+            metadata["suppressed"] = []
         await save_task_script(task_id, modified_script, resp.json().get("generation_prompt", ""), metadata)
 
         # Step 6: Done
@@ -273,6 +277,7 @@ async def refine_cad_task(
         refined_script = await refine_cadquery_code(
             original_prompt, original_script, instruction, geometry_metadata
         )
+        logger.info(f"[{port_id}] Refined script ({len(refined_script)} chars):\n{refined_script[:500]}")
 
         # Handle CLARIFICATION responses (LLM needs more info from user)
         if refined_script.strip().startswith("CLARIFICATION:"):
@@ -324,6 +329,9 @@ async def refine_cad_task(
             return
 
         # Step 5: Save updated script and geometry metadata
+        # Refinement clears any suppression — full script was executed
+        if metadata:
+            metadata["suppressed"] = []
         await save_task_script(task_id, refined_script, original_prompt, metadata)
 
         # Step 6: Done
@@ -337,6 +345,99 @@ async def refine_cad_task(
         await publish(redis, port_id, f"Task Failed,{str(e)[:200]}")
 
 
+async def suppress_cad_features(
+    task_id: str, port_id: str, user_id: str,
+    suppressed_tags: list, redis: AsyncRedis,
+):
+    """Re-execute a CadQuery script with certain features suppressed."""
+    try:
+        # Step 1: Fetch stored script + geometry metadata
+        await publish(redis, port_id, f"10,fetching script,suppressing")
+        auth_token = generate_token("generation_service", audience="api_service")
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(
+                f"{DB_SERVICE_URL}/tasks/{task_id}/script",
+                headers={"Authorization": f"Bearer {auth_token}"},
+            )
+        if resp.status_code != 200 or not resp.json().get("cadquery_script"):
+            await publish(redis, port_id, "Task Failed,No stored script found for this task")
+            return
+
+        script_data = resp.json()
+        original_script = script_data["cadquery_script"]
+        original_prompt = script_data.get("generation_prompt", "")
+
+        # Parse existing features for dependency resolution
+        geo_json = script_data.get("geometry_metadata")
+        existing_features = []
+        if geo_json:
+            try:
+                geo_data = json.loads(geo_json)
+                existing_features = geo_data.get("features", [])
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+        # Step 2: Resolve dependencies (cascade suppression)
+        await publish(redis, port_id, f"20,resolving dependencies,suppressing")
+        resolved_tags = resolve_dependencies(existing_features, set(suppressed_tags))
+        logger.info(
+            f"[{port_id}] Suppressing {len(suppressed_tags)} tags "
+            f"(resolved to {len(resolved_tags)} with dependencies): {resolved_tags}"
+        )
+
+        # Step 3: Remove suppressed features from script via AST
+        await publish(redis, port_id, f"30,modifying script,suppressing")
+        modified_script = suppress_features(original_script, resolved_tags)
+
+        # Step 4: Execute modified script
+        await publish(redis, port_id, f"50,executing,suppressing")
+        success, output_path, error, metadata = await asyncio.to_thread(
+            execute_cadquery, modified_script, 30
+        )
+
+        if not success:
+            await publish(redis, port_id, f"Task Failed,Suppression failed: {error[:200]}")
+            return
+
+        if metadata:
+            bb = metadata.get("bbox", {})
+            logger.info(
+                f"[{port_id}] Suppression succeeded: "
+                f"{bb.get('xlen', 0):.1f}x{bb.get('ylen', 0):.1f}x{bb.get('zlen', 0):.1f}mm"
+            )
+
+        # Step 5: Upload new STEP file
+        await publish(redis, port_id, f"75,uploading,suppressing")
+        job_id = await upload_step_file(output_path, user_id, task_id)
+
+        if not job_id:
+            await publish(redis, port_id, "Task Failed,Could not upload suppressed STEP file")
+            return
+
+        # Step 6: Save geometry metadata with suppressed list
+        # CRITICAL: Keep the COMPLETE feature list from the original script, not the
+        # reduced list from re-execution. Only update faces/edges (they reflect current geometry).
+        # The suppressed list tells the frontend which features are currently hidden.
+        geo_metadata = {
+            "features": existing_features,                    # FULL feature list (preserved)
+            "faces": (metadata or {}).get("faces", []),       # from re-execution (current geometry)
+            "edges": (metadata or {}).get("edges", []),       # from re-execution (current geometry)
+            "suppressed": list(resolved_tags),                # which tags are suppressed
+        }
+        # Note: we save the ORIGINAL script (not modified) so unsuppression works
+        await save_task_script(task_id, original_script, original_prompt, geo_metadata)
+
+        # Step 7: Done
+        task_name = "suppressed"
+        await publish(redis, port_id, f"100,complete,{task_name}")
+        await publish(redis, port_id, f"Task Completed,{task_id},{task_name},{job_id}")
+        logger.info(f"[{port_id}] Suppression completed for task {task_id}")
+
+    except Exception as e:
+        logger.error(f"[{port_id}] Suppression error: {e}", exc_info=True)
+        await publish(redis, port_id, f"Task Failed,{str(e)[:200]}")
+
+
 async def save_task_script(
     task_id: str, script: str, prompt: str, geometry_metadata: dict | None = None
 ):
@@ -344,11 +445,14 @@ async def save_task_script(
     try:
         payload: dict = {"cadquery_script": script, "generation_prompt": prompt}
         if geometry_metadata:
-            payload["geometry_metadata"] = json.dumps({
+            geo_json: dict = {
                 "features": geometry_metadata.get("features", []),
                 "faces": geometry_metadata.get("faces", []),
                 "edges": geometry_metadata.get("edges", []),
-            })
+            }
+            if "suppressed" in geometry_metadata:
+                geo_json["suppressed"] = geometry_metadata["suppressed"]
+            payload["geometry_metadata"] = json.dumps(geo_json)
         auth_token = generate_token("generation_service", audience="api_service")
         async with httpx.AsyncClient(timeout=10.0) as client:
             resp = await client.patch(

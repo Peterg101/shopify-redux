@@ -5,6 +5,7 @@ import { ToolBar } from './toolBar';
 import { ConfigurationPanel } from './ConfigurationPanel';
 import { ParameterEditor } from './ParameterEditor';
 import { RefinementInput, RefinementInputHandle } from './RefinementInput';
+import { FeatureTree } from './FeatureTree';
 import { GenerationHistoryPanel } from './GenerationHistoryPanel';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
@@ -29,6 +30,7 @@ export const MainOptions = () => {
           <FileViewer onTagClick={handleTagClick} />
         </Box>
         {has3DModel && !fulfillMode && <RefinementInput ref={refinementRef} />}
+        {has3DModel && !fulfillMode && <FeatureTree />}
         {has3DModel && !fulfillMode && <ConfigurationPanel />}
         {has3DModel && !fulfillMode && <ParameterEditor />}
         <GenerationHistoryPanel />

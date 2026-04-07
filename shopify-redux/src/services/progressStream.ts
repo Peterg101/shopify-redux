@@ -276,8 +276,8 @@ async function handleCadMessage(
                     { credentials: 'include', signal }
                 );
                 if (geoResp.ok) {
-                    const { features, faces, edges } = await geoResp.json();
-                    dispatch(setStepMetadata({ features, faces, edges }));
+                    const { features, faces, edges, suppressed } = await geoResp.json();
+                    dispatch(setStepMetadata({ features, faces, edges, suppressed }));
                 }
             } catch (geoErr) {
                 if (!disposed) {

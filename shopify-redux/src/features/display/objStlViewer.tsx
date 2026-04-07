@@ -42,6 +42,7 @@ const OBJSTLViewer = ({ hideOrientationControls = false, onTagClick }: OBJSTLVie
     const features = dataState.stepMetadata?.features ?? [];
     const faces = dataState.stepMetadata?.faces ?? [];
     const boundingBox = dataState.stepMetadata?.boundingBox;
+    const suppressed = dataState.stepMetadata?.suppressed ?? [];
     const hasGeometry = features.length > 0 || faces.length > 0;
 
     const cycleOverlayMode = useCallback(() => {
@@ -87,6 +88,7 @@ const OBJSTLViewer = ({ hideOrientationControls = false, onTagClick }: OBJSTLVie
                 mode={overlayMode}
                 onTagClick={onTagClick}
                 boundingBox={boundingBox}
+                suppressed={suppressed}
               />
             </Suspense>
           </Canvas>

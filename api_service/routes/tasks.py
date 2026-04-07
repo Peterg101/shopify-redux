@@ -159,7 +159,7 @@ def get_task_geometry(
         raise HTTPException(status_code=404, detail="Task not found")
 
     if not task.geometry_metadata:
-        return {"features": [], "faces": [], "edges": []}
+        return {"features": [], "faces": [], "edges": [], "suppressed": []}
 
     try:
         data = json.loads(task.geometry_metadata)
@@ -167,6 +167,7 @@ def get_task_geometry(
             "features": data.get("features", []),
             "faces": data.get("faces", []),
             "edges": data.get("edges", []),
+            "suppressed": data.get("suppressed", []),
         }
     except (json.JSONDecodeError, TypeError):
-        return {"features": [], "faces": [], "edges": []}
+        return {"features": [], "faces": [], "edges": [], "suppressed": []}

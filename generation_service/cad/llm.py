@@ -75,40 +75,60 @@ except Exception:
 ## FEATURE TAGGING (mandatory)
 Every geometric operation MUST be tagged with CadQuery's .tag() method using descriptive
 snake_case names. Build a `_features` list that records each feature's metadata.
+Use a `_step` counter to number operations sequentially, and declare `depends_on` to list
+which prior features each operation requires (for the feature tree).
 
 ```python
 _features = []
+_step = 0
 
-# Tag the main body:
+# Step 1: Main body (depends_on is empty — this is the base)
+_step += 1
 result = cq.Workplane("XY").box(length, width, height).tag("main_body")
 _features.append({
-    "tag": "main_body",
-    "type": "box",
+    "tag": "main_body", "type": "box", "step": _step,
     "position": [0, 0, height/2],
-    "dimensions": {"length": length, "width": width, "height": height}
+    "dimensions": {"length": length, "width": width, "height": height},
+    "depends_on": [],
 })
 
-# Tag a hole:
+# Step 2: Hole (depends on main_body)
+_step += 1
 result = result.faces(">Z").workplane().hole(hole_diameter).tag("mounting_hole_top_left")
 _features.append({
-    "tag": "mounting_hole_top_left",
-    "type": "hole",
+    "tag": "mounting_hole_top_left", "type": "hole", "step": _step,
     "position": [x_pos, y_pos, height],
-    "dimensions": {"diameter": hole_diameter}
+    "dimensions": {"diameter": hole_diameter},
+    "depends_on": ["main_body"],
 })
 
-# Tag a fillet (inside try/except):
+# Step 3: Fillet (depends on main_body — wrapped in try/except)
+_step += 1
 try:
     result = result.edges("|Z").fillet(fillet_radius).tag("body_edge_fillets")
     _features.append({
-        "tag": "body_edge_fillets",
-        "type": "fillet",
+        "tag": "body_edge_fillets", "type": "fillet", "step": _step,
         "position": [0, 0, height/2],
-        "dimensions": {"radius": fillet_radius}
+        "dimensions": {"radius": fillet_radius},
+        "depends_on": ["main_body"],
     })
-except Exception:
-    pass
+except Exception as _e:
+    _features.append({
+        "tag": "body_edge_fillets", "type": "fillet_failed", "step": _step,
+        "position": [0, 0, height/2],
+        "dimensions": {"radius": fillet_radius},
+        "depends_on": ["main_body"],
+        "error": str(_e),
+    })
 ```
+
+Dependency rules for `depends_on`:
+- The base body (step 1) has `depends_on: []`
+- Holes/pockets depend on the body or face they're cut into
+- Chamfers/countersinks depend on the hole they modify
+- Fillets depend on the body whose edges they round
+- Shell operations depend on the body
+- Features added AFTER a shell depend on the shell
 
 Feature types: box, cylinder, sphere, hole, blind_hole, counterbore, countersink, fillet,
 chamfer, cut, boss, slot, shell, pocket, groove, thread, text, extrusion, revolve.
@@ -183,7 +203,7 @@ except Exception as _e:
 9. The final shape variable MUST be named `result`.
 10. Do NOT include any export/save/write line — the system handles this.
 11. Do NOT include print() or export/save lines — the system handles all output.
-12. ALWAYS define `_features = []` after parameters and append to it as you create features.
+12. ALWAYS define `_features = []` and `_step = 0` after parameters. Increment _step and append to _features for every operation. Include `step` and `depends_on` fields.
 
 ## EDGE/FACE SELECTION REFERENCE
 These selectors are for REFINEMENT ONLY — do NOT add chamfers or fillets unless the user asks.
@@ -230,17 +250,35 @@ Do NOT use .tag() names as CadQuery edge selectors — tags save workplane state
 
 ## COMMON PATTERNS
 
-### Enclosure with lid:
-Build as solid box, shell, cut in half, add mounting features.
+### Enclosure with mounting bosses:
+1. Build solid box, shell with negative thickness (open top = shell excluding top face)
+2. Create mounting bosses as cylinders on the BOTTOM INTERIOR:
+   boss = cq.Workplane("XY").workplane(offset=wall_thickness).moveTo(x, y).circle(r).extrude(boss_height)
+   result = result.union(boss)
+3. Add mounting holes into the bosses
+4. Cut wall features (ports, vents) with .cutBlind(-wall_thickness) NOT .cutThruAll()
+
+### Wall cutouts on shelled bodies:
+ALWAYS use .cutBlind(-wall_thickness) for cutouts on walls.
+.cutThruAll() will pierce BOTH opposite walls — this is almost never what you want.
+
+### Interior shelves/ledges along a wall:
+For a shelf running along the LEFT and RIGHT inner walls at height shelf_z:
+  shelf_left = cq.Workplane("XY").box(shelf_depth, width - 2*wall_thickness, shelf_thickness).translate((-length/2 + wall_thickness + shelf_depth/2, 0, shelf_z))
+  shelf_right = cq.Workplane("XY").box(shelf_depth, width - 2*wall_thickness, shelf_thickness).translate((length/2 - wall_thickness - shelf_depth/2, 0, shelf_z))
+  result = result.union(shelf_left).union(shelf_right)
+
+For a shelf along the REAR inner wall at height shelf_z:
+  shelf = cq.Workplane("XY").box(length - 2*wall_thickness, shelf_depth, shelf_thickness).translate((0, -width/2 + wall_thickness + shelf_depth/2, shelf_z))
+  result = result.union(shelf)
+
+Key: position with .translate() using GLOBAL coordinates. Inner walls are at ±(dimension/2 - wall_thickness).
 
 ### L-bracket:
 Union of two boxes at 90 degrees, fillet at junction (in try/except).
 
 ### Cylinder with bolt pattern:
 Build cylinder, use for loop with .pushPoints() for hole circle.
-
-### Snap-fit features:
-Add small cantilever beams with .rect().extrude(), chamfer tips.
 
 ## FORBIDDEN
 - No imports except: cadquery (as cq), math, os
@@ -255,29 +293,98 @@ Return ONLY a Python code block. No explanation before or after."""
 
 REFINEMENT_SYSTEM_PROMPT = """You are a CadQuery code editor. You receive working CadQuery code and a modification instruction. Your job is to make the MINIMUM change to implement the instruction.
 
-ABSOLUTE RULES:
+## ABSOLUTE RULES
 1. ONLY change what the instruction asks for. Do not "improve" or "clean up" other code.
-2. Do NOT add chamfers, fillets, or edge treatments that were not requested.
-3. Do NOT modify geometry that was not mentioned in the instruction.
-4. Keep all existing variables, structure, and _features list entries intact.
-5. The final variable MUST be named `result`. Do NOT include export lines.
+2. Do NOT add chamfers, fillets, edge treatments, or ANY features that were not explicitly requested.
+3. Do NOT modify, move, resize, or reshape ANY geometry that was not mentioned in the instruction.
+4. Do NOT change parameter values (lengths, widths, heights, offsets) unless the instruction asks you to.
+5. Keep all existing variables, structure, and _features list entries intact.
+6. The final variable MUST be named `result`. Do NOT include export lines or print statements.
+7. For wall cutouts on shelled bodies, use .cutBlind(-wall_thickness), NOT .cutThruAll().
 
-CadQuery reference for common refinement operations:
-- Chamfer a hole: replace .hole(d) with .cskHole(d, d + 2*chamfer_size, 90)
-- Fillet edges: result.edges(selector).fillet(radius) — wrap in try/except
-- Add a hole: result.faces(">Z").workplane().pushPoints([(x,y)]).hole(diameter)
-- Cut a slot: result.faces(face).workplane().slot2D(length, width).cutThruAll()
-- Shell: result.shell(-thickness)
+## CADQUERY WORKPLANE COORDINATE SYSTEM (critical — read carefully)
 
-Edge selectors:
-- .faces(">Z").edges("%Circle") — circular edges on top face
-- .faces(">Z").edges() — all edges on top face
-- .edges("|Z") — vertical edges
-- cq.selectors.NearestToPointSelector((x,y,z)) — nearest edge to a point
+For a box created with `cq.Workplane("XY").box(L, W, H)`, the box is centered at origin:
+X: [-L/2, L/2], Y: [-W/2, W/2], Z: [0, H]
 
-Feature tagging: tag new features with .tag() and append to _features list.
+When you select a face and create a workplane, the LOCAL axes depend on the face:
 
-Return ONLY the complete updated Python code block. No explanation."""
+| Face Selector | Which wall | Workplane origin (global) | Local X direction | Local Y direction |
+|---|---|---|---|---|
+| faces(">Z") | Top | (0, 0, H) | +global X | +global Y |
+| faces("<Z") | Bottom | (0, 0, 0) | -global X | +global Y |
+| faces(">Y") | Front (+Y) | (0, +W/2, H/2) | +global Z | +global X |
+| faces("<Y") | Rear (-Y) | (0, -W/2, H/2) | -global Z | +global X |
+| faces(">X") | Right (+X) | (+L/2, 0, H/2) | +global Z | -global Y |
+| faces("<X") | Left (-X) | (-L/2, 0, H/2) | -global Z | -global Y |
+
+CRITICAL: On side walls, local X is VERTICAL (along Z), local Y is HORIZONTAL.
+The workplane origin is at the CENTER of the face. All moveTo() coordinates are offsets from this center.
+
+Always use `.workplane(centerOption="CenterOfMass")` to ensure the origin is at the face center.
+
+## POSITION CALCULATION FORMULAS
+
+To convert user positions ("Nmm from bottom", "centered") to workplane local coordinates:
+
+For side walls (faces ">Y", "<Y", ">X", "<X"):
+  - Local X is VERTICAL. Workplane origin is at face center (height H/2 from bottom).
+  - "N mm from bottom edge": globalZ = N + feature_height/2
+  - For faces(">Y") or faces(">X"): localX = globalZ - H/2
+  - For faces("<Y") or faces("<X"): localX = -(globalZ - H/2) = H/2 - globalZ
+  - "N mm from top edge": globalZ = H - N - feature_height/2, then convert as above
+  - "Centered horizontally": localY = 0
+  - "Spaced D apart, centered": localY positions at -D/2, +D/2 (for 2 items)
+
+For top/bottom faces (">Z", "<Z"):
+  - Local X = global X direction, local Y = global Y direction (intuitive)
+  - "N mm from edge": inset by N from the face boundary
+
+Always use .workplane(centerOption="CenterOfMass") on face selections.
+
+IMPORTANT: Use the ACTUAL variable names from the existing script for dimensions.
+Do NOT introduce new variable names like "usb_local_x" — use the existing parameter names.
+Define new parameters at the top of the PARAMETERS section with descriptive names.
+
+## OPERATIONS REFERENCE
+
+Wall cutouts (ports, slots, vents on side walls of a shelled body):
+  ALWAYS use .cutBlind(-wall_thickness) — NOT .cutThruAll()!
+  .cutThruAll() pierces BOTH walls. .cutBlind(-wall_thickness) pierces only the selected wall.
+  Example: result.faces("<Y").workplane(centerOption="CenterOfMass").moveTo(lx, ly).rect(h, w).cutBlind(-wall_thickness)
+
+Holes on flat surfaces (top, bottom):
+  result.faces(">Z").workplane(centerOption="CenterOfMass").pushPoints([(lx, ly)]).hole(d)
+
+Mounting bosses inside a shelled enclosure:
+  Create as a cylinder on the BOTTOM INTERIOR surface, NOT floating.
+  boss = cq.Workplane("XY").workplane(offset=wall_thickness).moveTo(x, y).circle(boss_d/2).extrude(boss_height)
+  result = result.union(boss)
+  Then add the mounting hole: result = result.faces(">Z").workplane().pushPoints([(x, y)]).hole(hole_d, boss_height)
+
+Rounded slot: .faces(sel).workplane(centerOption="CenterOfMass").moveTo(lx, ly).slot2D(length, width, angle).cutBlind(-wall_thickness)
+Groove on a surface: .faces(sel).workplane(centerOption="CenterOfMass").moveTo(lx, ly).rect(w, h).cutBlind(-depth)
+Shelf/ledge along a wall: create as a box, .translate() to GLOBAL position against the inner wall.
+  Inner wall positions: ±(dimension/2 - wall_thickness). E.g. rear inner wall Y = -width/2 + wall_thickness + shelf_depth/2
+  shelf = cq.Workplane("XY").box(shelf_length, shelf_depth, shelf_thickness).translate((x, y, z))
+  result = result.union(shelf)
+Chamfer a hole: replace .hole(d) with .cskHole(d, d + 2*C, 90)
+Fillet: result.edges(selector).fillet(r) — ALWAYS in try/except
+
+## FEATURE TAGGING
+Tag new features with .tag() and append to _features list.
+Continue the existing _step counter. Include step and depends_on fields.
+
+## REMINDERS
+- Add new dimension variables in the PARAMETERS section
+- Use .clean() after booleans, before fillets
+- Wrap fillets/chamfers in try/except
+- For multiple similar features, use a loop or .pushPoints()
+- For shelled bodies, .cutThruAll() cuts through the wall — use this for ports/cutouts
+
+ALWAYS return the COMPLETE Python code block, even if no changes are needed.
+If the requested feature already exists, return the code unchanged.
+NEVER return explanations, commentary, or prose — ONLY Python code in a ```python block."""
 
 
 # ---------------------------------------------------------------------------
@@ -418,18 +525,33 @@ def classify_error(error: str) -> str:
 
 
 def extract_code(response_text: str) -> str:
-    """Extract Python code from LLM response."""
+    """Extract Python code from LLM response.
+
+    If the response contains a code block, extract it.
+    If no code block is found, check if the raw text looks like Python code.
+    If the response is prose/explanation, return it as-is (will be caught downstream
+    as a CLARIFICATION or syntax error).
+    """
+    # Try ```python blocks first
     pattern = r"```python\s*\n(.*?)```"
     match = re.search(pattern, response_text, re.DOTALL)
     if match:
         return match.group(1).strip()
 
+    # Try generic ``` blocks
     pattern = r"```\s*\n(.*?)```"
     match = re.search(pattern, response_text, re.DOTALL)
     if match:
         return match.group(1).strip()
 
-    return response_text.strip()
+    # No code block found — check if it looks like Python code
+    stripped = response_text.strip()
+    if stripped.startswith("import ") or stripped.startswith("import\n") or stripped.startswith("# "):
+        return stripped
+
+    # Looks like prose — prefix with CLARIFICATION so pipeline handles it gracefully
+    logger.warning(f"LLM returned prose instead of code ({len(stripped)} chars): {stripped[:100]}")
+    return f"CLARIFICATION: {stripped}"
 
 
 # ---------------------------------------------------------------------------

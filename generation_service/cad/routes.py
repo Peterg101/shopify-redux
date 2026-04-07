@@ -7,7 +7,7 @@ from redis.asyncio import Redis as AsyncRedis
 
 from fitd_schemas.fitd_classes import CadTaskRequest
 from shared import get_redis, get_authenticated_user
-from cad.pipeline import generate_cad_task, regenerate_cad_task, refine_cad_task
+from cad.pipeline import generate_cad_task, regenerate_cad_task, refine_cad_task, suppress_cad_features
 
 logger = logging.getLogger(__name__)
 
@@ -72,3 +72,26 @@ async def refine(
         request.max_iterations, request.timeout_seconds,
     )
     return {"message": "Refinement started!", "port_id": request.port_id}
+
+
+class SuppressRequest(BaseModel):
+    task_id: str
+    port_id: str
+    user_id: str
+    suppressed_tags: list
+
+
+@router.post("/suppress")
+async def suppress(
+    request: SuppressRequest,
+    background_tasks: BackgroundTasks,
+    redis: AsyncRedis = Depends(get_redis),
+    _: dict = Depends(get_authenticated_user),
+):
+    """Suppress/unsuppress features in a CAD model by re-executing with features removed."""
+    background_tasks.add_task(
+        suppress_cad_features,
+        request.task_id, request.port_id, request.user_id,
+        request.suppressed_tags, redis,
+    )
+    return {"message": "Suppression started!", "port_id": request.port_id}
