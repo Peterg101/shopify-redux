@@ -17,10 +17,11 @@ import {
   TextField,
   CircularProgress,
 } from '@mui/material';
-import { AutoFixHigh, Tune, Undo, Redo } from '@mui/icons-material';
+import { AutoFixHigh, Tune, Undo, Redo, ExpandMore, ExpandLess } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../app/store';
-import { CadGenerationSettings } from '../../app/utility/interfaces';
+import { CadGenerationSettings, ChatMessage } from '../../app/utility/interfaces';
+import ChatBubble from './cadChat/ChatBubble';
 import { setCadGenerationSettings } from '../../services/cadSlice';
 import { borderSubtle, borderHover, bgHighlight, bgHighlightHover, glowSubtle, glowMedium } from '../../theme';
 import { keyframes } from '@mui/material/styles';
@@ -58,9 +59,12 @@ export const RefinementInput = forwardRef<RefinementInputHandle>((_props, ref) =
   const taskId = dataState.taskId;
   const isComplete = dataState.stepMetadata?.processingStatus === 'complete';
 
+  const chatMessages = useSelector((state: RootState) => state.cadChatState.messages);
+
   const [instruction, setInstruction] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [mentionState, setMentionState] = useState<{
     query: string;
     startIndex: number;
@@ -289,6 +293,35 @@ export const RefinementInput = forwardRef<RefinementInputHandle>((_props, ref) =
           </Box>
         )}
       </Box>
+
+      {/* Conversation history from pre-generation chat */}
+      {chatMessages.length > 0 && (
+        <>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              px: 2,
+              py: 0.5,
+              cursor: 'pointer',
+              '&:hover': { backgroundColor: bgHighlight },
+            }}
+            onClick={() => setShowHistory(!showHistory)}
+          >
+            <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
+              Design conversation ({chatMessages.length} messages)
+            </Typography>
+            {showHistory ? <ExpandLess sx={{ fontSize: 16, color: 'text.secondary' }} /> : <ExpandMore sx={{ fontSize: 16, color: 'text.secondary' }} />}
+          </Box>
+          <Collapse in={showHistory}>
+            <Box sx={{ maxHeight: 250, overflowY: 'auto', px: 1, py: 1, borderBottom: `1px solid ${borderSubtle}` }}>
+              {chatMessages.map((msg: ChatMessage) => (
+                <ChatBubble key={msg.id} message={msg} onApprove={() => {}} onEdit={() => {}} />
+              ))}
+            </Box>
+          </Collapse>
+        </>
+      )}
 
       {/* Body */}
       <Box sx={{ p: 2 }}>

@@ -4,7 +4,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
 import { DropArea } from './dropArea';
 import AiTextPrompt from './aiTextPrompt';
-import AiCadPrompt from './aiCadPrompt';
+import CadChat from './cadChat/CadChat';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 import MeshyLoading from './meshyLoading';
@@ -46,19 +46,22 @@ export const Dropzone = () => {
         },
       }}
     >
-      {/* Upload / Loading Area */}
-      <Box sx={{ p: 3 }}>
-        {isGenerating ? renderLoadingArea() : <DropArea />}
-      </Box>
+      {/* Upload / Loading Area — hidden in CAD chat mode */}
+      {mode !== 'cad' && (
+        <>
+          <Box sx={{ p: 3 }}>
+            {isGenerating ? renderLoadingArea() : <DropArea />}
+          </Box>
 
-      {/* OR Divider */}
-      <Box sx={{ px: 4, py: 1 }}>
-        <Divider sx={{ borderColor: borderSubtle }}>
-          <Typography variant="body2" color="text.secondary" sx={{ px: 2 }}>
-            OR
-          </Typography>
-        </Divider>
-      </Box>
+          <Box sx={{ px: 4, py: 1 }}>
+            <Divider sx={{ borderColor: borderSubtle }}>
+              <Typography variant="body2" color="text.secondary" sx={{ px: 2 }}>
+                OR
+              </Typography>
+            </Divider>
+          </Box>
+        </>
+      )}
 
       {/* AI Generation Area */}
       <Box sx={{ p: 4 }}>
@@ -95,7 +98,7 @@ export const Dropzone = () => {
           </ToggleButtonGroup>
         </Box>
 
-        {mode === 'mesh' ? <AiTextPrompt /> : <AiCadPrompt />}
+        {mode === 'mesh' ? <AiTextPrompt /> : <CadChat />}
       </Box>
     </Box>
   );

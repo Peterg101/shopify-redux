@@ -5,6 +5,7 @@ import { userInterfaceSlice } from "../services/userInterfaceSlice";
 import {dataSlice} from "../services/dataSlice";
 import { meshySlice } from "../services/meshySlice";
 import { cadSlice } from "../services/cadSlice";
+import { cadChatSlice } from "../services/cadChatSlice";
 import { authApi } from "../services/authApi";
 import { basketApi } from "../services/basketItemApi";
 import { dbApi } from "../services/dbApi";
@@ -15,6 +16,7 @@ const rootReducer = combineSlices({
   [dataSlice.reducerPath]: dataSlice.reducer,
   [meshySlice.reducerPath]: meshySlice.reducer,
   [cadSlice.reducerPath]: cadSlice.reducer,
+  [cadChatSlice.reducerPath]: cadChatSlice.reducer,
   [authApi.reducerPath]: authApi.reducer,
   [basketApi.reducerPath]: basketApi.reducer,
   [dbApi.reducerPath]: dbApi.reducer,

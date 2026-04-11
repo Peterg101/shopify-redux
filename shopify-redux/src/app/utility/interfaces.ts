@@ -73,6 +73,36 @@ export interface CadState {
   cadOperationType: string | null;
 }
 
+// ---------------------------------------------------------------------------
+// CAD Chat (conversational pre-generation)
+// ---------------------------------------------------------------------------
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  images?: string[];  // base64 data
+  timestamp: number;
+  phase?: 'freeform' | 'guided' | 'confirmation' | 'confirmed';
+  spec?: Record<string, any>;
+}
+
+export interface CadChatState {
+  conversationId: string | null;
+  messages: ChatMessage[];
+  phase: 'idle' | 'freeform' | 'guided' | 'confirmation' | 'confirmed' | 'generating';
+  currentSpec: Record<string, any> | null;
+  isWaitingForReply: boolean;
+  error: string | null;
+}
+
+export interface CadChatResponse {
+  conversation_id: string;
+  reply: string;
+  phase: 'freeform' | 'guided' | 'confirmation' | 'confirmed';
+  spec: Record<string, any> | null;
+}
+
 export interface CadFeature {
   tag: string;
   type: string;

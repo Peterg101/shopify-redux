@@ -1,13 +1,21 @@
 """CAD generation routes -- LLM-powered CadQuery code generation."""
+import json
 import logging
-from fastapi import APIRouter, BackgroundTasks, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends, Request
 from pydantic import BaseModel
 from typing import Optional
 from redis.asyncio import Redis as AsyncRedis
+from sse_starlette.sse import EventSourceResponse
 
-from fitd_schemas.fitd_classes import CadTaskRequest
+from fitd_schemas.fitd_classes import (
+    CadTaskRequest,
+    CadChatRequest,
+    CadChatConfirmRequest,
+    CadGenerationSettings,
+)
 from shared import get_redis, get_authenticated_user
 from cad.pipeline import generate_cad_task, regenerate_cad_task, refine_cad_task, suppress_cad_features, revert_cad_task
+from cad.conversation import chat_stream, spec_to_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +32,55 @@ async def start_cad_task(
     background_tasks.add_task(generate_cad_task, request, redis)
     return {"message": "CAD task started!", "task_id": request.port_id}
 
+
+# ---------------------------------------------------------------------------
+# Conversational pre-generation
+# ---------------------------------------------------------------------------
+
+@router.post("/cad/chat")
+async def cad_chat(
+    request: CadChatRequest,
+    redis: AsyncRedis = Depends(get_redis),
+    _: dict = Depends(get_authenticated_user),
+):
+    """Stream a chat response via SSE for real-time token delivery."""
+    async def event_generator():
+        async for event_json in chat_stream(
+            conversation_id=request.conversation_id,
+            content=request.message.content,
+            images=request.message.images,
+            design_intent=request.design_intent.dict() if request.design_intent else None,
+            redis=redis,
+        ):
+            yield {"data": event_json}
+
+    return EventSourceResponse(event_generator())
+
+
+@router.post("/cad/chat/confirm")
+async def cad_chat_confirm(
+    request: CadChatConfirmRequest,
+    background_tasks: BackgroundTasks,
+    redis: AsyncRedis = Depends(get_redis),
+    _: dict = Depends(get_authenticated_user),
+):
+    """Confirm the gathered spec and start CAD generation."""
+    settings = request.settings or CadGenerationSettings()
+    prompt = spec_to_prompt(request.spec, settings.dict())
+
+    task_request = CadTaskRequest(
+        port_id=request.port_id,
+        user_id=request.user_id,
+        prompt=prompt,
+        settings=settings,
+    )
+    background_tasks.add_task(generate_cad_task, task_request, redis)
+    return {"message": "CAD task started!", "task_id": request.port_id}
+
+
+# ---------------------------------------------------------------------------
+# Existing endpoints
+# ---------------------------------------------------------------------------
 
 class RegenerateRequest(BaseModel):
     task_id: str

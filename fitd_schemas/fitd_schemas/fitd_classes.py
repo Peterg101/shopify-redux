@@ -900,6 +900,35 @@ class CadTaskRequest(BaseModel):
     settings: Optional[CadGenerationSettings] = None
 
 
+# ---------------------------------------------------------------------------
+# CAD Chat (conversational pre-generation)
+# ---------------------------------------------------------------------------
+
+class CadChatMessage(BaseModel):
+    role: str  # "user" | "assistant"
+    content: str
+    images: List[str] = []  # base64-encoded PNG/JPEG strings
+
+class CadChatRequest(BaseModel):
+    conversation_id: str
+    user_id: str
+    message: CadChatMessage
+    design_intent: Optional[CadGenerationSettings] = None
+
+class CadChatResponse(BaseModel):
+    conversation_id: str
+    reply: str
+    phase: str  # "freeform" | "guided" | "confirmation" | "confirmed"
+    spec: Optional[dict] = None
+
+class CadChatConfirmRequest(BaseModel):
+    conversation_id: str
+    port_id: str
+    user_id: str
+    spec: dict
+    settings: Optional[CadGenerationSettings] = None
+
+
 class UserHydrationResponse(BaseModel):
     user: UserResponse
     tasks: List[TaskResponse]
