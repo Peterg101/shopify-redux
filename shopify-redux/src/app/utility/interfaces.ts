@@ -88,7 +88,7 @@ export interface ChatMessage {
 }
 
 export interface CadChatState {
-  conversationId: string | null;
+  taskId: string | null;
   messages: ChatMessage[];
   phase: 'idle' | 'freeform' | 'guided' | 'confirmation' | 'confirmed' | 'generating';
   currentSpec: Record<string, any> | null;
@@ -97,7 +97,7 @@ export interface CadChatState {
 }
 
 export interface CadChatResponse {
-  conversation_id: string;
+  task_id: string;
   reply: string;
   phase: 'freeform' | 'guided' | 'confirmation' | 'confirmed';
   spec: Record<string, any> | null;

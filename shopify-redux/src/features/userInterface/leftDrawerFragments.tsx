@@ -10,6 +10,9 @@ import { extractFileInfo, fetchFile, fetchCadFile, isCadFileType, downloadCadSte
 import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
 import { resetCadState } from "../../services/cadSlice";
 import { resetMeshyState } from "../../services/meshySlice";
+import { hydrateChatHistory, resetConversation } from "../../services/cadChatSlice";
+import { fetchConversation } from "../../services/cadChatApi";
+import { ChatMessage } from "../../app/utility/interfaces";
 import { downloadBlob } from "../../app/utility/utils";
 import { useGetUserTasksQuery } from "../../services/authApi";
 import { borderSubtle, borderHover, bgHighlightHover } from "../../theme";
@@ -140,6 +143,24 @@ export function LeftDrawerButtons(task: TaskInformation) {
             dispatch(setStepMetadata({ features, faces, edges }));
           }
         } catch { /* non-critical — overlay just won't show */ }
+
+        // Hydrate conversation history if available
+        try {
+          const { messages } = await fetchConversation(fileId);
+          if (messages.length > 0) {
+            const chatMessages: ChatMessage[] = messages.map((msg: any, i: number) => ({
+              id: `history-${i}`,
+              role: msg.role,
+              content: msg.content,
+              timestamp: Date.now(),
+            }));
+            dispatch(hydrateChatHistory({ taskId: fileId, messages: chatMessages }));
+          } else {
+            dispatch(resetConversation());
+          }
+        } catch { /* conversation may not exist for older tasks */ }
+      } else {
+        dispatch(resetConversation());
       }
     }
   };

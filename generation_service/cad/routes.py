@@ -1,6 +1,7 @@
 """CAD generation routes -- LLM-powered CadQuery code generation."""
 import json
 import logging
+import os
 from fastapi import APIRouter, BackgroundTasks, Depends, Request
 from pydantic import BaseModel
 from typing import Optional
@@ -13,9 +14,9 @@ from fitd_schemas.fitd_classes import (
     CadChatConfirmRequest,
     CadGenerationSettings,
 )
-from shared import get_redis, get_authenticated_user
+from shared import get_redis, get_authenticated_user, register_task
 from cad.pipeline import generate_cad_task, regenerate_cad_task, refine_cad_task, suppress_cad_features, revert_cad_task
-from cad.conversation import chat_stream, spec_to_prompt
+from cad.conversation import chat_stream, spec_to_prompt, get_history_for_persistence
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,23 @@ async def start_cad_task(
 # Conversational pre-generation
 # ---------------------------------------------------------------------------
 
+class ChatStartRequest(BaseModel):
+    user_id: str
+
+
+@router.post("/cad/chat/start")
+async def cad_chat_start(
+    request: ChatStartRequest,
+    redis: AsyncRedis = Depends(get_redis),
+    _: dict = Depends(get_authenticated_user),
+):
+    """Create a task for the conversation and return its ID."""
+    task_id = await register_task(
+        request.user_id, "CAD Design Chat", "", file_type="step",
+    )
+    return {"task_id": task_id}
+
+
 @router.post("/cad/chat")
 async def cad_chat(
     request: CadChatRequest,
@@ -46,7 +64,7 @@ async def cad_chat(
     """Stream a chat response via SSE for real-time token delivery."""
     async def event_generator():
         async for event_json in chat_stream(
-            conversation_id=request.conversation_id,
+            task_id=request.task_id,
             content=request.message.content,
             images=request.message.images,
             design_intent=request.design_intent.dict() if request.design_intent else None,
@@ -68,11 +86,33 @@ async def cad_chat_confirm(
     settings = request.settings or CadGenerationSettings()
     prompt = spec_to_prompt(request.spec, settings.dict())
 
+    # Persist conversation history to the task (text-only, no images)
+    conversation_json = await get_history_for_persistence(request.task_id, redis)
+    try:
+        import httpx
+        api_url = os.getenv("API_SERVICE_URL", "http://api_service:8000")
+        from jwt_auth import generate_token
+        token = generate_token("generation_service", audience="api_service")
+        async with httpx.AsyncClient() as client:
+            await client.patch(
+                f"{api_url}/tasks/{request.task_id}/script",
+                json={
+                    "cadquery_script": "",
+                    "generation_prompt": prompt,
+                    "conversation_history": conversation_json,
+                },
+                headers={"Authorization": f"Bearer {token}"},
+                timeout=10,
+            )
+    except Exception as e:
+        logger.warning(f"Failed to persist conversation: {e}")
+
     task_request = CadTaskRequest(
         port_id=request.port_id,
         user_id=request.user_id,
         prompt=prompt,
         settings=settings,
+        existing_task_id=request.task_id,
     )
     background_tasks.add_task(generate_cad_task, task_request, redis)
     return {"message": "CAD task started!", "task_id": request.port_id}

@@ -133,23 +133,30 @@ When phase is "confirmation" or "confirmed", the spec object should contain:
 # Conversation state helpers (Redis-backed)
 # ---------------------------------------------------------------------------
 
-def _redis_key(conversation_id: str) -> str:
-    return f"cad_chat:{conversation_id}"
+def _redis_key(task_id: str) -> str:
+    return f"cad_chat:{task_id}"
 
 
-async def _load_history(redis: AsyncRedis, conversation_id: str) -> list[dict]:
-    raw = await redis.get(_redis_key(conversation_id))
+async def _load_history(redis: AsyncRedis, task_id: str) -> list[dict]:
+    raw = await redis.get(_redis_key(task_id))
     if raw:
         return json.loads(raw)
     return []
 
 
-async def _save_history(redis: AsyncRedis, conversation_id: str, history: list[dict]):
+async def _save_history(redis: AsyncRedis, task_id: str, history: list[dict]):
     await redis.set(
-        _redis_key(conversation_id),
+        _redis_key(task_id),
         json.dumps(history),
         ex=CHAT_HISTORY_TTL,
     )
+
+
+async def get_history_for_persistence(task_id: str, redis: AsyncRedis) -> str:
+    """Load conversation from Redis and return text-only JSON for DB storage."""
+    history = await _load_history(redis, task_id)
+    clean = [{"role": msg["role"], "content": msg["content"]} for msg in history]
+    return json.dumps(clean)
 
 
 # ---------------------------------------------------------------------------
@@ -264,7 +271,7 @@ def _parse_response(text: str) -> tuple[str, str, dict | None]:
 # ---------------------------------------------------------------------------
 
 async def chat_stream(
-    conversation_id: str,
+    task_id: str,
     content: str,
     images: list[str],
     design_intent: dict | None,
@@ -277,7 +284,7 @@ async def chat_stream(
       - "done:<json>"         — final message with phase/spec metadata
       - "error:<message>"     — error occurred
     """
-    history = await _load_history(redis, conversation_id)
+    history = await _load_history(redis, task_id)
 
     # Append user message
     user_msg = {"role": "user", "content": content, "images": images}
@@ -298,20 +305,20 @@ async def chat_stream(
         display_text, phase, spec = _parse_response(full_text)
 
         logger.info(
-            f"[{conversation_id}] Complete — phase: {phase}, "
+            f"[{task_id}] Complete — phase: {phase}, "
             f"reply: {len(display_text)} chars, has_spec: {spec is not None}"
         )
 
         # Save to history (display text only, no JSON block)
         assistant_msg = {"role": "assistant", "content": display_text}
         history.append(assistant_msg)
-        await _save_history(redis, conversation_id, history)
+        await _save_history(redis, task_id, history)
 
         # Send final metadata event
-        yield json.dumps({"type": "done", "reply": display_text, "phase": phase, "spec": spec, "conversation_id": conversation_id})
+        yield json.dumps({"type": "done", "reply": display_text, "phase": phase, "spec": spec, "task_id": task_id})
 
     except Exception as e:
-        logger.error(f"[{conversation_id}] Stream error: {e}")
+        logger.error(f"[{task_id}] Stream error: {e}")
         yield json.dumps({"type": "error", "message": str(e)})
 
 
@@ -370,14 +377,14 @@ async def _anthropic_stream(messages: list[dict]) -> AsyncGenerator[str, None]:
 # ---------------------------------------------------------------------------
 
 async def chat(
-    conversation_id: str,
+    task_id: str,
     content: str,
     images: list[str],
     design_intent: dict | None,
     redis: AsyncRedis,
 ) -> dict:
     """Process a user chat message and return the assistant's response (non-streaming)."""
-    history = await _load_history(redis, conversation_id)
+    history = await _load_history(redis, task_id)
     user_msg = {"role": "user", "content": content, "images": images}
     history.append(user_msg)
     claude_messages = _history_to_messages(history, design_intent)
@@ -387,10 +394,10 @@ async def chat(
 
     assistant_msg = {"role": "assistant", "content": display_text}
     history.append(assistant_msg)
-    await _save_history(redis, conversation_id, history)
+    await _save_history(redis, task_id, history)
 
     return {
-        "conversation_id": conversation_id,
+        "task_id": task_id,
         "reply": display_text,
         "phase": phase,
         "spec": spec,

@@ -2,15 +2,21 @@ import { CadGenerationSettings, CadChatResponse } from "../app/utility/interface
 import logger from "../app/utility/logger";
 
 const GENERATION_URL = process.env.REACT_APP_GENERATION_URL || 'http://localhost:1234';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
-/**
- * Send a chat message and stream the response via SSE.
- *
- * Calls `onToken` for each incremental text chunk (for live typing effect),
- * then calls `onDone` with the final parsed response including phase/spec.
- */
+export async function startChatSession(userId: string): Promise<{ task_id: string }> {
+  const response = await fetch(`${GENERATION_URL}/cad/chat/start`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: userId }),
+  });
+  if (!response.ok) throw new Error(`Failed to start chat: ${response.statusText}`);
+  return response.json();
+}
+
 export async function sendChatMessageStreaming(
-  conversationId: string,
+  taskId: string,
   userId: string,
   content: string,
   images: string[],
@@ -25,7 +31,7 @@ export async function sendChatMessageStreaming(
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        conversation_id: conversationId,
+        task_id: taskId,
         user_id: userId,
         message: { role: 'user', content, images },
         design_intent: designIntent,
@@ -48,24 +54,21 @@ export async function sendChatMessageStreaming(
 
       buffer += decoder.decode(value, { stream: true });
 
-      // Process complete SSE lines
       const lines = buffer.split('\n');
-      buffer = lines.pop() || ''; // Keep incomplete line in buffer
+      buffer = lines.pop() || '';
 
       for (const line of lines) {
         if (!line.startsWith('data: ')) continue;
-
         const jsonStr = line.slice(6).trim();
         if (!jsonStr) continue;
 
         try {
           const event = JSON.parse(jsonStr);
-
           if (event.type === 'token') {
             onToken(event.text);
           } else if (event.type === 'done') {
             onDone({
-              conversation_id: event.conversation_id,
+              task_id: event.task_id,
               reply: event.reply,
               phase: event.phase,
               spec: event.spec,
@@ -85,7 +88,7 @@ export async function sendChatMessageStreaming(
 }
 
 export async function confirmSpec(
-  conversationId: string,
+  taskId: string,
   userId: string,
   portId: string,
   spec: Record<string, any>,
@@ -97,7 +100,7 @@ export async function confirmSpec(
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        conversation_id: conversationId,
+        task_id: taskId,
         port_id: portId,
         user_id: userId,
         spec,
@@ -110,5 +113,18 @@ export async function confirmSpec(
   } catch (error) {
     logger.error("Error confirming spec:", error);
     throw error;
+  }
+}
+
+export async function fetchConversation(taskId: string): Promise<{ messages: any[] }> {
+  try {
+    const response = await fetch(`${API_URL}/tasks/${taskId}/conversation`, {
+      credentials: 'include',
+    });
+    if (!response.ok) throw new Error(`Failed to fetch conversation: ${response.statusText}`);
+    return response.json();
+  } catch (error) {
+    logger.error("Error fetching conversation:", error);
+    return { messages: [] };
   }
 }

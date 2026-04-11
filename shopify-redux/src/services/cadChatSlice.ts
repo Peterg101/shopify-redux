@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { CadChatState, ChatMessage } from "../app/utility/interfaces";
 
 const initialState: CadChatState = {
-  conversationId: null,
+  taskId: null,
   messages: [],
   phase: 'idle',
   currentSpec: null,
@@ -14,8 +14,8 @@ export const cadChatSlice = createSlice({
   name: "cadChatState",
   initialState,
   reducers: {
-    startConversation: (state, action: PayloadAction<{ conversationId: string }>) => {
-      state.conversationId = action.payload.conversationId;
+    startChat: (state, action: PayloadAction<{ taskId: string }>) => {
+      state.taskId = action.payload.taskId;
       state.messages = [];
       state.phase = 'freeform';
       state.currentSpec = null;
@@ -50,18 +50,26 @@ export const cadChatSlice = createSlice({
       state.error = action.payload.error;
       state.isWaitingForReply = false;
     },
+    hydrateChatHistory: (state, action: PayloadAction<{ taskId: string; messages: ChatMessage[] }>) => {
+      state.taskId = action.payload.taskId;
+      state.messages = action.payload.messages;
+      state.phase = 'confirmed';
+      state.isWaitingForReply = false;
+      state.error = null;
+    },
     resetConversation: () => initialState,
   },
 });
 
 export const {
-  startConversation,
+  startChat,
   addUserMessage,
   addAssistantMessage,
   setPhase,
   setSpec,
   setWaitingForReply,
   setChatError,
+  hydrateChatHistory,
   resetConversation,
 } = cadChatSlice.actions;
 

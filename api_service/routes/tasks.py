@@ -67,6 +67,7 @@ class ScriptUpdate(BaseModel):
     generation_prompt: str
     geometry_metadata: Optional[str] = None  # JSON string: {"features": [...], "faces": [...], "edges": [...]}
     instruction: Optional[str] = None  # The user's refinement instruction (for version history)
+    conversation_history: Optional[str] = None  # JSON string of chat messages
 
 
 @router.patch("/tasks/{task_id}/script", status_code=200)
@@ -104,6 +105,8 @@ def save_task_script(
     task.generation_prompt = payload.generation_prompt
     if payload.geometry_metadata is not None:
         task.geometry_metadata = payload.geometry_metadata
+    if payload.conversation_history is not None:
+        task.conversation_history = payload.conversation_history
     db.commit()
 
     logger.info(f"Script saved for task {task_id} ({len(payload.cadquery_script)} chars)")
@@ -240,3 +243,24 @@ def get_task_version(
         "generation_prompt": v.generation_prompt,
         "geometry_metadata": v.geometry_metadata,
     }
+
+
+@router.get("/tasks/{task_id}/conversation")
+def get_task_conversation(
+    task_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_any_user),
+):
+    """Get stored conversation history for a task."""
+    task = db.query(Task).filter(Task.task_id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    if not task.conversation_history:
+        return {"messages": []}
+
+    try:
+        messages = json.loads(task.conversation_history)
+        return {"messages": messages}
+    except (json.JSONDecodeError, TypeError):
+        return {"messages": []}

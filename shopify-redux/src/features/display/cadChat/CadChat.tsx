@@ -6,7 +6,7 @@ import { RootState, AppDispatch } from '../../../app/store';
 import { generateUuid } from '../../../app/utility/collectionUtils';
 import { ChatMessage } from '../../../app/utility/interfaces';
 import {
-  startConversation,
+  startChat,
   addUserMessage,
   addAssistantMessage,
   setPhase,
@@ -14,7 +14,7 @@ import {
 } from '../../../services/cadChatSlice';
 import { setCadPending, setCadLoading, setCadOperationType } from '../../../services/cadSlice';
 import { authApi } from '../../../services/authApi';
-import { sendChatMessageStreaming, confirmSpec } from '../../../services/cadChatApi';
+import { startChatSession, sendChatMessageStreaming, confirmSpec } from '../../../services/cadChatApi';
 import { connectProgressStream } from '../../../services/progressStream';
 import { useFile } from '../../../services/fileProvider';
 import logger from '../../../app/utility/logger';
@@ -60,12 +60,20 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
   const [streamingText, setStreamingText] = useState<string | null>(null);
   const streamingRef = useRef('');
 
-  // Start a conversation on mount
+  // Start a chat session (creates task on backend) on mount
   useEffect(() => {
-    if (!chatState.conversationId) {
-      dispatch(startConversation({ conversationId: generateUuid() }));
-    }
-  }, [chatState.conversationId, dispatch]);
+    const initChat = async () => {
+      if (!chatState.taskId && !isRefinementMode && userInformation?.user?.user_id) {
+        try {
+          const { task_id } = await startChatSession(userInformation.user.user_id);
+          dispatch(startChat({ taskId: task_id }));
+        } catch (err) {
+          console.error('Failed to start chat session:', err);
+        }
+      }
+    };
+    initChat();
+  }, [chatState.taskId, isRefinementMode, userInformation, dispatch]);
 
   // Reset generating phase when entering refinement mode
   useEffect(() => {
@@ -100,13 +108,13 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
     dispatch(addUserMessage({ message: userMsg }));
 
     // Always use the chat endpoint for conversation (both pre- and post-generation)
-    if (!chatState.conversationId) return;
+    if (!chatState.taskId) return;
 
     streamingRef.current = '';
     setStreamingText('');
 
     await sendChatMessageStreaming(
-      chatState.conversationId,
+      chatState.taskId,
       userInformation.user.user_id,
       content,
       base64Images,
@@ -192,7 +200,7 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
   };
 
   const handleApprove = async (spec: Record<string, any>) => {
-    if (!chatState.conversationId || !userInformation?.user?.user_id) return;
+    if (!chatState.taskId || !userInformation?.user?.user_id) return;
 
     const portId = generateUuid();
     dispatch(setPhase({ phase: 'generating' }));
@@ -200,7 +208,7 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
 
     try {
       await confirmSpec(
-        chatState.conversationId,
+        chatState.taskId,
         userInformation.user.user_id,
         portId,
         spec,

@@ -104,11 +104,15 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
             )
             return
 
-        # Step 3: Register task in api_service
+        # Step 3: Register task in api_service (skip if pre-created by chat flow)
         await publish(redis, port_id, f"70,registering,{task_name}")
-        task_id = await register_task(
-            user_id, task_name, port_id, file_type="step"
-        )
+        if hasattr(request, 'existing_task_id') and request.existing_task_id:
+            task_id = request.existing_task_id
+            logger.info(f"[{port_id}] Using pre-existing task: {task_id}")
+        else:
+            task_id = await register_task(
+                user_id, task_name, port_id, file_type="step"
+            )
 
         if not task_id:
             await publish(

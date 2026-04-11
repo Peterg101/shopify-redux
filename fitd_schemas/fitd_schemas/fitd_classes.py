@@ -898,6 +898,7 @@ class CadTaskRequest(BaseModel):
     user_id: str
     prompt: str
     settings: Optional[CadGenerationSettings] = None
+    existing_task_id: Optional[str] = None  # set when task was pre-created by chat flow
 
 
 # ---------------------------------------------------------------------------
@@ -910,19 +911,19 @@ class CadChatMessage(BaseModel):
     images: List[str] = []  # base64-encoded PNG/JPEG strings
 
 class CadChatRequest(BaseModel):
-    conversation_id: str
+    task_id: str
     user_id: str
     message: CadChatMessage
     design_intent: Optional[CadGenerationSettings] = None
 
 class CadChatResponse(BaseModel):
-    conversation_id: str
+    task_id: str
     reply: str
     phase: str  # "freeform" | "guided" | "confirmation" | "confirmed"
     spec: Optional[dict] = None
 
 class CadChatConfirmRequest(BaseModel):
-    conversation_id: str
+    task_id: str
     port_id: str
     user_id: str
     spec: dict
