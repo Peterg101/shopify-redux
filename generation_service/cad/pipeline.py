@@ -13,6 +13,7 @@ from jwt_auth import generate_token
 from cad.llm import generate_cadquery_code, fix_cadquery_code, apply_parameter_changes, refine_cadquery_code
 from cad.executor import execute_cadquery
 from cad.suppressor import suppress_features, resolve_dependencies
+from cad.validator import validate_refinement
 from shared import publish, register_task, mark_task_complete, DB_SERVICE_URL
 
 logger = logging.getLogger(__name__)
@@ -320,6 +321,18 @@ async def refine_cad_task(
             await publish(redis, port_id, f"Task Failed,Refinement failed: {last_error[:200]}")
             return
 
+        # Step 3b: Validate refinement before committing
+        hard_reject, warnings = validate_refinement(
+            original_script, refined_script, instruction,
+            geometry_metadata, metadata,
+        )
+        if hard_reject:
+            logger.warning(f"[{port_id}] Refinement REJECTED: {hard_reject}")
+            await publish(redis, port_id, f"Refinement Rejected,{hard_reject}")
+            return
+        if warnings:
+            logger.warning(f"[{port_id}] Validation warnings: {warnings}")
+
         # Step 4: Upload new STEP
         await publish(redis, port_id, f"75,uploading,refining")
         job_id = await upload_step_file(output_path, user_id, task_id)
@@ -435,6 +448,61 @@ async def suppress_cad_features(
 
     except Exception as e:
         logger.error(f"[{port_id}] Suppression error: {e}", exc_info=True)
+        await publish(redis, port_id, f"Task Failed,{str(e)[:200]}")
+
+
+async def revert_cad_task(
+    task_id: str, port_id: str, user_id: str,
+    version: int, redis: AsyncRedis,
+):
+    """Revert a CAD model to a previous script version by re-executing it."""
+    try:
+        await publish(redis, port_id, f"10,fetching version {version},reverting")
+        auth_token = generate_token("generation_service", audience="api_service")
+
+        # Fetch the versioned script
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(
+                f"{DB_SERVICE_URL}/tasks/{task_id}/versions/{version}",
+                headers={"Authorization": f"Bearer {auth_token}"},
+            )
+        if resp.status_code != 200:
+            await publish(redis, port_id, f"Task Failed,Version {version} not found")
+            return
+
+        version_data = resp.json()
+        script = version_data["cadquery_script"]
+        prompt = version_data.get("generation_prompt", "")
+
+        # Execute the versioned script
+        await publish(redis, port_id, f"40,executing,reverting")
+        success, output_path, error, metadata = await asyncio.to_thread(
+            execute_cadquery, script, 30
+        )
+
+        if not success:
+            await publish(redis, port_id, f"Task Failed,Revert failed: {error[:200]}")
+            return
+
+        # Upload STEP
+        await publish(redis, port_id, f"75,uploading,reverting")
+        job_id = await upload_step_file(output_path, user_id, task_id)
+        if not job_id:
+            await publish(redis, port_id, "Task Failed,Could not upload reverted STEP file")
+            return
+
+        # Save reverted script as current
+        if metadata:
+            metadata["suppressed"] = []
+        await save_task_script(task_id, script, prompt, metadata)
+
+        task_name = "reverted"
+        await publish(redis, port_id, f"100,complete,{task_name}")
+        await publish(redis, port_id, f"Task Completed,{task_id},{task_name},{job_id}")
+        logger.info(f"[{port_id}] Reverted task {task_id} to version {version}")
+
+    except Exception as e:
+        logger.error(f"[{port_id}] Revert error: {e}", exc_info=True)
         await publish(redis, port_id, f"Task Failed,{str(e)[:200]}")
 
 

@@ -16,6 +16,7 @@ const initialState: CadState = {
     },
     cadError: null,
     cadStatusMessage: null,
+    cadOperationType: null as string | null,
 }
 
 export const cadSlice = createSlice({
@@ -44,6 +45,9 @@ export const cadSlice = createSlice({
         setCadGenerationSettings: (state, action: PayloadAction<{settings: Partial<CadGenerationSettings>}>) => {
             state.cadGenerationSettings = { ...state.cadGenerationSettings, ...action.payload.settings };
         },
+        setCadOperationType: (state, action: PayloadAction<{cadOperationType: string | null}>) => {
+            state.cadOperationType = action.payload.cadOperationType
+        },
         resetCadState: () => initialState,
     },
 })
@@ -55,6 +59,7 @@ export const {
     setCadError,
     setCadStatusMessage,
     setCadGenerationSettings,
+    setCadOperationType,
     resetCadState,
 } = cadSlice.actions
 

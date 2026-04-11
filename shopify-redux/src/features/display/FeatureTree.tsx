@@ -20,7 +20,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../app/store';
 import { CadFeature } from '../../app/utility/interfaces';
-import { setCadPending, setCadLoading } from '../../services/cadSlice';
+import { setCadPending, setCadLoading, setCadOperationType } from '../../services/cadSlice';
 import { setStepMetadata } from '../../services/dataSlice';
 import { useFile } from '../../services/fileProvider';
 import { connectProgressStream } from '../../services/progressStream';
@@ -154,6 +154,7 @@ export const FeatureTree: React.FC = () => {
     const portId = generateUuid();
 
     try {
+      dispatch(setCadOperationType({ cadOperationType: 'suppress' }));
       dispatch(setCadPending({ cadPending: true }));
       dispatch(setCadLoading({ cadLoading: true }));
 
@@ -181,7 +182,22 @@ export const FeatureTree: React.FC = () => {
     }
   };
 
-  if (!taskId || !isComplete || features.length === 0) return null;
+  if (!taskId || !isComplete) return null;
+  if (features.length === 0) {
+    return (
+      <Box sx={{ ...panelContainerSx, mt: 2 }}>
+        <Box sx={panelHeaderSx}>
+          <AccountTree sx={{ color: 'primary.main', fontSize: 20 }} />
+          <Typography variant="subtitle1" fontWeight={600}>Design History</Typography>
+        </Box>
+        <Box sx={{ p: 3, textAlign: 'center' }}>
+          <Typography variant="body2" color="text.secondary">
+            No feature data available. Regenerate the model to enable the feature tree.
+          </Typography>
+        </Box>
+      </Box>
+    );
+  }
 
   const sortedFeatures = [...features].sort((a, b) => (a.step ?? 0) - (b.step ?? 0));
 

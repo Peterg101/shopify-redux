@@ -15,7 +15,7 @@ from events import publish_event
 from jwt_auth import verify_jwt_token
 
 from fitd_schemas.fitd_classes import TaskInformation
-from fitd_schemas.fitd_db_schemas import Task, User
+from fitd_schemas.fitd_db_schemas import Task, TaskScriptVersion, User
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +66,7 @@ class ScriptUpdate(BaseModel):
     cadquery_script: str
     generation_prompt: str
     geometry_metadata: Optional[str] = None  # JSON string: {"features": [...], "faces": [...], "edges": [...]}
+    instruction: Optional[str] = None  # The user's refinement instruction (for version history)
 
 
 @router.patch("/tasks/{task_id}/script", status_code=200)
@@ -75,10 +76,29 @@ def save_task_script(
     db: Session = Depends(get_db),
     authorization: str = Depends(verify_jwt_token),
 ):
-    """Save the CadQuery script, prompt, and geometry metadata for a task (inter-service only)."""
+    """Save the CadQuery script, prompt, and geometry metadata for a task (inter-service only).
+    Auto-versions the previous script before overwriting."""
     task = db.query(Task).filter(Task.task_id == task_id).first()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
+
+    # Auto-version: save the CURRENT script before overwriting
+    if task.cadquery_script:
+        max_version = db.query(TaskScriptVersion.version).filter(
+            TaskScriptVersion.task_id == task_id
+        ).order_by(TaskScriptVersion.version.desc()).first()
+        next_version = (max_version[0] + 1) if max_version else 1
+
+        version_record = TaskScriptVersion(
+            task_id=task_id,
+            version=next_version,
+            cadquery_script=task.cadquery_script,
+            generation_prompt=task.generation_prompt,
+            geometry_metadata=task.geometry_metadata,
+            instruction=payload.instruction if hasattr(payload, 'instruction') else None,
+            created_at=task.created_at,
+        )
+        db.add(version_record)
 
     task.cadquery_script = payload.cadquery_script
     task.generation_prompt = payload.generation_prompt
@@ -171,3 +191,52 @@ def get_task_geometry(
         }
     except (json.JSONDecodeError, TypeError):
         return {"features": [], "faces": [], "edges": [], "suppressed": []}
+
+
+@router.get("/tasks/{task_id}/versions")
+def get_task_versions(
+    task_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_any_user),
+):
+    """Get version history for a task's script."""
+    versions = (
+        db.query(TaskScriptVersion)
+        .filter(TaskScriptVersion.task_id == task_id)
+        .order_by(TaskScriptVersion.version.desc())
+        .all()
+    )
+    return {
+        "versions": [
+            {
+                "version": v.version,
+                "instruction": v.instruction,
+                "created_at": v.created_at,
+            }
+            for v in versions
+        ],
+        "total": len(versions),
+    }
+
+
+@router.get("/tasks/{task_id}/versions/{version}")
+def get_task_version(
+    task_id: str,
+    version: int,
+    db: Session = Depends(get_db),
+    authorization: str = Depends(verify_jwt_token),
+):
+    """Get a specific version of a task's script (inter-service, for revert)."""
+    v = (
+        db.query(TaskScriptVersion)
+        .filter(TaskScriptVersion.task_id == task_id, TaskScriptVersion.version == version)
+        .first()
+    )
+    if not v:
+        raise HTTPException(status_code=404, detail=f"Version {version} not found")
+
+    return {
+        "cadquery_script": v.cadquery_script,
+        "generation_prompt": v.generation_prompt,
+        "geometry_metadata": v.geometry_metadata,
+    }

@@ -169,6 +169,15 @@ async function handleCadMessage(
         return;
     }
 
+    // Handle validation rejection (refinement caught unwanted changes)
+    if (data.startsWith("Refinement Rejected,")) {
+        const reason = data.substring("Refinement Rejected,".length);
+        dispatch(setCadError({ cadError: `Refinement rejected: ${reason}` }));
+        dispatch(setCadLoading({ cadLoading: false }));
+        dispatch(setCadPending({ cadPending: false }));
+        return;
+    }
+
     // Handle clarification request (LLM needs more info from user)
     if (data.startsWith("Clarification Needed,")) {
         const clarification = data.substring("Clarification Needed,".length);
@@ -278,6 +287,16 @@ async function handleCadMessage(
                 if (geoResp.ok) {
                     const { features, faces, edges, suppressed } = await geoResp.json();
                     dispatch(setStepMetadata({ features, faces, edges, suppressed }));
+                }
+
+                // Fetch version info for undo/redo
+                const versionsResp = await fetch(
+                    `${process.env.REACT_APP_API_URL}/tasks/${cadTaskId}/versions`,
+                    { credentials: 'include', signal }
+                );
+                if (versionsResp.ok) {
+                    const { total } = await versionsResp.json();
+                    dispatch(setStepMetadata({ currentVersion: total + 1, totalVersions: total + 1 }));
                 }
             } catch (geoErr) {
                 if (!disposed) {

@@ -38,8 +38,7 @@ export const RefiningOverlay = () => {
     const cadState = useSelector((state: RootState) => state.cadState);
 
     // Detect if this is a suppression (fast, no LLM) vs refinement (slower, LLM-powered)
-    const statusMsg = cadState.cadStatusMessage || '';
-    const isSuppression = statusMsg.includes('suppress') || statusMsg.includes('dependencies');
+    const isSuppression = cadState.cadOperationType === 'suppress';
 
     return (
         <Box

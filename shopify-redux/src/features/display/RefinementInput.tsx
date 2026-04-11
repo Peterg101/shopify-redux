@@ -17,7 +17,7 @@ import {
   TextField,
   CircularProgress,
 } from '@mui/material';
-import { AutoFixHigh, Tune } from '@mui/icons-material';
+import { AutoFixHigh, Tune, Undo, Redo } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../app/store';
 import { CadGenerationSettings } from '../../app/utility/interfaces';
@@ -26,7 +26,7 @@ import { borderSubtle, borderHover, bgHighlight, bgHighlightHover, glowSubtle, g
 import { keyframes } from '@mui/material/styles';
 import { useFile } from '../../services/fileProvider';
 import { connectProgressStream } from '../../services/progressStream';
-import { setCadPending, setCadLoading } from '../../services/cadSlice';
+import { setCadPending, setCadLoading, setCadOperationType } from '../../services/cadSlice';
 import { authApi } from '../../services/authApi';
 import { generateUuid } from '../../app/utility/collectionUtils';
 import logger from '../../app/utility/logger';
@@ -69,6 +69,9 @@ export const RefinementInput = forwardRef<RefinementInputHandle>((_props, ref) =
   const textFieldRef = useRef<HTMLDivElement>(null);
 
   const features = dataState.stepMetadata?.features ?? [];
+  const currentVersion = dataState.stepMetadata?.currentVersion ?? 0;
+  const totalVersions = dataState.stepMetadata?.totalVersions ?? 0;
+
   const filteredFeatures = mentionState
     ? features.filter(f => f.tag.toLowerCase().includes(mentionState.query.toLowerCase()))
     : [];
@@ -113,6 +116,35 @@ export const RefinementInput = forwardRef<RefinementInputHandle>((_props, ref) =
   };
 
   const isDisabled = cadPending || cadLoading || submitting;
+  const canUndo = currentVersion > 1 && !isDisabled;
+  const canRedo = currentVersion < totalVersions && !isDisabled;
+
+  const handleRevert = async (version: number) => {
+    if (!taskId || !userInformation?.user?.user_id || isDisabled) return;
+    const portId = generateUuid();
+    try {
+      dispatch(setCadOperationType({ cadOperationType: 'revert' }));
+      dispatch(setCadPending({ cadPending: true }));
+      dispatch(setCadLoading({ cadLoading: true }));
+      const resp = await fetch(`${GENERATION_URL}/revert`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          task_id: taskId,
+          port_id: portId,
+          user_id: userInformation.user.user_id,
+          version,
+        }),
+      });
+      if (!resp.ok) throw new Error(`Revert failed: ${resp.statusText}`);
+      connectProgressStream(portId, 'cad', dispatch, setActualFile);
+    } catch (err: any) {
+      logger.error('Revert error:', err);
+      dispatch(setCadLoading({ cadLoading: false }));
+      dispatch(setCadPending({ cadPending: false }));
+    }
+  };
 
   const handleRefine = async () => {
     const trimmed = instruction.trim();
@@ -122,6 +154,7 @@ export const RefinementInput = forwardRef<RefinementInputHandle>((_props, ref) =
     const portId = generateUuid();
 
     try {
+      dispatch(setCadOperationType({ cadOperationType: 'refine' }));
       dispatch(setCadPending({ cadPending: true }));
       dispatch(setCadLoading({ cadLoading: true }));
 
@@ -224,9 +257,37 @@ export const RefinementInput = forwardRef<RefinementInputHandle>((_props, ref) =
           fontSize: 22,
           animation: `${pulseIcon} 3s ease-in-out infinite`,
         }} />
-        <Typography variant="subtitle1" fontWeight={600} sx={{ color: 'primary.main' }}>
+        <Typography variant="subtitle1" fontWeight={600} sx={{ color: 'primary.main', flex: 1 }}>
           Refine Model
         </Typography>
+        {totalVersions > 0 && (
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            <Tooltip title={canUndo ? 'Undo last change' : 'Nothing to undo'}>
+              <span>
+                <IconButton
+                  size="small"
+                  disabled={!canUndo}
+                  onClick={() => handleRevert(currentVersion - 1)}
+                  sx={{ color: canUndo ? 'primary.main' : 'text.disabled', p: 0.5 }}
+                >
+                  <Undo sx={{ fontSize: 18 }} />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title={canRedo ? 'Redo' : 'Nothing to redo'}>
+              <span>
+                <IconButton
+                  size="small"
+                  disabled={!canRedo}
+                  onClick={() => handleRevert(currentVersion + 1)}
+                  sx={{ color: canRedo ? 'primary.main' : 'text.disabled', p: 0.5 }}
+                >
+                  <Redo sx={{ fontSize: 18 }} />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
+        )}
       </Box>
 
       {/* Body */}
@@ -267,7 +328,7 @@ export const RefinementInput = forwardRef<RefinementInputHandle>((_props, ref) =
                 maxHeight: 200,
                 overflow: 'auto',
                 border: `1px solid ${borderHover}`,
-                backgroundColor: '#131920',
+                backgroundColor: 'background.paper',
                 backdropFilter: 'blur(8px)',
                 mt: 0.5,
                 minWidth: 240,
@@ -344,7 +405,9 @@ export const RefinementInput = forwardRef<RefinementInputHandle>((_props, ref) =
             </IconButton>
           </Tooltip>
           <Typography variant="caption" sx={{ color: 'text.secondary', flex: 1 }}>
-            Each refinement modifies the existing geometry step by step.
+            {features.length > 0
+              ? 'Type @ to reference features \u00B7 Each refinement modifies existing geometry'
+              : 'Each refinement modifies the existing geometry step by step.'}
           </Typography>
         </Box>
 

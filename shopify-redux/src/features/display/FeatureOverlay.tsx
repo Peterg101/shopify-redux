@@ -23,7 +23,7 @@ const featureLabelStyle: React.CSSProperties = {
   padding: '4px 8px',
   fontSize: '11px',
   fontFamily: "'Roboto Mono', monospace",
-  color: '#00E5FF',
+  color: '#00E5FF', // matches theme cyan token — hardcoded because Three.js Html uses React.CSSProperties
   cursor: 'pointer',
   whiteSpace: 'nowrap',
   userSelect: 'none',
@@ -40,7 +40,7 @@ const faceLabelStyle: React.CSSProperties = {
   padding: '1px 4px',
   fontSize: '8px',
   fontFamily: "'Roboto Mono', monospace",
-  color: '#8899AA',
+  color: '#8899AA', // matches theme textSecondary token — hardcoded for Three.js Html CSSProperties
   cursor: 'pointer',
   whiteSpace: 'nowrap',
   userSelect: 'none',
@@ -54,7 +54,7 @@ const dimLabelStyle: React.CSSProperties = {
   padding: '2px 6px',
   fontSize: '10px',
   fontFamily: "'Roboto Mono', monospace",
-  color: '#8899AA',
+  color: '#8899AA', // matches theme textSecondary token — hardcoded for Three.js Html CSSProperties
   whiteSpace: 'nowrap',
   userSelect: 'none',
 };
@@ -166,13 +166,13 @@ const FeatureLabel: React.FC<{
           ...featureLabelStyle,
           ...(isSuppressed ? {
             borderStyle: 'dashed',
-            borderColor: '#667788',
-            color: '#667788',
+            borderColor: '#667788', // muted variant of textSecondary — hardcoded for Three.js Html CSSProperties
+            color: '#667788', // muted variant of textSecondary — hardcoded for Three.js Html CSSProperties
             opacity: 0.5,
             boxShadow: 'none',
             cursor: 'default',
           } : {
-            borderColor: inserted ? '#69F0AE' : hovered ? '#00E5FF' : featureLabelStyle.borderColor,
+            borderColor: inserted ? '#69F0AE' : hovered ? '#00E5FF' /* cyan theme token */ : featureLabelStyle.borderColor,
             boxShadow: inserted
               ? '0 0 12px rgba(105, 240, 174, 0.4)'
               : hovered

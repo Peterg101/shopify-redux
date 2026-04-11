@@ -7,7 +7,7 @@ from redis.asyncio import Redis as AsyncRedis
 
 from fitd_schemas.fitd_classes import CadTaskRequest
 from shared import get_redis, get_authenticated_user
-from cad.pipeline import generate_cad_task, regenerate_cad_task, refine_cad_task, suppress_cad_features
+from cad.pipeline import generate_cad_task, regenerate_cad_task, refine_cad_task, suppress_cad_features, revert_cad_task
 
 logger = logging.getLogger(__name__)
 
@@ -95,3 +95,26 @@ async def suppress(
         request.suppressed_tags, redis,
     )
     return {"message": "Suppression started!", "port_id": request.port_id}
+
+
+class RevertRequest(BaseModel):
+    task_id: str
+    port_id: str
+    user_id: str
+    version: int
+
+
+@router.post("/revert")
+async def revert(
+    request: RevertRequest,
+    background_tasks: BackgroundTasks,
+    redis: AsyncRedis = Depends(get_redis),
+    _: dict = Depends(get_authenticated_user),
+):
+    """Revert a CAD model to a previous script version."""
+    background_tasks.add_task(
+        revert_cad_task,
+        request.task_id, request.port_id, request.user_id,
+        request.version, redis,
+    )
+    return {"message": "Revert started!", "port_id": request.port_id}

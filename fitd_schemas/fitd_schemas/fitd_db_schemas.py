@@ -59,6 +59,18 @@ class Task(Base):
         return self.port.port_id if self.port else None
 
 
+class TaskScriptVersion(Base):
+    __tablename__ = "task_script_versions"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    task_id: Mapped[str] = mapped_column(String, ForeignKey("tasks.task_id"), index=True)
+    version: Mapped[int] = mapped_column(Integer)
+    cadquery_script: Mapped[str] = mapped_column(Text)
+    generation_prompt: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    geometry_metadata: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    instruction: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[str] = mapped_column(String, default=lambda: datetime.now().isoformat())
+
+
 class BasketItem(Base):
     __tablename__ = "basket_items"
     task_id: Mapped[str] = mapped_column(primary_key=True)

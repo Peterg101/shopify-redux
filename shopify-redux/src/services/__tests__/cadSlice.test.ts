@@ -24,6 +24,7 @@ const initialState: CadState = {
   },
   cadError: null,
   cadStatusMessage: null,
+  cadOperationType: null,
 }
 
 describe('cadSlice', () => {
@@ -151,6 +152,7 @@ describe('cadSlice', () => {
         },
         cadError: 'some error',
         cadStatusMessage: 'processing',
+        cadOperationType: 'refine',
       }
       const state = cadReducer(modifiedState, resetCadState())
       expect(state).toEqual(initialState)

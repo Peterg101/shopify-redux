@@ -12,7 +12,7 @@ import { Box, IconButton, Tooltip } from '@mui/material';
 import LabelOffIcon from '@mui/icons-material/LabelOff';
 import LabelIcon from '@mui/icons-material/Label';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
-import { borderSubtle, bgHighlight } from '../../theme';
+import { borderSubtle, bgHighlight, bgPaper, bgDefault } from '../../theme';
 
 const GLTFScene = lazy(() => import('./gltfScene'));
 
@@ -55,7 +55,7 @@ const OBJSTLViewer = ({ hideOrientationControls = false, onTagClick }: OBJSTLVie
         <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
         <ViewerErrorBoundary>
           <Canvas
-            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'radial-gradient(circle at center, #1a2230 0%, #0A0E14 100%)' }}
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: `radial-gradient(circle at center, ${bgPaper} 0%, ${bgDefault} 100%)` }}
             camera={{ fov: 100, near: 0.1, far: 1000, position: [100, 100, 100] }}
           >
             <Suspense fallback={null}>

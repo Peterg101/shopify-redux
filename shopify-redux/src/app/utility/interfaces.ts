@@ -70,6 +70,7 @@ export interface CadState {
   cadGenerationSettings: CadGenerationSettings;
   cadError: string | null;
   cadStatusMessage: string | null;
+  cadOperationType: string | null;
 }
 
 export interface CadFeature {
@@ -109,6 +110,8 @@ export interface StepMetadata {
   faces?: CadFace[];
   suppressed?: string[];
   edges?: CadEdge[];
+  currentVersion?: number;
+  totalVersions?: number;
 }
 
 export interface DataState {

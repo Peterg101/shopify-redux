@@ -19,7 +19,7 @@ OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/v1")
 
 # Anthropic settings
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-ANTHROPIC_MODEL = os.getenv("CAD_MODEL", "claude-sonnet-4-20250514")
+ANTHROPIC_MODEL = os.getenv("CAD_MODEL", "claude-opus-4-20250514")
 
 # ---------------------------------------------------------------------------
 # System prompt — comprehensive CadQuery generation guide
