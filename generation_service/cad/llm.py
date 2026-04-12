@@ -692,55 +692,66 @@ async def plan_cadquery_build(prompt: str, process: str = "fdm") -> str:
 
 
 async def generate_cadquery_code(
-    prompt: str,
+    prompt: str | list[dict],
     target_units: str = "mm",
     process: str = "fdm",
     approximate_size: dict | None = None,
     material_hint: str = "plastic",
     features: list[str] | None = None,
 ) -> str:
-    """Generate CadQuery code from a text prompt with structured context.
+    """Generate CadQuery code from a prompt with structured context.
+
+    Args:
+        prompt: Either a plain string (one-shot flow) or a list of Claude
+                content blocks with text + images (conversation flow).
 
     Uses a two-step approach: first generates a build plan (chain-of-thought),
     then generates code with the plan as context.
     """
+    # For planning, extract text-only version of the prompt
+    prompt_text = prompt if isinstance(prompt, str) else "\n".join(
+        b["text"] for b in prompt if b.get("type") == "text"
+    )
+
     # Step 1: Generate build plan (chain-of-thought)
     logger.info("Generating build plan (chain-of-thought)...")
-    build_plan = await plan_cadquery_build(prompt, process)
+    build_plan = await plan_cadquery_build(prompt_text, process)
     logger.info(f"Build plan: {build_plan[:200]}")
 
-    context_parts = [f"Create a CadQuery model: {prompt}"]
+    # Build additional text context (process, size, material, features)
+    extra_context = []
+    extra_context.append(f"## BUILD PLAN (follow this step-by-step):\n{build_plan}")
+    extra_context.append(PROCESS_CONSTRAINTS.get(process.lower(), PROCESS_CONSTRAINTS["fdm"]))
 
-    # Include the build plan as context
-    context_parts.append(f"## BUILD PLAN (follow this step-by-step):\n{build_plan}")
-
-    # Process constraints
-    context_parts.append(PROCESS_CONSTRAINTS.get(process.lower(), PROCESS_CONSTRAINTS["fdm"]))
-
-    # Approximate dimensions
     if approximate_size:
         w = approximate_size.get("width")
         d = approximate_size.get("depth")
         h = approximate_size.get("height")
         if any(v for v in [w, d, h]):
             dims = f"{w or '?'} x {d or '?'} x {h or '?'}"
-            context_parts.append(f"TARGET SIZE: approximately {dims} mm. Use these as the starting dimensions for the main body.")
+            extra_context.append(f"TARGET SIZE: approximately {dims} mm. Use these as the starting dimensions for the main body.")
 
-    # Material hint
     if material_hint and material_hint in MATERIAL_HINTS:
-        context_parts.append(MATERIAL_HINTS[material_hint])
+        extra_context.append(MATERIAL_HINTS[material_hint])
 
-    # Feature requests
     if features:
         feature_notes = [FEATURE_DESCRIPTIONS[f] for f in features if f in FEATURE_DESCRIPTIONS]
         if feature_notes:
-            context_parts.append("REQUIRED FEATURES:\n" + "\n".join(f"- {n}" for n in feature_notes))
+            extra_context.append("REQUIRED FEATURES:\n" + "\n".join(f"- {n}" for n in feature_notes))
 
-    # Units
     if target_units != "mm":
-        context_parts.append(f"Use {target_units} as the unit system.")
+        extra_context.append(f"Use {target_units} as the unit system.")
 
-    user_content = "\n\n".join(context_parts)
+    extra_text = "\n\n".join(extra_context)
+
+    # Build the user message content — multi-modal if images present
+    if isinstance(prompt, list):
+        # Conversation flow: prompt is content blocks (text + images)
+        # Append the extra context as a final text block
+        user_content = prompt + [{"type": "text", "text": extra_text}]
+    else:
+        # One-shot flow: plain string
+        user_content = f"Create a CadQuery model: {prompt}\n\n{extra_text}"
 
     if CAD_PROVIDER == "anthropic":
         logger.info(f"Using Anthropic ({ANTHROPIC_MODEL}) for code generation")

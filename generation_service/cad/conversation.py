@@ -186,6 +186,30 @@ def _build_design_intent_block(design_intent: dict | None) -> str:
     return "\n".join(parts)
 
 
+def _clean_image_b64(img_b64: str) -> tuple[str, str]:
+    """Detect media type and strip data URI prefix from a base64 image string.
+
+    Returns (media_type, clean_base64).
+    """
+    media_type = "image/png"
+    if img_b64.startswith("/9j/"):
+        media_type = "image/jpeg"
+    elif img_b64.startswith("data:"):
+        header, img_b64 = img_b64.split(",", 1)
+        if "jpeg" in header or "jpg" in header:
+            media_type = "image/jpeg"
+    return media_type, img_b64
+
+
+def _make_image_block(img_b64: str) -> dict:
+    """Build a Claude Vision image content block from a base64 string."""
+    media_type, clean_b64 = _clean_image_b64(img_b64)
+    return {
+        "type": "image",
+        "source": {"type": "base64", "media_type": media_type, "data": clean_b64},
+    }
+
+
 def _build_claude_content(message: dict) -> list[dict] | str:
     """Build a Claude content block from a stored message (text + optional images)."""
     images = message.get("images", [])
@@ -194,24 +218,7 @@ def _build_claude_content(message: dict) -> list[dict] | str:
 
     blocks: list[dict] = [{"type": "text", "text": message["content"]}]
     for img_b64 in images:
-        # Detect media type from base64 header or default to PNG
-        media_type = "image/png"
-        if img_b64.startswith("/9j/"):
-            media_type = "image/jpeg"
-        elif img_b64.startswith("data:"):
-            # Strip data URI prefix if present
-            header, img_b64 = img_b64.split(",", 1)
-            if "jpeg" in header or "jpg" in header:
-                media_type = "image/jpeg"
-
-        blocks.append({
-            "type": "image",
-            "source": {
-                "type": "base64",
-                "media_type": media_type,
-                "data": img_b64,
-            },
-        })
+        blocks.append(_make_image_block(img_b64))
     return blocks
 
 
@@ -487,32 +494,44 @@ async def build_generation_context(
     spec: dict,
     design_intent: dict | None,
     redis: AsyncRedis,
-) -> str:
+) -> list[dict]:
     """Build rich context for code generation from the conversation history + spec.
 
-    Instead of compressing the conversation into flat text, this passes the
-    full chat history so the code generation LLM can see dimensions, positions,
-    spatial relationships, and clarifications discussed during the conversation.
+    Returns a list of Claude content blocks (text + images) so the code
+    generation LLM can see sketches, photos, and the full design discussion.
     """
     history = await _load_history(redis, task_id)
 
-    parts = []
+    blocks: list[dict] = []
 
     # Structured spec as JSON
-    parts.append("## CONFIRMED DESIGN SPECIFICATION\n")
-    parts.append(json.dumps(spec, indent=2))
+    blocks.append({
+        "type": "text",
+        "text": "## CONFIRMED DESIGN SPECIFICATION\n\n" + json.dumps(spec, indent=2),
+    })
 
-    # Design conversation (text only, no images)
+    # Design conversation with images
     if history:
-        parts.append("\n\n## DESIGN CONVERSATION\n")
-        parts.append("The following conversation led to the specification above.")
-        parts.append("Use it to understand spatial relationships, context, and design intent.\n")
+        blocks.append({
+            "type": "text",
+            "text": (
+                "\n## DESIGN CONVERSATION\n"
+                "The following conversation led to the specification above. "
+                "Use it to understand spatial relationships, context, and design intent. "
+                "Any attached sketches or photos show the intended layout.\n"
+            ),
+        })
         for msg in history:
             role = "User" if msg["role"] == "user" else "Design Engineer"
-            parts.append(f"**{role}:** {msg['content']}")
+            blocks.append({"type": "text", "text": f"**{role}:** {msg['content']}"})
+            # Include images from this message (sketches, photos)
+            for img_b64 in msg.get("images", []):
+                blocks.append(_make_image_block(img_b64))
 
-    # Flat spec summary as fallback context
-    parts.append("\n\n## GENERATION INSTRUCTIONS\n")
-    parts.append(spec_to_prompt(spec, design_intent))
+    # Flat spec summary as generation instructions
+    blocks.append({
+        "type": "text",
+        "text": "\n## GENERATION INSTRUCTIONS\n\n" + spec_to_prompt(spec, design_intent),
+    })
 
-    return "\n\n".join(parts)
+    return blocks
