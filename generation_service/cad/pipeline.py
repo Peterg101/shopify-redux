@@ -11,6 +11,8 @@ from fitd_schemas.fitd_classes import CadTaskRequest
 from jwt_auth import generate_token
 
 from cad.llm import generate_cadquery_code, fix_cadquery_code, apply_parameter_changes, refine_cadquery_code
+from cad.llm import generate_operations, fix_operations
+from cad.converter import convert_json_to_cadquery
 from cad.executor import execute_cadquery
 from cad.suppressor import suppress_features, resolve_dependencies
 from cad.validator import validate_refinement
@@ -47,30 +49,31 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
     generation_prompt = rich_context if rich_context else prompt
 
     try:
-        # Step 1: Generate initial code
-        await publish(redis, port_id, f"10,generating,{task_name}")
-        logger.info(f"[{port_id}] Generating CadQuery code for: {prompt[:80]}")
+        # Step 1: Generate JSON operations (LLM outputs structured JSON, not code)
+        await publish(redis, port_id, f"10,planning design,{task_name}")
+        logger.info(f"[{port_id}] Generating JSON operations for: {prompt[:80]}")
 
-        code = await generate_cadquery_code(
-            generation_prompt, target_units, process, approximate_size, material_hint, features
-        )
-        await publish(redis, port_id, f"25,generating,{task_name}")
+        ops = await generate_operations(generation_prompt, process, material_hint)
 
-        # Step 2: Execute with retry loop (accumulates fix history for context)
+        if ops.get("error") or ops.get("unsupported"):
+            reason = ops.get("error", ops.get("reason", "Unknown"))
+            await publish(redis, port_id, f"Task Failed,{reason}")
+            return
+
+        await publish(redis, port_id, f"20,converting to geometry,{task_name}")
+        logger.info(f"[{port_id}] Got {len(ops.get('steps', []))} operations")
+
+        # Step 2: Convert JSON → CadQuery code (deterministic, no LLM)
+        code = convert_json_to_cadquery(ops.get("steps", []), ops.get("parameters", {}))
+        await publish(redis, port_id, f"30,executing,{task_name}")
+
+        # Step 3: Execute with retry loop
         success = False
         last_error = ""
-        attempt = 0
-        fix_history: list[tuple[str, str]] = []
-        # Capture the build plan from the code generation step for fix context
-        # (it's embedded in generate_cadquery_code's internal flow, but we can
-        # extract it from the generated code's comments or pass the prompt)
-        build_plan = ""  # TODO: surface from generate_cadquery_code if needed
 
         for attempt in range(max_iterations):
-            iter_progress = 25 + int((attempt / max_iterations) * 40)
-            status_msg = (
-                f"Executing CadQuery (attempt {attempt + 1}/{max_iterations})"
-            )
+            iter_progress = 30 + int((attempt / max_iterations) * 35)
+            status_msg = f"Executing CadQuery (attempt {attempt + 1}/{max_iterations})"
             await publish(redis, port_id, f"{iter_progress},{status_msg},{task_name}")
             logger.info(f"[{port_id}] {status_msg}")
 
@@ -91,25 +94,26 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
                 break
 
             last_error = error
-            logger.warning(
-                f"[{port_id}] Attempt {attempt + 1} failed: {error[:200]}"
-            )
-
-            # Track this attempt for fix history
-            fix_history.append((code, error))
+            logger.warning(f"[{port_id}] Attempt {attempt + 1} failed: {error[:200]}")
 
             # Don't retry on last iteration
             if attempt < max_iterations - 1:
-                fix_msg = f"Fixing code (attempt {attempt + 2}/{max_iterations})"
-                await publish(
-                    redis, port_id, f"{iter_progress + 10},{fix_msg},{task_name}"
-                )
-                code = await fix_cadquery_code(
-                    generation_prompt, code, error, target_units,
+                fix_msg = f"Fixing operations (attempt {attempt + 2}/{max_iterations})"
+                await publish(redis, port_id, f"{iter_progress + 5},{fix_msg},{task_name}")
+
+                # Ask LLM to fix the JSON operations (not the code)
+                ops = await fix_operations(
+                    generation_prompt, ops, error,
                     attempt=attempt + 1, max_attempts=max_iterations,
-                    process=process, material_hint=material_hint,
-                    build_plan=build_plan, fix_history=fix_history,
+                    process=process,
                 )
+
+                if ops.get("error"):
+                    logger.warning(f"[{port_id}] Fix returned error: {ops['error']}")
+                    continue
+
+                # Re-convert fixed JSON to code
+                code = convert_json_to_cadquery(ops.get("steps", []), ops.get("parameters", {}))
 
         if not success:
             error_summary = last_error[:200] if last_error else "Unknown error"

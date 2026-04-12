@@ -634,6 +634,278 @@ def _anthropic_generate(user_messages: list[dict], system_prompt: str | None = N
 
 
 # ---------------------------------------------------------------------------
+# JSON-based structured CAD generation (new approach)
+# ---------------------------------------------------------------------------
+
+JSON_SYSTEM_PROMPT = """\
+You are a CAD operation planner. Convert part descriptions into a structured JSON
+operation sequence. You do NOT write code. A converter turns your JSON into CadQuery.
+
+Think of yourself as placing 2D shapes onto flat surfaces, then pushing them in or out.
+
+## OUTPUT FORMAT
+
+Return a JSON object with "parameters" (dict of name→value) and "steps" (array of operations).
+
+```json
+{
+  "parameters": {"length": 100.0, "width": 60.0, "thickness": 5.0},
+  "steps": [
+    {"op": "create_box", "tag": "plate", "length": "$length", "width": "$width", "height": "$thickness", "depends_on": []},
+    {"op": "holes", "tag": "holes", "face": ">Z", "diameter": 4.5, "pattern": "explicit", "positions": [[42, 22], [-42, 22], [-42, -22], [42, -22]], "depends_on": ["plate"]}
+  ]
+}
+```
+
+## PARAMETERS
+All dimensions as named parameters. No magic numbers. Values in mm.
+Parameters are referenced as "$name" in steps.
+
+## OPERATIONS
+
+| op | what it does | key fields |
+|----|-------------|------------|
+| create_box | Base rectangular solid | length, width, height |
+| create_cylinder | Base cylinder | radius, height |
+| extrude_profile | Push a 2D shape out from a face | face, profile, depth |
+| cut_blind | Cut a shape into a face to a depth | face, profile, depth |
+| cut_through | Cut a shape all the way through | face, profile |
+| holes | Drill holes (explicit positions) | face, diameter, pattern, positions/points |
+| shell | Hollow out, leaving walls | thickness, open_faces |
+| fillet | Round edges | radius, edges |
+| chamfer | Bevel edges | size, edges |
+| union | Merge a sub-body into the result | body: {type, radius/length/width/height, translate} |
+
+## FACES (which surface to draw on)
+| selector | meaning |
+|----------|---------|
+| >Z | Top |
+| <Z | Bottom |
+| >Y | Front |
+| <Y | Rear |
+| >X | Right |
+| <X | Left |
+
+Face origin is at the CENTER. Positions are offsets from center.
+
+## PROFILES (for extrude/cut)
+```json
+{"type": "rect", "width": 10, "height": 5, "position": [0, 0]}
+{"type": "circle", "radius": 3, "position": [5, 0]}
+{"type": "slot", "length": 20, "width": 3, "position": [0, 0]}
+```
+
+## EDGES (for fillet/chamfer)
+"|Z" = vertical edges, "|X" = X-parallel edges, "%Circle" = circular edges
+
+## HOLES
+Pattern types: "explicit" (positions list), "bolt_circle" (bolt_radius, count), "grid" (rows, cols, spacing)
+Omit "depth" for through-holes. Include "depth" for blind holes.
+
+## UNIONS (adding sub-bodies)
+For bosses, brackets, flanges — build a sub-body and merge:
+```json
+{"op": "union", "tag": "boss", "body": {"type": "cylinder", "radius": 3, "height": 10, "translate": [20, 15, 2]}, "depends_on": ["shell"]}
+```
+
+## EVERY STEP MUST HAVE
+- "op": operation type
+- "tag": unique snake_case name
+- "depends_on": list of parent tags
+
+## RULES
+1. Shell BEFORE cuts and holes (operation ordering is automatic, but list shell early)
+2. Fillets LAST
+3. Do NOT write Python code — JSON only
+4. If you can't express something as 2D operations, return {"unsupported": true, "reason": "..."}
+5. If images are provided, use them for layout/topology. Get dimensions from text, not pixels.
+
+## EXAMPLE: L-bracket with holes
+
+User: "An L-bracket, horizontal leg 80x40x5mm, vertical leg extending up 60mm from the back edge. Two 6mm holes on each leg, 12mm from the ends."
+
+```json
+{
+  "parameters": {"leg_length": 80.0, "leg_width": 40.0, "thickness": 5.0, "vert_height": 60.0, "hole_dia": 6.0, "hole_inset": 12.0},
+  "steps": [
+    {"op": "create_box", "tag": "horiz_leg", "length": "$leg_length", "width": "$leg_width", "height": "$thickness", "depends_on": []},
+    {"op": "union", "tag": "vert_leg", "body": {"type": "box", "length": "$leg_length", "width": "$thickness", "height": "$vert_height", "translate": [0, -17.5, 30]}, "depends_on": ["horiz_leg"]},
+    {"op": "holes", "tag": "horiz_holes", "face": ">Z", "diameter": "$hole_dia", "pattern": "explicit", "positions": [[28, 0], [-28, 0]], "depends_on": ["horiz_leg"]},
+    {"op": "holes", "tag": "vert_holes", "face": "<Y", "diameter": "$hole_dia", "pattern": "explicit", "positions": [[0, 18], [0, -18]], "depends_on": ["vert_leg"]},
+    {"op": "fillet", "tag": "junction_fillet", "radius": 3.0, "edges": "|X", "depends_on": ["vert_leg"]}
+  ]
+}
+```
+
+## EXAMPLE: Enclosure with bosses and cutouts
+
+User: "A 120x80x40mm enclosure, 2mm walls, open top. Four M3 mounting bosses inside, 8mm from corners, 12mm tall. USB-C cutout (9x3.5mm) centered on rear wall, 6mm from bottom. Three vent slots on left wall."
+
+```json
+{
+  "parameters": {"length": 120.0, "width": 80.0, "height": 40.0, "wall": 2.0, "boss_dia": 6.0, "boss_h": 12.0, "screw_dia": 3.2, "usb_w": 9.0, "usb_h": 3.5, "usb_z": 6.0, "vent_w": 25.0, "vent_h": 1.5},
+  "steps": [
+    {"op": "create_box", "tag": "body", "length": "$length", "width": "$width", "height": "$height", "depends_on": []},
+    {"op": "shell", "tag": "shell", "thickness": "$wall", "open_faces": [">Z"], "depends_on": ["body"]},
+    {"op": "union", "tag": "boss_fl", "body": {"type": "cylinder", "radius": 3.0, "height": "$boss_h", "translate": [-52, 32, 2]}, "depends_on": ["shell"]},
+    {"op": "union", "tag": "boss_fr", "body": {"type": "cylinder", "radius": 3.0, "height": "$boss_h", "translate": [52, 32, 2]}, "depends_on": ["shell"]},
+    {"op": "union", "tag": "boss_rl", "body": {"type": "cylinder", "radius": 3.0, "height": "$boss_h", "translate": [-52, -32, 2]}, "depends_on": ["shell"]},
+    {"op": "union", "tag": "boss_rr", "body": {"type": "cylinder", "radius": 3.0, "height": "$boss_h", "translate": [52, -32, 2]}, "depends_on": ["shell"]},
+    {"op": "holes", "tag": "screw_holes", "face": ">Z", "diameter": "$screw_dia", "pattern": "explicit", "positions": [[-52,32],[52,32],[-52,-32],[52,-32]], "depth": "$boss_h", "depends_on": ["boss_fl","boss_fr","boss_rl","boss_rr"]},
+    {"op": "cut_blind", "tag": "usb", "face": "<Y", "profile": {"type": "rect", "width": "$usb_w", "height": "$usb_h", "position": [0, -14]}, "depth": "$wall", "depends_on": ["shell"]},
+    {"op": "cut_blind", "tag": "vent_1", "face": "<X", "profile": {"type": "slot", "length": "$vent_w", "width": "$vent_h", "position": [0, -5]}, "depth": "$wall", "depends_on": ["shell"]},
+    {"op": "cut_blind", "tag": "vent_2", "face": "<X", "profile": {"type": "slot", "length": "$vent_w", "width": "$vent_h", "position": [0, 0]}, "depth": "$wall", "depends_on": ["shell"]},
+    {"op": "cut_blind", "tag": "vent_3", "face": "<X", "profile": {"type": "slot", "length": "$vent_w", "width": "$vent_h", "position": [0, 5]}, "depth": "$wall", "depends_on": ["shell"]},
+    {"op": "fillet", "tag": "fillets", "radius": 1.5, "edges": "|Z", "depends_on": ["body"]}
+  ]
+}
+```
+
+Return ONLY the JSON object. No explanation."""
+
+
+async def generate_operations(
+    prompt: str | list[dict],
+    process: str = "fdm",
+    material_hint: str = "plastic",
+) -> dict:
+    """Generate structured JSON operations from a prompt.
+
+    Args:
+        prompt: Text description or content blocks (with images from conversation flow)
+        process: Manufacturing process for constraint context
+        material_hint: Material for constraint context
+
+    Returns:
+        Parsed dict with "parameters" and "steps" keys.
+    """
+    import json as _json
+
+    # Build the user message
+    process_info = PROCESS_CONSTRAINTS.get(process.lower(), PROCESS_CONSTRAINTS["fdm"])
+
+    if isinstance(prompt, list):
+        # Content blocks with images — append process info as text block
+        user_content = list(prompt) + [{"type": "text", "text": f"\n\nManufacturing: {process_info}\nMaterial: {material_hint}"}]
+    else:
+        user_content = f"{prompt}\n\nManufacturing: {process_info}\nMaterial: {material_hint}"
+
+    if CAD_PROVIDER == "anthropic":
+        logger.info(f"Using Anthropic ({ANTHROPIC_MODEL}) for JSON operation generation")
+        response_text = await asyncio.to_thread(
+            _anthropic_generate,
+            [{"role": "user", "content": user_content}],
+            JSON_SYSTEM_PROMPT,
+        )
+    else:
+        logger.info(f"Using Ollama ({OLLAMA_MODEL}) for JSON operation generation")
+        response_text = await asyncio.to_thread(
+            _ollama_generate,
+            [
+                {"role": "system", "content": JSON_SYSTEM_PROMPT},
+                {"role": "user", "content": user_content if isinstance(user_content, str) else "See content blocks"},
+            ],
+        )
+
+    # Extract JSON from response
+    return _extract_json(response_text)
+
+
+def _extract_json(text: str) -> dict:
+    """Extract a JSON object from LLM response text."""
+    import json as _json
+
+    # Try to find JSON in code fences
+    json_match = re.search(r'```(?:json)?\s*\n(.*?)```', text, re.DOTALL)
+    if json_match:
+        try:
+            return _json.loads(json_match.group(1))
+        except _json.JSONDecodeError:
+            pass
+
+    # Try to parse the whole response as JSON
+    try:
+        return _json.loads(text.strip())
+    except _json.JSONDecodeError:
+        pass
+
+    # Try to find a JSON object in the text
+    brace_start = text.find('{')
+    if brace_start != -1:
+        # Find matching closing brace
+        depth = 0
+        for i in range(brace_start, len(text)):
+            if text[i] == '{':
+                depth += 1
+            elif text[i] == '}':
+                depth -= 1
+                if depth == 0:
+                    try:
+                        return _json.loads(text[brace_start:i+1])
+                    except _json.JSONDecodeError:
+                        break
+
+    logger.error(f"Could not extract JSON from response: {text[:200]}")
+    return {"parameters": {}, "steps": [], "error": "Failed to parse JSON from LLM response"}
+
+
+async def fix_operations(
+    original_prompt: str | list[dict],
+    operations: dict,
+    error: str,
+    attempt: int = 1,
+    max_attempts: int = 3,
+    process: str = "fdm",
+) -> dict:
+    """Fix a broken JSON operation sequence based on validation or execution errors."""
+    import json as _json
+
+    ops_json = _json.dumps(operations, indent=2)
+
+    escalation = ""
+    if attempt >= 2:
+        escalation = (
+            f"\nThis is fix attempt {attempt} of {max_attempts}. Previous fixes failed.\n"
+            "Be more aggressive: simplify geometry, remove fillets, reduce dimensions.\n"
+        )
+
+    fix_content = (
+        f"The JSON operations below produced an error:\n\n"
+        f"```json\n{ops_json}\n```\n\n"
+        f"Error: {error}\n\n"
+        f"{escalation}"
+        f"Fix the JSON and return the corrected version. Return ONLY the JSON object."
+    )
+
+    # Build messages with original context
+    if isinstance(original_prompt, list):
+        messages = [
+            {"role": "user", "content": original_prompt},
+            {"role": "assistant", "content": f"```json\n{ops_json}\n```"},
+            {"role": "user", "content": fix_content},
+        ]
+    else:
+        messages = [
+            {"role": "user", "content": original_prompt},
+            {"role": "assistant", "content": f"```json\n{ops_json}\n```"},
+            {"role": "user", "content": fix_content},
+        ]
+
+    if CAD_PROVIDER == "anthropic":
+        logger.info(f"Using Anthropic ({ANTHROPIC_MODEL}) for JSON fix (attempt {attempt})")
+        response_text = await asyncio.to_thread(
+            _anthropic_generate, messages, JSON_SYSTEM_PROMPT,
+        )
+    else:
+        response_text = await asyncio.to_thread(
+            _ollama_generate,
+            [{"role": "system", "content": JSON_SYSTEM_PROMPT}] + messages,
+        )
+
+    return _extract_json(response_text)
+
+
+# ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
