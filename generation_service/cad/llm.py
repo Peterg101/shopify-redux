@@ -675,6 +675,8 @@ Parameters are referenced as "$name" in steps.
 | fillet | Round edges | radius, edges |
 | chamfer | Bevel edges | size, edges |
 | union | Merge a sub-body into the result | body: {type, radius/length/width/height, translate} |
+| revolve | Spin a 2D profile around an axis | face, profile, axis, angle |
+| mirror | Mirror the body across a plane | plane ("XY", "XZ", "YZ") |
 
 ## FACES (which surface to draw on)
 | selector | meaning |
@@ -838,7 +840,7 @@ async def generate_operations(
             _ollama_generate,
             [
                 {"role": "system", "content": JSON_SYSTEM_PROMPT},
-                {"role": "user", "content": user_content if isinstance(user_content, str) else "See content blocks"},
+                {"role": "user", "content": user_content if isinstance(user_content, str) else "\n\n".join(b["text"] for b in user_content if b.get("type") == "text")},
             ],
         )
 
@@ -864,21 +866,16 @@ def _extract_json(text: str) -> dict:
     except _json.JSONDecodeError:
         pass
 
-    # Try to find a JSON object in the text
+    # Try to find a JSON object using json.JSONDecoder (handles braces in strings correctly)
+    decoder = _json.JSONDecoder()
     brace_start = text.find('{')
     if brace_start != -1:
-        # Find matching closing brace
-        depth = 0
-        for i in range(brace_start, len(text)):
-            if text[i] == '{':
-                depth += 1
-            elif text[i] == '}':
-                depth -= 1
-                if depth == 0:
-                    try:
-                        return _json.loads(text[brace_start:i+1])
-                    except _json.JSONDecodeError:
-                        break
+        try:
+            obj, _ = decoder.raw_decode(text, brace_start)
+            if isinstance(obj, dict):
+                return obj
+        except _json.JSONDecodeError:
+            pass
 
     logger.error(f"Could not extract JSON from response: {text[:200]}")
     return {"parameters": {}, "steps": [], "error": "Failed to parse JSON from LLM response"}

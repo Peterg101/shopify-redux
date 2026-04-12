@@ -111,8 +111,7 @@ class _ConstraintFaceTracker:
             return f["w"], f["h"]
         return None
 
-# Global instance populated during conversion
-_constraint_tracker = _ConstraintFaceTracker()
+    # No global instance — instantiated per-call in convert_json_to_cadquery
 
 
 def _resolve_axis(spec, face_dim: float, feature_dim: float = 0) -> float:
@@ -243,12 +242,30 @@ def resolve_hole_placement(
 
 
 def _resolve_param(value: Any, parameters: dict) -> Any:
-    """Resolve a $variable_name reference or return the literal value."""
-    if isinstance(value, str) and value.startswith("$"):
-        param_name = value[1:]
-        if param_name in parameters:
-            return parameters[param_name]
-        raise ValueError(f"Undefined parameter reference: {value}")
+    """Resolve a $variable_name reference or expression to a numeric value.
+
+    Handles:
+      - Simple references: "$length" → parameters["length"]
+      - Expressions: "$length / 2 - $wall" → evaluate with substitution
+      - Literals: 42.0 → 42.0
+    """
+    if isinstance(value, (int, float)):
+        return value
+    if isinstance(value, str) and "$" in value:
+        expr = value
+        # Replace $references with values (longest names first to avoid partial matches)
+        for name in sorted(parameters.keys(), key=len, reverse=True):
+            expr = expr.replace(f"${name}", str(parameters[name]))
+        try:
+            return eval(expr)  # safe: only arithmetic on known numeric values
+        except Exception:
+            raise ValueError(f"Cannot evaluate parameter expression: {value} → {expr}")
+    if isinstance(value, str):
+        # Try to parse as a number
+        try:
+            return float(value)
+        except ValueError:
+            pass
     return value
 
 
@@ -615,20 +632,19 @@ def _emit_fillet(step: dict, step_num: int, params: dict) -> tuple[list[str], st
         f"# Step {step_num}: Fillet — {tag}",
         f"_step += 1",
         f"# Clamp fillet radius for safety",
-        f"_fillet_r = min({radius}, {radius})  # TODO: edge-length clamping at runtime",
         f"try:",
-        f'    result = result.edges("{edge_selector}").fillet(_fillet_r).tag("{tag}")',
+        f'    result = result.edges("{edge_selector}").fillet({radius}).tag("{tag}")',
         f"    _features.append({{",
         f'        "tag": "{tag}", "type": "fillet", "step": _step,',
         f'        "position": [0, 0, 0],',
-        f'        "dimensions": {{"radius": _fillet_r}},',
+        f'        "dimensions": {{"radius": {radius}}},',
         f'        "depends_on": {_depends_on(step)},',
         f"    }})",
         f"except Exception as _e:",
         f"    _features.append({{",
         f'        "tag": "{tag}", "type": "fillet_failed", "step": _step,',
         f'        "position": [0, 0, 0],',
-        f'        "dimensions": {{"radius": _fillet_r}},',
+        f'        "dimensions": {{"radius": {radius}}},',
         f'        "depends_on": {_depends_on(step)},',
         f'        "error": str(_e),',
         f"    }})",
@@ -706,12 +722,7 @@ def _emit_union(step: dict, step_num: int, params: dict) -> tuple[list[str], str
     else:
         raise ValueError(f"Unsupported union body type: {body_type}")
 
-    # Auto-offset to avoid coplanar face failures
-    lines.append(f"# Auto-offset {COPLANAR_OFFSET}mm to avoid coplanar boolean failure")
-    lines.append(
-        f'_body_{step_num} = _body_{step_num}.translate((0, 0, {COPLANAR_OFFSET}))'
-    )
-    lines.append(f'result = result.union(_body_{step_num}).tag("{tag}")')
+    lines.append(f'result = result.union(_body_{step_num}).clean().tag("{tag}")')
 
     feature = (
         f'_features.append({{"tag": "{tag}", "type": "union", "step": _step, '
@@ -1047,7 +1058,7 @@ def _needs_clean_before(steps: list[dict], index: int) -> bool:
 # ---------------------------------------------------------------------------
 
 
-def _resolve_step_constraints(step: dict, parameters: dict) -> dict:
+def _resolve_step_constraints(step: dict, parameters: dict, tracker: _ConstraintFaceTracker) -> dict:
     """Pre-process a step to resolve constraint-based positions to raw [u, v] coordinates.
 
     This allows the LLM to use intent-based positioning like:
@@ -1058,7 +1069,7 @@ def _resolve_step_constraints(step: dict, parameters: dict) -> dict:
     step = copy.deepcopy(step)  # don't mutate the original
 
     face = step.get("face", ">Z")
-    face_dims = _constraint_tracker.get_face_dims(face)
+    face_dims = tracker.get_face_dims(face)
     if not face_dims:
         return step  # unknown face, can't resolve constraints
 
@@ -1199,6 +1210,7 @@ def convert_json_to_cadquery(steps: list[dict], parameters: dict) -> str:
     script_lines.append("# === BUILD GEOMETRY ===")
 
     face_tracker = FaceTracker()
+    constraint_tracker = _ConstraintFaceTracker()
 
     for i, step in enumerate(ordered_steps):
         op = step["op"]
@@ -1211,7 +1223,7 @@ def convert_json_to_cadquery(steps: list[dict], parameters: dict) -> str:
             script_lines.append("result = result.clean()")
 
         # Resolve constraint-based positions to raw coordinates before emitting
-        step = _resolve_step_constraints(step, parameters)
+        step = _resolve_step_constraints(step, parameters, constraint_tracker)
 
         emitter = EMITTERS[op]
         code_lines, feature_code = emitter(step, step_num, parameters)
@@ -1227,15 +1239,15 @@ def convert_json_to_cadquery(steps: list[dict], parameters: dict) -> str:
             w = _resolve_param(step["width"], parameters)
             h = _resolve_param(step["height"], parameters)
             face_tracker.after_base_box(l, w, h)
-            _constraint_tracker.after_base_box(l, w, h)
+            constraint_tracker.after_base_box(l, w, h)
         elif op == "create_cylinder":
             h = _resolve_param(step["height"], parameters)
             r = _resolve_param(step["radius"], parameters)
             face_tracker.after_base_cylinder(h, r)
-            _constraint_tracker.after_base_cylinder(h, r)
+            constraint_tracker.after_base_cylinder(h, r)
         elif op == "shell":
             t = _resolve_param(step.get("thickness", 2), parameters)
-            _constraint_tracker.after_shell(t)
+            constraint_tracker.after_shell(t)
 
     # Final newline
     script_lines.append("")

@@ -64,7 +64,12 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
         logger.info(f"[{port_id}] Got {len(ops.get('steps', []))} operations")
 
         # Step 2: Convert JSON → CadQuery code (deterministic, no LLM)
-        code = convert_json_to_cadquery(ops.get("steps", []), ops.get("parameters", {}))
+        try:
+            code = convert_json_to_cadquery(ops.get("steps", []), ops.get("parameters", {}))
+        except ValueError as e:
+            logger.warning(f"[{port_id}] Converter error: {e}, asking LLM to fix")
+            ops = await fix_operations(generation_prompt, ops, str(e), process=process)
+            code = convert_json_to_cadquery(ops.get("steps", []), ops.get("parameters", {}))
         await publish(redis, port_id, f"30,executing,{task_name}")
 
         # Step 3: Execute with retry loop
@@ -541,6 +546,8 @@ async def save_task_script(
                 "features": geometry_metadata.get("features", []),
                 "faces": geometry_metadata.get("faces", []),
                 "edges": geometry_metadata.get("edges", []),
+                "bbox": geometry_metadata.get("bbox", {}),
+                "volume_mm3": geometry_metadata.get("volume_mm3", 0),
             }
             if "suppressed" in geometry_metadata:
                 geo_json["suppressed"] = geometry_metadata["suppressed"]
