@@ -67,6 +67,177 @@ PHASE_ORDER = {
 }
 
 # ---------------------------------------------------------------------------
+# Face tracking & constraint-based positioning
+# ---------------------------------------------------------------------------
+
+
+class _ConstraintFaceTracker:
+    """Tracks face dimensions for constraint resolution.
+
+    After a create_box, we know all 6 face dimensions. After a shell,
+    we know the wall thickness. This lets us resolve constraint-based
+    positions like {"h": "center", "v": {"from": "bottom", "offset": 6}}
+    into actual [u, v] coordinates.
+    """
+
+    def __init__(self):
+        self.face_dims: dict[str, dict[str, float]] = {}
+        self.wall_thickness: float = 0.0
+
+    def after_base_box(self, length: float, width: float, height: float):
+        self.face_dims = {
+            ">Z": {"w": length, "h": width},    # top
+            "<Z": {"w": length, "h": width},    # bottom
+            ">Y": {"w": length, "h": height},   # front
+            "<Y": {"w": length, "h": height},   # rear
+            ">X": {"w": width, "h": height},    # right
+            "<X": {"w": width, "h": height},    # left
+        }
+
+    def after_base_cylinder(self, height: float, radius: float):
+        d = radius * 2
+        self.face_dims = {
+            ">Z": {"w": d, "h": d},
+            "<Z": {"w": d, "h": d},
+        }
+
+    def after_shell(self, thickness: float):
+        self.wall_thickness = thickness
+
+    def get_face_dims(self, face: str) -> tuple[float, float] | None:
+        """Returns (width, height) of the given face, or None if unknown."""
+        f = self.face_dims.get(face)
+        if f:
+            return f["w"], f["h"]
+        return None
+
+# Global instance populated during conversion
+_constraint_tracker = _ConstraintFaceTracker()
+
+
+def _resolve_axis(spec, face_dim: float, feature_dim: float = 0) -> float:
+    """Resolve a single-axis constraint to a coordinate.
+
+    Args:
+        spec: "center", a number, or {"from": "bottom/top/left/right", "offset": N}
+        face_dim: total dimension of the face along this axis
+        feature_dim: dimension of the feature being placed (for edge offset calculation)
+    """
+    if spec == "center":
+        return 0.0
+    if isinstance(spec, (int, float)):
+        return float(spec)
+    if isinstance(spec, dict):
+        edge = spec.get("from", "center")
+        offset = float(spec.get("offset", 0))
+        half_feature = feature_dim / 2 if feature_dim else 0
+
+        if edge in ("bottom", "left"):
+            return -face_dim / 2 + offset + half_feature
+        elif edge in ("top", "right"):
+            return face_dim / 2 - offset - half_feature
+        elif edge == "center":
+            return offset  # offset from center
+    return 0.0
+
+
+def resolve_position(
+    constraint, face_w: float, face_h: float,
+    feature_w: float = 0, feature_h: float = 0,
+) -> list[float]:
+    """Resolve a position constraint to [u, v] coordinates.
+
+    Accepts:
+      - [x, y] raw coordinates (pass through)
+      - {"h": ..., "v": ...} constraint object
+    """
+    if isinstance(constraint, list):
+        return [float(constraint[0]), float(constraint[1])]
+
+    if isinstance(constraint, dict) and ("h" in constraint or "v" in constraint):
+        h_spec = constraint.get("h", "center")
+        v_spec = constraint.get("v", "center")
+        u = _resolve_axis(h_spec, face_w, feature_w)
+        v = _resolve_axis(v_spec, face_h, feature_h)
+        return [u, v]
+
+    # Fallback: treat as raw [0, 0]
+    return [0.0, 0.0]
+
+
+def resolve_hole_placement(
+    placement, face_w: float, face_h: float,
+) -> list[tuple[float, float]]:
+    """Resolve a hole placement constraint to a list of (u, v) positions.
+
+    Accepts:
+      - A list of [x, y] pairs (pass through)
+      - {"type": "corners", "inset": N}
+      - {"type": "center"}
+      - {"type": "along_edge", "edge": "top", "count": N, "inset": N}
+      - {"type": "grid", "rows": N, "cols": N, "spacing_h": N, "spacing_v": N}
+    """
+    if isinstance(placement, list):
+        # Could be a list of raw positions or a list of dicts
+        if placement and isinstance(placement[0], (list, tuple)):
+            return [(float(p[0]), float(p[1])) for p in placement]
+        return placement
+
+    if not isinstance(placement, dict):
+        return [(0.0, 0.0)]
+
+    ptype = placement.get("type", "center")
+
+    if ptype == "center":
+        return [(0.0, 0.0)]
+
+    elif ptype == "corners":
+        inset = float(placement.get("inset", 8))
+        return [
+            (-face_w / 2 + inset, -face_h / 2 + inset),
+            (face_w / 2 - inset, -face_h / 2 + inset),
+            (face_w / 2 - inset, face_h / 2 - inset),
+            (-face_w / 2 + inset, face_h / 2 - inset),
+        ]
+
+    elif ptype == "along_edge":
+        edge = placement.get("edge", "top")
+        count = int(placement.get("count", 3))
+        inset = float(placement.get("inset", 10))
+        margin = float(placement.get("margin", 10))
+
+        if edge in ("top", "bottom"):
+            y = face_h / 2 - inset if edge == "top" else -face_h / 2 + inset
+            usable = face_w - 2 * margin
+            if count == 1:
+                return [(0.0, y)]
+            spacing = usable / (count - 1)
+            return [(-usable / 2 + i * spacing, y) for i in range(count)]
+        else:  # left, right
+            x = -face_w / 2 + inset if edge == "left" else face_w / 2 - inset
+            usable = face_h - 2 * margin
+            if count == 1:
+                return [(x, 0.0)]
+            spacing = usable / (count - 1)
+            return [(x, -usable / 2 + i * spacing) for i in range(count)]
+
+    elif ptype == "grid":
+        rows = int(placement.get("rows", 2))
+        cols = int(placement.get("cols", 2))
+        sh = float(placement.get("spacing_h", 20))
+        sv = float(placement.get("spacing_v", 20))
+        points = []
+        for r in range(rows):
+            for c in range(cols):
+                u = -(cols - 1) * sh / 2 + c * sh
+                v = -(rows - 1) * sv / 2 + r * sv
+                points.append((u, v))
+        return points
+
+    return [(0.0, 0.0)]
+
+
+# ---------------------------------------------------------------------------
 # Parameter resolution
 # ---------------------------------------------------------------------------
 
@@ -872,6 +1043,70 @@ def _needs_clean_before(steps: list[dict], index: int) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# Constraint resolution for steps
+# ---------------------------------------------------------------------------
+
+
+def _resolve_step_constraints(step: dict, parameters: dict) -> dict:
+    """Pre-process a step to resolve constraint-based positions to raw [u, v] coordinates.
+
+    This allows the LLM to use intent-based positioning like:
+        {"h": "center", "v": {"from": "bottom", "offset": 6}}
+    instead of calculating raw coordinates.
+    """
+    import copy
+    step = copy.deepcopy(step)  # don't mutate the original
+
+    face = step.get("face", ">Z")
+    face_dims = _constraint_tracker.get_face_dims(face)
+    if not face_dims:
+        return step  # unknown face, can't resolve constraints
+
+    face_w, face_h = face_dims
+
+    # Resolve profile position constraints
+    profile = step.get("profile")
+    if profile and isinstance(profile, dict):
+        pos = profile.get("position")
+        if pos and isinstance(pos, dict) and ("h" in pos or "v" in pos):
+            # Get feature dimensions for edge offset calculation
+            feat_w = _resolve_param(profile.get("width", 0), parameters) if profile.get("width") else 0
+            feat_h = _resolve_param(profile.get("height", 0), parameters) if profile.get("height") else 0
+            if profile.get("type") == "circle":
+                feat_w = feat_h = _resolve_param(profile.get("radius", 0), parameters) * 2
+            resolved = resolve_position(pos, face_w, face_h, feat_w, feat_h)
+            profile["position"] = resolved
+
+    # Resolve step-level position constraints
+    pos = step.get("position")
+    if pos and isinstance(pos, dict) and ("h" in pos or "v" in pos):
+        resolved = resolve_position(pos, face_w, face_h)
+        step["position"] = resolved
+
+    # Resolve hole placement constraints
+    placement = step.get("placement")
+    if placement and isinstance(placement, dict) and "type" in placement:
+        resolved_pts = resolve_hole_placement(placement, face_w, face_h)
+        step["positions"] = [list(p) for p in resolved_pts]
+        step["pattern"] = "explicit"  # converter uses explicit pattern for resolved points
+
+    # Resolve positions list with constraints (e.g., each position is a constraint)
+    positions = step.get("positions")
+    if positions and isinstance(positions, list):
+        resolved = []
+        for p in positions:
+            if isinstance(p, dict) and ("h" in p or "v" in p):
+                resolved.append(resolve_position(p, face_w, face_h))
+            elif isinstance(p, (list, tuple)):
+                resolved.append([float(p[0]), float(p[1])])
+            else:
+                resolved.append(p)
+        step["positions"] = resolved
+
+    return step
+
+
+# ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------
 
@@ -975,6 +1210,9 @@ def convert_json_to_cadquery(steps: list[dict], parameters: dict) -> str:
             script_lines.append("# Repair topology before cosmetic operations")
             script_lines.append("result = result.clean()")
 
+        # Resolve constraint-based positions to raw coordinates before emitting
+        step = _resolve_step_constraints(step, parameters)
+
         emitter = EMITTERS[op]
         code_lines, feature_code = emitter(step, step_num, parameters)
 
@@ -983,18 +1221,21 @@ def convert_json_to_cadquery(steps: list[dict], parameters: dict) -> str:
         if feature_code:
             script_lines.append(feature_code)
 
-        # Update face tracker (approximate)
+        # Update face trackers
         if op == "create_box":
-            face_tracker.after_base_box(
-                _resolve_param(step["length"], parameters),
-                _resolve_param(step["width"], parameters),
-                _resolve_param(step["height"], parameters),
-            )
+            l = _resolve_param(step["length"], parameters)
+            w = _resolve_param(step["width"], parameters)
+            h = _resolve_param(step["height"], parameters)
+            face_tracker.after_base_box(l, w, h)
+            _constraint_tracker.after_base_box(l, w, h)
         elif op == "create_cylinder":
-            face_tracker.after_base_cylinder(
-                _resolve_param(step["height"], parameters),
-                _resolve_param(step["radius"], parameters),
-            )
+            h = _resolve_param(step["height"], parameters)
+            r = _resolve_param(step["radius"], parameters)
+            face_tracker.after_base_cylinder(h, r)
+            _constraint_tracker.after_base_cylinder(h, r)
+        elif op == "shell":
+            t = _resolve_param(step.get("thickness", 2), parameters)
+            _constraint_tracker.after_shell(t)
 
     # Final newline
     script_lines.append("")
