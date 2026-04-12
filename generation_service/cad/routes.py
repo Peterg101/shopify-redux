@@ -16,7 +16,7 @@ from fitd_schemas.fitd_classes import (
 )
 from shared import get_redis, get_authenticated_user, register_task
 from cad.pipeline import generate_cad_task, regenerate_cad_task, refine_cad_task, suppress_cad_features, revert_cad_task
-from cad.conversation import chat_stream, spec_to_prompt, get_history_for_persistence
+from cad.conversation import chat_stream, spec_to_prompt, build_generation_context, get_history_for_persistence
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +84,10 @@ async def cad_chat_confirm(
 ):
     """Confirm the gathered spec and start CAD generation."""
     settings = request.settings or CadGenerationSettings()
-    prompt = spec_to_prompt(request.spec, settings.dict())
+    # Build rich context with full conversation history instead of flat text
+    prompt = await build_generation_context(
+        request.task_id, request.spec, settings.dict(), redis,
+    )
 
     # Persist conversation history to the task (text-only, no images)
     conversation_json = await get_history_for_persistence(request.task_id, redis)

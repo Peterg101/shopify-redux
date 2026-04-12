@@ -1,5 +1,5 @@
 import React from "react";
-import { Typography, Button, Card, CardContent, Box, CircularProgress, LinearProgress } from "@mui/material";
+import { Typography, Button, Card, CardContent, Box, Chip, CircularProgress, LinearProgress } from "@mui/material";
 import { AccessTime, Edit, Download, AutoAwesome } from "@mui/icons-material";
 import { TaskInformation } from "../../app/utility/interfaces";
 import { useDispatch, useSelector } from "react-redux";
@@ -71,6 +71,14 @@ export function LeftDrawerTask(task: TaskInformation) {
           <Typography variant="caption" color="text.secondary">
             {formatRelativeTime(task.created_at)}
           </Typography>
+          {!task.complete && (
+            <Chip
+              label="Draft"
+              size="small"
+              sx={{ ml: 1, height: 18, fontSize: '0.65rem', color: '#FF9100', borderColor: '#FF9100' }}
+              variant="outlined"
+            />
+          )}
         </Box>
 
         {isTaskLoading ? (

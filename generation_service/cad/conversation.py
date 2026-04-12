@@ -332,6 +332,7 @@ async def _anthropic_stream(messages: list[dict]) -> AsyncGenerator[str, None]:
         with client.messages.stream(
             model=CHAT_MODEL,
             max_tokens=4096,
+            temperature=0,
             system=REQUIREMENTS_GATHERING_PROMPT,
             messages=messages,
         ) as stream:
@@ -412,6 +413,7 @@ def _anthropic_chat(messages: list[dict]) -> str:
     message = client.messages.create(
         model=CHAT_MODEL,
         max_tokens=4096,
+        temperature=0,
         system=REQUIREMENTS_GATHERING_PROMPT,
         messages=messages,
     )
@@ -466,5 +468,51 @@ def spec_to_prompt(spec: dict, design_intent: dict | None = None) -> str:
     notes = spec.get("notes")
     if notes:
         parts.append(f"Notes: {notes}")
+
+    # Include design intent settings if provided
+    if design_intent:
+        intent_parts = []
+        if design_intent.get("process"):
+            intent_parts.append(f"Process: {design_intent['process'].upper()}")
+        if design_intent.get("material_hint"):
+            intent_parts.append(f"Material: {design_intent['material_hint']}")
+        if intent_parts:
+            parts.append("Manufacturing: " + ", ".join(intent_parts))
+
+    return "\n\n".join(parts)
+
+
+async def build_generation_context(
+    task_id: str,
+    spec: dict,
+    design_intent: dict | None,
+    redis: AsyncRedis,
+) -> str:
+    """Build rich context for code generation from the conversation history + spec.
+
+    Instead of compressing the conversation into flat text, this passes the
+    full chat history so the code generation LLM can see dimensions, positions,
+    spatial relationships, and clarifications discussed during the conversation.
+    """
+    history = await _load_history(redis, task_id)
+
+    parts = []
+
+    # Structured spec as JSON
+    parts.append("## CONFIRMED DESIGN SPECIFICATION\n")
+    parts.append(json.dumps(spec, indent=2))
+
+    # Design conversation (text only, no images)
+    if history:
+        parts.append("\n\n## DESIGN CONVERSATION\n")
+        parts.append("The following conversation led to the specification above.")
+        parts.append("Use it to understand spatial relationships, context, and design intent.\n")
+        for msg in history:
+            role = "User" if msg["role"] == "user" else "Design Engineer"
+            parts.append(f"**{role}:** {msg['content']}")
+
+    # Flat spec summary as fallback context
+    parts.append("\n\n## GENERATION INSTRUCTIONS\n")
+    parts.append(spec_to_prompt(spec, design_intent))
 
     return "\n\n".join(parts)

@@ -197,6 +197,7 @@ export interface TaskInformation {
   user_id: string;
   task_name: string;
   file_type: string;
+  complete: boolean;
   created_at: string;
 }
 

@@ -93,7 +93,11 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
                 await publish(
                     redis, port_id, f"{iter_progress + 10},{fix_msg},{task_name}"
                 )
-                code = await fix_cadquery_code(prompt, code, error, target_units)
+                code = await fix_cadquery_code(
+                    prompt, code, error, target_units,
+                    attempt=attempt + 1, max_attempts=max_iterations,
+                    process=process, material_hint=material_hint,
+                )
 
         if not success:
             error_summary = last_error[:200] if last_error else "Unknown error"

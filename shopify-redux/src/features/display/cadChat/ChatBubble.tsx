@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Chip, Typography } from '@mui/material';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import { ChatMessage } from '../../../app/utility/interfaces';
 import { bgHighlightHover, bgPaper, borderSubtle, glowSubtle } from '../../../theme';
@@ -13,6 +13,7 @@ interface ChatBubbleProps {
 
 const ChatBubble: React.FC<ChatBubbleProps> = ({ message, onApprove, onEdit }) => {
   const isUser = message.role === 'user';
+  const isRefineAction = isUser && message.content.startsWith('\uD83D\uDD27'); // wrench emoji
   const isConfirmation = message.phase === 'confirmation' && message.spec;
 
   return (
@@ -41,11 +42,25 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message, onApprove, onEdit }) =
           px: 2,
           py: 1.5,
           borderRadius: isUser ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
-          backgroundColor: isUser ? bgHighlightHover : bgPaper,
-          border: `1px solid ${isUser ? 'rgba(0, 229, 255, 0.2)' : borderSubtle}`,
-          boxShadow: isUser ? `0 0 8px ${glowSubtle}` : 'none',
+          backgroundColor: isRefineAction ? 'rgba(118, 255, 3, 0.06)' : isUser ? bgHighlightHover : bgPaper,
+          border: `1px solid ${isRefineAction ? 'rgba(118, 255, 3, 0.25)' : isUser ? 'rgba(0, 229, 255, 0.2)' : borderSubtle}`,
+          boxShadow: isRefineAction ? '0 0 8px rgba(118, 255, 3, 0.1)' : isUser ? `0 0 8px ${glowSubtle}` : 'none',
         }}
       >
+        {isRefineAction && (
+          <Chip
+            label="Refine"
+            size="small"
+            sx={{
+              mb: 0.5,
+              height: 18,
+              fontSize: '0.65rem',
+              color: '#76FF03',
+              borderColor: 'rgba(118, 255, 3, 0.4)',
+            }}
+            variant="outlined"
+          />
+        )}
         <Typography
           variant="body2"
           sx={{
@@ -54,7 +69,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message, onApprove, onEdit }) =
             '& strong': { color: 'primary.main' },
           }}
         >
-          {message.content}
+          {isRefineAction ? message.content.slice(2).trim() : message.content}
         </Typography>
 
         {/* Render attached images */}

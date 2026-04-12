@@ -248,6 +248,26 @@ IMPORTANT: When asked to "chamfer a hole", the BEST approach is to rebuild that 
 `.cskHole()` in the existing code. This is far more reliable than selecting edges after the fact.
 Do NOT use .tag() names as CadQuery edge selectors — tags save workplane state only.
 
+## CADQUERY WORKPLANE COORDINATE SYSTEM (critical)
+
+For a box created with `cq.Workplane("XY").box(L, W, H)`, the box is centered at origin:
+X: [-L/2, L/2], Y: [-W/2, W/2], Z: [0, H]
+
+When you select a face and create a workplane, the LOCAL axes depend on the face:
+
+| Face Selector | Which wall | Local X direction | Local Y direction |
+|---|---|---|---|
+| faces(">Z") | Top | +global X | +global Y |
+| faces("<Z") | Bottom | -global X | +global Y |
+| faces(">Y") | Front | +global Z | +global X |
+| faces("<Y") | Rear | -global Z | +global X |
+| faces(">X") | Right | +global Z | -global Y |
+| faces("<X") | Left | -global Z | -global Y |
+
+CRITICAL: On side walls, local X is VERTICAL (along Z), local Y is HORIZONTAL.
+The workplane origin is at the CENTER of the face. All moveTo() coordinates are offsets from center.
+Always use `.workplane(centerOption="CenterOfMass")` on face selections.
+
 ## COMMON PATTERNS
 
 ### Enclosure with mounting bosses:
@@ -380,7 +400,7 @@ Continue the existing _step counter. Include step and depends_on fields.
 - Use .clean() after booleans, before fillets
 - Wrap fillets/chamfers in try/except
 - For multiple similar features, use a loop or .pushPoints()
-- For shelled bodies, .cutThruAll() cuts through the wall — use this for ports/cutouts
+- For shelled bodies, use .cutBlind(-wall_thickness) for wall cutouts — NOT .cutThruAll()
 
 ALWAYS return the COMPLETE Python code block, even if no changes are needed.
 If the requested feature already exists, return the code unchanged.
@@ -468,6 +488,25 @@ ERROR_CATEGORIES = {
     "name 'result' is not defined": (
         "HINT: The code does not define a variable called `result`. "
         "The final CadQuery Workplane must be assigned to `result`."
+    ),
+    "Standard_ConstructionError": (
+        "HINT: Invalid geometry construction. Common causes: "
+        "zero-length edge, degenerate face, or overlapping geometry. "
+        "Check that all dimensions are > 0 and shapes don't overlap exactly."
+    ),
+    "No pending wires": (
+        "HINT: A workplane operation expected pending wires but found none. "
+        "This usually means a sketch operation (.rect(), .circle()) was not called "
+        "before an extrude/cut operation."
+    ),
+    "TopAbs": (
+        "HINT: Topology error from a boolean operation (cut/union/intersect). "
+        "The shapes may be coincident or barely touching. "
+        "Try offsetting one shape by 0.01mm before the boolean."
+    ),
+    "SyntaxError": (
+        "HINT: The generated code has a Python syntax error. "
+        "Check for missing parentheses, unmatched brackets, or invalid indentation."
     ),
 }
 
@@ -583,6 +622,7 @@ def _anthropic_generate(user_messages: list[dict], system_prompt: str | None = N
     message = client.messages.create(
         model=ANTHROPIC_MODEL,
         max_tokens=8192,
+        temperature=0,
         system=system_prompt or SYSTEM_PROMPT,
         messages=user_messages,
     )
@@ -608,6 +648,49 @@ FEATURE_DESCRIPTIONS = {
 }
 
 
+PLANNING_PROMPT = """You are a CAD build planner. Given a design specification, output a step-by-step
+build plan as a JSON array. Each step describes ONE CadQuery operation.
+
+Rules:
+- Start with the base shape (box, cylinder, etc.)
+- Shell BEFORE cutting holes/features
+- Cut features AFTER shelling
+- Apply fillets LAST (wrap in try/except)
+- Order: base geometry → shell → boolean ops (union/cut) → fillets/chamfers
+
+Output ONLY a JSON array, no explanation:
+```json
+[
+  {"step": 1, "operation": "box", "description": "Base plate 100x60x5mm"},
+  {"step": 2, "operation": "hole", "description": "4x M4 clearance holes (4.5mm) at corners, 8mm inset"},
+  {"step": 3, "operation": "cutout", "description": "40x20mm rectangular cutout centered on top face"},
+  {"step": 4, "operation": "fillet", "description": "2mm fillets on all external edges (try/except)"}
+]
+```"""
+
+
+async def plan_cadquery_build(prompt: str, process: str = "fdm") -> str:
+    """Generate a JSON build plan before code generation (chain-of-thought)."""
+    user_content = f"Design specification:\n\n{prompt}\n\nTarget process: {process.upper()}"
+
+    if CAD_PROVIDER == "anthropic":
+        response_text = await asyncio.to_thread(
+            _anthropic_generate,
+            [{"role": "user", "content": user_content}],
+            PLANNING_PROMPT,
+        )
+    else:
+        response_text = await asyncio.to_thread(
+            _ollama_generate,
+            [
+                {"role": "system", "content": PLANNING_PROMPT},
+                {"role": "user", "content": user_content},
+            ],
+        )
+
+    return response_text
+
+
 async def generate_cadquery_code(
     prompt: str,
     target_units: str = "mm",
@@ -616,8 +699,20 @@ async def generate_cadquery_code(
     material_hint: str = "plastic",
     features: list[str] | None = None,
 ) -> str:
-    """Generate CadQuery code from a text prompt with structured context."""
+    """Generate CadQuery code from a text prompt with structured context.
+
+    Uses a two-step approach: first generates a build plan (chain-of-thought),
+    then generates code with the plan as context.
+    """
+    # Step 1: Generate build plan (chain-of-thought)
+    logger.info("Generating build plan (chain-of-thought)...")
+    build_plan = await plan_cadquery_build(prompt, process)
+    logger.info(f"Build plan: {build_plan[:200]}")
+
     context_parts = [f"Create a CadQuery model: {prompt}"]
+
+    # Include the build plan as context
+    context_parts.append(f"## BUILD PLAN (follow this step-by-step):\n{build_plan}")
 
     # Process constraints
     context_parts.append(PROCESS_CONSTRAINTS.get(process.lower(), PROCESS_CONSTRAINTS["fdm"]))
@@ -667,17 +762,35 @@ async def generate_cadquery_code(
 
 
 async def fix_cadquery_code(
-    original_prompt: str, code: str, error: str, target_units: str = "mm"
+    original_prompt: str, code: str, error: str, target_units: str = "mm",
+    attempt: int = 1, max_attempts: int = 3,
+    process: str = "fdm", material_hint: str = "plastic",
 ) -> str:
     """Fix broken CadQuery code using structured error diagnostics."""
     classified = classify_error(error)
 
-    user_msg_1 = f"Create a CadQuery model: {original_prompt}"
+    # Include process constraints in the fix context
+    process_info = PROCESS_CONSTRAINTS.get(process.lower(), PROCESS_CONSTRAINTS["fdm"])
+
+    user_msg_1 = f"Create a CadQuery model: {original_prompt}\n\n{process_info}"
     assistant_msg = f"```python\n{code}\n```"
+
+    # Escalate fix strategy on later attempts
+    escalation = ""
+    if attempt >= 2:
+        escalation = (
+            "\nIMPORTANT: This is fix attempt {attempt} of {max_attempts}. "
+            "Previous fix attempts failed. Be MORE aggressive:\n"
+            "- REMOVE all fillets/chamfers entirely rather than reducing radius\n"
+            "- SIMPLIFY geometry — fewer boolean operations\n"
+            "- Use simpler selectors (e.g., NearestToPointSelector instead of string selectors)\n"
+        )
+
     fix_msg = (
-        f"The code above failed:\n\n{classified}\n\n"
+        f"The code above failed (attempt {attempt}/{max_attempts}):\n\n{classified}\n\n"
+        f"{escalation}"
         "Fix the code following these rules:\n"
-        "- If a fillet failed, reduce the radius or remove it (try/except)\n"
+        "- If a fillet failed, wrap in try/except OR remove entirely\n"
         "- If a selector failed, check that the face/edge exists after prior operations\n"
         "- If a boolean failed, try adding tol=0.01 or offset shapes by 0.01mm\n"
         "- If validation failed, fix the specific issue mentioned\n"

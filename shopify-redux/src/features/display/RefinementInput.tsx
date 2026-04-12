@@ -1,4 +1,4 @@
-import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import {
   Alert,
   Box,
@@ -30,6 +30,7 @@ import { connectProgressStream } from '../../services/progressStream';
 import { setCadPending, setCadLoading, setCadOperationType } from '../../services/cadSlice';
 import { authApi } from '../../services/authApi';
 import { generateUuid } from '../../app/utility/collectionUtils';
+import { setStepMetadata } from '../../services/dataSlice';
 import logger from '../../app/utility/logger';
 
 const pulseIcon = keyframes`
@@ -75,6 +76,21 @@ export const RefinementInput = forwardRef<RefinementInputHandle>((_props, ref) =
   const features = dataState.stepMetadata?.features ?? [];
   const currentVersion = dataState.stepMetadata?.currentVersion ?? 0;
   const totalVersions = dataState.stepMetadata?.totalVersions ?? 0;
+
+  // Fetch version count on mount if missing (fallback for when progressStream fetch failed)
+  useEffect(() => {
+    if (taskId && isComplete && totalVersions === 0) {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+      fetch(`${apiUrl}/tasks/${taskId}/versions`, { credentials: 'include' })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data?.total > 0) {
+            dispatch(setStepMetadata({ currentVersion: data.total, totalVersions: data.total }));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [taskId, isComplete, totalVersions, dispatch]);
 
   const filteredFeatures = mentionState
     ? features.filter(f => f.tag.toLowerCase().includes(mentionState.query.toLowerCase()))
