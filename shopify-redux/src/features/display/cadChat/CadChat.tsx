@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { Box, Typography, Chip, Collapse, CircularProgress, LinearProgress } from '@mui/material';
+import { Box, Typography, Chip, CircularProgress, LinearProgress } from '@mui/material';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../app/store';
@@ -55,6 +55,7 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
 
   const [sketchOpen, setSketchOpen] = useState(false);
   const [sketchDataUrl, setSketchDataUrl] = useState<string | null>(null);
+  const sketchElementsRef = useRef<any[]>([]);
 
   // Streaming state — local, not Redux, to avoid dispatching on every token
   const [streamingText, setStreamingText] = useState<string | null>(null);
@@ -348,18 +349,16 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
           )}
         </div>
 
-        {/* Sketch panel — fixed, doesn't flex */}
-        {sketchOpen && (
-          <div style={{ flexShrink: 0 }}>
-            <Suspense fallback={
-              <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-                <CircularProgress size={24} />
-              </Box>
-            }>
-              <SketchPanel onAttach={handleSketchAttach} />
-            </Suspense>
-          </div>
-        )}
+        {/* Sketch panel — opens as a dialog */}
+        <Suspense fallback={null}>
+          <SketchPanel
+            open={sketchOpen}
+            onClose={() => setSketchOpen(false)}
+            onAttach={handleSketchAttach}
+            initialElements={sketchElementsRef.current}
+            onElementsChange={(elements) => { sketchElementsRef.current = elements; }}
+          />
+        </Suspense>
 
         {/* Sketch attached indicator */}
         {sketchDataUrl && (
