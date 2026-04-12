@@ -36,6 +36,10 @@ If a dimension is specified, use it precisely. If a position is described ("cent
 When the user says "through-hole", it goes all the way through. "Blind hole" has a depth.
 "Counterbore" and "countersink" have specific standard geometries — use .cboreHole() or .cskHole().
 
+If reference images (sketches, photos) are provided, use them to understand topology
+and relative positions of features. Derive ALL dimensions from the text specification,
+not from image pixel measurements. Sketches show approximate layout, not exact geometry.
+
 ## MANDATORY CODE STRUCTURE
 Your code MUST follow this exact pattern:
 
@@ -196,7 +200,7 @@ except Exception as _e:
 2. All units are MILLIMETERS. If user says inches, convert: 1 inch = 25.4mm.
 3. Minimum wall thickness: 1.0mm (FDM). See process constraints if specified.
 4. Minimum feature size: 0.5mm.
-5. Maximum part size: 300x300x300mm unless user specifies larger.
+5. Use the dimensions specified by the user. Do NOT invent default sizes.
 6. Fillets/chamfers ALWAYS in try/except, applied LAST.
 7. After booleans (.cut, .union), call `.clean()` before fillets.
 8. Shell with NEGATIVE thickness: `.shell(-thickness)`.
@@ -773,29 +777,58 @@ async def generate_cadquery_code(
 
 
 async def fix_cadquery_code(
-    original_prompt: str, code: str, error: str, target_units: str = "mm",
-    attempt: int = 1, max_attempts: int = 3,
-    process: str = "fdm", material_hint: str = "plastic",
+    original_prompt: str | list[dict],
+    code: str,
+    error: str,
+    target_units: str = "mm",
+    attempt: int = 1,
+    max_attempts: int = 3,
+    process: str = "fdm",
+    material_hint: str = "plastic",
+    build_plan: str = "",
+    fix_history: list[tuple[str, str]] | None = None,
 ) -> str:
-    """Fix broken CadQuery code using structured error diagnostics."""
-    classified = classify_error(error)
+    """Fix broken CadQuery code with full context and memory between attempts.
 
-    # Include process constraints in the fix context
+    Args:
+        original_prompt: The original generation prompt (str or content blocks with images)
+        code: The broken code from the latest attempt
+        error: The error message from the latest attempt
+        build_plan: The chain-of-thought build plan (if available)
+        fix_history: List of (code, error) tuples from previous fix attempts
+    """
+    classified = classify_error(error)
     process_info = PROCESS_CONSTRAINTS.get(process.lower(), PROCESS_CONSTRAINTS["fdm"])
 
-    user_msg_1 = f"Create a CadQuery model: {original_prompt}\n\n{process_info}"
-    assistant_msg = f"```python\n{code}\n```"
+    # Build the first message with full context (may include images)
+    if isinstance(original_prompt, list):
+        # Content blocks with images — build multi-modal message
+        context_blocks = list(original_prompt)
+        context_blocks.append({"type": "text", "text": f"\n\n{process_info}"})
+        if build_plan:
+            context_blocks.append({"type": "text", "text": f"\n## BUILD PLAN:\n{build_plan}"})
+        user_msg_1_content = context_blocks
+    else:
+        text = f"Create a CadQuery model: {original_prompt}\n\n{process_info}"
+        if build_plan:
+            text += f"\n\n## BUILD PLAN:\n{build_plan}"
+        user_msg_1_content = text
 
-    # Escalate fix strategy on later attempts
+    # Build error-type-aware escalation
     escalation = ""
     if attempt >= 2:
-        escalation = (
-            "\nIMPORTANT: This is fix attempt {attempt} of {max_attempts}. "
-            "Previous fix attempts failed. Be MORE aggressive:\n"
-            "- REMOVE all fillets/chamfers entirely rather than reducing radius\n"
-            "- SIMPLIFY geometry — fewer boolean operations\n"
-            "- Use simpler selectors (e.g., NearestToPointSelector instead of string selectors)\n"
-        )
+        escalation = f"\nIMPORTANT: This is fix attempt {attempt} of {max_attempts}. Previous fixes failed.\n"
+        error_lower = error.lower()
+        classified_lower = classified.lower()
+        if "fillet" in classified_lower or "brep_api" in error_lower or "chamfer" in classified_lower:
+            escalation += "- REMOVE all fillets/chamfers entirely (wrap in try/except with pass)\n"
+        elif "selector" in classified_lower or "nullobject" in error_lower or "shapes is empty" in error_lower:
+            escalation += "- Use NearestToPointSelector instead of string selectors\n"
+            escalation += "- After boolean ops, face/edge topology changes — recheck selectors\n"
+        elif "timeout" in error_lower:
+            escalation += "- SIMPLIFY geometry — fewer boolean operations, simpler shapes\n"
+        else:
+            escalation += "- SIMPLIFY the code — remove complex features, get basic geometry right first\n"
 
     fix_msg = (
         f"The code above failed (attempt {attempt}/{max_attempts}):\n\n{classified}\n\n"
@@ -810,26 +843,30 @@ async def fix_cadquery_code(
         "Return ONLY the corrected Python code block."
     )
 
+    # Build multi-turn conversation with fix history (memory between attempts)
+    messages = [{"role": "user", "content": user_msg_1_content}]
+
+    if fix_history:
+        # Include previous attempts so the LLM can see what was already tried
+        for prev_code, prev_error in fix_history:
+            messages.append({"role": "assistant", "content": f"```python\n{prev_code}\n```"})
+            prev_classified = classify_error(prev_error)
+            messages.append({"role": "user", "content": f"This failed:\n{prev_classified}\nTry a different approach."})
+
+    # Add the current broken code and error
+    messages.append({"role": "assistant", "content": f"```python\n{code}\n```"})
+    messages.append({"role": "user", "content": fix_msg})
+
     if CAD_PROVIDER == "anthropic":
-        logger.info(f"Using Anthropic ({ANTHROPIC_MODEL}) for code fix")
+        logger.info(f"Using Anthropic ({ANTHROPIC_MODEL}) for code fix (attempt {attempt})")
         response_text = await asyncio.to_thread(
-            _anthropic_generate,
-            [
-                {"role": "user", "content": user_msg_1},
-                {"role": "assistant", "content": assistant_msg},
-                {"role": "user", "content": fix_msg},
-            ],
+            _anthropic_generate, messages,
         )
     else:
-        logger.info(f"Using Ollama ({OLLAMA_MODEL}) for code fix")
+        logger.info(f"Using Ollama ({OLLAMA_MODEL}) for code fix (attempt {attempt})")
         response_text = await asyncio.to_thread(
             _ollama_generate,
-            [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_msg_1},
-                {"role": "assistant", "content": assistant_msg},
-                {"role": "user", "content": fix_msg},
-            ],
+            [{"role": "system", "content": SYSTEM_PROMPT}] + messages,
         )
 
     return extract_code(response_text)

@@ -245,7 +245,7 @@ if _vol < 1.0:
     print(f"VALIDATION_FAILED: Volume too small ({_vol:.2f} mm^3)", file=_sys.stderr)
     _sys.exit(1)
 
-if _bb.xlen > 500 or _bb.ylen > 500 or _bb.zlen > 500:
+if _bb.xlen > 1000 or _bb.ylen > 1000 or _bb.zlen > 1000:
     print(f"VALIDATION_FAILED: Part too large ({_bb.xlen:.1f} x {_bb.ylen:.1f} x {_bb.zlen:.1f} mm)", file=_sys.stderr)
     _sys.exit(1)
 

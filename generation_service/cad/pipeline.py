@@ -53,10 +53,15 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
         )
         await publish(redis, port_id, f"25,generating,{task_name}")
 
-        # Step 2: Execute with retry loop
+        # Step 2: Execute with retry loop (accumulates fix history for context)
         success = False
         last_error = ""
         attempt = 0
+        fix_history: list[tuple[str, str]] = []
+        # Capture the build plan from the code generation step for fix context
+        # (it's embedded in generate_cadquery_code's internal flow, but we can
+        # extract it from the generated code's comments or pass the prompt)
+        build_plan = ""  # TODO: surface from generate_cadquery_code if needed
 
         for attempt in range(max_iterations):
             iter_progress = 25 + int((attempt / max_iterations) * 40)
@@ -87,6 +92,9 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
                 f"[{port_id}] Attempt {attempt + 1} failed: {error[:200]}"
             )
 
+            # Track this attempt for fix history
+            fix_history.append((code, error))
+
             # Don't retry on last iteration
             if attempt < max_iterations - 1:
                 fix_msg = f"Fixing code (attempt {attempt + 2}/{max_iterations})"
@@ -97,6 +105,7 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
                     prompt, code, error, target_units,
                     attempt=attempt + 1, max_attempts=max_iterations,
                     process=process, material_hint=material_hint,
+                    build_plan=build_plan, fix_history=fix_history,
                 )
 
         if not success:

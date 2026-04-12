@@ -63,6 +63,12 @@ When you have enough information, present a structured specification for the
 user to review.  Include ALL gathered parameters.  The user can approve,
 edit, or ask for changes.
 
+CRITICAL: Do NOT move to "confirmation" phase unless you have:
+- Explicit overall dimensions (length, width, height) in mm
+- These can come from the conversation OR from the DESIGN_INTENT approximate_size
+- If the user hasn't provided dimensions and no approximate_size is set, ASK for them
+- The "dimensions" field in the spec is REQUIRED — never confirm without it
+
 If the user approves (says "looks good", "generate", "yes", etc.), respond
 with phase "confirmed" and the final spec.
 
@@ -504,34 +510,32 @@ async def build_generation_context(
 
     blocks: list[dict] = []
 
-    # Structured spec as JSON
+    # 1. Structured spec as JSON (authoritative source of truth)
     blocks.append({
         "type": "text",
-        "text": "## CONFIRMED DESIGN SPECIFICATION\n\n" + json.dumps(spec, indent=2),
+        "text": "## CONFIRMED DESIGN SPECIFICATION (authoritative — use these exact dimensions)\n\n" + json.dumps(spec, indent=2),
     })
 
-    # Design conversation with images
+    # 2. Manufacturing constraints (process + material)
+    if design_intent:
+        intent_text = _build_design_intent_block(design_intent)
+        if intent_text:
+            blocks.append({"type": "text", "text": f"\n## MANUFACTURING CONSTRAINTS\n{intent_text}"})
+
+    # 3. Design conversation with images (for reference/context)
     if history:
         blocks.append({
             "type": "text",
             "text": (
-                "\n## DESIGN CONVERSATION\n"
-                "The following conversation led to the specification above. "
-                "Use it to understand spatial relationships, context, and design intent. "
-                "Any attached sketches or photos show the intended layout.\n"
+                "\n## DESIGN CONVERSATION (reference — the spec above is authoritative)\n"
+                "Use this conversation to understand spatial relationships, context, "
+                "and design intent. Sketches/photos show approximate layout.\n"
             ),
         })
         for msg in history:
             role = "User" if msg["role"] == "user" else "Design Engineer"
             blocks.append({"type": "text", "text": f"**{role}:** {msg['content']}"})
-            # Include images from this message (sketches, photos)
             for img_b64 in msg.get("images", []):
                 blocks.append(_make_image_block(img_b64))
-
-    # Flat spec summary as generation instructions
-    blocks.append({
-        "type": "text",
-        "text": "\n## GENERATION INSTRUCTIONS\n\n" + spec_to_prompt(spec, design_intent),
-    })
 
     return blocks
