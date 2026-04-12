@@ -34,8 +34,8 @@ def add_task(
     if user_exists and task_information.port_id and task_information.task_id:
         add_task_to_db(db, task_information)
         add_port_to_db(db, task_information.task_id, task_information.port_id)
-        # Invalidate session cache so incomplete_task appears on refresh
-        cache_invalidate(redis_client, f"fitd:session:{task_information.user_id}")
+        # Invalidate session + tasks cache so the new task appears immediately
+        cache_invalidate(redis_client, f"fitd:session:{task_information.user_id}", f"fitd:tasks:{task_information.user_id}")
         publish_event(redis_client, "task:started", user_id=task_information.user_id)
     return ""
 

@@ -49,9 +49,14 @@ async def cad_chat_start(
     _: dict = Depends(get_authenticated_user),
 ):
     """Create a task for the conversation and return its ID."""
+    import uuid
+    port_id = str(uuid.uuid4())  # Required by add_task — can't be empty
     task_id = await register_task(
-        request.user_id, "CAD Design Chat", "", file_type="step",
+        request.user_id, "CAD Design Chat", port_id, file_type="step",
     )
+    if not task_id:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail="Failed to create task")
     return {"task_id": task_id}
 
 
