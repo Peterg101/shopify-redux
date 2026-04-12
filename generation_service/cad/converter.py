@@ -516,6 +516,7 @@ def _emit_union(step: dict, step_num: int, params: dict) -> tuple[list[str], str
         bl = _var_ref_from(body, "length", params)
         bw = _var_ref_from(body, "width", params)
         bh = _var_ref_from(body, "height", params)
+        # CadQuery .box() places base at Z=0 — translate Z is where the base goes
         lines.append(
             f'_body_{step_num} = cq.Workplane("XY").box({bl}, {bw}, {bh})'
             f'.translate(({tx}, {ty}, {tz}))'
@@ -523,9 +524,13 @@ def _emit_union(step: dict, step_num: int, params: dict) -> tuple[list[str], str
     elif body_type == "cylinder":
         bh = _var_ref_from(body, "height", params)
         br = _var_ref_from(body, "radius", params)
+        # CadQuery .cylinder() centers vertically — offset Z by half height
+        # so the base sits at the translate Z position
+        bh_resolved = _resolve_param(body.get("height", 10), params)
+        z_offset = f"{tz} + {bh_resolved}/2" if isinstance(bh_resolved, (int, float)) else f"{tz} + {bh}/2"
         lines.append(
             f'_body_{step_num} = cq.Workplane("XY").cylinder({bh}, {br})'
-            f'.translate(({tx}, {ty}, {tz}))'
+            f'.translate(({tx}, {ty}, {z_offset}))'
         )
     else:
         raise ValueError(f"Unsupported union body type: {body_type}")
