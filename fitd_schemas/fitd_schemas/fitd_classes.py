@@ -899,6 +899,7 @@ class CadTaskRequest(BaseModel):
     prompt: str
     settings: Optional[CadGenerationSettings] = None
     existing_task_id: Optional[str] = None  # set when task was pre-created by chat flow
+    rich_context: Optional[list] = None  # content blocks with images from conversation flow
 
 
 # ---------------------------------------------------------------------------

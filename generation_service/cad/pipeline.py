@@ -32,6 +32,7 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
     port_id = request.port_id
     user_id = request.user_id
     prompt = request.prompt
+    rich_context = getattr(request, 'rich_context', None)  # content blocks with images
     settings = request.settings
     max_iterations = settings.max_iterations if settings else 3
     timeout_seconds = settings.timeout_seconds if settings else 30
@@ -42,6 +43,8 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
     features = getattr(settings, 'features', []) if settings else []
 
     task_name = prompt[:50].replace(",", " ")
+    # Use rich context (with images) if available, otherwise fall back to text prompt
+    generation_prompt = rich_context if rich_context else prompt
 
     try:
         # Step 1: Generate initial code
@@ -49,7 +52,7 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
         logger.info(f"[{port_id}] Generating CadQuery code for: {prompt[:80]}")
 
         code = await generate_cadquery_code(
-            prompt, target_units, process, approximate_size, material_hint, features
+            generation_prompt, target_units, process, approximate_size, material_hint, features
         )
         await publish(redis, port_id, f"25,generating,{task_name}")
 
@@ -102,7 +105,7 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
                     redis, port_id, f"{iter_progress + 10},{fix_msg},{task_name}"
                 )
                 code = await fix_cadquery_code(
-                    prompt, code, error, target_units,
+                    generation_prompt, code, error, target_units,
                     attempt=attempt + 1, max_attempts=max_iterations,
                     process=process, material_hint=material_hint,
                     build_plan=build_plan, fix_history=fix_history,

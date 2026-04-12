@@ -85,9 +85,12 @@ async def cad_chat_confirm(
     """Confirm the gathered spec and start CAD generation."""
     settings = request.settings or CadGenerationSettings()
     # Build rich context with full conversation history instead of flat text
-    prompt = await build_generation_context(
+    # Build rich context (content blocks with images) for code generation
+    rich_context = await build_generation_context(
         request.task_id, request.spec, settings.dict(), redis,
     )
+    # Text-only summary for DB storage and fallback
+    prompt_text = spec_to_prompt(request.spec, settings.dict())
 
     # Persist conversation history to the task (text-only, no images)
     conversation_json = await get_history_for_persistence(request.task_id, redis)
@@ -101,7 +104,7 @@ async def cad_chat_confirm(
                 f"{api_url}/tasks/{request.task_id}/script",
                 json={
                     "cadquery_script": "",
-                    "generation_prompt": prompt,
+                    "generation_prompt": prompt_text,
                     "conversation_history": conversation_json,
                 },
                 headers={"Authorization": f"Bearer {token}"},
@@ -113,9 +116,10 @@ async def cad_chat_confirm(
     task_request = CadTaskRequest(
         port_id=request.port_id,
         user_id=request.user_id,
-        prompt=prompt,
+        prompt=prompt_text,
         settings=settings,
         existing_task_id=request.task_id,
+        rich_context=rich_context,
     )
     background_tasks.add_task(generate_cad_task, task_request, redis)
     return {"message": "CAD task started!", "task_id": request.port_id}
