@@ -805,6 +805,9 @@ async def generate_operations(
     prompt: str | list[dict],
     process: str = "fdm",
     material_hint: str = "plastic",
+    approximate_size: dict | None = None,
+    features: list[str] | None = None,
+    target_units: str = "mm",
 ) -> dict:
     """Generate structured JSON operations from a prompt.
 
@@ -812,20 +815,36 @@ async def generate_operations(
         prompt: Text description or content blocks (with images from conversation flow)
         process: Manufacturing process for constraint context
         material_hint: Material for constraint context
+        approximate_size: Optional {width, depth, height} in mm
+        features: Optional list of requested features (hollow, fillets, etc.)
+        target_units: Unit system (mm or inches)
 
     Returns:
         Parsed dict with "parameters" and "steps" keys.
     """
     import json as _json
 
-    # Build the user message
+    # Build the user message with all available context
     process_info = PROCESS_CONSTRAINTS.get(process.lower(), PROCESS_CONSTRAINTS["fdm"])
 
+    extra_context = [f"Manufacturing: {process_info}", f"Material: {material_hint}"]
+    if approximate_size:
+        w = approximate_size.get("width")
+        d = approximate_size.get("depth")
+        h = approximate_size.get("height")
+        if any(v for v in [w, d, h]):
+            extra_context.append(f"Approximate size: {w or '?'} x {d or '?'} x {h or '?'} mm")
+    if features:
+        extra_context.append(f"Requested features: {', '.join(features)}")
+    if target_units != "mm":
+        extra_context.append(f"Units: {target_units}")
+
+    extra_text = "\n".join(extra_context)
+
     if isinstance(prompt, list):
-        # Content blocks with images — append process info as text block
-        user_content = list(prompt) + [{"type": "text", "text": f"\n\nManufacturing: {process_info}\nMaterial: {material_hint}"}]
+        user_content = list(prompt) + [{"type": "text", "text": f"\n\n{extra_text}"}]
     else:
-        user_content = f"{prompt}\n\nManufacturing: {process_info}\nMaterial: {material_hint}"
+        user_content = f"{prompt}\n\n{extra_text}"
 
     if CAD_PROVIDER == "anthropic":
         logger.info(f"Using Anthropic ({ANTHROPIC_MODEL}) for JSON operation generation")
@@ -909,19 +928,11 @@ async def fix_operations(
         f"Fix the JSON and return the corrected version. Return ONLY the JSON object."
     )
 
-    # Build messages with original context
-    if isinstance(original_prompt, list):
-        messages = [
-            {"role": "user", "content": original_prompt},
-            {"role": "assistant", "content": f"```json\n{ops_json}\n```"},
-            {"role": "user", "content": fix_content},
-        ]
-    else:
-        messages = [
-            {"role": "user", "content": original_prompt},
-            {"role": "assistant", "content": f"```json\n{ops_json}\n```"},
-            {"role": "user", "content": fix_content},
-        ]
+    messages = [
+        {"role": "user", "content": original_prompt},
+        {"role": "assistant", "content": f"```json\n{ops_json}\n```"},
+        {"role": "user", "content": fix_content},
+    ]
 
     if CAD_PROVIDER == "anthropic":
         logger.info(f"Using Anthropic ({ANTHROPIC_MODEL}) for JSON fix (attempt {attempt})")

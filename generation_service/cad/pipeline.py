@@ -53,7 +53,10 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
         await publish(redis, port_id, f"10,planning design,{task_name}")
         logger.info(f"[{port_id}] Generating JSON operations for: {prompt[:80]}")
 
-        ops = await generate_operations(generation_prompt, process, material_hint)
+        ops = await generate_operations(
+            generation_prompt, process, material_hint,
+            approximate_size=approximate_size, features=features, target_units=target_units,
+        )
 
         if ops.get("error") or ops.get("unsupported"):
             reason = ops.get("error", ops.get("reason", "Unknown"))
@@ -69,7 +72,11 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
         except ValueError as e:
             logger.warning(f"[{port_id}] Converter error: {e}, asking LLM to fix")
             ops = await fix_operations(generation_prompt, ops, str(e), process=process)
-            code = convert_json_to_cadquery(ops.get("steps", []), ops.get("parameters", {}))
+            try:
+                code = convert_json_to_cadquery(ops.get("steps", []), ops.get("parameters", {}))
+            except ValueError as e2:
+                await publish(redis, port_id, f"Task Failed,JSON structure error after fix: {e2}")
+                return
         await publish(redis, port_id, f"30,executing,{task_name}")
 
         # Step 3: Execute with retry loop

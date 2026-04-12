@@ -256,8 +256,11 @@ def _resolve_param(value: Any, parameters: dict) -> Any:
         # Replace $references with values (longest names first to avoid partial matches)
         for name in sorted(parameters.keys(), key=len, reverse=True):
             expr = expr.replace(f"${name}", str(parameters[name]))
+        # Validate expression contains only safe characters (digits, operators, whitespace, dots)
+        if not re.match(r'^[\d\s\+\-\*/\(\)\.\,]+$', expr):
+            raise ValueError(f"Unsafe expression rejected: {value} → {expr}")
         try:
-            return eval(expr)  # safe: only arithmetic on known numeric values
+            return eval(expr)
         except Exception:
             raise ValueError(f"Cannot evaluate parameter expression: {value} → {expr}")
     if isinstance(value, str):
@@ -268,16 +271,6 @@ def _resolve_param(value: Any, parameters: dict) -> Any:
             pass
     return value
 
-
-def _resolve_all(obj: Any, parameters: dict) -> Any:
-    """Recursively resolve all $variable references in a nested structure."""
-    if isinstance(obj, str) and obj.startswith("$"):
-        return _resolve_param(obj, parameters)
-    if isinstance(obj, dict):
-        return {k: _resolve_all(v, parameters) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [_resolve_all(item, parameters) for item in obj]
-    return obj
 
 
 # ---------------------------------------------------------------------------
