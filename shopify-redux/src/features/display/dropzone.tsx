@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, Typography, Divider, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
@@ -16,7 +16,13 @@ type GenerationMode = 'mesh' | 'cad';
 export const Dropzone = () => {
   const meshyState = useSelector((state: RootState) => state.meshyState);
   const cadState = useSelector((state: RootState) => state.cadState);
+  const chatTaskId = useSelector((state: RootState) => state.cadChatState.taskId);
   const [mode, setMode] = useState<GenerationMode>('mesh');
+
+  // Auto-switch to CAD mode if there's an active/hydrated chat session
+  useEffect(() => {
+    if (chatTaskId) setMode('cad');
+  }, [chatTaskId]);
 
   const isMeshyGenerating = meshyState.meshyPending || meshyState.meshyLoading;
   const isCadGenerating = cadState.cadPending || cadState.cadLoading || Boolean(cadState.cadError);
