@@ -335,13 +335,15 @@ async def chat_stream(
         yield json.dumps({"type": "error", "message": str(e)})
 
 
-async def _anthropic_stream(messages: list[dict]) -> AsyncGenerator[str, None]:
+async def _anthropic_stream(messages: list[dict], client=None) -> AsyncGenerator[str, None]:
     """Stream tokens from Anthropic Claude API."""
     import anthropic
 
+    _client = client or anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+
     def _stream_sync():
         """Synchronous generator that yields text deltas from Claude."""
-        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+        client = _client
         with client.messages.stream(
             model=CHAT_MODEL,
             max_tokens=4096,
@@ -418,11 +420,11 @@ async def chat(
     }
 
 
-def _anthropic_chat(messages: list[dict]) -> str:
+def _anthropic_chat(messages: list[dict], client=None) -> str:
     """Call Anthropic Claude (non-streaming fallback)."""
     import anthropic
 
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    client = client or anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
     message = client.messages.create(
         model=CHAT_MODEL,
         max_tokens=4096,

@@ -65,7 +65,7 @@ async def get_authenticated_user(
 
 async def register_task(
     user_id: str, task_name: str, port_id: str, task_id: str | None = None,
-    file_type: str = "obj",
+    file_type: str = "obj", http_client=None,
 ) -> str | None:
     """Register a new task in api_service, returns task_id."""
     import uuid
@@ -86,7 +86,7 @@ async def register_task(
         "port_id": port_id,
     }
     try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with (http_client or httpx.AsyncClient(timeout=10.0)) as client:
             resp = await client.post(
                 f"{DB_SERVICE_URL}/tasks", json=payload, headers=headers
             )
@@ -98,12 +98,12 @@ async def register_task(
     return None
 
 
-async def mark_task_complete(task_id: str):
+async def mark_task_complete(task_id: str, http_client=None):
     """Mark a task as complete in api_service (clears incomplete_task flag)."""
     auth_token = generate_token("generation_service", audience="api_service")
     headers = {"Authorization": f"Bearer {auth_token}"}
     try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with (http_client or httpx.AsyncClient(timeout=10.0)) as client:
             resp = await client.patch(
                 f"{DB_SERVICE_URL}/tasks/{task_id}/complete", headers=headers
             )

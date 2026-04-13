@@ -602,10 +602,10 @@ def extract_code(response_text: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _ollama_generate(messages: list[dict]) -> str:
+def _ollama_generate(messages: list[dict], client=None) -> str:
     from openai import OpenAI
 
-    client = OpenAI(base_url=OLLAMA_URL, api_key="ollama")
+    client = client or OpenAI(base_url=OLLAMA_URL, api_key="ollama")
     response = client.chat.completions.create(
         model=OLLAMA_MODEL,
         messages=messages,
@@ -619,10 +619,10 @@ def _ollama_generate(messages: list[dict]) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _anthropic_generate(user_messages: list[dict], system_prompt: str | None = None) -> str:
+def _anthropic_generate(user_messages: list[dict], system_prompt: str | None = None, client=None) -> str:
     import anthropic
 
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    client = client or anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
     message = client.messages.create(
         model=ANTHROPIC_MODEL,
         max_tokens=8192,
