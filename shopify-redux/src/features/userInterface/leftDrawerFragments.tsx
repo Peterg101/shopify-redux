@@ -95,12 +95,29 @@ export function LeftDrawerButtons(task: TaskInformation) {
   const { setActualFile } = useFile();
   const dispatch = useDispatch();
 
-  const handleGetFile = async (fileId: string, filename: string, fileType: string, shouldDownload = false) => {
+  const handleGetFile = async (fileId: string, filename: string, fileType: string, shouldDownload = false, complete = true) => {
     setActualFile(null);
     dispatch(resetDataState());
     dispatch(resetCadState());
     dispatch(resetMeshyState());
     dispatch(setLeftDrawerClosed());
+
+    // Incomplete tasks have no model — just hydrate conversation and show chat
+    if (!complete) {
+      try {
+        const { messages } = await fetchConversation(fileId);
+        if (messages.length > 0) {
+          const chatMessages: ChatMessage[] = messages.map((msg: any, i: number) => ({
+            id: `history-${i}`,
+            role: msg.role,
+            content: msg.content,
+            timestamp: Date.now(),
+          }));
+          dispatch(hydrateChatHistory({ taskId: fileId, messages: chatMessages }));
+        }
+      } catch { /* conversation may not exist */ }
+      return;
+    }
 
     let file: File;
     let fileUrl: string;
@@ -179,7 +196,7 @@ export function LeftDrawerButtons(task: TaskInformation) {
         variant="outlined"
         size="small"
         startIcon={<Download sx={{ fontSize: 16 }} />}
-        onClick={() => handleGetFile(task.task_id, task.task_name, task.file_type, true)}
+        onClick={() => handleGetFile(task.task_id, task.task_name, task.file_type, true, task.complete)}
         sx={{ fontSize: '0.75rem' }}
       >
         Download
@@ -188,7 +205,7 @@ export function LeftDrawerButtons(task: TaskInformation) {
         variant="outlined"
         size="small"
         startIcon={<Edit sx={{ fontSize: 16 }} />}
-        onClick={() => handleGetFile(task.task_id, task.task_name, task.file_type)}
+        onClick={() => handleGetFile(task.task_id, task.task_name, task.file_type, false, task.complete)}
         sx={{ fontSize: '0.75rem' }}
       >
         Edit
