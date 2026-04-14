@@ -5,7 +5,7 @@ import { TaskInformation } from "../../app/utility/interfaces";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { useFile } from "../../services/fileProvider";
-import { resetDataState, setFileProperties, setFromMeshyOrHistory, setStepMetadata, setTaskId } from "../../services/dataSlice";
+import { resetDataState, setFileProperties, setFromMeshyOrHistory, setStepMetadata, setTaskId, setFileNameBoxValue } from "../../services/dataSlice";
 import { extractFileInfo, fetchFile, fetchCadFile, isCadFileType, downloadCadStepFile } from "../../services/fetchFileUtils";
 import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
 import { resetCadState } from "../../services/cadSlice";
@@ -97,31 +97,33 @@ export function LeftDrawerButtons(task: TaskInformation) {
 
   const handleGetFile = async (fileId: string, filename: string, fileType: string, shouldDownload = false, complete = true) => {
     setActualFile(null);
+    dispatch(resetConversation());  // Clear chat FIRST to prevent race condition
     dispatch(resetDataState());
     dispatch(resetCadState());
     dispatch(resetMeshyState());
     dispatch(setLeftDrawerClosed());
 
-    // Incomplete tasks have no model — hydrate conversation and show chat
-    // Default complete=true for older tasks that may not have the field
+    // Incomplete tasks have no model — resume chat conversation
     if (complete === false) {
+      // Set taskId and filename SYNCHRONOUSLY before any async work
+      // This prevents CadChat from creating a new task during the fetch gap
       dispatch(setTaskId({ taskId: fileId }));
-      // Always hydrate chat — even with no messages, this sets taskId
-      // which triggers Dropzone to switch to CAD mode
+      dispatch(setFileNameBoxValue({ fileNameBoxValue: filename }));
+      dispatch(hydrateChatHistory({ taskId: fileId, messages: [] }));  // Sets chatTaskId immediately
+
+      // Then fetch conversation history async and update if available
       try {
         const { messages } = await fetchConversation(fileId);
-        const chatMessages: ChatMessage[] = (messages || []).map((msg: any, i: number) => ({
-          id: `history-${i}`,
-          role: msg.role,
-          content: msg.content,
-          timestamp: Date.now(),
-        }));
-        dispatch(hydrateChatHistory({ taskId: fileId, messages: chatMessages }));
-      } catch {
-        // Even if conversation fetch fails, hydrate with empty messages
-        // so the chat UI appears and user can continue
-        dispatch(hydrateChatHistory({ taskId: fileId, messages: [] }));
-      }
+        if (messages && messages.length > 0) {
+          const chatMessages: ChatMessage[] = messages.map((msg: any, i: number) => ({
+            id: `history-${i}`,
+            role: msg.role,
+            content: msg.content,
+            timestamp: Date.now(),
+          }));
+          dispatch(hydrateChatHistory({ taskId: fileId, messages: chatMessages }));
+        }
+      } catch { /* conversation may not exist yet */ }
       return;
     }
 
