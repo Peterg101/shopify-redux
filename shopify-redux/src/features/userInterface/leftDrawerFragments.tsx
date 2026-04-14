@@ -103,7 +103,8 @@ export function LeftDrawerButtons(task: TaskInformation) {
     dispatch(setLeftDrawerClosed());
 
     // Incomplete tasks have no model — just hydrate conversation and show chat
-    if (!complete) {
+    // Default complete=true for older tasks that may not have the field
+    if (complete === false) {
       dispatch(setTaskId({ taskId: fileId }));  // Sync dataState.taskId
       try {
         const { messages } = await fetchConversation(fileId);
