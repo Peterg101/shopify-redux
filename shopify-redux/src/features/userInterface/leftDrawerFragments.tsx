@@ -5,7 +5,7 @@ import { TaskInformation } from "../../app/utility/interfaces";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { useFile } from "../../services/fileProvider";
-import { resetDataState, setFileProperties, setFromMeshyOrHistory, setStepMetadata } from "../../services/dataSlice";
+import { resetDataState, setFileProperties, setFromMeshyOrHistory, setStepMetadata, setTaskId } from "../../services/dataSlice";
 import { extractFileInfo, fetchFile, fetchCadFile, isCadFileType, downloadCadStepFile } from "../../services/fetchFileUtils";
 import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
 import { resetCadState } from "../../services/cadSlice";
@@ -104,6 +104,7 @@ export function LeftDrawerButtons(task: TaskInformation) {
 
     // Incomplete tasks have no model — just hydrate conversation and show chat
     if (!complete) {
+      dispatch(setTaskId({ taskId: fileId }));  // Sync dataState.taskId
       try {
         const { messages } = await fetchConversation(fileId);
         if (messages.length > 0) {
@@ -195,6 +196,7 @@ export function LeftDrawerButtons(task: TaskInformation) {
       <Button
         variant="outlined"
         size="small"
+        disabled={!task.complete}
         startIcon={<Download sx={{ fontSize: 16 }} />}
         onClick={() => handleGetFile(task.task_id, task.task_name, task.file_type, true, task.complete)}
         sx={{ fontSize: '0.75rem' }}

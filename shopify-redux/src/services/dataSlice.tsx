@@ -33,7 +33,8 @@ const initialState: DataState = {
     materialCost: 0.00005,
     qaLevel: 'standard',
     toleranceMm: undefined,
-    surfaceFinish: undefined
+    surfaceFinish: undefined,
+    stepMetadata: undefined,
 }
 
 export const dataSlice = createSlice({
@@ -206,7 +207,10 @@ export const dataSlice = createSlice({
         },
         setStepMetadata: (state, action: PayloadAction<Partial<StepMetadata>>) => {
             state.stepMetadata = { ...state.stepMetadata, ...action.payload }
-        }
+        },
+        setTaskId: (state, action: PayloadAction<{ taskId: string }>) => {
+            state.taskId = action.payload.taskId
+        },
     }
 })
 
@@ -238,7 +242,8 @@ export const {
     setQALevel,
     setToleranceMm,
     setSurfaceFinish,
-    setStepMetadata
+    setStepMetadata,
+    setTaskId,
 
  } = dataSlice.actions
 

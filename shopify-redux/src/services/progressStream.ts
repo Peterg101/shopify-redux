@@ -2,7 +2,7 @@ import { AppDispatch } from "../app/store";
 import { authApi } from "./authApi";
 import logger from '../app/utility/logger';
 import { setMeshyLoadedPercentage, setMeshyLoading, setMeshyPending, setMeshyQueueItems, setMeshyPreviewTaskId } from "./meshySlice";
-import { setCadLoadedPercentage, setCadLoading, setCadPending, setCadStatusMessage, setCadError } from "./cadSlice";
+import { setCadLoadedPercentage, setCadLoading, setCadPending, setCadStatusMessage, setCadError, setCadOperationType } from "./cadSlice";
 import { extractFileInfo, fetchFile } from "./fetchFileUtils";
 import { setFileProperties, setFromMeshyOrHistory, setStepMetadata, setModelVolume, setModelDimensions } from "./dataSlice";
 
@@ -166,6 +166,7 @@ async function handleCadMessage(
         dispatch(setCadError({ cadError: errorMsg }));
         dispatch(setCadLoading({ cadLoading: false }));
         dispatch(setCadPending({ cadPending: false }));
+        dispatch(setCadOperationType({ cadOperationType: null }));
         return;
     }
 
@@ -175,6 +176,7 @@ async function handleCadMessage(
         dispatch(setCadError({ cadError: `Refinement rejected: ${reason}` }));
         dispatch(setCadLoading({ cadLoading: false }));
         dispatch(setCadPending({ cadPending: false }));
+        dispatch(setCadOperationType({ cadOperationType: null }));
         return;
     }
 
@@ -184,6 +186,7 @@ async function handleCadMessage(
         dispatch(setCadError({ cadError: null }));
         dispatch(setCadLoading({ cadLoading: false }));
         dispatch(setCadPending({ cadPending: false }));
+        dispatch(setCadOperationType({ cadOperationType: null }));
         dispatch(setCadStatusMessage({ cadStatusMessage: clarification }));
         return;
     }
@@ -310,6 +313,7 @@ async function handleCadMessage(
         }
         dispatch(setCadLoading({ cadLoading: false }));
         dispatch(setCadPending({ cadPending: false }));
+        dispatch(setCadOperationType({ cadOperationType: null }));
         return;
     }
 

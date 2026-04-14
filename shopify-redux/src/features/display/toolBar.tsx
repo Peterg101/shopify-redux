@@ -6,6 +6,7 @@ import { RootState } from '../../app/store';
 import { ChangeEvent } from 'react';
 import { setFileNameBoxValue, resetDataState } from '../../services/dataSlice';
 import { resetCadState } from '../../services/cadSlice';
+import { resetConversation } from '../../services/cadChatSlice';
 import { setMeshyRefining, setMeshyPending, setMeshyPreviewTaskId, resetMeshyState } from '../../services/meshySlice';
 import { startRefineTask } from '../../services/fetchFileUtils';
 import { connectProgressStream } from '../../services/progressStream';
@@ -33,6 +34,7 @@ export const ToolBar = () => {
     dispatch(resetDataState());
     dispatch(resetCadState());
     dispatch(resetMeshyState());
+    dispatch(resetConversation());
   };
 
   const handleRefine = async () => {
