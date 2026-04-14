@@ -102,22 +102,26 @@ export function LeftDrawerButtons(task: TaskInformation) {
     dispatch(resetMeshyState());
     dispatch(setLeftDrawerClosed());
 
-    // Incomplete tasks have no model — just hydrate conversation and show chat
+    // Incomplete tasks have no model — hydrate conversation and show chat
     // Default complete=true for older tasks that may not have the field
     if (complete === false) {
-      dispatch(setTaskId({ taskId: fileId }));  // Sync dataState.taskId
+      dispatch(setTaskId({ taskId: fileId }));
+      // Always hydrate chat — even with no messages, this sets taskId
+      // which triggers Dropzone to switch to CAD mode
       try {
         const { messages } = await fetchConversation(fileId);
-        if (messages.length > 0) {
-          const chatMessages: ChatMessage[] = messages.map((msg: any, i: number) => ({
-            id: `history-${i}`,
-            role: msg.role,
-            content: msg.content,
-            timestamp: Date.now(),
-          }));
-          dispatch(hydrateChatHistory({ taskId: fileId, messages: chatMessages }));
-        }
-      } catch { /* conversation may not exist */ }
+        const chatMessages: ChatMessage[] = (messages || []).map((msg: any, i: number) => ({
+          id: `history-${i}`,
+          role: msg.role,
+          content: msg.content,
+          timestamp: Date.now(),
+        }));
+        dispatch(hydrateChatHistory({ taskId: fileId, messages: chatMessages }));
+      } catch {
+        // Even if conversation fetch fails, hydrate with empty messages
+        // so the chat UI appears and user can continue
+        dispatch(hydrateChatHistory({ taskId: fileId, messages: [] }));
+      }
       return;
     }
 
