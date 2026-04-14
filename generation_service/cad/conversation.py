@@ -158,6 +158,37 @@ async def _save_history(redis: AsyncRedis, task_id: str, history: list[dict]):
     )
 
 
+async def _persist_to_db(task_id: str, history: list[dict]):
+    """Persist conversation history to Postgres (text-only, no images).
+
+    Called after every chat turn so the conversation survives Redis TTL expiry.
+    Failures are logged but don't break the chat flow.
+    """
+    import httpx
+    from jwt_auth import generate_token
+
+    clean = [{"role": msg["role"], "content": msg["content"]} for msg in history]
+    conversation_json = json.dumps(clean)
+
+    try:
+        api_url = os.getenv("API_SERVICE_URL", "http://api_service:8000")
+        token = generate_token("generation_service", audience="api_service")
+        async with httpx.AsyncClient(timeout=5) as client:
+            resp = await client.patch(
+                f"{api_url}/tasks/{task_id}/script",
+                json={
+                    "cadquery_script": "",
+                    "generation_prompt": "",
+                    "conversation_history": conversation_json,
+                },
+                headers={"Authorization": f"Bearer {token}"},
+            )
+            if resp.status_code != 200:
+                logger.warning(f"[{task_id}] Failed to persist conversation: {resp.status_code}")
+    except Exception as e:
+        logger.warning(f"[{task_id}] Failed to persist conversation: {e}")
+
+
 async def get_history_for_persistence(task_id: str, redis: AsyncRedis) -> str:
     """Load conversation from Redis and return text-only JSON for DB storage."""
     history = await _load_history(redis, task_id)
@@ -326,6 +357,9 @@ async def chat_stream(
         assistant_msg = {"role": "assistant", "content": display_text}
         history.append(assistant_msg)
         await _save_history(redis, task_id, history)
+
+        # Also persist to Postgres so conversation survives Redis expiry
+        await _persist_to_db(task_id, history)
 
         # Send final metadata event
         yield json.dumps({"type": "done", "reply": display_text, "phase": phase, "spec": spec, "task_id": task_id})
