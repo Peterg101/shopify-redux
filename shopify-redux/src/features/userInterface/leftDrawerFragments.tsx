@@ -105,15 +105,21 @@ export function LeftDrawerButtons(task: TaskInformation) {
 
     // Incomplete tasks have no model — resume chat conversation
     if (complete === false) {
+      console.log('[Draft Resume] task:', fileId, 'complete:', complete);
+
       // Set taskId and filename SYNCHRONOUSLY before any async work
-      // This prevents CadChat from creating a new task during the fetch gap
       dispatch(setTaskId({ taskId: fileId }));
       dispatch(setFileNameBoxValue({ fileNameBoxValue: filename }));
-      dispatch(hydrateChatHistory({ taskId: fileId, messages: [] }));  // Sets chatTaskId immediately
+      // Hydrate immediately so chatTaskId is set before CadChat can mount
+      dispatch(hydrateChatHistory({ taskId: fileId, messages: [] }));
+
+      // Scroll to top so the Dropzone/chat is visible
+      window.scrollTo({ top: 0, behavior: 'smooth' });
 
       // Then fetch conversation history async and update if available
       try {
         const { messages } = await fetchConversation(fileId);
+        console.log('[Draft Resume] fetched messages:', messages?.length ?? 0);
         if (messages && messages.length > 0) {
           const chatMessages: ChatMessage[] = messages.map((msg: any, i: number) => ({
             id: `history-${i}`,
@@ -123,7 +129,9 @@ export function LeftDrawerButtons(task: TaskInformation) {
           }));
           dispatch(hydrateChatHistory({ taskId: fileId, messages: chatMessages }));
         }
-      } catch { /* conversation may not exist yet */ }
+      } catch (err) {
+        console.log('[Draft Resume] conversation fetch failed:', err);
+      }
       return;
     }
 
