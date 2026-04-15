@@ -14,19 +14,51 @@ const EVENT_TO_TAGS: Record<string, string[]> = {
 
 const MESSAGE_EVENTS = new Set(['message:received', 'message:read'])
 
+const RECONNECT_DELAY = 5000
+const STALE_THRESHOLD_MS = 30000
+
 export function connectSSE(dispatch: AppDispatch): () => void {
   const url = `${process.env.REACT_APP_API_URL}/events`
-  const abortController = new AbortController()
+  let disposed = false
+  let currentAbort: AbortController | null = null
+  let reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null
+  let lastActivityAt = Date.now()
+
+  const handleVisibility = () => {
+    if (document.visibilityState !== 'visible' || disposed) return
+
+    if (reconnectTimeoutId !== null) {
+      clearTimeout(reconnectTimeoutId)
+      reconnectTimeoutId = null
+      connect()
+      return
+    }
+
+    if (Date.now() - lastActivityAt > STALE_THRESHOLD_MS) {
+      currentAbort?.abort()
+      connect()
+    }
+  }
+
+  document.addEventListener('visibilitychange', handleVisibility)
 
   async function connect() {
+    if (disposed) return
+
+    currentAbort = new AbortController()
+    const signal = currentAbort.signal
+    lastActivityAt = Date.now()
+
     try {
       const response = await fetch(url, {
         credentials: 'include',
-        signal: abortController.signal,
+        signal,
         headers: { 'Accept': 'text/event-stream' },
       })
 
-      if (!response.ok || !response.body) return
+      if (!response.ok || !response.body) {
+        throw new Error(`SSE connection failed: ${response.status}`)
+      }
 
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
@@ -34,8 +66,9 @@ export function connectSSE(dispatch: AppDispatch): () => void {
 
       while (true) {
         const { done, value } = await reader.read()
-        if (done) break
+        if (done || disposed) break
 
+        lastActivityAt = Date.now()
         buffer += decoder.decode(value, { stream: true })
         const lines = buffer.split('\n')
         buffer = lines.pop() || ''
@@ -59,14 +92,26 @@ export function connectSSE(dispatch: AppDispatch): () => void {
         }
       }
     } catch (err: any) {
-      if (err.name !== 'AbortError') {
-        // Reconnect after 5 seconds on error
-        setTimeout(connect, 5000)
-      }
+      if (disposed || err?.name === 'AbortError') return
+    }
+
+    if (!disposed) {
+      reconnectTimeoutId = setTimeout(() => {
+        reconnectTimeoutId = null
+        connect()
+      }, RECONNECT_DELAY)
     }
   }
 
   connect()
 
-  return () => abortController.abort()
+  return () => {
+    disposed = true
+    if (reconnectTimeoutId !== null) {
+      clearTimeout(reconnectTimeoutId)
+      reconnectTimeoutId = null
+    }
+    currentAbort?.abort()
+    document.removeEventListener('visibilitychange', handleVisibility)
+  }
 }

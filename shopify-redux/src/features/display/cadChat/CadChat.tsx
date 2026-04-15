@@ -18,7 +18,12 @@ import { startChatSession, sendChatMessageStreaming, confirmSpec } from '../../.
 import { connectProgressStream } from '../../../services/progressStream';
 import { useFile } from '../../../services/fileProvider';
 import logger from '../../../app/utility/logger';
-import { CadDesignIntent } from '../CadGenerationSettings';
+import {
+  ProcessChipControl,
+  MaterialChipControl,
+  SizeChipControl,
+  AdvancedSettingsButton,
+} from '../CadGenerationSettings';
 import ChatBubble from './ChatBubble';
 import ChatInput from './ChatInput';
 import {
@@ -271,8 +276,6 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
 
   return (
     <div style={{ width: '100%' }}>
-      {!isRefinementMode && <CadDesignIntent />}
-
       {/* Chat container — fixed 400px height, flex column, overflow hidden */}
       <div
         style={{
@@ -291,6 +294,7 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
             flexShrink: 0,
             display: 'flex',
             alignItems: 'center',
+            flexWrap: 'wrap',
             gap: '8px',
             padding: '8px 16px',
             borderBottom: `1px solid ${borderSubtle}`,
@@ -298,9 +302,18 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
           }}
         >
           <SmartToyIcon sx={{ fontSize: 18, color: 'primary.main' }} />
-          <Typography variant="subtitle2" fontWeight={600} sx={{ flex: 1 }}>
+          <Typography variant="subtitle2" fontWeight={600}>
             Design Assistant
           </Typography>
+          {!isRefinementMode && (
+            <>
+              <ProcessChipControl />
+              <MaterialChipControl />
+              <SizeChipControl />
+              <AdvancedSettingsButton />
+            </>
+          )}
+          <Box sx={{ flex: 1 }} />
           {phaseLabel && chatState.phase !== 'idle' && (
             <Chip
               label={phaseLabel}

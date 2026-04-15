@@ -5,6 +5,7 @@ import { setCadLoadedPercentage, setCadLoading, setCadPending, setCadStatusMessa
 import { setFileProperties, setAutoScaleOnLoad, setStepMetadata, setModelVolume, setModelDimensions } from "./dataSlice";
 
 const RECONNECT_DELAY = 3000;
+const STALE_THRESHOLD_MS = 30000;
 
 export function connectProgressStream(
     portId: string,
@@ -14,7 +15,8 @@ export function connectProgressStream(
     let disposed = false;
     let taskTerminated = false;
     let reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
-    const abortController = new AbortController();
+    let currentAbort: AbortController | null = null;
+    let lastActivityAt = Date.now();
     const blobUrls: string[] = [];
     let isFirstMessage = true;
 
@@ -24,18 +26,46 @@ export function connectProgressStream(
             clearTimeout(reconnectTimeoutId);
             reconnectTimeoutId = null;
         }
-        abortController.abort();
+        currentAbort?.abort();
+        document.removeEventListener('visibilitychange', handleVisibility);
         blobUrls.forEach(url => URL.revokeObjectURL(url));
         blobUrls.length = 0;
     };
 
+    const handleVisibility = () => {
+        if (document.visibilityState !== 'visible') return;
+        if (disposed || taskTerminated) return;
+
+        // If a reconnect is pending, fire it now rather than wait for throttled setTimeout.
+        if (reconnectTimeoutId !== null) {
+            clearTimeout(reconnectTimeoutId);
+            reconnectTimeoutId = null;
+            isFirstMessage = true;
+            connect();
+            return;
+        }
+
+        // If the active stream has been silent for too long, assume it's dead and restart.
+        if (Date.now() - lastActivityAt > STALE_THRESHOLD_MS) {
+            currentAbort?.abort();
+            isFirstMessage = true;
+            connect();
+        }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
+
     const connect = async () => {
-        if (disposed) return;
+        if (disposed || taskTerminated) return;
+
+        currentAbort = new AbortController();
+        const signal = currentAbort.signal;
+        lastActivityAt = Date.now();
 
         try {
             const response = await fetch(
                 `${process.env.REACT_APP_GENERATION_URL}/progress/${portId}`,
-                { signal: abortController.signal }
+                { signal }
             );
 
             if (!response.ok || !response.body) {
@@ -50,6 +80,7 @@ export function connectProgressStream(
                 const { done, value } = await reader.read();
                 if (done || disposed) break;
 
+                lastActivityAt = Date.now();
                 buffer += decoder.decode(value, { stream: true });
                 const lines = buffer.split('\n');
                 buffer = lines.pop() || '';
@@ -64,10 +95,11 @@ export function connectProgressStream(
                         isFirstMessage = false;
                     }
 
-                    await handleCadMessage(data, dispatch, setActualFile, abortController.signal, blobUrls, disposed);
+                    await handleCadMessage(data, dispatch, setActualFile, signal, blobUrls, disposed);
 
                     if (data.startsWith('Task Completed') || data.startsWith('Task Failed')) {
                         taskTerminated = true;
+                        document.removeEventListener('visibilitychange', handleVisibility);
                     }
                 }
             }
@@ -81,6 +113,7 @@ export function connectProgressStream(
             dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
 
             reconnectTimeoutId = setTimeout(() => {
+                reconnectTimeoutId = null;
                 isFirstMessage = true;
                 connect();
             }, RECONNECT_DELAY);
