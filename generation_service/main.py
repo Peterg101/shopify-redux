@@ -11,7 +11,6 @@ import redis.asyncio as aioredis
 import uvicorn
 from sse_starlette.sse import EventSourceResponse
 
-from meshy.routes import router as meshy_router
 from cad.routes import router as cad_router
 
 if os.getenv("ENV") == "production":
@@ -52,7 +51,6 @@ app.add_middleware(
     allow_headers=["Content-Type", "Authorization"],
 )
 
-app.include_router(meshy_router)
 app.include_router(cad_router)
 
 
@@ -103,7 +101,7 @@ async def health():
 
 
 # ── Dev Mock Endpoints ───────────────────────────────────────────────
-# Simulate generation tasks without external APIs (Meshy, Ollama, Claude).
+# Simulate generation tasks without external APIs (Ollama, Claude).
 # Enable with MOCK_GENERATION=true in environment.
 
 if os.getenv("MOCK_GENERATION", "false").lower() == "true":
@@ -112,10 +110,9 @@ if os.getenv("MOCK_GENERATION", "false").lower() == "true":
     from fastapi import BackgroundTasks, Depends
     from shared import get_redis, publish, register_task, mark_task_complete, get_authenticated_user
 
-    async def _mock_generation(redis, port_id: str, task_name: str, task_type: str, user_id: str):
-        """Simulate a 15-second generation task with progress updates."""
-        # Register task in DB
-        task_id = await register_task(user_id, task_name, port_id, file_type="glb" if task_type == "cad" else "obj")
+    async def _mock_generation(redis, port_id: str, task_name: str, user_id: str):
+        """Simulate a 15-second CAD generation task with progress updates."""
+        task_id = await register_task(user_id, task_name, port_id, file_type="step")
 
         stages = [
             (5, "initializing"),
@@ -129,22 +126,15 @@ if os.getenv("MOCK_GENERATION", "false").lower() == "true":
 
         for pct, status in stages:
             await asyncio.sleep(1.5)
-            if task_type == "cad":
-                await publish(redis, port_id, f"{pct},{status},{task_name}")
-            else:
-                await publish(redis, port_id, f"{pct},{task_id or 'mock'},{task_name}")
+            await publish(redis, port_id, f"{pct},{status},{task_name}")
 
-        # Simulate completion
         await asyncio.sleep(1.0)
         if task_id:
             await mark_task_complete(task_id)
 
-        if task_type == "cad":
-            await publish(redis, port_id, f"Task Completed,{task_id or 'mock'},{task_name},mock-job-001")
-        else:
-            await publish(redis, port_id, f"Task Completed,{task_id or 'mock'},{task_name}")
+        await publish(redis, port_id, f"Task Completed,{task_id or 'mock'},{task_name},mock-job-001")
 
-        logger.info(f"Mock {task_type} generation complete: {task_name} ({port_id})")
+        logger.info(f"Mock cad generation complete: {task_name} ({port_id})")
 
     @app.post("/mock/generate")
     async def mock_generate(
@@ -153,21 +143,16 @@ if os.getenv("MOCK_GENERATION", "false").lower() == "true":
         redis=Depends(get_redis),
         _=Depends(get_authenticated_user),
     ):
-        """Start a mock generation task. Returns port_id for SSE progress tracking.
-
-        Usage: POST /mock/generate?type=meshy&name=my-model
-        Then connect to GET /progress/{port_id} for SSE progress stream.
-        """
+        """Start a mock CAD generation task. Returns port_id for SSE progress tracking."""
         body = await request.json() if request.headers.get("content-type") == "application/json" else {}
-        task_type = body.get("type", "meshy")
-        task_name = body.get("name", f"mock-{task_type}-{uuid.uuid4().hex[:6]}")
+        task_name = body.get("name", f"mock-cad-{uuid.uuid4().hex[:6]}")
         user_id = body.get("user_id", "mock-user")
         port_id = body.get("port_id", str(uuid.uuid4()))
 
-        background_tasks.add_task(_mock_generation, redis, port_id, task_name, task_type, user_id)
+        background_tasks.add_task(_mock_generation, redis, port_id, task_name, user_id)
 
         return {
-            "message": f"Mock {task_type} generation started",
+            "message": "Mock cad generation started",
             "port_id": port_id,
             "task_name": task_name,
         }

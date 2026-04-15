@@ -26,7 +26,7 @@ const initialState: DataState = {
     fileNameBoxValue: '',
     modelDimensions: initialVectorState,
     fileDisplay: false,
-    fromMeshyOrHistory: false,
+    autoScaleOnLoad: false,
     xFlip: 0,
     yFlip: 0,
     zFlip: 0,
@@ -173,7 +173,7 @@ export const dataSlice = createSlice({
             state.fileDisplay = true
 
             state.materialCost = getPrice(order.material, config) ?? 0
-            state.fromMeshyOrHistory = true
+            state.autoScaleOnLoad = true
 
         },
         setXFLip: (state, action: PayloadAction<{xFlip: number}>) => {
@@ -188,9 +188,9 @@ export const dataSlice = createSlice({
             const {zFlip} = action.payload
             state.zFlip = zFlip
          },
-         setFromMeshyOrHistory: (state, action: PayloadAction<{fromMeshyOrHistory: boolean}>) => {
-            const {fromMeshyOrHistory} = action.payload
-            state.fromMeshyOrHistory = fromMeshyOrHistory
+         setAutoScaleOnLoad: (state, action: PayloadAction<{autoScaleOnLoad: boolean}>) => {
+            const {autoScaleOnLoad} = action.payload
+            state.autoScaleOnLoad = autoScaleOnLoad
          },
          setClearFileDisplay: (state) => {
             state.fileDisplay = false
@@ -236,7 +236,7 @@ export const {
     setXFLip,
     setYFLip,
     setZFLip,
-    setFromMeshyOrHistory,
+    setAutoScaleOnLoad,
     setClearFileDisplay,
     setFulfillFileViewProperties,
     setQALevel,

@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 
 from dependencies import get_db, get_redis, get_any_user
-from utils import check_user_existence, add_task_to_db, add_port_to_db, mark_meshy_task_complete, delete_port_id
+from utils import check_user_existence, add_task_to_db, add_port_to_db, mark_task_complete, delete_port_id
 from cache import cache_invalidate
 from events import publish_event
 from jwt_auth import verify_jwt_token
@@ -52,7 +52,7 @@ def complete_task(
     task = db.query(Task).filter(Task.task_id == task_id).first()
     user_id = task.user_id if task else None
 
-    mark_meshy_task_complete(db, task_id)
+    mark_task_complete(db, task_id)
     delete_port_id(db, task_id)
 
     if user_id:

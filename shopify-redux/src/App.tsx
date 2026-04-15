@@ -23,9 +23,7 @@ function App() {
     const portId = incompletePort?.port_id;
     useEffect(() => {
       if (incompletePort) {
-        // Determine task type from file_type: 'glb' = CAD, anything else = Meshy
-        const taskType = userInterfaceState.userInformation?.incomplete_task?.file_type === 'glb' ? 'cad' : 'meshy';
-        const cleanup = connectProgressStream(portId!, taskType, dispatch, setActualFile);
+        const cleanup = connectProgressStream(portId!, dispatch, setActualFile);
         return cleanup;
       }
     }, [incompletePort, portId, dispatch]);

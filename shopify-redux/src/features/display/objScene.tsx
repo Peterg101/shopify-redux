@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import logger from '../../app/utility/logger';
 import { calculateThreeVolume, calculateSize, calculateMaxScaling, calculateMinScaling } from "../../app/utility/utils";
-import { setFromMeshyOrHistory, setModelDimensions, setModelVolume, setMultiplierValue, setScales } from "../../services/dataSlice";
+import { setAutoScaleOnLoad, setModelDimensions, setModelVolume, setMultiplierValue, setScales } from "../../services/dataSlice";
 
 const OBJScene = () => {
     const dispatch = useDispatch()
@@ -53,9 +53,9 @@ const OBJScene = () => {
                         const maximumScale = calculateMaxScaling(measuredSize)
                         const minimumScale = calculateMinScaling(measuredSize)
                         dispatch(setScales({minScale: minimumScale, maxScale: maximumScale }))
-                        if (dataState.fromMeshyOrHistory) {
+                        if (dataState.autoScaleOnLoad) {
                             dispatch(setMultiplierValue({ multiplierValue: maximumScale }));
-                            dispatch(setFromMeshyOrHistory({fromMeshyOrHistory: false}))
+                            dispatch(setAutoScaleOnLoad({autoScaleOnLoad: false}))
                         }
                     }
                 });
@@ -64,7 +64,7 @@ const OBJScene = () => {
             (error) => {
                 logger.error('Error loading OBJ file:', error);
             }
-        ); },[dataState.selectedFile, dataState.fromMeshyOrHistory, dispatch, isMultiplierInitialized])
+        ); },[dataState.selectedFile, dataState.autoScaleOnLoad, dispatch, isMultiplierInitialized])
 
 
         useEffect(() => {

@@ -3,7 +3,6 @@ import { combineSlices, configureStore } from "@reduxjs/toolkit";
 import {setupListeners} from "@reduxjs/toolkit/query"
 import { userInterfaceSlice } from "../services/userInterfaceSlice";
 import {dataSlice} from "../services/dataSlice";
-import { meshySlice } from "../services/meshySlice";
 import { cadSlice } from "../services/cadSlice";
 import { cadChatSlice } from "../services/cadChatSlice";
 import { authApi } from "../services/authApi";
@@ -14,7 +13,6 @@ import { catalogApi } from "../services/catalogApi";
 const rootReducer = combineSlices({
   [userInterfaceSlice.reducerPath]: userInterfaceSlice.reducer,
   [dataSlice.reducerPath]: dataSlice.reducer,
-  [meshySlice.reducerPath]: meshySlice.reducer,
   [cadSlice.reducerPath]: cadSlice.reducer,
   [cadChatSlice.reducerPath]: cadChatSlice.reducer,
   [authApi.reducerPath]: authApi.reducer,

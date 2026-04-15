@@ -1,16 +1,13 @@
 import { AppDispatch } from "../app/store";
 import { authApi } from "./authApi";
 import logger from '../app/utility/logger';
-import { setMeshyLoadedPercentage, setMeshyLoading, setMeshyPending, setMeshyQueueItems, setMeshyPreviewTaskId } from "./meshySlice";
 import { setCadLoadedPercentage, setCadLoading, setCadPending, setCadStatusMessage, setCadError, setCadOperationType } from "./cadSlice";
-import { extractFileInfo, fetchFile } from "./fetchFileUtils";
-import { setFileProperties, setFromMeshyOrHistory, setStepMetadata, setModelVolume, setModelDimensions } from "./dataSlice";
+import { setFileProperties, setAutoScaleOnLoad, setStepMetadata, setModelVolume, setModelDimensions } from "./dataSlice";
 
 const RECONNECT_DELAY = 3000;
 
 export function connectProgressStream(
     portId: string,
-    taskType: 'meshy' | 'cad',
     dispatch: AppDispatch,
     setActualFile: React.Dispatch<React.SetStateAction<File | null>>,
 ): () => void {
@@ -55,7 +52,6 @@ export function connectProgressStream(
 
                 buffer += decoder.decode(value, { stream: true });
                 const lines = buffer.split('\n');
-                // Keep the last (possibly incomplete) line in the buffer
                 buffer = lines.pop() || '';
 
                 for (const line of lines) {
@@ -68,13 +64,8 @@ export function connectProgressStream(
                         isFirstMessage = false;
                     }
 
-                    if (taskType === 'meshy') {
-                        await handleMeshyMessage(data, dispatch, setActualFile, abortController.signal, blobUrls);
-                    } else {
-                        await handleCadMessage(data, dispatch, setActualFile, abortController.signal, blobUrls, disposed);
-                    }
+                    await handleCadMessage(data, dispatch, setActualFile, abortController.signal, blobUrls, disposed);
 
-                    // Mark as terminated so we don't reconnect
                     if (data.startsWith('Task Completed') || data.startsWith('Task Failed')) {
                         taskTerminated = true;
                     }
@@ -82,16 +73,11 @@ export function connectProgressStream(
             }
         } catch (err: any) {
             if (disposed || err?.name === 'AbortError') return;
-            logger.error(`SSE ${taskType} error:`, err);
+            logger.error(`SSE cad error:`, err);
         }
 
-        // Stream ended or errored — reconnect unless disposed or task finished
         if (!disposed && !taskTerminated) {
-            if (taskType === 'meshy') {
-                dispatch(setMeshyLoading({ meshyLoading: false }));
-            } else {
-                dispatch(setCadLoading({ cadLoading: false }));
-            }
+            dispatch(setCadLoading({ cadLoading: false }));
             dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
 
             reconnectTimeoutId = setTimeout(() => {
@@ -105,53 +91,6 @@ export function connectProgressStream(
     return cleanup;
 }
 
-async function handleMeshyMessage(
-    data: string,
-    dispatch: AppDispatch,
-    setActualFile: React.Dispatch<React.SetStateAction<File | null>>,
-    signal: AbortSignal,
-    blobUrls: string[],
-) {
-    const parts = data.split(",");
-    if (parts.length !== 3) {
-        logger.warn("Unexpected SSE message format:", data);
-        return;
-    }
-
-    const percentageComplete = parseInt(parts[0], 10);
-    const taskId = parts[1];
-    const fileName = parts[2];
-
-    if (isNaN(percentageComplete) || !taskId || !fileName) {
-        logger.warn("Invalid SSE message data:", data);
-        return;
-    }
-
-    dispatch(setMeshyLoadedPercentage({ meshyLoadedPercentage: percentageComplete }));
-    dispatch(setMeshyPending({ meshyPending: false }));
-    dispatch(setMeshyQueueItems({ meshyQueueItems: 0 }));
-    dispatch(setMeshyLoading({ meshyLoading: true }));
-
-    if (percentageComplete === 100) {
-        try {
-            const fileData = await fetchFile(taskId, signal);
-            const fileInfo = extractFileInfo(fileData, fileName);
-            blobUrls.push(fileInfo.fileUrl);
-            setActualFile(fileInfo.file);
-            dispatch(setFromMeshyOrHistory({ fromMeshyOrHistory: true }));
-            dispatch(setFileProperties({
-                selectedFile: fileInfo.fileUrl,
-                selectedFileType: 'obj',
-                fileNameBoxValue: fileName,
-            }));
-        } catch (err) {
-            logger.error("Error fetching completed file:", err);
-        }
-        dispatch(setMeshyLoading({ meshyLoading: false }));
-        dispatch(setMeshyPreviewTaskId({ meshyPreviewTaskId: taskId }));
-    }
-}
-
 async function handleCadMessage(
     data: string,
     dispatch: AppDispatch,
@@ -160,7 +99,6 @@ async function handleCadMessage(
     blobUrls: string[],
     disposed: boolean,
 ) {
-    // Handle failure
     if (data.startsWith("Task Failed")) {
         const errorMsg = data.replace("Task Failed,", "");
         dispatch(setCadError({ cadError: errorMsg }));
@@ -170,7 +108,6 @@ async function handleCadMessage(
         return;
     }
 
-    // Handle validation rejection (refinement caught unwanted changes)
     if (data.startsWith("Refinement Rejected,")) {
         const reason = data.substring("Refinement Rejected,".length);
         dispatch(setCadError({ cadError: `Refinement rejected: ${reason}` }));
@@ -180,7 +117,6 @@ async function handleCadMessage(
         return;
     }
 
-    // Handle clarification request (LLM needs more info from user)
     if (data.startsWith("Clarification Needed,")) {
         const clarification = data.substring("Clarification Needed,".length);
         dispatch(setCadError({ cadError: null }));
@@ -191,7 +127,6 @@ async function handleCadMessage(
         return;
     }
 
-    // Handle completion: "Task Completed,{task_id},{name},{job_id}"
     if (data.startsWith("Task Completed")) {
         const parts = data.split(",");
         const cadTaskId = parts[1];
@@ -199,7 +134,6 @@ async function handleCadMessage(
         const jobId = parts[3];
 
         try {
-            // Fetch presigned glB preview URL from media_service
             const previewResp = await fetch(
                 `${process.env.REACT_APP_MEDIA_URL}/step/${jobId}/preview_url`,
                 { signal }
@@ -213,7 +147,6 @@ async function handleCadMessage(
                 throw new Error('No presigned URL returned from media_service');
             }
 
-            // Fetch the glB binary from MinIO
             const glbResp = await fetch(presignedUrl, { signal });
             if (!glbResp.ok) {
                 throw new Error(`glB fetch failed: ${glbResp.status}`);
@@ -227,7 +160,7 @@ async function handleCadMessage(
             blobUrls.push(blobUrl);
 
             setActualFile(glbFile);
-            dispatch(setFromMeshyOrHistory({ fromMeshyOrHistory: true }));
+            dispatch(setAutoScaleOnLoad({ autoScaleOnLoad: true }));
             dispatch(setFileProperties({
                 selectedFile: blobUrl,
                 selectedFileType: 'glb',
@@ -235,14 +168,11 @@ async function handleCadMessage(
                 taskId: cadTaskId,
             }));
 
-            // Set step metadata as complete — we're in the "Task Completed" handler
-            // so we know processing finished. Metadata fetch enriches with dimensions.
             dispatch(setStepMetadata({
                 jobId,
                 processingStatus: 'complete',
             }));
 
-            // Fetch CAD metadata (volume, bounding box) from media_service
             try {
                 const metaResp = await fetch(
                     `${process.env.REACT_APP_MEDIA_URL}/step/${jobId}/status`,
@@ -281,7 +211,6 @@ async function handleCadMessage(
                 }
             }
 
-            // Fetch geometry metadata (features, faces, edges) from api_service
             try {
                 const geoResp = await fetch(
                     `${process.env.REACT_APP_API_URL}/tasks/${cadTaskId}/geometry`,
@@ -292,7 +221,6 @@ async function handleCadMessage(
                     dispatch(setStepMetadata({ features, faces, edges, suppressed }));
                 }
 
-                // Fetch version info for undo/redo
                 const versionsResp = await fetch(
                     `${process.env.REACT_APP_API_URL}/tasks/${cadTaskId}/versions`,
                     { credentials: 'include', signal }
@@ -317,7 +245,6 @@ async function handleCadMessage(
         return;
     }
 
-    // Handle progress: "{percentage},{status_message},{name}"
     const parts = data.split(",");
     if (parts.length >= 2) {
         const percentage = parseInt(parts[0], 10);

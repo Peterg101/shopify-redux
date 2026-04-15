@@ -146,7 +146,7 @@ export const ParameterEditor: React.FC = () => {
       }
 
       dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
-      connectProgressStream(portId, 'cad', dispatch, setActualFile);
+      connectProgressStream(portId, dispatch, setActualFile);
     } catch (err: any) {
       logger.error('Error starting regeneration:', err);
       dispatch(setCadLoading({ cadLoading: false }));

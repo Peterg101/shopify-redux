@@ -56,7 +56,7 @@ def add_port_to_db(db: Session, task_id: str, port_id: str) -> Task:
     return portIdObject
 
 
-def mark_meshy_task_complete(db: Session, task_id: str):
+def mark_task_complete(db: Session, task_id: str):
     # Retrieve the task record with the provided task_id
     task = db.query(Task).filter(Task.task_id == task_id).first()
 

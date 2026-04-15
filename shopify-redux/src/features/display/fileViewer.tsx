@@ -2,7 +2,7 @@ import { useSelector } from "react-redux"
 import { Box } from "@mui/material"
 import { Dropzone } from "./dropzone"
 import { RootState } from "../../app/store";
-import { JpgObjStlViewer } from "./jpgObjStlViewer";
+import OBJSTLViewer from "./objStlViewer";
 import { RefiningOverlay } from "./RefiningOverlay";
 
 interface FileViewerProps {
@@ -25,7 +25,7 @@ export const FileViewer = ({ onTagClick }: FileViewerProps) => {
 
     return (
         <Box sx={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-            <JpgObjStlViewer onTagClick={onTagClick} />
+            <OBJSTLViewer onTagClick={onTagClick} />
             {isRefining && <RefiningOverlay />}
         </Box>
     );

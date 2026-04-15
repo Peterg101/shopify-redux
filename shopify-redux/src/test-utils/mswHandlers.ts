@@ -144,15 +144,6 @@ export const handlers = [
     return HttpResponse.json({ checkout_url: 'https://checkout.stripe.com/pay/cs_test_mock' })
   }),
 
-  // Meshy
-  http.post(`${GENERATION_BASE}/start_task/`, () => {
-    return HttpResponse.json({ task_id: 'meshy-task-1' })
-  }),
-
-  http.post(`${GENERATION_BASE}/start_image_to_3d_task/`, () => {
-    return HttpResponse.json({ task_id: 'meshy-img-task-1' })
-  }),
-
   // Auth - forgot/reset/verify
   http.post(`${API_BASE}/auth/forgot-password`, () => {
     return HttpResponse.json({ message: 'Reset link sent' })

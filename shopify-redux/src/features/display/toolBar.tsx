@@ -1,30 +1,19 @@
-import { Box, TextField, Typography, Button, CircularProgress, Chip } from '@mui/material';
+import { Box, TextField, Typography, Button } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
-import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 import { ChangeEvent } from 'react';
 import { setFileNameBoxValue, resetDataState } from '../../services/dataSlice';
 import { resetCadState } from '../../services/cadSlice';
 import { resetConversation } from '../../services/cadChatSlice';
-import { setMeshyRefining, setMeshyPending, setMeshyPreviewTaskId, resetMeshyState } from '../../services/meshySlice';
-import { startRefineTask } from '../../services/fetchFileUtils';
-import { connectProgressStream } from '../../services/progressStream';
-import { useFile } from '../../services/fileProvider';
-import { generateUuid } from '../../app/utility/collectionUtils';
 import { selectTotalCost } from '../../services/selectors';
-import { monoFontFamily, borderSubtle, borderHover, bgHighlight, bgHighlightHover, glowSubtle, glowMedium } from '../../theme';
+import { monoFontFamily, borderSubtle, borderHover, bgHighlight, bgHighlightHover, glowSubtle } from '../../theme';
 import { AddToBasket } from '../userInterface/addToBasket';
 
 export const ToolBar = () => {
   const dispatch = useDispatch();
   const dataState = useSelector((state: RootState) => state.dataState);
-  const userInformation = useSelector((state: RootState) => state.userInterfaceState.userInformation);
-  const meshyState = useSelector((state: RootState) => state.meshyState);
   const totalCost = useSelector(selectTotalCost);
-  const meshyPreviewTaskId = meshyState.meshyPreviewTaskId;
-  const meshyRefining = meshyState.meshyRefining;
-  const { setActualFile } = useFile();
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     dispatch(setFileNameBoxValue({ fileNameBoxValue: event.target.value }));
@@ -33,18 +22,7 @@ export const ToolBar = () => {
   const handleClear = () => {
     dispatch(resetDataState());
     dispatch(resetCadState());
-    dispatch(resetMeshyState());
     dispatch(resetConversation());
-  };
-
-  const handleRefine = async () => {
-    if (!meshyPreviewTaskId || !userInformation) return;
-    const portId = generateUuid();
-    dispatch(setMeshyRefining({ meshyRefining: true }));
-    dispatch(setMeshyPending({ meshyPending: true }));
-    dispatch(setMeshyPreviewTaskId({ meshyPreviewTaskId: null }));
-    await startRefineTask(meshyPreviewTaskId, userInformation.user.user_id, portId);
-    connectProgressStream(portId, 'meshy', dispatch, setActualFile);
   };
 
   return (
@@ -62,7 +40,6 @@ export const ToolBar = () => {
         backdropFilter: 'blur(8px)',
       }}
     >
-      {/* Clear Button */}
       <Button
         variant="outlined"
         size="small"
@@ -79,7 +56,6 @@ export const ToolBar = () => {
         Clear
       </Button>
 
-      {/* File Name */}
       <TextField
         label="File Name"
         variant="outlined"
@@ -89,7 +65,6 @@ export const ToolBar = () => {
         sx={{ flexGrow: 1, minWidth: 150 }}
       />
 
-      {/* Cost Badge */}
       <Box
         sx={{
           display: 'flex',
@@ -115,35 +90,6 @@ export const ToolBar = () => {
         </Typography>
       </Box>
 
-      {/* Refine Button */}
-      {meshyPreviewTaskId && !meshyRefining && (
-        <Button
-          variant="outlined"
-          size="small"
-          startIcon={<AutoFixHighIcon />}
-          onClick={handleRefine}
-          sx={{
-            transition: 'all 0.2s ease',
-            '&:hover': {
-              borderColor: 'primary.main',
-              boxShadow: `0 0 12px ${glowMedium}`,
-            },
-          }}
-        >
-          Refine
-        </Button>
-      )}
-      {meshyRefining && (
-        <Chip
-          label="Refining..."
-          size="small"
-          icon={<CircularProgress size={14} />}
-          sx={{ borderColor: 'primary.main' }}
-          variant="outlined"
-        />
-      )}
-
-      {/* Add to Basket */}
       <AddToBasket />
     </Box>
   );

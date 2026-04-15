@@ -1,4 +1,4 @@
-"""Shared utilities used by both Meshy and CAD routes."""
+"""Shared utilities used by CAD routes."""
 import os
 import json
 import logging
@@ -65,7 +65,7 @@ async def get_authenticated_user(
 
 async def register_task(
     user_id: str, task_name: str, port_id: str, task_id: str | None = None,
-    file_type: str = "obj", http_client=None,
+    file_type: str = "step", http_client=None,
 ) -> str | None:
     """Register a new task in api_service, returns task_id."""
     import uuid

@@ -1,5 +1,4 @@
-import { FileInformation, FileResponse, MeshyGenerationSettings, MeshyPayload, MeshyImageTo3DPayload, MeshyRefinePayload, CadGenerationSettings } from "../app/utility/interfaces"
-import {convertFileToDataURI } from "../app/utility/utils";
+import { FileInformation, FileResponse, CadGenerationSettings } from "../app/utility/interfaces"
 import logger from '../app/utility/logger';
 import { safeRedirect } from '../app/utility/urlValidation';
 
@@ -96,91 +95,16 @@ export const extractFileInfo = (fileResponse: FileResponse, filename: string): F
 
 const MOCK_GENERATION = process.env.REACT_APP_MOCK_GENERATION === 'true';
 
-const startMockGeneration = async (name: string, type: 'meshy' | 'cad', userId: string, portId: string) => {
+const startMockGeneration = async (name: string, userId: string, portId: string) => {
   const response = await fetch(`${process.env.REACT_APP_GENERATION_URL}/mock/generate`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, type, user_id: userId, port_id: portId }),
+    body: JSON.stringify({ name, user_id: userId, port_id: portId }),
   });
   if (!response.ok) throw new Error(`Mock generation failed: ${response.statusText}`);
   return response.json();
 };
-
-export const startTask = async (prompt: string, userId: string, portId: string, settings?: MeshyGenerationSettings) => {
-  if (MOCK_GENERATION) return startMockGeneration(prompt, 'meshy', userId, portId);
-
-  try {
-    const payload: MeshyPayload = {
-      mode: 'preview',
-      prompt: prompt,
-      art_style: settings?.art_style ?? 'realistic',
-      negative_prompt: settings?.negative_prompt ?? 'low quality, low resolution, low poly, ugly',
-      ai_model: settings?.ai_model ?? 'meshy-5',
-      ...(settings?.topology && { topology: settings.topology }),
-      ...(settings?.target_polycount && { target_polycount: settings.target_polycount }),
-      ...(settings?.symmetry_mode && { symmetry_mode: settings.symmetry_mode }),
-    };
-
-    const response = await fetch(`${process.env.REACT_APP_GENERATION_URL}/start_task/`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ port_id: portId, user_id: userId, meshy_payload: payload }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to start task: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    logger.error("Error starting task:", error);
-    throw error;
-  }
-};
-
-export const startImageTo3DTask = async (image_file: File, userId: string, portId: string, fileName: string, settings?: MeshyGenerationSettings) => {
-  if (MOCK_GENERATION) return startMockGeneration(fileName, 'meshy', userId, portId);
-
-  try {
-    const image_bytes = await convertFileToDataURI(image_file)
-    const payload: MeshyImageTo3DPayload = {
-      image_url: image_bytes,
-      enable_pbr: settings?.enable_pbr ?? true,
-      should_remesh: settings?.should_remesh ?? true,
-      should_texture: settings?.should_texture ?? true,
-      ai_model: settings?.ai_model ?? "meshy-5",
-      ...(settings?.topology && { topology: settings.topology }),
-      ...(settings?.target_polycount && { target_polycount: settings.target_polycount }),
-      ...(settings?.symmetry_mode && { symmetry_mode: settings.symmetry_mode }),
-      ...(settings?.texture_prompt && { texture_prompt: settings.texture_prompt }),
-    };
-
-    const response = await fetch(`${process.env.REACT_APP_GENERATION_URL}/start_image_to_3d_task/`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ port_id: portId, user_id: userId, meshy_image_to_3d_payload: payload, filename: fileName}),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to start image-to-3D task: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    logger.error("Error starting image-to-3D task:", error);
-    throw error;
-  }
-};
-
 
 export async function createStripeCheckoutAndRedirect(is_collaborative: boolean = false) {
   try {
@@ -251,32 +175,13 @@ export async function createShippingLabel(claimId: string): Promise<{
   return await response.json();
 }
 
-export const startRefineTask = async (
-    previewTaskId: string, userId: string, portId: string,
-    options?: { enable_pbr?: boolean; texture_prompt?: string; remove_lighting?: boolean }
-) => {
-    const payload: MeshyRefinePayload = {
-        mode: 'refine',
-        preview_task_id: previewTaskId,
-        ...options,
-    };
-    const response = await fetch(`${process.env.REACT_APP_GENERATION_URL}/start_refine_task/`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ port_id: portId, user_id: userId, meshy_refine_payload: payload }),
-    });
-    if (!response.ok) throw new Error(`Refine failed: ${response.statusText}`);
-    return response.json();
-};
-
 export const startCadTask = async (
   prompt: string,
   userId: string,
   portId: string,
   settings?: CadGenerationSettings
 ) => {
-  if (MOCK_GENERATION) return startMockGeneration(prompt, 'cad', userId, portId);
+  if (MOCK_GENERATION) return startMockGeneration(prompt, userId, portId);
 
   try {
     const payload = {

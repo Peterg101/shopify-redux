@@ -174,7 +174,7 @@ export const FeatureTree: React.FC = () => {
 
       // Optimistically update suppressed list
       dispatch(setStepMetadata({ suppressed: Array.from(suppressedTags) }));
-      connectProgressStream(portId, 'cad', dispatch, setActualFile);
+      connectProgressStream(portId, dispatch, setActualFile);
     } catch (err: any) {
       logger.error('Suppression error:', err);
       dispatch(setCadLoading({ cadLoading: false }));

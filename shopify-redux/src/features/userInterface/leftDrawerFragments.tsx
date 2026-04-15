@@ -6,11 +6,10 @@ import { TaskInformation } from "../../app/utility/interfaces";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { useFile } from "../../services/fileProvider";
-import { resetDataState, setFileProperties, setFromMeshyOrHistory, setStepMetadata, setTaskId, setFileNameBoxValue } from "../../services/dataSlice";
+import { resetDataState, setFileProperties, setAutoScaleOnLoad, setStepMetadata, setTaskId, setFileNameBoxValue } from "../../services/dataSlice";
 import { extractFileInfo, fetchFile, fetchCadFile, isCadFileType, downloadCadStepFile } from "../../services/fetchFileUtils";
 import { setLeftDrawerClosed } from "../../services/userInterfaceSlice";
 import { resetCadState } from "../../services/cadSlice";
-import { resetMeshyState } from "../../services/meshySlice";
 import { hydrateChatHistory, resetConversation } from "../../services/cadChatSlice";
 import { fetchConversation } from "../../services/cadChatApi";
 import { ChatMessage } from "../../app/utility/interfaces";
@@ -102,7 +101,6 @@ export function LeftDrawerButtons(task: TaskInformation) {
     dispatch(resetConversation());  // Clear chat FIRST to prevent race condition
     dispatch(resetDataState());
     dispatch(resetCadState());
-    dispatch(resetMeshyState());
     dispatch(setLeftDrawerClosed());
     // Navigate to the generate page so Dropzone/FileViewer is visible
     if (!shouldDownload) navigate('/generate');
@@ -163,7 +161,7 @@ export function LeftDrawerButtons(task: TaskInformation) {
       downloadBlob(file, filename.endsWith(ext) ? filename : `${filename}${ext}`);
     } else {
       setActualFile(file);
-      dispatch(setFromMeshyOrHistory({ fromMeshyOrHistory: true }));
+      dispatch(setAutoScaleOnLoad({ autoScaleOnLoad: true }));
       // CAD files are fetched as GLB previews — tell the viewer to use GLTFScene
       const viewerFileType = isCadFileType(fileType) ? 'glb' : fileType;
       dispatch(
@@ -236,7 +234,7 @@ export function LeftDrawerButtons(task: TaskInformation) {
 };
 
 export function LeftDrawerTaskLoading() {
-  const percentage = useSelector((state: RootState) => state.meshyState.meshyLoadedPercentage);
+  const percentage = useSelector((state: RootState) => state.cadState.cadLoadedPercentage);
 
   return (
     <Box sx={{ mt: 2, px: 1 }}>

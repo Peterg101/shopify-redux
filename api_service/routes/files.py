@@ -15,16 +15,12 @@ from utils import (
     check_user_existence,
     add_or_update_basket_item_in_db,
     decode_file,
-    mark_meshy_task_complete,
-    delete_port_id,
 )
 from jwt_auth import verify_jwt_token
 from rate_limit import limiter
 
 from fitd_schemas.fitd_db_schemas import User, Task, BasketItem
 from fitd_schemas.fitd_classes import (
-    MeshyTaskStatusResponse,
-    ImageTo3DMeshyTaskStatusResponse,
     BasketItemInformation,
     BasketQuantityUpdate,
 )
@@ -41,54 +37,6 @@ def _validate_file_id(file_id: str) -> str:
     if not SAFE_FILE_ID.match(file_id) or '..' in file_id:
         raise HTTPException(status_code=400, detail="Invalid file ID format")
     return file_id
-
-
-@router.post("/file_upload")
-def receive_meshy_task(
-    response: MeshyTaskStatusResponse,
-    payload: dict = Depends(verify_jwt_token),
-    db: Session = Depends(get_db),
-):
-    if response.obj_file_blob:
-        if len(response.obj_file_blob) > MAX_FILE_SIZE_B64:
-            raise HTTPException(status_code=413, detail=f"File exceeds {MAX_FILE_SIZE_MB}MB limit")
-        file_data = base64.b64decode(response.obj_file_blob)
-        file_path = UPLOAD_DIR / f"{response.id}.obj"
-
-        with open(file_path, "wb") as file:
-            file.write(file_data)
-        mark_meshy_task_complete(db, response.id)
-        delete_port_id(db, response.id)
-        return {
-            "message": "File saved successfully.",
-            "file_name": str(file_path),
-            "user": payload,
-        }
-    return {"message": "No OBJ file blob provided."}
-
-
-@router.post("/file_upload_from_image")
-def receive_meshy_task_from_image_generator(
-    response: ImageTo3DMeshyTaskStatusResponse,
-    payload: dict = Depends(verify_jwt_token),
-    db: Session = Depends(get_db),
-):
-    if response.obj_file_blob:
-        if len(response.obj_file_blob) > MAX_FILE_SIZE_B64:
-            raise HTTPException(status_code=413, detail=f"File exceeds {MAX_FILE_SIZE_MB}MB limit")
-        file_data = base64.b64decode(response.obj_file_blob)
-        file_path = UPLOAD_DIR / f"{response.id}.obj"
-
-        with open(file_path, "wb") as file:
-            file.write(file_data)
-        mark_meshy_task_complete(db, response.id)
-        delete_port_id(db, response.id)
-        return {
-            "message": "File saved successfully.",
-            "file_name": str(file_path),
-            "user": payload,
-        }
-    return {"message": "No OBJ file blob provided."}
 
 
 @router.post("/basket_item_quantity")

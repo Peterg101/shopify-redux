@@ -10,7 +10,7 @@ import dataSliceReducer, {
   setToleranceMm,
   setSurfaceFinish,
   setStepMetadata,
-  setFromMeshyOrHistory,
+  setAutoScaleOnLoad,
   setProcessId,
   setMaterialId,
 } from '../dataSlice'
@@ -33,7 +33,7 @@ const initialState: DataState = {
   fileNameBoxValue: '',
   modelDimensions: { position: { x: 0, y: 0, z: 0 } },
   fileDisplay: false,
-  fromMeshyOrHistory: false,
+  autoScaleOnLoad: false,
   xFlip: 0,
   yFlip: 0,
   zFlip: 0,
@@ -218,16 +218,16 @@ describe('dataSlice', () => {
     })
   })
 
-  describe('setFromMeshyOrHistory', () => {
-    it('should set fromMeshyOrHistory to true', () => {
-      const state = dataSliceReducer(initialState, setFromMeshyOrHistory({ fromMeshyOrHistory: true }))
-      expect(state.fromMeshyOrHistory).toBe(true)
+  describe('setAutoScaleOnLoad', () => {
+    it('should set autoScaleOnLoad to true', () => {
+      const state = dataSliceReducer(initialState, setAutoScaleOnLoad({ autoScaleOnLoad: true }))
+      expect(state.autoScaleOnLoad).toBe(true)
     })
 
-    it('should set fromMeshyOrHistory to false', () => {
-      const activeState = { ...initialState, fromMeshyOrHistory: true }
-      const state = dataSliceReducer(activeState, setFromMeshyOrHistory({ fromMeshyOrHistory: false }))
-      expect(state.fromMeshyOrHistory).toBe(false)
+    it('should set autoScaleOnLoad to false', () => {
+      const activeState = { ...initialState, autoScaleOnLoad: true }
+      const state = dataSliceReducer(activeState, setAutoScaleOnLoad({ autoScaleOnLoad: false }))
+      expect(state.autoScaleOnLoad).toBe(false)
     })
   })
 

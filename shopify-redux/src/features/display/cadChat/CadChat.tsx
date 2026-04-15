@@ -182,7 +182,7 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
       if (!resp.ok) throw new Error(`Refinement failed: ${resp.statusText}`);
 
       dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
-      connectProgressStream(portId, 'cad', dispatch, setActualFile);
+      connectProgressStream(portId, dispatch, setActualFile);
 
       const refineMsg: ChatMessage = {
         id: generateUuid(),
@@ -215,7 +215,7 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
         cadSettings,
       );
       dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
-      connectProgressStream(portId, 'cad', dispatch, setActualFile);
+      connectProgressStream(portId, dispatch, setActualFile);
     } catch (err: any) {
       dispatch(setChatError({ error: err.message || 'Failed to start generation' }));
       dispatch(setCadPending({ cadPending: false }));

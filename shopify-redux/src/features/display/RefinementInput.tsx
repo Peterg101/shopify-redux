@@ -158,7 +158,7 @@ export const RefinementInput = forwardRef<RefinementInputHandle>((_props, ref) =
         }),
       });
       if (!resp.ok) throw new Error(`Revert failed: ${resp.statusText}`);
-      connectProgressStream(portId, 'cad', dispatch, setActualFile);
+      connectProgressStream(portId, dispatch, setActualFile);
     } catch (err: any) {
       logger.error('Revert error:', err);
       dispatch(setCadLoading({ cadLoading: false }));
@@ -197,7 +197,7 @@ export const RefinementInput = forwardRef<RefinementInputHandle>((_props, ref) =
       }
 
       dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
-      connectProgressStream(portId, 'cad', dispatch, setActualFile);
+      connectProgressStream(portId, dispatch, setActualFile);
       setInstruction('');
     } catch (err: any) {
       logger.error('Error starting refinement:', err);

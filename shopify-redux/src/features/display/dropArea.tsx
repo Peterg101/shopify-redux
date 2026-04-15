@@ -4,7 +4,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useFile } from '../../services/fileProvider';
 import { createFileBlob, extractFileType } from '../../app/utility/utils';
 import { useDispatch } from 'react-redux';
-import {setFileProperties, setFromMeshyOrHistory} from '../../services/dataSlice';
+import {setFileProperties, setAutoScaleOnLoad} from '../../services/dataSlice';
 import { setLeftDrawerClosed } from '../../services/userInterfaceSlice';
 import { Box, Typography } from '@mui/material';
 import { borderHover, bgHighlight, bgHighlightHover } from '../../theme';
@@ -17,7 +17,7 @@ export const DropArea = () => {
         dispatch(setLeftDrawerClosed())
         const fileBlob = createFileBlob(file)
         const fileExtension = extractFileType(file)
-        dispatch(setFromMeshyOrHistory({fromMeshyOrHistory: true}))
+        dispatch(setAutoScaleOnLoad({autoScaleOnLoad: true}))
         dispatch(setFileProperties({
             fileNameBoxValue: file.name,
             selectedFile: fileBlob,
@@ -32,7 +32,14 @@ export const DropArea = () => {
         })
     }, [handleProcessFile])
 
-    const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
+    const {getRootProps, getInputProps, isDragActive} = useDropzone({
+        onDrop,
+        accept: {
+            'model/stl': ['.stl'],
+            'model/obj': ['.obj'],
+            'model/step': ['.step', '.stp'],
+        },
+    })
 
     return (
         <Box
@@ -59,10 +66,10 @@ export const DropArea = () => {
             <input {...getInputProps()} />
             <CloudUploadIcon sx={{ fontSize: 72, color: 'primary.main', mb: 2, opacity: 0.7 }} />
             <Typography variant="h6" color="text.secondary" textAlign="center" sx={{ px: 2 }}>
-                Click or drag an image or 3D model file
+                Click or drag a 3D model file
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ mt: 1, opacity: 0.5 }}>
-                Supports: .obj .stl .step .stp .jpg .png
+                Supports: .obj .stl .step .stp
             </Typography>
         </Box>
     )

@@ -107,7 +107,6 @@ services:
       REDIS_HOST: redis
       DB_SERVICE_URL: http://api_service:8000
       STEP_SERVICE_URL: http://media_service:1235
-      MESHY_API_KEY: ${MESHY_API_KEY}
       CAD_PROVIDER: ${CAD_PROVIDER:-ollama}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5-coder:7b}
       OLLAMA_URL: http://ollama:11434/v1
