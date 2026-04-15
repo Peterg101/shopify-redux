@@ -61,20 +61,8 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
   const [streamingText, setStreamingText] = useState<string | null>(null);
   const streamingRef = useRef('');
 
-  // Start a chat session (creates task on backend) on mount
-  useEffect(() => {
-    const initChat = async () => {
-      if (!chatState.taskId && !isRefinementMode && userInformation?.user?.user_id) {
-        try {
-          const { task_id } = await startChatSession(userInformation.user.user_id);
-          dispatch(startChat({ taskId: task_id }));
-        } catch (err) {
-          console.error('Failed to start chat session:', err);
-        }
-      }
-    };
-    initChat();
-  }, [chatState.taskId, isRefinementMode, userInformation, dispatch]);
+  // Chat session (task) is created lazily on first message send to avoid
+  // a race with hydrateChatHistory when resuming a draft task.
 
   // Reset generating phase when entering refinement mode
   useEffect(() => {
@@ -108,14 +96,25 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
 
     dispatch(addUserMessage({ message: userMsg }));
 
-    // Always use the chat endpoint for conversation (both pre- and post-generation)
-    if (!chatState.taskId) return;
+    // Lazily create task on first message if we don't have one yet
+    let activeTaskId = chatState.taskId;
+    if (!activeTaskId && !isRefinementMode) {
+      try {
+        const { task_id } = await startChatSession(userInformation.user.user_id);
+        dispatch(startChat({ taskId: task_id }));
+        activeTaskId = task_id;
+      } catch (err) {
+        console.error('Failed to start chat session:', err);
+        return;
+      }
+    }
+    if (!activeTaskId) return;
 
     streamingRef.current = '';
     setStreamingText('');
 
     await sendChatMessageStreaming(
-      chatState.taskId,
+      activeTaskId,
       userInformation.user.user_id,
       content,
       base64Images,

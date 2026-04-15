@@ -1,6 +1,7 @@
 import React from "react";
 import { Typography, Button, Card, CardContent, Box, Chip, CircularProgress, LinearProgress } from "@mui/material";
 import { AccessTime, Edit, Download, AutoAwesome } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 import { TaskInformation } from "../../app/utility/interfaces";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
@@ -94,6 +95,7 @@ export function LeftDrawerTask(task: TaskInformation) {
 export function LeftDrawerButtons(task: TaskInformation) {
   const { setActualFile } = useFile();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleGetFile = async (fileId: string, filename: string, fileType: string, shouldDownload = false, complete = true) => {
     setActualFile(null);
@@ -102,6 +104,8 @@ export function LeftDrawerButtons(task: TaskInformation) {
     dispatch(resetCadState());
     dispatch(resetMeshyState());
     dispatch(setLeftDrawerClosed());
+    // Navigate to the generate page so Dropzone/FileViewer is visible
+    if (!shouldDownload) navigate('/generate');
 
     // Incomplete tasks have no model — resume chat conversation
     if (complete === false) {
