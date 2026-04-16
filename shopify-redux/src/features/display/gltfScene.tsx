@@ -77,7 +77,7 @@ const GLTFScene = () => {
     // Position camera
     camera.position.set(70, 70, 70);
     camera.lookAt(0, 0, 0);
-  }, [scene, dataState.modelColour, dataState.multiplierValue, dataState.xFlip, dataState.yFlip, dataState.zFlip, camera]);
+  }, [scene, dataState.selectedFile, dataState.modelColour, dataState.multiplierValue, dataState.xFlip, dataState.yFlip, dataState.zFlip, camera]);
 
   return <group ref={groupRef} />;
 };

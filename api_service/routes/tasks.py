@@ -68,6 +68,7 @@ class ScriptUpdate(BaseModel):
     geometry_metadata: Optional[str] = None  # JSON string: {"features": [...], "faces": [...], "edges": [...]}
     instruction: Optional[str] = None  # The user's refinement instruction (for version history)
     conversation_history: Optional[str] = None  # JSON string of chat messages
+    task_name: Optional[str] = None  # Friendly task name derived from confirmed spec
 
 
 @router.patch("/tasks/{task_id}/script", status_code=200)
@@ -107,6 +108,8 @@ def save_task_script(
         task.geometry_metadata = payload.geometry_metadata
     if payload.conversation_history is not None:
         task.conversation_history = payload.conversation_history
+    if payload.task_name is not None:
+        task.task_name = payload.task_name
     db.commit()
 
     logger.info(f"Script saved for task {task_id} ({len(payload.cadquery_script)} chars)")

@@ -99,6 +99,15 @@ async def cad_chat_confirm(
 
     # Persist conversation history to the task (text-only, no images)
     conversation_json = await get_history_for_persistence(request.task_id, redis)
+
+    # Derive a friendly task name from the confirmed spec
+    spec_name = (
+        request.spec.get("part_name")
+        or request.spec.get("description")
+        or "CAD part"
+    )
+    task_name = str(spec_name).strip()[:60]
+
     try:
         import httpx
         api_url = os.getenv("API_SERVICE_URL", "http://api_service:8000")
@@ -111,6 +120,7 @@ async def cad_chat_confirm(
                     "cadquery_script": "",
                     "generation_prompt": prompt_text,
                     "conversation_history": conversation_json,
+                    "task_name": task_name,
                 },
                 headers={"Authorization": f"Bearer {token}"},
                 timeout=10,

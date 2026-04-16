@@ -62,7 +62,7 @@ const OBJSTLViewer = ({ hideOrientationControls = false, onTagClick }: OBJSTLVie
               {dataState.selectedFileType.includes("obj") ? (
                 <OBJScene />
               ) : dataState.selectedFileType === "glb" || dataState.selectedFileType === "gltf" ? (
-                <GLTFScene />
+                <GLTFScene key={dataState.selectedFile} />
               ) : (
                 <STLScene />
               )}

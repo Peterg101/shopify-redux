@@ -9,8 +9,10 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
+from types import SimpleNamespace
+
 from cad.conversation import (
-    _parse_response,
+    _interpret_tool_use,
     _build_design_intent_block,
     _clean_image_b64,
     _make_image_block,
@@ -18,39 +20,79 @@ from cad.conversation import (
 )
 
 
-class TestParseResponse:
-    def test_with_json_block(self):
-        text = 'Great, here are my questions.\n\n```json\n{"phase": "freeform", "spec": null}\n```'
-        display, phase, spec = _parse_response(text)
-        assert display == "Great, here are my questions."
-        assert phase == "freeform"
+def _text_block(text):
+    return SimpleNamespace(type="text", text=text)
+
+
+def _tool_block(name, input_dict):
+    return SimpleNamespace(type="tool_use", name=name, input=input_dict)
+
+
+def _response(*blocks):
+    return SimpleNamespace(content=list(blocks))
+
+
+class TestInterpretToolUse:
+    def test_ask_clarification_guided(self):
+        resp = _response(
+            _tool_block(
+                "ask_clarification",
+                {"question": "What diameter for the holes?", "phase": "guided"},
+            )
+        )
+        reply, phase, spec = _interpret_tool_use(resp)
+        assert phase == "guided"
+        assert "diameter" in reply
         assert spec is None
 
-    def test_confirmation_with_spec(self):
-        text = 'Here is the spec:\n\n```json\n{"phase": "confirmation", "spec": {"description": "A plate", "dimensions": {"length": 100}}}\n```'
-        display, phase, spec = _parse_response(text)
+    def test_ask_clarification_freeform_default(self):
+        resp = _response(
+            _tool_block("ask_clarification", {"question": "What's it for?"})
+        )
+        reply, phase, spec = _interpret_tool_use(resp)
+        assert phase == "guided"  # default when phase missing
+        assert reply == "What's it for?"
+
+    def test_submit_cad_spec(self):
+        spec_input = {
+            "part_name": "M3 bracket",
+            "description": "L-bracket",
+            "dimensions": {"length": 50, "width": 30, "height": 20, "units": "mm"},
+            "process": "fdm",
+            "material": "plastic",
+        }
+        resp = _response(_tool_block("submit_cad_spec", spec_input))
+        reply, phase, spec = _interpret_tool_use(resp)
         assert phase == "confirmation"
-        assert spec["description"] == "A plate"
-        assert spec["dimensions"]["length"] == 100
+        assert spec["part_name"] == "M3 bracket"
+        assert spec["dimensions"]["length"] == 50
+        assert reply  # non-empty default reply
 
-    def test_no_json_block(self):
-        text = "I need to know more about the dimensions."
-        display, phase, spec = _parse_response(text)
-        assert display == text
+    def test_text_then_tool(self):
+        resp = _response(
+            _text_block("Got it — here's the spec."),
+            _tool_block(
+                "submit_cad_spec",
+                {
+                    "part_name": "Cube",
+                    "description": "50mm cube",
+                    "dimensions": {"length": 50, "width": 50, "height": 50, "units": "mm"},
+                    "process": "fdm",
+                    "material": "plastic",
+                },
+            ),
+        )
+        reply, phase, spec = _interpret_tool_use(resp)
+        assert phase == "confirmation"
+        assert "Got it" in reply
+        assert spec["part_name"] == "Cube"
+
+    def test_no_tool_call_falls_back_to_freeform(self):
+        resp = _response(_text_block("Just thinking out loud."))
+        reply, phase, spec = _interpret_tool_use(resp)
         assert phase == "freeform"
         assert spec is None
-
-    def test_confirmed_phase(self):
-        text = 'Generating.\n\n```json\n{"phase": "confirmed", "spec": {"description": "Done"}}\n```'
-        display, phase, spec = _parse_response(text)
-        assert phase == "confirmed"
-        assert spec["description"] == "Done"
-
-    def test_malformed_json_returns_freeform(self):
-        text = 'Here:\n\n```json\n{not valid json}\n```'
-        display, phase, spec = _parse_response(text)
-        assert phase == "freeform"
-        assert spec is None
+        assert "thinking" in reply
 
 
 class TestBuildDesignIntent:

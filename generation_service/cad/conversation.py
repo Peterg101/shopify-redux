@@ -11,127 +11,79 @@ import asyncio
 import json
 import logging
 import os
+import random
+import time
 from collections.abc import AsyncGenerator
 
 from redis.asyncio import Redis as AsyncRedis
 
+from cad.tools import CAD_TOOLS
+
 logger = logging.getLogger(__name__)
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-CHAT_MODEL = os.getenv("CAD_CHAT_MODEL", "claude-sonnet-4-20250514")
+CHAT_MODEL = os.getenv("CAD_CHAT_MODEL", "claude-sonnet-4-5")
 CHAT_HISTORY_TTL = 3600  # 1 hour
+ANTHROPIC_BETA_HEADER = "compact-2026-01-12"  # automatic conversation compaction
+MAX_RETRIES = 4
 
 # ---------------------------------------------------------------------------
 # System prompt for requirements gathering
 # ---------------------------------------------------------------------------
 
 REQUIREMENTS_GATHERING_PROMPT = """\
-You are a CAD design requirements analyst helping a user specify a manufacturable 3D part.
-Your job is to have a natural conversation to understand what they need, then produce a
-precise specification that a CadQuery code generator can work from.
+<role>
+You are a CAD design assistant helping a user specify a manufacturable 3D part.
+You produce structured specifications that a deterministic CadQuery generator
+turns into STEP files.
+</role>
 
-## Conversation phases
+<goal>
+Help the user describe their part clearly enough to generate it. Ask targeted
+questions when you need more information, and submit a complete spec the
+moment you have enough to proceed. Do not over-ask. Trust the user's intent.
+</goal>
 
-You manage three phases.  Always include a JSON block in your response (see format below).
+<tools>
+You MUST respond by calling exactly one tool — never reply with plain text.
 
-### 1. Freeform (phase: "freeform")
-Ask open-ended questions to understand:
-- What the part IS and what it's FOR (purpose, use-case)
-- What it connects to or interfaces with (mounting, enclosures, mating parts)
-- Environmental constraints (indoor/outdoor, temperature, loads, vibration)
-- Any reference standards or off-the-shelf components it must accommodate
+- ask_clarification: use when you need more information from the user. Ask ONE
+  focused question per turn. Set phase="freeform" when exploring purpose, or
+  phase="guided" when nailing down specific engineering numbers.
 
-Keep questions conversational and one or two at a time.  Do NOT ask about
-exact dimensions yet -- understand the intent first.
+- submit_cad_spec: use when you have enough information to produce a complete
+  spec. Required minimum: a description, overall dimensions (length, width,
+  height in mm or inches), manufacturing process, and material. If the user
+  has given you "a 50mm cube", that IS enough — submit immediately, don't ask
+  more questions.
+</tools>
 
-### 2. Guided (phase: "guided")
-Once you understand the purpose, transition to specific engineering questions:
-- Overall dimensions (length x width x height)
-- Hole positions, diameters, patterns (bolt circles, mounting holes)
-- Wall thickness requirements
-- Fillets, chamfers, draft angles
-- Tolerances and surface finish
-- Symmetry, orientation for manufacturing
-- Any features: slots, pockets, bosses, ribs, snap-fits, threads
+<manufacturing_constraints>
+- FDM: minimum wall 1.6mm, avoid overhangs >45° without supports.
+- SLA: thinner walls OK (0.8mm), watch for resin drainage holes on hollow parts.
+- SLS: minimum wall 1.0mm, escape holes needed for trapped powder.
+- CNC: minimum internal radius 1mm, all features must be tool-accessible from
+  one or two setups; no internal undercuts.
+- Injection: requires draft angles (typically 1°), uniform wall thickness,
+  no thick solid sections (sink marks).
+</manufacturing_constraints>
 
-Ask about the spatial details LLMs are bad at inferring.  Be specific:
-"What diameter are the mounting holes, and how far from each corner?"
-not "Tell me about the holes."
+<style>
+- Be concise. One clarifying question per turn — never multi-part.
+- Do not narrate your reasoning. Just ask the question or submit the spec.
+- If the user's request is already specific ("50mm cube with a 20mm hole"),
+  submit the spec immediately. Don't fish for unnecessary detail.
+- The user has a UI for picking process and material — those values are
+  available in the DESIGN_INTENT block on the first user turn. Use them
+  unless the user overrides in chat.
+</style>
 
-### 3. Confirmation (phase: "confirmation")
-When you have enough information, present a structured specification for the
-user to review.  Include ALL gathered parameters.  The user can approve,
-edit, or ask for changes.
-
-CRITICAL: Do NOT move to "confirmation" phase unless you have:
-- Explicit overall dimensions (length, width, height) in mm
-- These can come from the conversation OR from the DESIGN_INTENT approximate_size
-- If the user hasn't provided dimensions and no approximate_size is set, ASK for them
-- The "dimensions" field in the spec is REQUIRED — never confirm without it
-
-If the user approves (says "looks good", "generate", "yes", etc.), respond
-with phase "confirmed" and the final spec.
-
-## Interpreting images
-
-Users may attach:
-- **Excalidraw sketches**: Rough schematics.  Extract topology (shapes, relative
-  positions, hole count/pattern) but do NOT trust exact pixel dimensions --
-  always confirm actual measurements verbally.
-- **Photos**: Reference objects, existing parts, or hand-drawn sketches.
-  Describe what you see and use it to inform your questions.
-
-When an image is provided, acknowledge it and describe what you observe before
-asking follow-up questions.
-
-## Design intent context
-
-The user has already selected manufacturing process, material, and approximate
-size via UI toggles.  These values are provided in a DESIGN_INTENT block in the
-first message.  Reference them but allow the user to override via chat.
-
-## Response format
-
-IMPORTANT: Your response MUST end with a JSON block wrapped in ```json fences:
-
-```json
-{
-  "phase": "freeform" | "guided" | "confirmation" | "confirmed",
-  "spec": null | { ... }
-}
-```
-
-Everything before the JSON block is your conversational reply shown to the user.
-The JSON block is parsed by the system and hidden from the user.
-
-When phase is "confirmation" or "confirmed", the spec object should contain:
-
-```json
-{
-  "description": "One-line summary of the part",
-  "purpose": "What it's for and how it's used",
-  "dimensions": {
-    "length": 100,
-    "width": 60,
-    "height": 5,
-    "units": "mm"
-  },
-  "features": [
-    {
-      "type": "through_hole",
-      "description": "M4 clearance holes for mounting",
-      "diameter": 4.5,
-      "count": 4,
-      "position": "8mm from each corner"
-    }
-  ],
-  "wall_thickness": 2.0,
-  "process": "fdm",
-  "material": "plastic",
-  "tolerances": "+/- 0.3mm",
-  "notes": "Any additional requirements"
-}
-```
+<images>
+- Excalidraw sketches show topology only — extract shapes and relative
+  positions, but never trust pixel dimensions. Confirm measurements verbally.
+- Photos may reference real objects or existing parts. Describe what you see
+  before asking follow-up questions.
+</images>
 """
 
 
@@ -280,38 +232,149 @@ def _history_to_messages(history: list[dict], design_intent: dict | None) -> lis
 
 
 # ---------------------------------------------------------------------------
-# Response parsing
+# Observability + retry helpers
 # ---------------------------------------------------------------------------
 
-def _parse_response(text: str) -> tuple[str, str, dict | None]:
-    """Parse assistant response into (display_text, phase, spec).
+def _log_claude_call(task_id: str, response, duration_ms: float, tool_called: str | None) -> None:
+    """Emit a structured log line summarising one Claude call."""
+    usage = getattr(response, "usage", None)
+    payload = {
+        "event": "claude_call",
+        "task_id": task_id,
+        "model": getattr(response, "model", CHAT_MODEL),
+        "stop_reason": getattr(response, "stop_reason", None),
+        "tool_called": tool_called,
+        "duration_ms": round(duration_ms, 1),
+        "request_id": getattr(response, "_request_id", None) or getattr(response, "id", None),
+    }
+    if usage is not None:
+        payload.update({
+            "input_tokens": getattr(usage, "input_tokens", None),
+            "output_tokens": getattr(usage, "output_tokens", None),
+            "cache_creation_input_tokens": getattr(usage, "cache_creation_input_tokens", None),
+            "cache_read_input_tokens": getattr(usage, "cache_read_input_tokens", None),
+        })
+    logger.info(json.dumps(payload))
 
-    Extracts the trailing ```json block and returns the user-visible text
-    before it.
+
+def _call_claude_with_retry(call_fn):
+    """Run a synchronous Anthropic call with bounded exponential backoff + jitter.
+
+    Retries on 429 (rate limited) and 529 (overloaded). Connection errors get
+    one retry per attempt. All other API errors propagate.
     """
-    phase = "freeform"
-    spec = None
-    display_text = text
+    import anthropic
 
-    # Find the last ```json ... ``` block
-    json_start = text.rfind("```json")
-    if json_start != -1:
-        json_end = text.find("```", json_start + 7)
-        if json_end != -1:
-            json_str = text[json_start + 7:json_end].strip()
-            display_text = text[:json_start].strip()
+    last_err: Exception | None = None
+    for attempt in range(MAX_RETRIES):
+        try:
+            return call_fn()
+        except anthropic.APIStatusError as e:
+            last_err = e
+            if e.status_code not in (429, 529):
+                raise
+            reset_hint = None
             try:
-                parsed = json.loads(json_str)
-                phase = parsed.get("phase", "freeform")
-                spec = parsed.get("spec")
-            except json.JSONDecodeError:
-                logger.warning("Failed to parse JSON block from chat response")
+                reset_hint = e.response.headers.get("anthropic-ratelimit-tokens-reset")
+            except Exception:
+                pass
+            if reset_hint:
+                try:
+                    delay = max(0.0, float(reset_hint))
+                except ValueError:
+                    delay = (2 ** attempt) + random.uniform(0, 0.5)
+            else:
+                delay = (2 ** attempt) + random.uniform(0, 0.5)
+            logger.warning(f"Claude {e.status_code}, retry {attempt + 1}/{MAX_RETRIES} after {delay:.1f}s")
+            time.sleep(delay)
+        except anthropic.APIConnectionError as e:
+            last_err = e
+            time.sleep(1 + attempt)
+    raise RuntimeError(f"Claude API retries exhausted: {last_err}")
 
-    return display_text, phase, spec
+
+def _build_system_param() -> list[dict]:
+    """Build the cacheable system prompt block.
+
+    Uses ephemeral cache_control so the (multi-kB) static instructions are
+    cached on the first turn and read back at ~10% of input cost on subsequent
+    turns.
+    """
+    return [
+        {
+            "type": "text",
+            "text": REQUIREMENTS_GATHERING_PROMPT,
+            "cache_control": {"type": "ephemeral"},
+        }
+    ]
 
 
 # ---------------------------------------------------------------------------
-# Streaming chat (SSE)
+# Tool-use chat (single round-trip, no streaming text — Claude responds with
+# a tool_use block, never a free-form essay).
+# ---------------------------------------------------------------------------
+
+def _interpret_tool_use(response) -> tuple[str, str, dict | None]:
+    """Extract (display_reply, phase, spec) from a Claude tool_use response."""
+    text_chunks: list[str] = []
+    tool_block = None
+
+    for block in response.content:
+        block_type = getattr(block, "type", None)
+        if block_type == "text":
+            text_chunks.append(getattr(block, "text", "") or "")
+        elif block_type == "tool_use":
+            tool_block = block
+
+    leading_text = "\n".join(t for t in text_chunks if t).strip()
+
+    if tool_block is None:
+        # Claude went off-script and returned only prose. Treat as a freeform reply.
+        reply = leading_text or "(empty response)"
+        return reply, "freeform", None
+
+    tool_input = getattr(tool_block, "input", None) or {}
+
+    if tool_block.name == "ask_clarification":
+        question = tool_input.get("question", "").strip() or "(no question)"
+        phase = tool_input.get("phase") or "guided"
+        if phase not in ("freeform", "guided"):
+            phase = "guided"
+        reply = f"{leading_text}\n\n{question}".strip() if leading_text else question
+        return reply, phase, None
+
+    if tool_block.name == "submit_cad_spec":
+        spec = dict(tool_input)
+        reply = leading_text or "Here's the spec I've put together — review and approve below."
+        return reply, "confirmation", spec
+
+    # Unknown tool — degrade gracefully.
+    logger.warning(f"Unknown tool_use name: {tool_block.name}")
+    return leading_text or "(unrecognised response)", "freeform", None
+
+
+def _claude_chat_call(messages: list[dict], client=None):
+    """Single Claude chat call configured for tool use, caching, and compaction."""
+    import anthropic
+
+    _client = client or anthropic.Anthropic(
+        api_key=ANTHROPIC_API_KEY,
+        default_headers={"anthropic-beta": ANTHROPIC_BETA_HEADER},
+    )
+
+    return _client.messages.create(
+        model=CHAT_MODEL,
+        max_tokens=2048,
+        temperature=0,
+        system=_build_system_param(),
+        tools=CAD_TOOLS,
+        tool_choice={"type": "any"},  # force the model to call one of our tools
+        messages=messages,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Streaming chat (SSE) — single tool-use round-trip, emitted as one done event.
 # ---------------------------------------------------------------------------
 
 async def chat_stream(
@@ -321,105 +384,56 @@ async def chat_stream(
     design_intent: dict | None,
     redis: AsyncRedis,
 ) -> AsyncGenerator[str, None]:
-    """Stream a chat response via SSE events.
+    """Run one Claude turn and emit a 'done' SSE event with phase + spec.
 
-    Yields SSE-formatted data lines:
-      - "token:<text>"        — incremental text token
-      - "done:<json>"         — final message with phase/spec metadata
-      - "error:<message>"     — error occurred
+    The frontend already consumes {type:"done", reply, phase, spec}. With tool
+    use there is no incremental token stream — the model's structured output
+    arrives as a single block — so we skip the {type:"token"} events.
     """
     history = await _load_history(redis, task_id)
 
-    # Append user message
     user_msg = {"role": "user", "content": content, "images": images}
     history.append(user_msg)
 
-    # Build Claude messages
     claude_messages = _history_to_messages(history, design_intent)
 
-    full_text = ""
-
     try:
-        # Stream from Claude
-        async for token in _anthropic_stream(claude_messages):
-            full_text += token
-            yield json.dumps({"type": "token", "text": token})
+        started = time.perf_counter()
+        response = await asyncio.to_thread(
+            _call_claude_with_retry, lambda: _claude_chat_call(claude_messages)
+        )
+        duration_ms = (time.perf_counter() - started) * 1000
 
-        # Parse the complete response
-        display_text, phase, spec = _parse_response(full_text)
+        display_text, phase, spec = _interpret_tool_use(response)
+
+        tool_called = None
+        for block in response.content:
+            if getattr(block, "type", None) == "tool_use":
+                tool_called = block.name
+                break
+        _log_claude_call(task_id, response, duration_ms, tool_called)
 
         logger.info(
             f"[{task_id}] Complete — phase: {phase}, "
             f"reply: {len(display_text)} chars, has_spec: {spec is not None}"
         )
 
-        # Save to history (display text only, no JSON block)
         assistant_msg = {"role": "assistant", "content": display_text}
         history.append(assistant_msg)
         await _save_history(redis, task_id, history)
-
-        # Also persist to Postgres so conversation survives Redis expiry
         await _persist_to_db(task_id, history)
 
-        # Send final metadata event
-        yield json.dumps({"type": "done", "reply": display_text, "phase": phase, "spec": spec, "task_id": task_id})
+        yield json.dumps({
+            "type": "done",
+            "reply": display_text,
+            "phase": phase,
+            "spec": spec,
+            "task_id": task_id,
+        })
 
     except Exception as e:
         logger.error(f"[{task_id}] Stream error: {e}")
         yield json.dumps({"type": "error", "message": str(e)})
-
-
-async def _anthropic_stream(messages: list[dict], client=None) -> AsyncGenerator[str, None]:
-    """Stream tokens from Anthropic Claude API."""
-    import anthropic
-
-    _client = client or anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-
-    def _stream_sync():
-        """Synchronous generator that yields text deltas from Claude."""
-        client = _client
-        with client.messages.stream(
-            model=CHAT_MODEL,
-            max_tokens=4096,
-            temperature=0,
-            system=REQUIREMENTS_GATHERING_PROMPT,
-            messages=messages,
-        ) as stream:
-            for text in stream.text_stream:
-                yield text
-
-    # Run the sync generator in a thread, yielding tokens back to async
-    import queue
-    import threading
-
-    q: queue.Queue[str | None | Exception] = queue.Queue()
-
-    def _run():
-        try:
-            for token in _stream_sync():
-                q.put(token)
-            q.put(None)  # signal done
-        except Exception as e:
-            q.put(e)
-
-    thread = threading.Thread(target=_run, daemon=True)
-    thread.start()
-
-    while True:
-        # Poll the queue, yielding to the event loop between checks
-        try:
-            item = q.get(timeout=0.05)
-        except queue.Empty:
-            await asyncio.sleep(0.01)
-            continue
-
-        if item is None:
-            break
-        if isinstance(item, Exception):
-            raise item
-        yield item
-
-    thread.join(timeout=5)
 
 
 # ---------------------------------------------------------------------------
@@ -439,8 +453,20 @@ async def chat(
     history.append(user_msg)
     claude_messages = _history_to_messages(history, design_intent)
 
-    response_text = await asyncio.to_thread(_anthropic_chat, claude_messages)
-    display_text, phase, spec = _parse_response(response_text)
+    started = time.perf_counter()
+    response = await asyncio.to_thread(
+        _call_claude_with_retry, lambda: _claude_chat_call(claude_messages)
+    )
+    duration_ms = (time.perf_counter() - started) * 1000
+
+    display_text, phase, spec = _interpret_tool_use(response)
+
+    tool_called = None
+    for block in response.content:
+        if getattr(block, "type", None) == "tool_use":
+            tool_called = block.name
+            break
+    _log_claude_call(task_id, response, duration_ms, tool_called)
 
     assistant_msg = {"role": "assistant", "content": display_text}
     history.append(assistant_msg)
@@ -452,21 +478,6 @@ async def chat(
         "phase": phase,
         "spec": spec,
     }
-
-
-def _anthropic_chat(messages: list[dict], client=None) -> str:
-    """Call Anthropic Claude (non-streaming fallback)."""
-    import anthropic
-
-    client = client or anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-    message = client.messages.create(
-        model=CHAT_MODEL,
-        max_tokens=4096,
-        temperature=0,
-        system=REQUIREMENTS_GATHERING_PROMPT,
-        messages=messages,
-    )
-    return message.content[0].text
 
 
 # ---------------------------------------------------------------------------
