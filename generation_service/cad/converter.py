@@ -43,6 +43,7 @@ SUBTRACTIVE_OPS = {
 # Operation types that are additive (add material)
 ADDITIVE_OPS = {
     "create_box", "create_cylinder", "extrude_profile", "union", "revolve",
+    "loft", "sweep",
 }
 
 # Operation types that are cosmetic (modify edges, applied last)
@@ -54,10 +55,13 @@ COSMETIC_OPS = {
 PHASE_ORDER = {
     "create_box": 0,
     "create_cylinder": 0,
+    "loft": 0,
+    "sweep": 0,
     "extrude_profile": 1,
     "union": 1,
     "revolve": 1,
     "mirror": 1,
+    "pattern": 1,
     "shell": 2,
     "cut_blind": 3,
     "cut_through": 3,
@@ -787,6 +791,173 @@ def _emit_mirror(step: dict, step_num: int, params: dict) -> tuple[list[str], st
 
 
 # ---------------------------------------------------------------------------
+# New operations: loft, sweep, pattern
+# ---------------------------------------------------------------------------
+
+
+def _emit_loft(step: dict, step_num: int, params: dict) -> tuple[list[str], str]:
+    """Loft between cross-section profiles at increasing Z offsets.
+
+    JSON input:
+    {"op": "loft", "tag": "hull", "sections": [
+      {"profile": {"type": "rect", "width": 40, "height": 10}},
+      {"offset": 50, "profile": {"type": "rect", "width": 60, "height": 20}},
+      {"offset": 100, "profile": {"type": "circle", "radius": 15}}
+    ], "ruled": false}
+    """
+    tag = step.get("tag", f"loft_{step_num}")
+    sections = step.get("sections", [])
+    ruled = step.get("ruled", False)
+
+    if len(sections) < 2:
+        raise ValueError(f"Loft requires at least 2 sections, got {len(sections)}")
+
+    lines = [
+        f"# Step {step_num}: Loft between {len(sections)} sections — {tag}",
+        f"try:",
+        f'    _loft_wp = cq.Workplane("XY")',
+    ]
+
+    for i, section in enumerate(sections):
+        profile = section.get("profile", {})
+        sketch = _sketch_for_profile(profile, params)
+        if i == 0:
+            lines.append(f"    _loft_wp = _loft_wp{sketch}")
+        else:
+            offset = _resolve_param(section.get("offset", (i + 1) * 10), params)
+            lines.append(f"    _loft_wp = _loft_wp.workplane(offset={offset}){sketch}")
+
+    lines.extend([
+        f'    result = _loft_wp.loft(ruled={ruled}).tag("{tag}")',
+        f"except Exception as _loft_err:",
+        f'    logger.warning(f"Loft failed: {{_loft_err}}, falling back to extrude")',
+        f"    # Fallback: extrude the first section",
+        f'    result = cq.Workplane("XY"){_sketch_for_profile(sections[0].get("profile", {{"type": "rect", "width": 50, "height": 50}}), params)}.extrude({_resolve_param(sections[-1].get("offset", 50), params)}).tag("{tag}")',
+    ])
+
+    feature = (
+        f'{{"step": {step_num}, "tag": "{tag}", "type": "loft", '
+        f'"sections": {len(sections)}, "depends_on": {_depends_on(step)}}}'
+    )
+    return lines, feature
+
+
+def _emit_sweep(step: dict, step_num: int, params: dict) -> tuple[list[str], str]:
+    """Sweep a 2D profile along a path.
+
+    JSON input:
+    {"op": "sweep", "tag": "handle", "profile": {"type": "circle", "radius": 5},
+     "path": {"type": "arc", "radius": 30, "angle": 180}}
+    """
+    tag = step.get("tag", f"sweep_{step_num}")
+    profile = step.get("profile", {"type": "circle", "radius": 5})
+    path_def = step.get("path", {"type": "arc", "radius": 30, "angle": 180})
+    path_type = path_def.get("type", "arc")
+
+    sketch = _sketch_for_profile(profile, params)
+
+    lines = [
+        f"# Step {step_num}: Sweep {profile.get('type', '?')} along {path_type} — {tag}",
+        f"try:",
+    ]
+
+    if path_type == "arc":
+        arc_r = _resolve_param(path_def.get("radius", 30), params)
+        angle = _resolve_param(path_def.get("angle", 180), params)
+        lines.extend([
+            f"    import math as _math",
+            f"    _sweep_path = (",
+            f'        cq.Workplane("XZ")',
+            f"        .center({arc_r}, 0)",
+            f"        .threePointArc((",
+            f"            {arc_r} * _math.cos(_math.radians({angle}/2)),",
+            f"            {arc_r} * _math.sin(_math.radians({angle}/2))",
+            f"        ), (",
+            f"            {arc_r} * _math.cos(_math.radians({angle})),",
+            f"            {arc_r} * _math.sin(_math.radians({angle}))",
+            f"        )).wire()",
+            f"    )",
+            f'    result = cq.Workplane("XY"){sketch}.sweep(_sweep_path).tag("{tag}")',
+        ])
+    elif path_type == "line":
+        dx = _resolve_param(path_def.get("dx", 0), params)
+        dy = _resolve_param(path_def.get("dy", 0), params)
+        dz = _resolve_param(path_def.get("dz", 50), params)
+        lines.extend([
+            f'    _sweep_path = cq.Workplane("XY").lineTo({dx}, {dy}).workplane(offset={dz}).wire()',
+            f'    result = cq.Workplane("XY"){sketch}.sweep(_sweep_path).tag("{tag}")',
+        ])
+    else:
+        raise ValueError(f"Unsupported sweep path type: {path_type}")
+
+    lines.extend([
+        f"except Exception as _sweep_err:",
+        f'    logger.warning(f"Sweep failed: {{_sweep_err}}, falling back to extrude")',
+        f'    result = cq.Workplane("XY"){sketch}.extrude(50).tag("{tag}")',
+    ])
+
+    feature = (
+        f'{{"step": {step_num}, "tag": "{tag}", "type": "sweep", '
+        f'"path_type": "{path_type}", "depends_on": {_depends_on(step)}}}'
+    )
+    return lines, feature
+
+
+def _emit_pattern(step: dict, step_num: int, params: dict) -> tuple[list[str], str]:
+    """Repeat the current solid in a linear or circular pattern.
+
+    JSON input (linear):
+    {"op": "pattern", "tag": "fin_array", "type": "linear",
+     "direction": [1, 0, 0], "count": 5, "spacing": 10, "depends_on": ["single_fin"]}
+
+    JSON input (circular):
+    {"op": "pattern", "tag": "spoke_array", "type": "circular",
+     "axis": [0, 0, 1], "count": 6, "depends_on": ["single_spoke"]}
+    """
+    tag = step.get("tag", f"pattern_{step_num}")
+    pat_type = step.get("type", "linear")
+    count = _resolve_param(step.get("count", 4), params)
+
+    lines = [f"# Step {step_num}: {pat_type} pattern x{count} — {tag}"]
+
+    if pat_type == "linear":
+        dx = step.get("direction", [1, 0, 0])[0]
+        dy = step.get("direction", [1, 0, 0])[1]
+        dz = step.get("direction", [1, 0, 0])[2]
+        spacing = _resolve_param(step.get("spacing", 10), params)
+        lines.extend([
+            f"_copies = [result]",
+            f"for _i in range(1, int({count})):",
+            f"    _copies.append(result.translate(({dx} * {spacing} * _i, {dy} * {spacing} * _i, {dz} * {spacing} * _i)))",
+            f"_assembly = _copies[0]",
+            f"for _c in _copies[1:]:",
+            f"    _assembly = _assembly.union(_c)",
+            f'result = _assembly.tag("{tag}")',
+        ])
+    elif pat_type == "circular":
+        count_int = int(count) if isinstance(count, (int, float)) else count
+        lines.extend([
+            f"_copies = [result]",
+            f"for _i in range(1, int({count_int})):",
+            f"    _angle = 360.0 / {count_int} * _i",
+            f"    _copies.append(result.rotate((0,0,0), (0,0,1), _angle))",
+            f"_assembly = _copies[0]",
+            f"for _c in _copies[1:]:",
+            f"    _assembly = _assembly.union(_c)",
+            f'result = _assembly.tag("{tag}")',
+        ])
+    else:
+        raise ValueError(f"Unsupported pattern type: {pat_type}")
+
+    feature = (
+        f'{{"step": {step_num}, "tag": "{tag}", "type": "pattern", '
+        f'"pattern_type": "{pat_type}", "count": {count}, '
+        f'"depends_on": {_depends_on(step)}}}'
+    )
+    return lines, feature
+
+
+# ---------------------------------------------------------------------------
 # Sketch helpers (2D profile to CadQuery chain fragment)
 # ---------------------------------------------------------------------------
 
@@ -828,6 +999,12 @@ def _sketch_for_profile(profile: dict, params: dict) -> str:
         length = _var_ref_from(profile, "length", params)
         width = _var_ref_from(profile, "width", params)
         return f".slot2D({length}, {width})"
+
+    elif ptype == "rounded_rect":
+        w = _var_ref_from(profile, "width", params)
+        h = _var_ref_from(profile, "height", params)
+        r = _var_ref_from(profile, "corner_radius", params)
+        return f".rect({w}, {h}).fillet2D({r})"
 
     else:
         raise ValueError(f"Unsupported profile type: {ptype}")
@@ -964,6 +1141,9 @@ EMITTERS = {
     "union": _emit_union,
     "revolve": _emit_revolve,
     "mirror": _emit_mirror,
+    "loft": _emit_loft,
+    "sweep": _emit_sweep,
+    "pattern": _emit_pattern,
 }
 
 

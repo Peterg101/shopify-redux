@@ -11,7 +11,7 @@ from fitd_schemas.fitd_classes import CadTaskRequest
 from jwt_auth import generate_token
 
 from cad.llm import generate_cadquery_code, fix_cadquery_code, apply_parameter_changes, refine_cadquery_code
-from cad.llm import generate_operations, fix_operations
+from cad.llm import generate_operations, fix_operations, verify_generation
 from cad.converter import convert_json_to_cadquery
 from cad.executor import execute_cadquery
 from cad.suppressor import suppress_features, resolve_dependencies
@@ -164,6 +164,43 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
                 redis, port_id, "Task Failed,Could not upload STEP file"
             )
             return
+
+        # Step 4b: Visual verification — render views and ask Claude to check
+        await publish(redis, port_id, f"85,verifying output,{task_name}")
+        try:
+            async with httpx.AsyncClient(timeout=30) as client:
+                verify_resp = await client.post(
+                    f"{STEP_SERVICE_URL}/step/{job_id}/render_views",
+                )
+            if verify_resp.status_code == 200:
+                views = verify_resp.json().get("views", {})
+                if views:
+                    passed, feedback = await verify_generation(prompt, views)
+                    if not passed:
+                        logger.warning(f"[{port_id}] Visual verification failed: {feedback}")
+                        await publish(redis, port_id, f"87,refining based on visual check,{task_name}")
+                        ops = await fix_operations(
+                            generation_prompt, ops, f"Visual inspection feedback: {feedback}",
+                            attempt=max_iterations, max_attempts=max_iterations + 1,
+                            process=process,
+                        )
+                        try:
+                            code = convert_json_to_cadquery(ops.get("steps", []), ops.get("parameters", {}))
+                            v_success, v_path, v_error, v_meta = await asyncio.to_thread(
+                                execute_cadquery, code, timeout_seconds
+                            )
+                            if v_success:
+                                output_path = v_path
+                                metadata = v_meta
+                                await save_task_script(task_id, code, prompt, metadata)
+                                job_id = await upload_step_file(output_path, user_id, task_id)
+                                logger.info(f"[{port_id}] Visual fix succeeded, re-uploaded as {job_id}")
+                        except Exception as vf_err:
+                            logger.warning(f"[{port_id}] Visual fix attempt failed: {vf_err}")
+                    else:
+                        logger.info(f"[{port_id}] Visual verification passed")
+        except Exception as ve:
+            logger.warning(f"[{port_id}] Visual verification skipped: {ve}")
 
         # Step 5: Mark task complete in db_service
         await mark_task_complete(task_id)

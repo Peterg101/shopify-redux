@@ -1,0 +1,51 @@
+[
+  {
+    "description": "Electronics enclosure with mounting bosses and USB cutout",
+    "keywords": ["enclosure", "box", "case", "housing", "electronics", "raspberry", "arduino"],
+    "parameters": {
+      "length": 90, "width": 65, "height": 30, "wall": 2,
+      "boss_d": 6, "boss_h": 8, "boss_hole_d": 2.5, "boss_inset": 5,
+      "usb_w": 12, "usb_h": 7, "usb_offset": 20, "fillet_r": 2
+    },
+    "steps": [
+      {"op": "create_box", "tag": "body", "length": "$length", "width": "$width", "height": "$height"},
+      {"op": "shell", "tag": "shell", "thickness": "$wall", "open_face": ">Z", "depends_on": ["body"]},
+      {"op": "union", "tag": "boss_1", "body": {"type": "cylinder", "height": "$boss_h", "radius": "$boss_d / 2"},
+       "translate": ["$length / 2 - $boss_inset", "$width / 2 - $boss_inset", "$wall"],
+       "depends_on": ["shell"]},
+      {"op": "union", "tag": "boss_2", "body": {"type": "cylinder", "height": "$boss_h", "radius": "$boss_d / 2"},
+       "translate": ["-$length / 2 + $boss_inset", "$width / 2 - $boss_inset", "$wall"],
+       "depends_on": ["shell"]},
+      {"op": "union", "tag": "boss_3", "body": {"type": "cylinder", "height": "$boss_h", "radius": "$boss_d / 2"},
+       "translate": ["$length / 2 - $boss_inset", "-$width / 2 + $boss_inset", "$wall"],
+       "depends_on": ["shell"]},
+      {"op": "union", "tag": "boss_4", "body": {"type": "cylinder", "height": "$boss_h", "radius": "$boss_d / 2"},
+       "translate": ["-$length / 2 + $boss_inset", "-$width / 2 + $boss_inset", "$wall"],
+       "depends_on": ["shell"]},
+      {"op": "holes", "tag": "boss_holes", "face": ">Z", "diameter": "$boss_hole_d",
+       "placement": {"type": "explicit", "positions": [
+         ["$length / 2 - $boss_inset", "$width / 2 - $boss_inset"],
+         ["-$length / 2 + $boss_inset", "$width / 2 - $boss_inset"],
+         ["$length / 2 - $boss_inset", "-$width / 2 + $boss_inset"],
+         ["-$length / 2 + $boss_inset", "-$width / 2 + $boss_inset"]
+       ]}, "depends_on": ["boss_1", "boss_2", "boss_3", "boss_4"]},
+      {"op": "cut_through", "tag": "usb_cutout", "face": ">X",
+       "profile": {"type": "rect", "width": "$usb_w", "height": "$usb_h",
+         "position": {"h": {"from": "left", "offset": "$usb_offset"}, "v": {"from": "bottom", "offset": "$wall + $usb_h / 2"}}},
+       "depends_on": ["shell"]},
+      {"op": "fillet", "tag": "outer_fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "Simple lidded box / container",
+    "keywords": ["box", "container", "tray", "holder", "storage"],
+    "parameters": {
+      "length": 60, "width": 40, "height": 25, "wall": 2, "fillet_r": 1.5
+    },
+    "steps": [
+      {"op": "create_box", "tag": "body", "length": "$length", "width": "$width", "height": "$height"},
+      {"op": "shell", "tag": "shell", "thickness": "$wall", "open_face": ">Z", "depends_on": ["body"]},
+      {"op": "fillet", "tag": "fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["body"]}
+    ]
+  }
+]

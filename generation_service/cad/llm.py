@@ -5,13 +5,119 @@ Supports two backends via CAD_PROVIDER env var:
   - "anthropic" -- Claude API (requires ANTHROPIC_API_KEY)
 """
 import asyncio
+import json as _json_mod
 import os
+import pathlib
 import re
 import logging
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# Few-shot example library
+# ---------------------------------------------------------------------------
+
+_EXAMPLES_DIR = pathlib.Path(__file__).parent / "examples"
+_EXAMPLE_CACHE: list[dict] | None = None
+
+
+def _load_examples() -> list[dict]:
+    global _EXAMPLE_CACHE
+    if _EXAMPLE_CACHE is not None:
+        return _EXAMPLE_CACHE
+    examples = []
+    if _EXAMPLES_DIR.is_dir():
+        for path in sorted(_EXAMPLES_DIR.glob("*.json")):
+            try:
+                data = _json_mod.loads(path.read_text())
+                if isinstance(data, list):
+                    for ex in data:
+                        ex["_category"] = path.stem
+                    examples.extend(data)
+            except Exception as e:
+                logger.warning(f"Failed to load examples from {path}: {e}")
+    _EXAMPLE_CACHE = examples
+    logger.info(f"Loaded {len(examples)} few-shot examples from {_EXAMPLES_DIR}")
+    return examples
+
+
+def _select_examples(prompt_text: str, max_examples: int = 2) -> list[dict]:
+    """Select the most relevant few-shot examples for a prompt using keyword matching."""
+    examples = _load_examples()
+    if not examples:
+        return []
+
+    prompt_lower = prompt_text.lower()
+    scored = []
+    for ex in examples:
+        score = 0
+        for kw in ex.get("keywords", []):
+            if kw.lower() in prompt_lower:
+                score += 1
+        if ex.get("description"):
+            for word in ex["description"].lower().split():
+                if len(word) > 3 and word in prompt_lower:
+                    score += 0.5
+        scored.append((score, ex))
+
+    scored.sort(key=lambda x: x[0], reverse=True)
+    return [ex for score, ex in scored[:max_examples] if score > 0]
+
+
+def _format_examples_for_prompt(examples: list[dict]) -> str:
+    """Format selected examples as text to include in the generation prompt."""
+    if not examples:
+        return ""
+    parts = ["REFERENCE EXAMPLES (verified working parts — use similar patterns):\n"]
+    for i, ex in enumerate(examples, 1):
+        parts.append(f"Example {i}: {ex.get('description', 'Part')}")
+        parts.append(f"```json\n{_json_mod.dumps({'parameters': ex['parameters'], 'steps': ex['steps']}, indent=2)}\n```\n")
+    return "\n".join(parts)
+
 CAD_PROVIDER = os.getenv("CAD_PROVIDER", "ollama").lower()
+
+# ---------------------------------------------------------------------------
+# Structured output schema for JSON operations (Claude structured outputs)
+# ---------------------------------------------------------------------------
+
+CAD_OPS_SCHEMA = {
+    "name": "cad_operations",
+    "strict": True,
+    "schema": {
+        "type": "object",
+        "required": ["parameters", "steps"],
+        "additionalProperties": False,
+        "properties": {
+            "parameters": {
+                "type": "object",
+                "description": "Named dimension variables (all in mm)",
+                "additionalProperties": {"type": "number"},
+            },
+            "steps": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": ["op", "tag"],
+                    "properties": {
+                        "op": {
+                            "type": "string",
+                            "enum": [
+                                "create_box", "create_cylinder",
+                                "loft", "sweep",
+                                "extrude_profile", "cut_blind", "cut_through",
+                                "holes", "shell", "fillet", "chamfer",
+                                "union", "revolve", "mirror", "pattern",
+                            ],
+                        },
+                        "tag": {"type": "string"},
+                        "depends_on": {"type": "array", "items": {"type": "string"}},
+                    },
+                    "additionalProperties": True,
+                },
+            },
+        },
+    },
+}
 
 # Ollama settings
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5-coder:7b")
@@ -598,6 +704,73 @@ def extract_code(response_text: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Visual verification (CADCodeVerify pattern)
+# ---------------------------------------------------------------------------
+
+VERIFICATION_PROMPT = """\
+You are a CAD quality inspector. You are given a design specification and \
+multi-view renders of the generated model. Evaluate whether the model matches \
+the specification.
+
+Check:
+1. Does the overall shape match the description?
+2. Are all requested features present (holes, slots, cutouts, bosses)?
+3. Are proportions approximately correct?
+4. Any obvious geometric defects (missing faces, inside-out surfaces)?
+
+Respond with exactly one of:
+- PASS — if the model acceptably matches the spec
+- FAIL: <specific issues> — if there are problems, list them concisely"""
+
+
+async def verify_generation(
+    spec_text: str,
+    view_images_b64: dict[str, str],
+) -> tuple[bool, str]:
+    """Send rendered views to Claude for visual verification.
+
+    Returns (passed, feedback). If passed is False, feedback contains
+    specific issues to address.
+    """
+    if CAD_PROVIDER != "anthropic" or not ANTHROPIC_API_KEY:
+        return True, ""
+
+    import anthropic
+
+    content: list[dict] = [
+        {"type": "text", "text": f"Design specification:\n{spec_text}\n\nRendered views of the generated model:"},
+    ]
+    for view_name, b64_data in view_images_b64.items():
+        content.append({"type": "text", "text": f"\n{view_name} view:"})
+        content.append({
+            "type": "image",
+            "source": {"type": "base64", "media_type": "image/png", "data": b64_data},
+        })
+    content.append({"type": "text", "text": "\nEvaluate this model against the spec. PASS or FAIL?"})
+
+    try:
+        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+        response = client.messages.create(
+            model=os.getenv("CAD_VERIFY_MODEL", "claude-sonnet-4-5"),
+            max_tokens=512,
+            temperature=0,
+            system=VERIFICATION_PROMPT,
+            messages=[{"role": "user", "content": content}],
+        )
+        result = response.content[0].text.strip()
+        logger.info(f"Visual verification result: {result[:100]}")
+
+        if result.startswith("PASS"):
+            return True, ""
+        else:
+            feedback = result.replace("FAIL:", "").strip() if result.startswith("FAIL") else result
+            return False, feedback
+    except Exception as e:
+        logger.warning(f"Visual verification failed (non-fatal): {e}")
+        return True, ""
+
+
+# ---------------------------------------------------------------------------
 # Ollama backend (OpenAI-compatible API)
 # ---------------------------------------------------------------------------
 
@@ -619,17 +792,23 @@ def _ollama_generate(messages: list[dict], client=None) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _anthropic_generate(user_messages: list[dict], system_prompt: str | None = None, client=None) -> str:
+def _anthropic_generate(user_messages: list[dict], system_prompt: str | None = None, client=None, output_schema: dict | None = None) -> str:
     import anthropic
 
     client = client or anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-    message = client.messages.create(
-        model=ANTHROPIC_MODEL,
-        max_tokens=8192,
-        temperature=0,
-        system=system_prompt or SYSTEM_PROMPT,
-        messages=user_messages,
-    )
+    kwargs: dict = {
+        "model": ANTHROPIC_MODEL,
+        "max_tokens": 8192,
+        "temperature": 0,
+        "system": system_prompt or SYSTEM_PROMPT,
+        "messages": user_messages,
+    }
+    if output_schema:
+        kwargs["output_format"] = {
+            "type": "json_schema",
+            "json_schema": output_schema,
+        }
+    message = client.messages.create(**kwargs)
     return message.content[0].text
 
 
@@ -667,6 +846,8 @@ Parameters are referenced as "$name" in steps.
 |----|-------------|------------|
 | create_box | Base rectangular solid | length, width, height |
 | create_cylinder | Base cylinder | radius, height |
+| loft | Blend between 2+ cross-sections (tapers, hulls, transitions) | sections: [{profile, offset?}], ruled |
+| sweep | Extrude profile along a path (tubes, handles, curves) | profile, path: {type: "arc"/"line", radius, angle} |
 | extrude_profile | Push a 2D shape out from a face | face, profile, depth |
 | cut_blind | Cut a shape into a face to a depth | face, profile, depth |
 | cut_through | Cut a shape all the way through | face, profile |
@@ -677,6 +858,28 @@ Parameters are referenced as "$name" in steps.
 | union | Merge a sub-body into the result | body: {type, radius/length/width/height, translate} |
 | revolve | Spin a 2D profile around an axis | face, profile, axis, angle |
 | mirror | Mirror the body across a plane | plane ("XY", "XZ", "YZ") |
+| pattern | Repeat geometry in linear or circular array | type: "linear"/"circular", count, spacing/direction |
+
+## LOFT EXAMPLE (tapered shape)
+```json
+{"op": "loft", "tag": "hull", "sections": [
+  {"profile": {"type": "rect", "width": 20, "height": 10}},
+  {"offset": 50, "profile": {"type": "rect", "width": 40, "height": 20}},
+  {"offset": 100, "profile": {"type": "rect", "width": 30, "height": 15}}
+], "ruled": false}
+```
+
+## SWEEP EXAMPLE (curved tube)
+```json
+{"op": "sweep", "tag": "handle", "profile": {"type": "circle", "radius": 5},
+ "path": {"type": "arc", "radius": 30, "angle": 180}}
+```
+
+## PATTERN EXAMPLE (linear array of fins)
+```json
+{"op": "pattern", "tag": "fin_array", "type": "linear",
+ "direction": [1, 0, 0], "count": 5, "spacing": 10, "depends_on": ["single_fin"]}
+```
 
 ## FACES (which surface to draw on)
 | selector | meaning |
@@ -703,10 +906,12 @@ For profiles (extrude/cut):
 - "center" = centered on that axis
 - {"from": "bottom/top/left/right", "offset": N} = N mm from that edge
 
-## PROFILES (for extrude/cut)
+## PROFILES (for extrude/cut/loft/sweep)
 ```json
 {"type": "rect", "width": 10, "height": 5, "position": {"h": "center", "v": {"from": "bottom", "offset": 6}}}
+{"type": "rounded_rect", "width": 10, "height": 5, "corner_radius": 2}
 {"type": "circle", "radius": 3, "position": {"h": {"from": "right", "offset": 10}, "v": "center"}}
+{"type": "polygon", "sides": 6, "radius": 5}
 {"type": "slot", "length": 20, "width": 3, "position": {"h": "center", "v": "center"}}
 ```
 
@@ -801,6 +1006,51 @@ User: "A 120x80x40mm enclosure, 2mm walls, open top. Four M3 mounting bosses 8mm
 Return ONLY the JSON object. No explanation."""
 
 
+BUILD_PLAN_PROMPT = """\
+You are a CAD build planner. Given a part description and manufacturing constraints,
+output a numbered build plan. For each step, state:
+- The operation type (create_box, create_cylinder, extrude_profile, cut_blind, cut_through, holes, shell, fillet, chamfer, union, revolve, mirror, loft, sweep)
+- Which face or plane to work on
+- Key dimensions
+
+Be concise. One line per step. Think about the correct build order:
+1. Base geometry first (box, cylinder, or loft)
+2. Additive features (extrusions, unions, bosses)
+3. Shell (if hollow)
+4. Subtractive features (cuts, holes) — AFTER shelling
+5. Cosmetic (fillets, chamfers) — LAST, wrapped in try/except
+
+Output ONLY the numbered plan, no other text."""
+
+
+async def _plan_build_sequence(
+    prompt: str | list[dict],
+    extra_text: str,
+) -> str:
+    """Generate a chain-of-thought build plan before JSON ops generation."""
+    if isinstance(prompt, list):
+        plan_content = list(prompt) + [{"type": "text", "text": f"\n\n{extra_text}\n\nPlan the build sequence:"}]
+    else:
+        plan_content = f"{prompt}\n\n{extra_text}\n\nPlan the build sequence:"
+
+    if CAD_PROVIDER == "anthropic":
+        plan_text = await asyncio.to_thread(
+            _anthropic_generate,
+            [{"role": "user", "content": plan_content}],
+            BUILD_PLAN_PROMPT,
+        )
+    else:
+        plan_text = await asyncio.to_thread(
+            _ollama_generate,
+            [
+                {"role": "system", "content": BUILD_PLAN_PROMPT},
+                {"role": "user", "content": plan_content if isinstance(plan_content, str) else "\n\n".join(b["text"] for b in plan_content if b.get("type") == "text")},
+            ],
+        )
+    logger.info(f"Build plan:\n{plan_text}")
+    return plan_text
+
+
 async def generate_operations(
     prompt: str | list[dict],
     process: str = "fdm",
@@ -811,20 +1061,12 @@ async def generate_operations(
 ) -> dict:
     """Generate structured JSON operations from a prompt.
 
-    Args:
-        prompt: Text description or content blocks (with images from conversation flow)
-        process: Manufacturing process for constraint context
-        material_hint: Material for constraint context
-        approximate_size: Optional {width, depth, height} in mm
-        features: Optional list of requested features (hollow, fillets, etc.)
-        target_units: Unit system (mm or inches)
-
-    Returns:
-        Parsed dict with "parameters" and "steps" keys.
+    Uses a two-phase approach (CAD-CoT):
+    1. Plan the build sequence (chain-of-thought)
+    2. Generate JSON ops following the plan
     """
     import json as _json
 
-    # Build the user message with all available context
     process_info = PROCESS_CONSTRAINTS.get(process.lower(), PROCESS_CONSTRAINTS["fdm"])
 
     extra_context = [f"Manufacturing: {process_info}", f"Material: {material_hint}"]
@@ -841,10 +1083,25 @@ async def generate_operations(
 
     extra_text = "\n".join(extra_context)
 
+    # Phase 1: Chain-of-thought build plan
+    build_plan = await _plan_build_sequence(prompt, extra_text)
+
+    # Select relevant few-shot examples
+    prompt_text = prompt if isinstance(prompt, str) else " ".join(
+        b.get("text", "") for b in prompt if isinstance(b, dict) and b.get("type") == "text"
+    )
+    examples = _select_examples(prompt_text)
+    examples_text = _format_examples_for_prompt(examples)
+    if examples:
+        logger.info(f"Selected {len(examples)} few-shot examples: {[e.get('description', '?') for e in examples]}")
+
+    # Phase 2: Generate JSON ops following the plan
+    plan_prefix = f"BUILD PLAN (follow this sequence):\n{build_plan}\n\n"
+    context_suffix = f"{plan_prefix}{examples_text}\n{extra_text}" if examples_text else f"{plan_prefix}{extra_text}"
     if isinstance(prompt, list):
-        user_content = list(prompt) + [{"type": "text", "text": f"\n\n{extra_text}"}]
+        user_content = list(prompt) + [{"type": "text", "text": f"\n\n{context_suffix}"}]
     else:
-        user_content = f"{prompt}\n\n{extra_text}"
+        user_content = f"{prompt}\n\n{context_suffix}"
 
     if CAD_PROVIDER == "anthropic":
         logger.info(f"Using Anthropic ({ANTHROPIC_MODEL}) for JSON operation generation")
@@ -852,6 +1109,8 @@ async def generate_operations(
             _anthropic_generate,
             [{"role": "user", "content": user_content}],
             JSON_SYSTEM_PROMPT,
+            None,
+            CAD_OPS_SCHEMA,
         )
     else:
         logger.info(f"Using Ollama ({OLLAMA_MODEL}) for JSON operation generation")
@@ -863,7 +1122,6 @@ async def generate_operations(
             ],
         )
 
-    # Extract JSON from response
     return _extract_json(response_text)
 
 

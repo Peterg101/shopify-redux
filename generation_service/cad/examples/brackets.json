@@ -1,0 +1,41 @@
+[
+  {
+    "description": "L-bracket with mounting holes on both legs",
+    "keywords": ["bracket", "L-bracket", "angle", "corner"],
+    "parameters": {
+      "leg_h": 60, "leg_d": 40, "width": 30, "thickness": 4,
+      "hole_d": 5, "hole_inset_h": 15, "hole_inset_d": 15, "fillet_r": 3
+    },
+    "steps": [
+      {"op": "create_box", "tag": "vertical_leg", "length": "$width", "width": "$thickness", "height": "$leg_h"},
+      {"op": "union", "tag": "horizontal_leg", "body": {"type": "box", "length": "$width", "width": "$leg_d", "height": "$thickness"},
+       "translate": [0, "$leg_d / 2 - $thickness / 2", 0], "depends_on": ["vertical_leg"]},
+      {"op": "holes", "tag": "top_holes", "face": ">Y", "diameter": "$hole_d",
+       "placement": {"type": "single", "position": [0, "$leg_h / 2 - $hole_inset_h"]},
+       "depends_on": ["vertical_leg"]},
+      {"op": "holes", "tag": "bottom_holes", "face": ">Z", "diameter": "$hole_d",
+       "placement": {"type": "single", "position": [0, "$hole_inset_d - $leg_d / 2"]},
+       "depends_on": ["horizontal_leg"]},
+      {"op": "fillet", "tag": "inner_fillet", "radius": "$fillet_r", "edges": "|X", "depends_on": ["horizontal_leg"]}
+    ]
+  },
+  {
+    "description": "U-bracket / channel bracket",
+    "keywords": ["bracket", "U-bracket", "channel", "C-bracket"],
+    "parameters": {
+      "width": 50, "depth": 30, "height": 40, "thickness": 3,
+      "hole_d": 4, "hole_inset": 10
+    },
+    "steps": [
+      {"op": "create_box", "tag": "body", "length": "$width", "width": "$depth", "height": "$height"},
+      {"op": "cut_blind", "tag": "channel", "face": ">Z",
+       "profile": {"type": "rect", "width": "$width - 2 * $thickness", "height": "$depth - $thickness"},
+       "depth": "$height - $thickness",
+       "position": {"h": "center", "v": {"from": "top", "offset": "$thickness / 2"}},
+       "depends_on": ["body"]},
+      {"op": "holes", "tag": "side_holes", "face": ">X", "diameter": "$hole_d",
+       "placement": {"type": "single", "position": [0, "$height / 2 - $hole_inset"]},
+       "depends_on": ["body"]}
+    ]
+  }
+]

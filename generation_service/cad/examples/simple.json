@@ -1,0 +1,39 @@
+[
+  {
+    "description": "Simple cube with a hole through the center",
+    "keywords": ["cube", "block", "simple", "hole", "basic"],
+    "parameters": {
+      "size": 50, "hole_d": 20
+    },
+    "steps": [
+      {"op": "create_box", "tag": "cube", "length": "$size", "width": "$size", "height": "$size"},
+      {"op": "cut_through", "tag": "center_hole", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$hole_d / 2"}, "depends_on": ["cube"]}
+    ]
+  },
+  {
+    "description": "Cylinder with chamfered edges",
+    "keywords": ["cylinder", "rod", "puck", "disc", "round"],
+    "parameters": {
+      "radius": 25, "height": 40, "chamfer": 1.5
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "body", "height": "$height", "radius": "$radius"},
+      {"op": "chamfer", "tag": "chamfers", "size": "$chamfer", "edges": "|Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "Rectangular block with counterbore holes",
+    "keywords": ["block", "brick", "rectangular", "counterbore"],
+    "parameters": {
+      "length": 80, "width": 40, "height": 20,
+      "hole_d": 5, "cbore_d": 10, "cbore_depth": 4, "hole_inset": 10
+    },
+    "steps": [
+      {"op": "create_box", "tag": "block", "length": "$length", "width": "$width", "height": "$height"},
+      {"op": "holes", "tag": "mount_holes", "face": ">Z", "diameter": "$hole_d",
+       "hole_type": "counterbore", "cbore_diameter": "$cbore_d", "cbore_depth": "$cbore_depth",
+       "placement": {"type": "corners", "inset": "$hole_inset"}, "depends_on": ["block"]}
+    ]
+  }
+]

@@ -1,0 +1,33 @@
+[
+  {
+    "description": "Threaded standoff / spacer",
+    "keywords": ["standoff", "spacer", "pillar", "post", "hex"],
+    "parameters": {
+      "outer_r": 5, "height": 15, "hole_d": 3.2
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "body", "height": "$height", "radius": "$outer_r"},
+      {"op": "cut_through", "tag": "through_hole", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$hole_d / 2"}, "depends_on": ["body"]},
+      {"op": "chamfer", "tag": "top_chamfer", "size": 0.5, "edges": ">Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "Flanged bushing / pipe fitting",
+    "keywords": ["bushing", "pipe", "tube", "fitting", "flange", "cylinder"],
+    "parameters": {
+      "body_r": 10, "body_h": 20, "flange_r": 18, "flange_h": 3,
+      "bore_d": 12, "bolt_d": 4, "bolt_r": 14, "bolt_count": 4
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "body", "height": "$body_h", "radius": "$body_r"},
+      {"op": "union", "tag": "flange", "body": {"type": "cylinder", "height": "$flange_h", "radius": "$flange_r"},
+       "translate": [0, 0, 0], "depends_on": ["body"]},
+      {"op": "cut_through", "tag": "bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$bore_d / 2"}, "depends_on": ["body"]},
+      {"op": "holes", "tag": "bolt_holes", "face": ">Z", "diameter": "$bolt_d",
+       "placement": {"type": "bolt_circle", "bolt_radius": "$bolt_r", "count": "$bolt_count"},
+       "depends_on": ["flange"]}
+    ]
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "description": "Rectangular mounting plate with 4 corner holes",
+    "keywords": ["plate", "mount", "flat", "base"],
+    "parameters": {
+      "length": 80, "width": 60, "thickness": 5,
+      "hole_d": 4.5, "hole_inset": 8, "fillet_r": 2
+    },
+    "steps": [
+      {"op": "create_box", "tag": "plate", "length": "$length", "width": "$width", "height": "$thickness"},
+      {"op": "holes", "tag": "mount_holes", "face": ">Z", "diameter": "$hole_d",
+       "placement": {"type": "corners", "inset": "$hole_inset"}, "depends_on": ["plate"]},
+      {"op": "fillet", "tag": "edge_fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["plate"]}
+    ]
+  },
+  {
+    "description": "Circular adapter plate with center hole and bolt circle",
+    "keywords": ["plate", "flange", "adapter", "circular", "round"],
+    "parameters": {
+      "outer_r": 40, "thickness": 6, "center_hole_d": 16,
+      "bolt_d": 5, "bolt_r": 28, "bolt_count": 6
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "disc", "height": "$thickness", "radius": "$outer_r"},
+      {"op": "cut_through", "tag": "center_hole", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$center_hole_d / 2"}, "depends_on": ["disc"]},
+      {"op": "holes", "tag": "bolt_holes", "face": ">Z", "diameter": "$bolt_d",
+       "placement": {"type": "bolt_circle", "bolt_radius": "$bolt_r", "count": "$bolt_count"},
+       "depends_on": ["disc"]}
+    ]
+  }
+]

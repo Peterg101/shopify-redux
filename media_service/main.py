@@ -22,7 +22,7 @@ from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 
 from jwt_auth import verify_jwt_token
-from step_processor import validate_step_file, extract_metadata, tessellate_to_glb, generate_thumbnail
+from step_processor import validate_step_file, extract_metadata, tessellate_to_glb, generate_thumbnail, generate_multiview
 from s3_utils import upload_file, generate_presigned_url, ensure_bucket_exists, find_preview_key_by_task_id, find_thumbnail_key_by_task_id, find_original_key_by_task_id
 
 if os.getenv("ENV") == "production":
@@ -377,6 +377,48 @@ async def generate_thumbnail_endpoint(
 
         return {"thumbnail_url": url, "s3_key": s3_key}
 
+    finally:
+        shutil.rmtree(job_dir, ignore_errors=True)
+
+
+@app.post("/step/{job_id}/render_views")
+async def render_views(
+    job_id: str,
+    background_tasks: BackgroundTasks,
+):
+    """Render multi-view images of a processed STEP file for visual verification.
+
+    Returns base64-encoded PNG images for each view (front, right, top, isometric).
+    """
+    import base64
+    import tempfile
+    import shutil
+
+    step_key = f"files/{job_id}/original.step"
+    job_dir = tempfile.mkdtemp(prefix=f"views_{job_id}_")
+
+    try:
+        step_path = os.path.join(job_dir, "model.step")
+        from s3_utils import download_file
+        download_file(step_key, step_path)
+
+        if not os.path.exists(step_path):
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404, detail="STEP file not found")
+
+        views = generate_multiview(step_path, job_dir, file_type="step")
+
+        result = {}
+        for view_name, png_path in views.items():
+            with open(png_path, "rb") as f:
+                result[view_name] = base64.b64encode(f.read()).decode("utf-8")
+
+        return {"views": result, "job_id": job_id}
+
+    except Exception as e:
+        logger.error(f"Render views failed for {job_id}: {e}")
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=str(e))
     finally:
         shutil.rmtree(job_dir, ignore_errors=True)
 

@@ -298,3 +298,135 @@ def generate_thumbnail(
     finally:
         if temp_glb and os.path.exists(temp_glb):
             os.unlink(temp_glb)
+
+
+VIEW_ANGLES = {
+    "front":     {"elevation": 0,      "azimuth": 0},
+    "right":     {"elevation": 0,      "azimuth": 90},
+    "top":       {"elevation": 89,     "azimuth": 0},
+    "isometric": {"elevation": 35.264, "azimuth": 45},
+}
+
+
+def generate_multiview(
+    file_path: str,
+    output_dir: str,
+    views: list[str] | None = None,
+    width: int = 400,
+    height: int = 400,
+    file_type: str = "step",
+) -> dict[str, str]:
+    """Render a 3D model from multiple camera angles.
+
+    Returns a dict mapping view name to output PNG path.
+    Reuses the same mesh loading, material, and lighting as generate_thumbnail.
+    """
+    if views is None:
+        views = ["front", "right", "top", "isometric"]
+
+    results: dict[str, str] = {}
+    temp_glb = None
+
+    try:
+        import trimesh
+        import pyrender
+        import numpy as np
+        from PIL import Image
+
+        os.environ.setdefault("PYOPENGL_PLATFORM", "osmesa")
+
+        if file_type == "step":
+            temp_glb = file_path + ".view.glb"
+            tessellate_to_glb(file_path, temp_glb)
+            mesh = trimesh.load(temp_glb, force="mesh")
+        else:
+            mesh = trimesh.load(file_path, force="mesh")
+
+        if hasattr(mesh, "is_empty") and mesh.is_empty:
+            logger.warning("Empty mesh — skipping multiview")
+            return results
+
+        centroid = mesh.centroid
+        mesh.apply_translation(-centroid)
+
+        bounds = mesh.bounds
+        extent = bounds[1] - bounds[0]
+        scale = np.max(extent) or 1.0
+        cam_distance = scale * 1.8
+
+        bg_color = np.array([10 / 255, 14 / 255, 20 / 255, 1.0])
+        material = pyrender.MetallicRoughnessMaterial(
+            baseColorFactor=[0.75, 0.75, 0.75, 1.0],
+            metallicFactor=0.3, roughnessFactor=0.6,
+        )
+        up = np.array([0.0, 0.0, 1.0])
+
+        renderer = pyrender.OffscreenRenderer(viewport_width=width, viewport_height=height)
+        try:
+            for view_name in views:
+                angles = VIEW_ANGLES.get(view_name, VIEW_ANGLES["isometric"])
+                elev = math.radians(angles["elevation"])
+                azim = math.radians(angles["azimuth"])
+
+                scene = pyrender.Scene(bg_color=bg_color, ambient_light=[0.15, 0.15, 0.15])
+                scene.add(pyrender.Mesh.from_trimesh(mesh, material=material))
+
+                cam_x = cam_distance * math.cos(elev) * math.sin(azim)
+                cam_y = cam_distance * math.cos(elev) * math.cos(azim)
+                cam_z = cam_distance * math.sin(elev)
+
+                camera = pyrender.PerspectiveCamera(yfov=math.radians(45), aspectRatio=width / height)
+                cam_pos = np.array([cam_x, cam_y, cam_z])
+                forward = -cam_pos / np.linalg.norm(cam_pos)
+                right = np.cross(forward, up)
+                norm = np.linalg.norm(right)
+                if norm < 1e-6:
+                    right = np.array([1.0, 0.0, 0.0])
+                else:
+                    right = right / norm
+                cam_up = np.cross(right, forward)
+
+                cam_pose = np.eye(4)
+                cam_pose[:3, 0] = right
+                cam_pose[:3, 1] = cam_up
+                cam_pose[:3, 2] = -forward
+                cam_pose[:3, 3] = cam_pos
+                scene.add(camera, pose=cam_pose)
+
+                for light_dir, intensity, color in [
+                    ([0.5, -0.3, -0.8], 4.0, [1.0, 1.0, 1.0]),
+                    ([-0.6, 0.4, -0.5], 2.0, [0.8, 0.85, 1.0]),
+                    ([0.0, 0.8, 0.3], 2.5, [1.0, 1.0, 1.0]),
+                ]:
+                    light = pyrender.DirectionalLight(color=color, intensity=intensity)
+                    d = np.array(light_dir, dtype=float)
+                    d = d / np.linalg.norm(d)
+                    lr = np.cross(d, up)
+                    ln = np.linalg.norm(lr)
+                    if ln < 1e-6:
+                        lr = np.array([1.0, 0.0, 0.0])
+                    else:
+                        lr = lr / ln
+                    lu = np.cross(lr, d)
+                    lp = np.eye(4)
+                    lp[:3, 0] = lr
+                    lp[:3, 1] = lu
+                    lp[:3, 2] = -d
+                    scene.add(light, pose=lp)
+
+                color_img, _ = renderer.render(scene)
+                out_path = os.path.join(output_dir, f"{view_name}.png")
+                Image.fromarray(color_img).save(out_path, format="PNG")
+                results[view_name] = out_path
+        finally:
+            renderer.delete()
+
+        logger.info(f"Multiview generated: {list(results.keys())} ({width}x{height})")
+        return results
+
+    except Exception as e:
+        logger.error(f"Multiview generation failed: {e}")
+        return results
+    finally:
+        if temp_glb and os.path.exists(temp_glb):
+            os.unlink(temp_glb)
