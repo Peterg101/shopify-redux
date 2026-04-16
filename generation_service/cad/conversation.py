@@ -111,7 +111,7 @@ async def _save_history(redis: AsyncRedis, task_id: str, history: list[dict]):
 
 
 async def _persist_to_db(task_id: str, history: list[dict]):
-    """Persist conversation history to Postgres (text-only, no images).
+    """Persist conversation history to Postgres (no images, but keeps phase/spec).
 
     Called after every chat turn so the conversation survives Redis TTL expiry.
     Failures are logged but don't break the chat flow.
@@ -119,7 +119,14 @@ async def _persist_to_db(task_id: str, history: list[dict]):
     import httpx
     from jwt_auth import generate_token
 
-    clean = [{"role": msg["role"], "content": msg["content"]} for msg in history]
+    clean = []
+    for msg in history:
+        entry: dict = {"role": msg["role"], "content": msg["content"]}
+        if msg.get("phase"):
+            entry["phase"] = msg["phase"]
+        if msg.get("spec"):
+            entry["spec"] = msg["spec"]
+        clean.append(entry)
     conversation_json = json.dumps(clean)
 
     try:
@@ -142,9 +149,16 @@ async def _persist_to_db(task_id: str, history: list[dict]):
 
 
 async def get_history_for_persistence(task_id: str, redis: AsyncRedis) -> str:
-    """Load conversation from Redis and return text-only JSON for DB storage."""
+    """Load conversation from Redis and return JSON for DB storage (no images)."""
     history = await _load_history(redis, task_id)
-    clean = [{"role": msg["role"], "content": msg["content"]} for msg in history]
+    clean = []
+    for msg in history:
+        entry: dict = {"role": msg["role"], "content": msg["content"]}
+        if msg.get("phase"):
+            entry["phase"] = msg["phase"]
+        if msg.get("spec"):
+            entry["spec"] = msg["spec"]
+        clean.append(entry)
     return json.dumps(clean)
 
 
@@ -418,7 +432,11 @@ async def chat_stream(
             f"reply: {len(display_text)} chars, has_spec: {spec is not None}"
         )
 
-        assistant_msg = {"role": "assistant", "content": display_text}
+        assistant_msg: dict = {"role": "assistant", "content": display_text}
+        if phase:
+            assistant_msg["phase"] = phase
+        if spec:
+            assistant_msg["spec"] = spec
         history.append(assistant_msg)
         await _save_history(redis, task_id, history)
         await _persist_to_db(task_id, history)
@@ -468,7 +486,11 @@ async def chat(
             break
     _log_claude_call(task_id, response, duration_ms, tool_called)
 
-    assistant_msg = {"role": "assistant", "content": display_text}
+    assistant_msg: dict = {"role": "assistant", "content": display_text}
+    if phase:
+        assistant_msg["phase"] = phase
+    if spec:
+        assistant_msg["spec"] = spec
     history.append(assistant_msg)
     await _save_history(redis, task_id, history)
 

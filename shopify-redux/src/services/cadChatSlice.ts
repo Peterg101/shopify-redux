@@ -16,10 +16,8 @@ export const cadChatSlice = createSlice({
   reducers: {
     startChat: (state, action: PayloadAction<{ taskId: string }>) => {
       state.taskId = action.payload.taskId;
-      state.messages = [];
       state.phase = 'freeform';
       state.currentSpec = null;
-      state.isWaitingForReply = false;
       state.error = null;
     },
     addUserMessage: (state, action: PayloadAction<{ message: ChatMessage }>) => {
@@ -53,9 +51,22 @@ export const cadChatSlice = createSlice({
     hydrateChatHistory: (state, action: PayloadAction<{ taskId: string; messages: ChatMessage[] }>) => {
       state.taskId = action.payload.taskId;
       state.messages = action.payload.messages;
-      state.phase = 'confirmed';
       state.isWaitingForReply = false;
       state.error = null;
+
+      // Restore phase from the last assistant message that has one
+      let restoredPhase: CadChatState['phase'] = 'confirmed';
+      let restoredSpec: Record<string, any> | null = null;
+      for (let i = action.payload.messages.length - 1; i >= 0; i--) {
+        const msg = action.payload.messages[i];
+        if (msg.role === 'assistant' && msg.phase) {
+          restoredPhase = msg.phase;
+          if (msg.spec) restoredSpec = msg.spec;
+          break;
+        }
+      }
+      state.phase = restoredPhase;
+      state.currentSpec = restoredSpec;
     },
     resetConversation: () => initialState,
   },

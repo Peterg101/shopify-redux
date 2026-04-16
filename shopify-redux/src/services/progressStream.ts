@@ -17,7 +17,6 @@ export function connectProgressStream(
     let reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
     let currentAbort: AbortController | null = null;
     let lastActivityAt = Date.now();
-    const blobUrls: string[] = [];
     let isFirstMessage = true;
 
     const cleanup = () => {
@@ -28,8 +27,6 @@ export function connectProgressStream(
         }
         currentAbort?.abort();
         document.removeEventListener('visibilitychange', handleVisibility);
-        blobUrls.forEach(url => URL.revokeObjectURL(url));
-        blobUrls.length = 0;
     };
 
     const handleVisibility = () => {
@@ -95,7 +92,7 @@ export function connectProgressStream(
                         isFirstMessage = false;
                     }
 
-                    await handleCadMessage(data, dispatch, setActualFile, signal, blobUrls, disposed);
+                    await handleCadMessage(data, dispatch, setActualFile, signal, disposed);
 
                     if (data.startsWith('Task Completed') || data.startsWith('Task Failed')) {
                         taskTerminated = true;
@@ -129,7 +126,6 @@ async function handleCadMessage(
     dispatch: AppDispatch,
     setActualFile: React.Dispatch<React.SetStateAction<File | null>>,
     signal: AbortSignal,
-    blobUrls: string[],
     disposed: boolean,
 ) {
     if (data.startsWith("Task Failed")) {
@@ -190,7 +186,6 @@ async function handleCadMessage(
             }
             const glbFile = new File([glbBlob], `${fileName}.glb`, { type: "model/gltf-binary" });
             const blobUrl = URL.createObjectURL(glbBlob);
-            blobUrls.push(blobUrl);
 
             setActualFile(glbFile);
             dispatch(setAutoScaleOnLoad({ autoScaleOnLoad: true }));

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { Box, Typography, Chip, CircularProgress, LinearProgress } from '@mui/material';
+import { Box, Typography, Chip, CircularProgress, LinearProgress, IconButton, Tooltip } from '@mui/material';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../app/store';
 import { generateUuid } from '../../../app/utility/collectionUtils';
@@ -11,8 +12,9 @@ import {
   addAssistantMessage,
   setPhase,
   setChatError,
+  resetConversation,
 } from '../../../services/cadChatSlice';
-import { setCadPending, setCadLoading, setCadOperationType } from '../../../services/cadSlice';
+import { setCadPending, setCadLoading, setCadOperationType, resetCadState } from '../../../services/cadSlice';
 import { authApi } from '../../../services/authApi';
 import { startChatSession, sendChatMessageStreaming, confirmSpec } from '../../../services/cadChatApi';
 import { connectProgressStream } from '../../../services/progressStream';
@@ -232,6 +234,13 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
     // User continues chatting — phase stays at confirmation
   };
 
+  const handleReset = () => {
+    dispatch(resetConversation());
+    dispatch(resetCadState());
+    setStreamingText(null);
+    streamingRef.current = '';
+  };
+
   const handleSketchAttach = (dataUrl: string) => {
     setSketchDataUrl(dataUrl);
     setSketchOpen(false);
@@ -314,6 +323,13 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
             </>
           )}
           <Box sx={{ flex: 1 }} />
+          {chatState.phase !== 'idle' && chatState.phase !== 'generating' && (
+            <Tooltip title="New conversation">
+              <IconButton size="small" onClick={handleReset} sx={{ color: 'text.secondary', p: 0.25 }}>
+                <RestartAltIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Tooltip>
+          )}
           {phaseLabel && chatState.phase !== 'idle' && (
             <Chip
               label={phaseLabel}

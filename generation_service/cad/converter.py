@@ -800,6 +800,16 @@ def _sketch_for_profile(profile: dict, params: dict) -> str:
     """
     ptype = profile["type"]
 
+    # Normalise common aliases the LLM may produce
+    _POLYGON_ALIASES = {"triangle": 3, "pentagon": 5, "hexagon": 6, "octagon": 8}
+    if ptype in _POLYGON_ALIASES:
+        profile = {**profile, "type": "polygon", "sides": _POLYGON_ALIASES[ptype]}
+        if "radius" not in profile:
+            profile["radius"] = profile.get("size", profile.get("width", 10))
+        ptype = "polygon"
+    elif ptype in ("square", "rectangle"):
+        ptype = "rect"
+
     if ptype == "rect":
         w = _var_ref_from(profile, "width", params)
         h = _var_ref_from(profile, "height", params)
@@ -893,11 +903,39 @@ def _var_ref(step: dict, key: str, params: dict) -> str:
     return repr(val)
 
 
+_KEY_ALIASES = {
+    "radius": ["radius", "r", "rad"],
+    "width": ["width", "w"],
+    "height": ["height", "h", "depth", "thickness"],
+    "length": ["length", "l", "len"],
+}
+
+
 def _var_ref_from(obj: dict, key: str, params: dict) -> str:
-    """Like _var_ref but for an arbitrary dict (e.g. a profile or body sub-object)."""
+    """Like _var_ref but for an arbitrary dict (e.g. a profile or body sub-object).
+
+    Tries alias keys and auto-converts diameter→radius before failing.
+    """
+    # Direct hit
     val = obj.get(key)
+
+    # Try aliases
     if val is None:
-        raise ValueError(f"Missing required key '{key}' in object")
+        for alias in _KEY_ALIASES.get(key, []):
+            val = obj.get(alias)
+            if val is not None:
+                break
+
+    # diameter → radius conversion
+    if val is None and key == "radius":
+        d = obj.get("diameter") or obj.get("d")
+        if d is not None:
+            if isinstance(d, str) and d.startswith("$"):
+                return f"({d[1:]} / 2)"
+            return repr(d / 2 if isinstance(d, (int, float)) else d)
+
+    if val is None:
+        raise ValueError(f"Missing required key '{key}' in object: {obj}")
     if isinstance(val, str) and val.startswith("$"):
         return val[1:]
     return repr(val)
