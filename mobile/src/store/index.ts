@@ -3,15 +3,19 @@ import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../services/api';
 import authReducer from './authSlice';
+import cadReducer from './cadSlice';
+import cadChatReducer from './cadChatSlice';
 
 const persistConfig = {
   key: 'fitd-mobile',
   storage: AsyncStorage,
-  whitelist: ['auth'], // Only persist auth — NOT api cache
+  whitelist: ['auth'], // Only persist auth — NOT api cache or cad state
 };
 
 const rootReducer = combineReducers({
   auth: authReducer,
+  cadState: cadReducer,
+  cadChatState: cadChatReducer,
   [api.reducerPath]: api.reducer,
 });
 
