@@ -55,6 +55,7 @@ COSMETIC_OPS = {
 PHASE_ORDER = {
     "create_box": 0,
     "create_cylinder": 0,
+    "create_sphere": 0,
     "loft": 0,
     "sweep": 0,
     "extrude_profile": 1,
@@ -62,6 +63,8 @@ PHASE_ORDER = {
     "revolve": 1,
     "mirror": 1,
     "pattern": 1,
+    "intersect": 1,
+    "split": 1,
     "shell": 2,
     "cut_blind": 3,
     "cut_through": 3,
@@ -791,8 +794,109 @@ def _emit_mirror(step: dict, step_num: int, params: dict) -> tuple[list[str], st
 
 
 # ---------------------------------------------------------------------------
-# New operations: loft, sweep, pattern
+# New operations: sphere, intersect, split, loft, sweep, pattern
 # ---------------------------------------------------------------------------
+
+
+def _emit_create_sphere(step: dict, step_num: int, params: dict) -> tuple[list[str], str]:
+    """Emit code for creating a sphere (base solid)."""
+    tag = step["tag"]
+    r = _var_ref(step, "radius", params)
+
+    lines = [
+        f"# Step {step_num}: Create sphere — {tag}",
+        f"_step += 1",
+        f'result = cq.Workplane("XY").sphere({r}).tag("{tag}")',
+    ]
+
+    feature = (
+        f'_features.append({{"tag": "{tag}", "type": "sphere", "step": _step, '
+        f'"position": [0, 0, 0], '
+        f'"dimensions": {{"radius": {r}}}, '
+        f'"depends_on": {_depends_on(step)}}})'
+    )
+    return lines, feature
+
+
+def _emit_intersect(step: dict, step_num: int, params: dict) -> tuple[list[str], str]:
+    """Boolean intersection — keep only the overlapping volume.
+
+    JSON: {"op": "intersect", "tag": "trimmed", "body": {"type": "box", "length": 40, ...},
+           "translate": [0, 0, 5]}
+    """
+    tag = step.get("tag", f"intersect_{step_num}")
+    body = step.get("body", {})
+    body_type = body.get("type", "box")
+    translate = step.get("translate", None)
+
+    lines = [
+        f"# Step {step_num}: Boolean intersect — {tag}",
+        f"_step += 1",
+    ]
+
+    if body_type == "box":
+        bl = _var_ref_from(body, "length", params)
+        bw = _var_ref_from(body, "width", params)
+        bh = _var_ref_from(body, "height", params)
+        lines.append(f'_tool = cq.Workplane("XY").box({bl}, {bw}, {bh})')
+    elif body_type == "cylinder":
+        bh = _var_ref_from(body, "height", params)
+        br = _var_ref_from(body, "radius", params)
+        lines.append(f'_tool = cq.Workplane("XY").cylinder({bh}, {br})')
+    elif body_type == "sphere":
+        br = _var_ref_from(body, "radius", params)
+        lines.append(f'_tool = cq.Workplane("XY").sphere({br})')
+    else:
+        raise ValueError(f"Unsupported intersect body type: {body_type}")
+
+    if translate:
+        tx = _resolve_param(translate[0], params) if len(translate) > 0 else 0
+        ty = _resolve_param(translate[1], params) if len(translate) > 1 else 0
+        tz = _resolve_param(translate[2], params) if len(translate) > 2 else 0
+        lines.append(f"_tool = _tool.translate(({tx}, {ty}, {tz}))")
+
+    lines.append(f'result = result.intersect(_tool).tag("{tag}")')
+
+    feature = (
+        f'_features.append({{"tag": "{tag}", "type": "intersect", "step": _step, '
+        f'"depends_on": {_depends_on(step)}}})'
+    )
+    return lines, feature
+
+
+def _emit_split(step: dict, step_num: int, params: dict) -> tuple[list[str], str]:
+    """Split body with a plane and keep one half.
+
+    JSON: {"op": "split", "tag": "half", "plane": "XZ", "keep": "positive"}
+    """
+    tag = step.get("tag", f"split_{step_num}")
+    plane = step.get("plane", "XY")
+    keep = step.get("keep", "positive")
+    offset = _resolve_param(step.get("offset", 0), params)
+
+    plane_normal = {"XY": "(0,0,1)", "XZ": "(0,1,0)", "YZ": "(1,0,0)"}.get(plane, "(0,0,1)")
+    plane_origin = {"XY": f"(0,0,{offset})", "XZ": f"(0,{offset},0)", "YZ": f"({offset},0,0)"}.get(plane, f"(0,0,{offset})")
+
+    lines = [
+        f"# Step {step_num}: Split at {plane} plane — {tag}",
+        f"_step += 1",
+        f"import cadquery as _cq",
+        f"_split_plane = _cq.Face.makePlane(basePnt={plane_origin}, dir={plane_normal})",
+        f"_halves = result.split(_split_plane).solids().vals()",
+        f'_keep = "{keep}"',
+    ]
+
+    if keep == "positive":
+        lines.append(f"result = _cq.Workplane().add(_halves[-1]).tag(\"{tag}\") if len(_halves) > 1 else result.tag(\"{tag}\")")
+    else:
+        lines.append(f"result = _cq.Workplane().add(_halves[0]).tag(\"{tag}\") if len(_halves) > 1 else result.tag(\"{tag}\")")
+
+    feature = (
+        f'_features.append({{"tag": "{tag}", "type": "split", "step": _step, '
+        f'"plane": "{plane}", "keep": "{keep}", '
+        f'"depends_on": {_depends_on(step)}}})'
+    )
+    return lines, feature
 
 
 def _emit_loft(step: dict, step_num: int, params: dict) -> tuple[list[str], str]:
@@ -991,9 +1095,16 @@ def _sketch_for_profile(profile: dict, params: dict) -> str:
         return f".circle({r})"
 
     elif ptype == "polygon":
+        points = profile.get("points")
+        if points and isinstance(points, list) and len(points) >= 3:
+            pts_str = repr([(p[0], p[1]) for p in points])
+            return f".polyline({pts_str}).close()"
         n_sides = profile.get("sides", 6)
-        r = _var_ref_from(profile, "radius", params)
-        return f".polygon({n_sides}, {r} * 2)"  # CQ polygon takes diameter
+        r = profile.get("radius") or profile.get("size") or profile.get("width")
+        if r is None:
+            raise ValueError(f"Polygon profile needs 'radius', 'sides', or 'points': {profile}")
+        r_ref = _var_ref_from(profile, "radius", params) if profile.get("radius") else repr(r)
+        return f".polygon({n_sides}, {r_ref} * 2)"  # CQ polygon takes diameter
 
     elif ptype == "slot":
         length = _var_ref_from(profile, "length", params)
@@ -1144,6 +1255,9 @@ EMITTERS = {
     "loft": _emit_loft,
     "sweep": _emit_sweep,
     "pattern": _emit_pattern,
+    "create_sphere": _emit_create_sphere,
+    "intersect": _emit_intersect,
+    "split": _emit_split,
 }
 
 

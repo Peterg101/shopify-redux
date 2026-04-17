@@ -42,26 +42,39 @@ def _load_examples() -> list[dict]:
 
 
 def _select_examples(prompt_text: str, max_examples: int = 2) -> list[dict]:
-    """Select the most relevant few-shot examples for a prompt using keyword matching."""
+    """Select the most relevant few-shot examples using BM25 ranking.
+
+    Falls back to keyword matching if rank-bm25 is not installed.
+    """
     examples = _load_examples()
     if not examples:
         return []
 
-    prompt_lower = prompt_text.lower()
-    scored = []
+    # Build corpus from keywords + description
+    corpus = []
     for ex in examples:
-        score = 0
-        for kw in ex.get("keywords", []):
-            if kw.lower() in prompt_lower:
-                score += 1
+        tokens = list(ex.get("keywords", []))
         if ex.get("description"):
-            for word in ex["description"].lower().split():
-                if len(word) > 3 and word in prompt_lower:
-                    score += 0.5
-        scored.append((score, ex))
+            tokens.extend(ex["description"].lower().split())
+        corpus.append(tokens)
 
-    scored.sort(key=lambda x: x[0], reverse=True)
-    return [ex for score, ex in scored[:max_examples] if score > 0]
+    query = prompt_text.lower().split()
+
+    try:
+        from rank_bm25 import BM25Okapi
+        bm25 = BM25Okapi(corpus)
+        scores = bm25.get_scores(query)
+        ranked = sorted(enumerate(scores), key=lambda x: x[1], reverse=True)
+        return [examples[i] for i, score in ranked[:max_examples] if score > 0]
+    except ImportError:
+        # Fallback: simple keyword overlap
+        prompt_lower = prompt_text.lower()
+        scored = []
+        for ex in examples:
+            score = sum(1 for kw in ex.get("keywords", []) if kw.lower() in prompt_lower)
+            scored.append((score, ex))
+        scored.sort(key=lambda x: x[0], reverse=True)
+        return [ex for score, ex in scored[:max_examples] if score > 0]
 
 
 def _format_examples_for_prompt(examples: list[dict]) -> str:
@@ -102,11 +115,12 @@ CAD_OPS_SCHEMA = {
                         "op": {
                             "type": "string",
                             "enum": [
-                                "create_box", "create_cylinder",
+                                "create_box", "create_cylinder", "create_sphere",
                                 "loft", "sweep",
                                 "extrude_profile", "cut_blind", "cut_through",
                                 "holes", "shell", "fillet", "chamfer",
                                 "union", "revolve", "mirror", "pattern",
+                                "intersect", "split",
                             ],
                         },
                         "tag": {"type": "string"},
@@ -792,23 +806,17 @@ def _ollama_generate(messages: list[dict], client=None) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _anthropic_generate(user_messages: list[dict], system_prompt: str | None = None, client=None, output_schema: dict | None = None) -> str:
+def _anthropic_generate(user_messages: list[dict], system_prompt: str | None = None, client=None) -> str:
     import anthropic
 
     client = client or anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-    kwargs: dict = {
-        "model": ANTHROPIC_MODEL,
-        "max_tokens": 8192,
-        "temperature": 0,
-        "system": system_prompt or SYSTEM_PROMPT,
-        "messages": user_messages,
-    }
-    if output_schema:
-        kwargs["output_format"] = {
-            "type": "json_schema",
-            "json_schema": output_schema,
-        }
-    message = client.messages.create(**kwargs)
+    message = client.messages.create(
+        model=ANTHROPIC_MODEL,
+        max_tokens=8192,
+        temperature=0,
+        system=system_prompt or SYSTEM_PROMPT,
+        messages=user_messages,
+    )
     return message.content[0].text
 
 
@@ -846,6 +854,7 @@ Parameters are referenced as "$name" in steps.
 |----|-------------|------------|
 | create_box | Base rectangular solid | length, width, height |
 | create_cylinder | Base cylinder | radius, height |
+| create_sphere | Base sphere | radius |
 | loft | Blend between 2+ cross-sections (tapers, hulls, transitions) | sections: [{profile, offset?}], ruled |
 | sweep | Extrude profile along a path (tubes, handles, curves) | profile, path: {type: "arc"/"line", radius, angle} |
 | extrude_profile | Push a 2D shape out from a face | face, profile, depth |
@@ -859,6 +868,8 @@ Parameters are referenced as "$name" in steps.
 | revolve | Spin a 2D profile around an axis | face, profile, axis, angle |
 | mirror | Mirror the body across a plane | plane ("XY", "XZ", "YZ") |
 | pattern | Repeat geometry in linear or circular array | type: "linear"/"circular", count, spacing/direction |
+| intersect | Keep only overlapping volume with a tool body | body: {type, dims}, translate |
+| split | Split with a plane, keep one half | plane ("XY"/"XZ"/"YZ"), keep ("positive"/"negative"), offset |
 
 ## LOFT EXAMPLE (tapered shape)
 ```json
@@ -1009,7 +1020,7 @@ Return ONLY the JSON object. No explanation."""
 BUILD_PLAN_PROMPT = """\
 You are a CAD build planner. Given a part description and manufacturing constraints,
 output a numbered build plan. For each step, state:
-- The operation type (create_box, create_cylinder, extrude_profile, cut_blind, cut_through, holes, shell, fillet, chamfer, union, revolve, mirror, loft, sweep)
+- The operation type (create_box, create_cylinder, create_sphere, loft, sweep, extrude_profile, cut_blind, cut_through, holes, shell, fillet, chamfer, union, revolve, mirror, pattern, intersect, split)
 - Which face or plane to work on
 - Key dimensions
 
@@ -1061,9 +1072,7 @@ async def generate_operations(
 ) -> dict:
     """Generate structured JSON operations from a prompt.
 
-    Uses a two-phase approach (CAD-CoT):
-    1. Plan the build sequence (chain-of-thought)
-    2. Generate JSON ops following the plan
+    Includes few-shot examples selected by BM25 similarity for better accuracy.
     """
     import json as _json
 
@@ -1083,10 +1092,7 @@ async def generate_operations(
 
     extra_text = "\n".join(extra_context)
 
-    # Phase 1: Chain-of-thought build plan
-    build_plan = await _plan_build_sequence(prompt, extra_text)
-
-    # Select relevant few-shot examples
+    # Select relevant few-shot examples via BM25
     prompt_text = prompt if isinstance(prompt, str) else " ".join(
         b.get("text", "") for b in prompt if isinstance(b, dict) and b.get("type") == "text"
     )
@@ -1095,9 +1101,7 @@ async def generate_operations(
     if examples:
         logger.info(f"Selected {len(examples)} few-shot examples: {[e.get('description', '?') for e in examples]}")
 
-    # Phase 2: Generate JSON ops following the plan
-    plan_prefix = f"BUILD PLAN (follow this sequence):\n{build_plan}\n\n"
-    context_suffix = f"{plan_prefix}{examples_text}\n{extra_text}" if examples_text else f"{plan_prefix}{extra_text}"
+    context_suffix = f"{examples_text}\n{extra_text}" if examples_text else extra_text
     if isinstance(prompt, list):
         user_content = list(prompt) + [{"type": "text", "text": f"\n\n{context_suffix}"}]
     else:
@@ -1109,8 +1113,6 @@ async def generate_operations(
             _anthropic_generate,
             [{"role": "user", "content": user_content}],
             JSON_SYSTEM_PROMPT,
-            None,
-            CAD_OPS_SCHEMA,
         )
     else:
         logger.info(f"Using Ollama ({OLLAMA_MODEL}) for JSON operation generation")

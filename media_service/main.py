@@ -16,7 +16,7 @@ from typing import Optional
 from dotenv import load_dotenv
 load_dotenv()
 
-from fastapi import FastAPI, HTTPException, UploadFile, File, Depends, Form
+from fastapi import FastAPI, HTTPException, UploadFile, File, Depends, Form, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
@@ -382,10 +382,7 @@ async def generate_thumbnail_endpoint(
 
 
 @app.post("/step/{job_id}/render_views")
-async def render_views(
-    job_id: str,
-    background_tasks: BackgroundTasks,
-):
+async def render_views(job_id: str):
     """Render multi-view images of a processed STEP file for visual verification.
 
     Returns base64-encoded PNG images for each view (front, right, top, isometric).
@@ -403,7 +400,6 @@ async def render_views(
         download_file(step_key, step_path)
 
         if not os.path.exists(step_path):
-            from fastapi import HTTPException
             raise HTTPException(status_code=404, detail="STEP file not found")
 
         views = generate_multiview(step_path, job_dir, file_type="step")
@@ -415,9 +411,10 @@ async def render_views(
 
         return {"views": result, "job_id": job_id}
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Render views failed for {job_id}: {e}")
-        from fastapi import HTTPException
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         shutil.rmtree(job_dir, ignore_errors=True)

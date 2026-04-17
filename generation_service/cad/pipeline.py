@@ -14,6 +14,7 @@ from cad.llm import generate_cadquery_code, fix_cadquery_code, apply_parameter_c
 from cad.llm import generate_operations, fix_operations, verify_generation
 from cad.converter import convert_json_to_cadquery
 from cad.executor import execute_cadquery
+from cad.prevalidator import validate_operations
 from cad.suppressor import suppress_features, resolve_dependencies
 from cad.validator import validate_refinement
 from shared import publish, register_task, mark_task_complete, DB_SERVICE_URL
@@ -45,8 +46,10 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
     features = getattr(settings, 'features', []) if settings else []
 
     task_name = prompt[:50].replace(",", " ")
-    # Use rich context (with images) if available, otherwise fall back to text prompt
-    generation_prompt = rich_context if rich_context else prompt
+    # Use the clean text prompt for generation — rich_context (full conversation with
+    # images) is too noisy and degrades output quality. The spec text from
+    # spec_to_prompt() is the authoritative input.
+    generation_prompt = prompt
 
     try:
         # Step 1: Generate JSON operations (LLM outputs structured JSON, not code)
@@ -63,10 +66,21 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
             await publish(redis, port_id, f"Task Failed,{reason}")
             return
 
-        await publish(redis, port_id, f"20,converting to geometry,{task_name}")
+        await publish(redis, port_id, f"20,validating geometry,{task_name}")
         logger.info(f"[{port_id}] Got {len(ops.get('steps', []))} operations")
 
+        # Step 1b: Pre-validate geometry feasibility (no Docker needed)
+        pre_issues = validate_operations(ops.get("steps", []), ops.get("parameters", {}))
+        if pre_issues:
+            logger.warning(f"[{port_id}] Pre-validation found {len(pre_issues)} issues, asking LLM to fix")
+            issues_text = "Geometry pre-validation issues:\n" + "\n".join(f"- {i}" for i in pre_issues)
+            ops = await fix_operations(generation_prompt, ops, issues_text, process=process)
+            pre_issues_2 = validate_operations(ops.get("steps", []), ops.get("parameters", {}))
+            if pre_issues_2:
+                logger.warning(f"[{port_id}] Pre-validation still has {len(pre_issues_2)} issues after fix")
+
         # Step 2: Convert JSON → CadQuery code (deterministic, no LLM)
+        await publish(redis, port_id, f"25,converting to geometry,{task_name}")
         try:
             code = convert_json_to_cadquery(ops.get("steps", []), ops.get("parameters", {}))
         except ValueError as e:
