@@ -1,0 +1,27 @@
+[
+  {
+    "description": "Hollow funnel / cone tapering from wide top to narrow bottom",
+    "keywords": ["funnel", "cone", "taper", "nozzle", "hopper"],
+    "parameters": {
+      "top_r": 25, "bottom_r": 7.5, "height": 60, "wall": 2
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "outer", "radius": "$top_r", "height": "$height", "depends_on": []},
+      {"op": "intersect", "tag": "tapered_outer", "body": {"type": "cone", "radius": "$top_r", "top_radius": "$bottom_r", "height": "$height"}, "depends_on": ["outer"]},
+      {"op": "shell", "tag": "hollow", "thickness": "$wall", "open_faces": [">Z", "<Z"], "depends_on": ["tapered_outer"]}
+    ]
+  },
+  {
+    "description": "Solid tapered transition piece / reducer",
+    "keywords": ["taper", "reducer", "transition", "adapter", "cone"],
+    "parameters": {
+      "top_r": 20, "bottom_r": 10, "height": 40
+    },
+    "steps": [
+      {"op": "loft", "tag": "taper", "sections": [
+        {"profile": {"type": "circle", "radius": "$bottom_r"}},
+        {"offset": "$height", "profile": {"type": "circle", "radius": "$top_r"}}
+      ], "ruled": true, "depends_on": []}
+    ]
+  }
+]

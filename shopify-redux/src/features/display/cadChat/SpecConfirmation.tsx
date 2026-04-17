@@ -71,27 +71,39 @@ const SpecConfirmation: React.FC<SpecConfirmationProps> = ({ spec, onApprove, on
           </Typography>
         )}
 
+        {/* Base shape */}
+        {editableSpec.base_shape && (
+          <Box sx={{ mb: 1 }}>
+            <Chip
+              label={editableSpec.base_shape}
+              size="small"
+              color="primary"
+              sx={{ fontSize: '0.7rem', mr: 0.5 }}
+            />
+          </Box>
+        )}
+
         {/* Dimensions */}
         {dims && (
           <Box sx={{ mb: 1.5 }}>
             <Typography variant="caption" color="text.secondary" fontWeight={600}>
               Dimensions ({dims.units || 'mm'})
             </Typography>
-            <Box sx={{ display: 'flex', gap: 1, mt: 0.5, alignItems: 'center' }}>
-              {['length', 'width', 'height'].map((key) => (
+            <Box sx={{ display: 'flex', gap: 1, mt: 0.5, alignItems: 'center', flexWrap: 'wrap' }}>
+              {['length', 'width', 'height', 'radius', 'diameter', 'top_diameter', 'bottom_diameter'].filter((key) => dims[key] != null).map((key) => (
                 <React.Fragment key={key}>
                   {isEditing ? (
                     <TextField
                       size="small"
-                      label={key}
+                      label={key.replace('_', ' ')}
                       type="number"
                       value={dims[key] ?? ''}
                       onChange={(e) => updateDimension(key, e.target.value)}
-                      sx={{ width: 80, '& .MuiInputBase-input': { py: 0.5, fontSize: '0.8rem' } }}
+                      sx={{ width: 100, '& .MuiInputBase-input': { py: 0.5, fontSize: '0.8rem' } }}
                     />
                   ) : (
                     <Chip
-                      label={`${key}: ${dims[key] ?? '?'}`}
+                      label={`${key.replace('_', ' ')}: ${dims[key]}`}
                       size="small"
                       variant="outlined"
                       sx={{ borderColor: borderSubtle, fontSize: '0.75rem' }}

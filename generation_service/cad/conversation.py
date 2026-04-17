@@ -45,17 +45,21 @@ moment you have enough to proceed. Do not over-ask. Trust the user's intent.
 </goal>
 
 <tools>
-You MUST respond by calling exactly one tool — never reply with plain text.
+You have two tools. You can also reply with plain text for conversational turns.
 
-- ask_clarification: use when you need more information from the user. Ask ONE
-  focused question per turn. Set phase="freeform" when exploring purpose, or
-  phase="guided" when nailing down specific engineering numbers.
+- ask_clarification: use when you need more information from the user.
 
-- submit_cad_spec: use when you have enough information to produce a complete
-  spec. Required minimum: a description, overall dimensions (length, width,
-  height in mm or inches), manufacturing process, and material. If the user
-  has given you "a 50mm cube", that IS enough — submit immediately, don't ask
-  more questions.
+- submit_cad_spec: use when you have enough information. Required fields:
+  - part_name, description, process, material
+  - base_shape: choose the right one — "box" for rectangular, "cylinder" for
+    round, "cone" for tapered/funnel shapes, "sphere", or "loft" for shapes
+    that change cross-section along their height
+  - dimensions: use the fields that match the base_shape:
+    - box: length, width, height
+    - cylinder: radius (or diameter), height
+    - cone: top_diameter, bottom_diameter, height
+    - loft: height + cross_sections array
+  - For hollow parts: set hollow=true, wall_thickness, and open_faces
 </tools>
 
 <manufacturing_constraints>
@@ -71,17 +75,26 @@ You MUST respond by calling exactly one tool — never reply with plain text.
 <style>
 - Be concise. One clarifying question per turn — never multi-part.
 - Do not narrate your reasoning. Just ask the question or submit the spec.
-- If the user's request is already specific ("50mm cube with a 20mm hole"),
-  submit the spec immediately. Don't fish for unnecessary detail.
+- ALWAYS ask at least one clarifying question before submitting a spec, even
+  for seemingly simple requests. "50mm cube" — ask about hole positions,
+  fillets, wall thickness, or mounting. Users rarely describe everything
+  they actually need on the first message.
+- Only skip clarification if the user explicitly says "just generate it"
+  or provides a complete specification with all dimensions and features.
+- Focus questions on spatial details the generator needs: exact positions
+  of holes, which faces get cutouts, offset distances from edges.
 - The user has a UI for picking process and material — those values are
   available in the DESIGN_INTENT block on the first user turn. Use them
   unless the user overrides in chat.
 </style>
 
 <images>
-- Excalidraw sketches show topology only — extract shapes and relative
-  positions, but never trust pixel dimensions. Confirm measurements verbally.
-- Photos may reference real objects or existing parts. Describe what you see
+- Sketches are ROUGH references. They show the general idea, NOT exact geometry.
+  Overlapping lines, uneven edges, extra corners from sloppy drawing are artifacts
+  — ignore them. A wobbly rectangle is a rectangle, not a polygon. Simplify what
+  you see into clean geometric primitives.
+- NEVER derive dimensions from pixel measurements. Always confirm sizes verbally.
+- Photos may show reference objects or existing parts. Describe what you see
   before asking follow-up questions.
 </images>
 """
@@ -324,8 +337,8 @@ def _build_system_param() -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
-# Tool-use chat (single round-trip, no streaming text — Claude responds with
-# a tool_use block, never a free-form essay).
+# Tool-use chat — Claude can reply with text (conversation) or call a tool
+# (submit spec / ask clarification). tool_choice=auto lets it choose.
 # ---------------------------------------------------------------------------
 
 def _interpret_tool_use(response) -> tuple[str, str, dict | None]:
@@ -382,7 +395,7 @@ def _claude_chat_call(messages: list[dict], client=None):
         temperature=0,
         system=_build_system_param(),
         tools=CAD_TOOLS,
-        tool_choice={"type": "any"},  # force the model to call one of our tools
+        tool_choice={"type": "auto"},  # let Claude choose when to call tools vs reply naturally
         messages=messages,
     )
 
@@ -507,7 +520,11 @@ async def chat(
 # ---------------------------------------------------------------------------
 
 def spec_to_prompt(spec: dict, design_intent: dict | None = None) -> str:
-    """Convert a confirmed spec dict into a rich text prompt for generate_cadquery_code()."""
+    """Convert a confirmed spec dict into a rich text prompt for the generation LLM.
+
+    Produces a description that preserves spatial intent — base shape type,
+    taper dimensions, cross-sections, feature positions, and hollow/open faces.
+    """
     parts = []
 
     desc = spec.get("description", "")
@@ -517,18 +534,60 @@ def spec_to_prompt(spec: dict, design_intent: dict | None = None) -> str:
     if purpose:
         parts.append(f"Purpose: {purpose}")
 
-    dims = spec.get("dimensions")
-    if dims:
+    # Base shape
+    base = spec.get("base_shape", "box")
+    dims = spec.get("dimensions", {})
+    units = dims.get("units", "mm")
+
+    if base == "box":
         l = dims.get("length", "?")
         w = dims.get("width", "?")
         h = dims.get("height", "?")
-        units = dims.get("units", "mm")
-        parts.append(f"Overall dimensions: {l} x {w} x {h} {units}")
+        parts.append(f"Base shape: rectangular box {l} x {w} x {h} {units}")
+    elif base == "cylinder":
+        r = dims.get("radius") or (dims.get("diameter", 0) / 2) or "?"
+        h = dims.get("height", "?")
+        parts.append(f"Base shape: cylinder, radius {r}{units}, height {h}{units}")
+    elif base == "sphere":
+        r = dims.get("radius") or (dims.get("diameter", 0) / 2) or "?"
+        parts.append(f"Base shape: sphere, radius {r}{units}")
+    elif base == "cone":
+        td = dims.get("top_diameter", "?")
+        bd = dims.get("bottom_diameter", "?")
+        h = dims.get("height", "?")
+        parts.append(f"Base shape: cone/taper, top diameter {td}{units}, bottom diameter {bd}{units}, height {h}{units}")
+    elif base == "loft":
+        h = dims.get("height", "?")
+        parts.append(f"Base shape: lofted (varying cross-sections), total height {h}{units}")
+        sections = spec.get("cross_sections", [])
+        if sections:
+            section_lines = []
+            for s in sections:
+                shape = s.get("shape", "circle")
+                offset = s.get("height_offset", 0)
+                d = s.get("diameter") or s.get("width") or "?"
+                section_lines.append(f"  - At {offset}{units}: {shape}, {d}{units}")
+            parts.append("Cross-sections:\n" + "\n".join(section_lines))
+    else:
+        l = dims.get("length", "?")
+        w = dims.get("width", "?")
+        h = dims.get("height", "?")
+        parts.append(f"Dimensions: {l} x {w} x {h} {units}")
 
+    # Hollow / shell
+    hollow = spec.get("hollow", False)
     wall = spec.get("wall_thickness")
-    if wall:
-        parts.append(f"Wall thickness: {wall}mm")
+    if hollow or wall:
+        open_faces = spec.get("open_faces", [])
+        wall_str = f"{wall}mm walls" if wall else "hollow"
+        if open_faces:
+            face_map = {"top": ">Z", "bottom": "<Z", "front": ">Y", "back": "<Y", "right": ">X", "left": "<X"}
+            open_str = ", ".join(open_faces)
+            parts.append(f"Shell: {wall_str}, open on {open_str}")
+        else:
+            parts.append(f"Shell: {wall_str}")
 
+    # Features
     features = spec.get("features", [])
     if features:
         feature_lines = []
@@ -536,8 +595,14 @@ def spec_to_prompt(spec: dict, design_intent: dict | None = None) -> str:
             line = f.get("description", f.get("type", ""))
             if f.get("diameter"):
                 line += f" (diameter: {f['diameter']}mm)"
+            if f.get("width") and f.get("height"):
+                line += f" ({f['width']}x{f['height']}mm)"
+            if f.get("depth"):
+                line += f" (depth: {f['depth']}mm)"
             if f.get("count"):
                 line += f" x{f['count']}"
+            if f.get("face"):
+                line += f" on {f['face']} face"
             if f.get("position"):
                 line += f" at {f['position']}"
             feature_lines.append(f"  - {line}")
@@ -551,15 +616,19 @@ def spec_to_prompt(spec: dict, design_intent: dict | None = None) -> str:
     if notes:
         parts.append(f"Notes: {notes}")
 
-    # Include design intent settings if provided
+    # Process / material from spec or design intent
+    process = spec.get("process")
+    material = spec.get("material")
     if design_intent:
-        intent_parts = []
-        if design_intent.get("process"):
-            intent_parts.append(f"Process: {design_intent['process'].upper()}")
-        if design_intent.get("material_hint"):
-            intent_parts.append(f"Material: {design_intent['material_hint']}")
-        if intent_parts:
-            parts.append("Manufacturing: " + ", ".join(intent_parts))
+        process = process or design_intent.get("process")
+        material = material or design_intent.get("material_hint")
+    if process or material:
+        mfg = []
+        if process:
+            mfg.append(f"Process: {process.upper()}")
+        if material:
+            mfg.append(f"Material: {material}")
+        parts.append("Manufacturing: " + ", ".join(mfg))
 
     return "\n\n".join(parts)
 

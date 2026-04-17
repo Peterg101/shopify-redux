@@ -256,6 +256,10 @@ def _resolve_param(value: Any, parameters: dict) -> Any:
       - Expressions: "$length / 2 - $wall" → evaluate with substitution
       - Literals: 42.0 → 42.0
     """
+    if isinstance(value, dict):
+        raise ValueError(f"Expected a number or $param reference, got dict: {value}")
+    if isinstance(value, list):
+        raise ValueError(f"Expected a number or $param reference, got list: {value}")
     if isinstance(value, (int, float)):
         return value
     if isinstance(value, str) and "$" in value:
@@ -711,13 +715,30 @@ def _emit_union(step: dict, step_num: int, params: dict) -> tuple[list[str], str
     elif body_type == "cylinder":
         bh = _var_ref_from(body, "height", params)
         br = _var_ref_from(body, "radius", params)
-        # CadQuery .cylinder() centers vertically — offset Z by half height
-        # so the base sits at the translate Z position
         bh_resolved = _resolve_param(body.get("height", 10), params)
         z_offset = f"{tz} + {bh_resolved}/2" if isinstance(bh_resolved, (int, float)) else f"{tz} + {bh}/2"
         lines.append(
             f'_body_{step_num} = cq.Workplane("XY").cylinder({bh}, {br})'
             f'.translate(({tx}, {ty}, {z_offset}))'
+        )
+    elif body_type == "sphere":
+        br = _var_ref_from(body, "radius", params)
+        lines.append(
+            f'_body_{step_num} = cq.Workplane("XY").sphere({br})'
+            f'.translate(({tx}, {ty}, {tz}))'
+        )
+    elif body_type == "cone":
+        bh = _var_ref_from(body, "height", params)
+        br1 = _var_ref_from(body, "radius", params)
+        br2 = body.get("top_radius", body.get("radius2", 0))
+        br2_ref = _resolve_param(br2, params) if br2 else 0.01
+        lines.append(
+            f'_body_{step_num} = ('
+            f'cq.Workplane("XY").circle({br1})'
+            f'.workplane(offset={bh}).circle({br2_ref})'
+            f'.loft()'
+            f'.translate(({tx}, {ty}, {tz}))'
+            f')'
         )
     else:
         raise ValueError(f"Unsupported union body type: {body_type}")
@@ -846,6 +867,18 @@ def _emit_intersect(step: dict, step_num: int, params: dict) -> tuple[list[str],
     elif body_type == "sphere":
         br = _var_ref_from(body, "radius", params)
         lines.append(f'_tool = cq.Workplane("XY").sphere({br})')
+    elif body_type == "cone":
+        bh = _var_ref_from(body, "height", params)
+        br1 = _var_ref_from(body, "radius", params)
+        br2 = body.get("top_radius", body.get("radius2", 0))
+        br2_ref = _resolve_param(br2, params) if br2 else 0.01
+        lines.extend([
+            f'_tool = (',
+            f'    cq.Workplane("XY").circle({br1})',
+            f'    .workplane(offset={bh}).circle({br2_ref})',
+            f'    .loft()',
+            f')',
+        ])
     else:
         raise ValueError(f"Unsupported intersect body type: {body_type}")
 
@@ -934,9 +967,7 @@ def _emit_loft(step: dict, step_num: int, params: dict) -> tuple[list[str], str]
     lines.extend([
         f'    result = _loft_wp.loft(ruled={ruled}).tag("{tag}")',
         f"except Exception as _loft_err:",
-        f'    logger.warning(f"Loft failed: {{_loft_err}}, falling back to extrude")',
-        f"    # Fallback: extrude the first section",
-        f'    result = cq.Workplane("XY"){_sketch_for_profile(sections[0].get("profile", {{"type": "rect", "width": 50, "height": 50}}), params)}.extrude({_resolve_param(sections[-1].get("offset", 50), params)}).tag("{tag}")',
+        f'    raise RuntimeError(f"Loft failed: {{_loft_err}}. TIP: For axially symmetric tapers (funnels, cones), use revolve instead of loft.")',
     ])
 
     feature = (
@@ -996,8 +1027,7 @@ def _emit_sweep(step: dict, step_num: int, params: dict) -> tuple[list[str], str
 
     lines.extend([
         f"except Exception as _sweep_err:",
-        f'    logger.warning(f"Sweep failed: {{_sweep_err}}, falling back to extrude")',
-        f'    result = cq.Workplane("XY"){sketch}.extrude(50).tag("{tag}")',
+        f'    raise RuntimeError(f"Sweep failed: {{_sweep_err}}. TIP: Simplify the path or use a different approach.")',
     ])
 
     feature = (
@@ -1495,9 +1525,10 @@ def convert_json_to_cadquery(steps: list[dict], parameters: dict) -> str:
             raise ValueError(f"Step missing required 'tag' field: {step}")
 
     # Validate at least one base solid
-    base_ops = [s for s in steps if s["op"] in ("create_box", "create_cylinder")]
+    BASE_OPS = {"create_box", "create_cylinder", "create_sphere", "loft", "sweep", "revolve"}
+    base_ops = [s for s in steps if s["op"] in BASE_OPS]
     if not base_ops:
-        raise ValueError("No base solid operation found (need create_box or create_cylinder)")
+        raise ValueError("No base solid operation found (need one of: create_box, create_cylinder, create_sphere, loft, sweep, or revolve)")
 
     # Validate unique tags
     tags = [s["tag"] for s in steps]

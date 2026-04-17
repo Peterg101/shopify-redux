@@ -9,40 +9,78 @@ SUBMIT_SPEC_TOOL = {
     "name": "submit_cad_spec",
     "description": (
         "Call this when the user has provided enough information to generate "
-        "the CAD model. Required: a clear description, overall dimensions, "
-        "manufacturing process, and material. Do NOT call this until you have "
-        "those four things — ask the user via ask_clarification instead."
+        "the CAD model. Required: a clear description, base shape, overall "
+        "dimensions, manufacturing process, and material. Do NOT call this "
+        "until you have those — ask the user via ask_clarification instead."
     ),
     "input_schema": {
         "type": "object",
-        "required": ["part_name", "description", "dimensions", "process", "material"],
+        "required": ["part_name", "description", "base_shape", "dimensions", "process", "material"],
         "properties": {
             "part_name": {
                 "type": "string",
                 "maxLength": 60,
-                "description": "Short human-readable title for this part (e.g. 'M3 cable bracket').",
+                "description": "Short human-readable title (e.g. 'M3 cable bracket').",
             },
             "description": {
                 "type": "string",
-                "description": "One-line summary of what the part is.",
+                "description": "Full description including spatial details the generator needs.",
             },
             "purpose": {
                 "type": "string",
                 "description": "What it's for and how it's used.",
             },
+            "base_shape": {
+                "type": "string",
+                "enum": ["box", "cylinder", "sphere", "cone", "loft"],
+                "description": (
+                    "The fundamental shape: box (rectangular), cylinder (round), "
+                    "sphere, cone (tapered cylinder — specify top and bottom diameters), "
+                    "or loft (varying cross-sections at different heights)."
+                ),
+            },
             "dimensions": {
                 "type": "object",
-                "required": ["length", "width", "height", "units"],
+                "required": ["units"],
                 "properties": {
-                    "length": {"type": "number"},
-                    "width": {"type": "number"},
-                    "height": {"type": "number"},
+                    "length": {"type": "number", "description": "X dimension (for box)"},
+                    "width": {"type": "number", "description": "Y dimension (for box)"},
+                    "height": {"type": "number", "description": "Z dimension / total height"},
+                    "radius": {"type": "number", "description": "Radius (for cylinder/sphere)"},
+                    "diameter": {"type": "number", "description": "Diameter (alternative to radius)"},
+                    "top_diameter": {"type": "number", "description": "Diameter at the top (for cones/tapers)"},
+                    "bottom_diameter": {"type": "number", "description": "Diameter at the bottom (for cones/tapers)"},
                     "units": {"type": "string", "enum": ["mm", "inches"]},
+                },
+            },
+            "cross_sections": {
+                "type": "array",
+                "description": (
+                    "For loft shapes: define cross-sections at different heights. "
+                    "Each section has a shape, size, and height offset."
+                ),
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "shape": {"type": "string", "enum": ["circle", "rectangle", "polygon"]},
+                        "width": {"type": "number"},
+                        "height_offset": {"type": "number", "description": "Z offset from base"},
+                        "diameter": {"type": "number"},
+                    },
                 },
             },
             "wall_thickness": {
                 "type": "number",
-                "description": "Wall thickness in mm if the part is a shell/enclosure.",
+                "description": "Wall thickness in mm if the part is hollow/shelled.",
+            },
+            "hollow": {
+                "type": "boolean",
+                "description": "Whether the part should be hollow (shelled).",
+            },
+            "open_faces": {
+                "type": "array",
+                "description": "Which faces are open (e.g. ['top'] for an open-top container).",
+                "items": {"type": "string", "enum": ["top", "bottom", "front", "back", "left", "right"]},
             },
             "process": {
                 "type": "string",
@@ -54,7 +92,7 @@ SUBMIT_SPEC_TOOL = {
             },
             "features": {
                 "type": "array",
-                "description": "Discrete geometric features (holes, slots, fillets, etc.).",
+                "description": "Discrete geometric features (holes, slots, fillets, cutouts, bosses, etc.).",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -62,7 +100,17 @@ SUBMIT_SPEC_TOOL = {
                         "description": {"type": "string"},
                         "count": {"type": "integer"},
                         "diameter": {"type": "number"},
-                        "position": {"type": "string"},
+                        "width": {"type": "number"},
+                        "height": {"type": "number"},
+                        "depth": {"type": "number"},
+                        "position": {
+                            "type": "string",
+                            "description": "Where on the part (e.g. '8mm from each corner', 'centered on rear wall 6mm from bottom').",
+                        },
+                        "face": {
+                            "type": "string",
+                            "description": "Which face (top, bottom, front, back, left, right).",
+                        },
                     },
                 },
             },

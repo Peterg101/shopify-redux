@@ -855,8 +855,6 @@ Parameters are referenced as "$name" in steps.
 | create_box | Base rectangular solid | length, width, height |
 | create_cylinder | Base cylinder | radius, height |
 | create_sphere | Base sphere | radius |
-| loft | Blend between 2+ cross-sections (tapers, hulls, transitions) | sections: [{profile, offset?}], ruled |
-| sweep | Extrude profile along a path (tubes, handles, curves) | profile, path: {type: "arc"/"line", radius, angle} |
 | extrude_profile | Push a 2D shape out from a face | face, profile, depth |
 | cut_blind | Cut a shape into a face to a depth | face, profile, depth |
 | cut_through | Cut a shape all the way through | face, profile |
@@ -867,30 +865,11 @@ Parameters are referenced as "$name" in steps.
 | union | Merge a sub-body into the result | body: {type, radius/length/width/height, translate} |
 | revolve | Spin a 2D profile around an axis | face, profile, axis, angle |
 | mirror | Mirror the body across a plane | plane ("XY", "XZ", "YZ") |
-| pattern | Repeat geometry in linear or circular array | type: "linear"/"circular", count, spacing/direction |
-| intersect | Keep only overlapping volume with a tool body | body: {type, dims}, translate |
-| split | Split with a plane, keep one half | plane ("XY"/"XZ"/"YZ"), keep ("positive"/"negative"), offset |
-
-## LOFT EXAMPLE (tapered shape)
-```json
-{"op": "loft", "tag": "hull", "sections": [
-  {"profile": {"type": "rect", "width": 20, "height": 10}},
-  {"offset": 50, "profile": {"type": "rect", "width": 40, "height": 20}},
-  {"offset": 100, "profile": {"type": "rect", "width": 30, "height": 15}}
-], "ruled": false}
-```
-
-## SWEEP EXAMPLE (curved tube)
-```json
-{"op": "sweep", "tag": "handle", "profile": {"type": "circle", "radius": 5},
- "path": {"type": "arc", "radius": 30, "angle": 180}}
-```
-
-## PATTERN EXAMPLE (linear array of fins)
-```json
-{"op": "pattern", "tag": "fin_array", "type": "linear",
- "direction": [1, 0, 0], "count": 5, "spacing": 10, "depends_on": ["single_fin"]}
-```
+| loft | Blend between 2+ cross-sections | sections: [{profile, offset?}], ruled |
+| sweep | Extrude profile along a path | profile, path: {type: "arc"/"line", radius, angle} |
+| pattern | Repeat geometry in array | type: "linear"/"circular", count, spacing, direction |
+| intersect | Boolean intersection with tool body | body: {type, dims}, translate |
+| split | Split with a plane, keep one half | plane, keep: "positive"/"negative" |
 
 ## FACES (which surface to draw on)
 | selector | meaning |
@@ -902,42 +881,22 @@ Parameters are referenced as "$name" in steps.
 | >X | Right |
 | <X | Left |
 
-## POSITIONING (constraint-based — do NOT calculate coordinates)
+Face origin is at the CENTER. Positions are offsets from center.
 
-Instead of calculating raw coordinates, describe positions relative to edges:
-
-For profiles (extrude/cut):
+## PROFILES (for extrude/cut)
 ```json
-"position": {"h": "center", "v": {"from": "bottom", "offset": 6}}
-"position": {"h": {"from": "left", "offset": 10}, "v": "center"}
-"position": {"h": "center", "v": "center"}
-```
-- "h" = horizontal position on the face
-- "v" = vertical position on the face
-- "center" = centered on that axis
-- {"from": "bottom/top/left/right", "offset": N} = N mm from that edge
-
-## PROFILES (for extrude/cut/loft/sweep)
-```json
-{"type": "rect", "width": 10, "height": 5, "position": {"h": "center", "v": {"from": "bottom", "offset": 6}}}
+{"type": "rect", "width": 10, "height": 5, "position": [0, 0]}
+{"type": "circle", "radius": 3, "position": [5, 0]}
+{"type": "slot", "length": 20, "width": 3, "position": [0, 0]}
 {"type": "rounded_rect", "width": 10, "height": 5, "corner_radius": 2}
-{"type": "circle", "radius": 3, "position": {"h": {"from": "right", "offset": 10}, "v": "center"}}
 {"type": "polygon", "sides": 6, "radius": 5}
-{"type": "slot", "length": 20, "width": 3, "position": {"h": "center", "v": "center"}}
 ```
 
 ## EDGES (for fillet/chamfer)
 "|Z" = vertical edges, "|X" = X-parallel edges, "%Circle" = circular edges
 
 ## HOLES
-Use placement constraints instead of calculating coordinates:
-```json
-"placement": {"type": "corners", "inset": 8}
-"placement": {"type": "center"}
-"placement": {"type": "along_edge", "edge": "top", "count": 3, "inset": 10}
-"placement": {"type": "grid", "rows": 2, "cols": 3, "spacing_h": 20, "spacing_v": 15}
-```
-Or explicit positions (raw coordinates still accepted): `"positions": [[10, 5], [-10, 5]]`
+Pattern types: "explicit" (positions list), "bolt_circle" (bolt_radius, count), "grid" (rows, cols, spacing)
 Omit "depth" for through-holes. Include "depth" for blind holes.
 
 ## UNIONS (adding sub-bodies)
@@ -956,47 +915,37 @@ For bosses, brackets, flanges — build a sub-body and merge:
 2. Fillets LAST
 3. Do NOT write Python code — JSON only
 4. If you can't express something as 2D operations, return {"unsupported": true, "reason": "..."}
-5. If images are provided, use them for layout/topology. Get dimensions from text, not pixels.
+5. IMAGES (sketches/photos): These are ROUGH references only. Use them to understand the
+   general shape and relative feature placement. Do NOT replicate sketch imperfections —
+   overlapping lines, uneven edges, and wobbly shapes are drawing artifacts, not design
+   intent. A hand-drawn rectangle with slightly overlapping corners is still a rectangle,
+   not a pentagon. Always derive dimensions from the text specification, never from pixels.
+   Simplify the sketch into clean geometric primitives (boxes, cylinders, holes).
 
-## EXAMPLE: Mounting plate with corner holes
+## EXAMPLE: L-bracket with holes
 
-User: "A 100x60x5mm plate with four 4.5mm holes, 8mm from each corner, filleted vertical edges"
-
-```json
-{
-  "parameters": {"length": 100.0, "width": 60.0, "thickness": 5.0, "hole_dia": 4.5, "corner_inset": 8.0, "fillet_r": 2.0},
-  "steps": [
-    {"op": "create_box", "tag": "plate", "length": "$length", "width": "$width", "height": "$thickness", "depends_on": []},
-    {"op": "holes", "tag": "corner_holes", "face": ">Z", "diameter": "$hole_dia", "placement": {"type": "corners", "inset": 8}, "depends_on": ["plate"]},
-    {"op": "fillet", "tag": "fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["corner_holes"]}
-  ]
-}
-```
-
-## EXAMPLE: L-bracket with holes on both legs
-
-User: "An L-bracket, horizontal leg 80x40x5mm, vertical leg 60mm tall from the back edge. Two 6mm holes on each leg, 12mm from the ends."
+User: "An L-bracket, horizontal leg 80x40x5mm, vertical leg extending up 60mm from the back edge. Two 6mm holes on each leg, 12mm from the ends."
 
 ```json
 {
   "parameters": {"leg_length": 80.0, "leg_width": 40.0, "thickness": 5.0, "vert_height": 60.0, "hole_dia": 6.0, "hole_inset": 12.0},
   "steps": [
     {"op": "create_box", "tag": "horiz_leg", "length": "$leg_length", "width": "$leg_width", "height": "$thickness", "depends_on": []},
-    {"op": "union", "tag": "vert_leg", "body": {"type": "box", "length": "$leg_length", "width": "$thickness", "height": "$vert_height", "translate": [0, -17.5, 0]}, "depends_on": ["horiz_leg"]},
-    {"op": "holes", "tag": "horiz_holes", "face": ">Z", "diameter": "$hole_dia", "placement": {"type": "along_edge", "edge": "top", "count": 2, "inset": 12, "margin": 12}, "depends_on": ["horiz_leg"]},
-    {"op": "holes", "tag": "vert_holes", "face": "<Y", "diameter": "$hole_dia", "placement": {"type": "along_edge", "edge": "top", "count": 2, "inset": 12, "margin": 12}, "depends_on": ["vert_leg"]},
+    {"op": "union", "tag": "vert_leg", "body": {"type": "box", "length": "$leg_length", "width": "$thickness", "height": "$vert_height", "translate": [0, -17.5, 30]}, "depends_on": ["horiz_leg"]},
+    {"op": "holes", "tag": "horiz_holes", "face": ">Z", "diameter": "$hole_dia", "pattern": "explicit", "positions": [[28, 0], [-28, 0]], "depends_on": ["horiz_leg"]},
+    {"op": "holes", "tag": "vert_holes", "face": "<Y", "diameter": "$hole_dia", "pattern": "explicit", "positions": [[0, 18], [0, -18]], "depends_on": ["vert_leg"]},
     {"op": "fillet", "tag": "junction_fillet", "radius": 3.0, "edges": "|X", "depends_on": ["vert_leg"]}
   ]
 }
 ```
 
-## EXAMPLE: Enclosure with bosses, USB cutout, and vents
+## EXAMPLE: Enclosure with bosses and cutouts
 
-User: "A 120x80x40mm enclosure, 2mm walls, open top. Four M3 mounting bosses 8mm from inner corners, 12mm tall. USB-C cutout (9x3.5mm) centered on rear wall, 6mm from bottom. Three vent slots on left wall."
+User: "A 120x80x40mm enclosure, 2mm walls, open top. Four M3 mounting bosses inside, 8mm from corners, 12mm tall. USB-C cutout (9x3.5mm) centered on rear wall, 6mm from bottom. Three vent slots on left wall."
 
 ```json
 {
-  "parameters": {"length": 120.0, "width": 80.0, "height": 40.0, "wall": 2.0, "boss_dia": 6.0, "boss_h": 12.0, "screw_dia": 3.2, "usb_w": 9.0, "usb_h": 3.5, "vent_w": 25.0, "vent_h": 1.5},
+  "parameters": {"length": 120.0, "width": 80.0, "height": 40.0, "wall": 2.0, "boss_dia": 6.0, "boss_h": 12.0, "screw_dia": 3.2, "usb_w": 9.0, "usb_h": 3.5, "usb_z": 6.0, "vent_w": 25.0, "vent_h": 1.5},
   "steps": [
     {"op": "create_box", "tag": "body", "length": "$length", "width": "$width", "height": "$height", "depends_on": []},
     {"op": "shell", "tag": "shell", "thickness": "$wall", "open_faces": [">Z"], "depends_on": ["body"]},
@@ -1004,11 +953,11 @@ User: "A 120x80x40mm enclosure, 2mm walls, open top. Four M3 mounting bosses 8mm
     {"op": "union", "tag": "boss_fr", "body": {"type": "cylinder", "radius": 3.0, "height": "$boss_h", "translate": [52, 32, 2]}, "depends_on": ["shell"]},
     {"op": "union", "tag": "boss_rl", "body": {"type": "cylinder", "radius": 3.0, "height": "$boss_h", "translate": [-52, -32, 2]}, "depends_on": ["shell"]},
     {"op": "union", "tag": "boss_rr", "body": {"type": "cylinder", "radius": 3.0, "height": "$boss_h", "translate": [52, -32, 2]}, "depends_on": ["shell"]},
-    {"op": "holes", "tag": "screw_holes", "face": ">Z", "diameter": "$screw_dia", "placement": {"type": "corners", "inset": 8}, "depth": "$boss_h", "depends_on": ["boss_fl","boss_fr","boss_rl","boss_rr"]},
-    {"op": "cut_blind", "tag": "usb", "face": "<Y", "profile": {"type": "rect", "width": "$usb_w", "height": "$usb_h", "position": {"h": "center", "v": {"from": "bottom", "offset": 6}}}, "depth": "$wall", "depends_on": ["shell"]},
-    {"op": "cut_blind", "tag": "vent_1", "face": "<X", "profile": {"type": "slot", "length": "$vent_w", "width": "$vent_h", "position": {"h": "center", "v": {"from": "bottom", "offset": 10}}}, "depth": "$wall", "depends_on": ["shell"]},
-    {"op": "cut_blind", "tag": "vent_2", "face": "<X", "profile": {"type": "slot", "length": "$vent_w", "width": "$vent_h", "position": {"h": "center", "v": {"from": "bottom", "offset": 15}}}, "depth": "$wall", "depends_on": ["shell"]},
-    {"op": "cut_blind", "tag": "vent_3", "face": "<X", "profile": {"type": "slot", "length": "$vent_w", "width": "$vent_h", "position": {"h": "center", "v": {"from": "bottom", "offset": 20}}}, "depth": "$wall", "depends_on": ["shell"]},
+    {"op": "holes", "tag": "screw_holes", "face": ">Z", "diameter": "$screw_dia", "pattern": "explicit", "positions": [[-52,32],[52,32],[-52,-32],[52,-32]], "depth": "$boss_h", "depends_on": ["boss_fl","boss_fr","boss_rl","boss_rr"]},
+    {"op": "cut_blind", "tag": "usb", "face": "<Y", "profile": {"type": "rect", "width": "$usb_w", "height": "$usb_h", "position": [0, -14]}, "depth": "$wall", "depends_on": ["shell"]},
+    {"op": "cut_blind", "tag": "vent_1", "face": "<X", "profile": {"type": "slot", "length": "$vent_w", "width": "$vent_h", "position": [0, -5]}, "depth": "$wall", "depends_on": ["shell"]},
+    {"op": "cut_blind", "tag": "vent_2", "face": "<X", "profile": {"type": "slot", "length": "$vent_w", "width": "$vent_h", "position": [0, 0]}, "depth": "$wall", "depends_on": ["shell"]},
+    {"op": "cut_blind", "tag": "vent_3", "face": "<X", "profile": {"type": "slot", "length": "$vent_w", "width": "$vent_h", "position": [0, 5]}, "depth": "$wall", "depends_on": ["shell"]},
     {"op": "fillet", "tag": "fillets", "radius": 1.5, "edges": "|Z", "depends_on": ["body"]}
   ]
 }
