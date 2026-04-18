@@ -41,6 +41,76 @@ def _load_examples() -> list[dict]:
     return examples
 
 
+_API_SNIPPETS_CACHE: list[dict] | None = None
+
+
+def _load_api_snippets() -> list[dict]:
+    global _API_SNIPPETS_CACHE
+    if _API_SNIPPETS_CACHE is not None:
+        return _API_SNIPPETS_CACHE
+    path = _EXAMPLES_DIR / "cadquery_api.json"
+    if path.is_file():
+        try:
+            _API_SNIPPETS_CACHE = _json_mod.loads(path.read_text())
+        except Exception:
+            _API_SNIPPETS_CACHE = []
+    else:
+        _API_SNIPPETS_CACHE = []
+    return _API_SNIPPETS_CACHE
+
+
+def _select_api_snippets(error_text: str, max_snippets: int = 2) -> str:
+    """Select relevant CadQuery API snippets based on an error message."""
+    snippets = _load_api_snippets()
+    if not snippets:
+        return ""
+
+    error_lower = error_text.lower()
+    scored = []
+    for s in snippets:
+        score = sum(1 for kw in s.get("keywords", []) if kw in error_lower)
+        scored.append((score, s))
+    scored.sort(key=lambda x: x[0], reverse=True)
+
+    relevant = [s for score, s in scored[:max_snippets] if score > 0]
+    if not relevant:
+        return ""
+
+    parts = ["\n## RELEVANT CADQUERY API REFERENCE:"]
+    for s in relevant:
+        parts.append(f"\n### {s['operation']}")
+        parts.append(s["snippet"])
+        if s.get("notes"):
+            parts.append(f"Note: {s['notes']}")
+    return "\n".join(parts)
+
+
+def _parse_error_structured(error: str) -> str:
+    """Parse a raw CadQuery/OCCT error into a structured diagnostic."""
+    error_lower = error.lower()
+
+    if "brep_api" in error_lower or "command not done" in error_lower:
+        return f"FILLET/CHAMFER FAILURE: Edge radius too large for geometry.\nRaw: {error[:200]}\nFix: Reduce radius to < 40% of smallest edge, or remove the fillet entirely."
+    if "stdfail_notdone" in error_lower:
+        if "loft" in error_lower:
+            return f"LOFT FAILURE: Cross-sections incompatible.\nRaw: {error[:200]}\nFix: Ensure all sections have the same type (all circles or all rects). Try ruled=True."
+        if "sweep" in error_lower:
+            return f"SWEEP FAILURE: Path too complex.\nRaw: {error[:200]}\nFix: Simplify path — use a single arc instead of multiple segments."
+        return f"GEOMETRY OPERATION FAILED.\nRaw: {error[:200]}\nFix: Reduce complexity, check that shell thickness < half smallest dimension."
+    if "standard_nullobject" in error_lower or "shapes is empty" in error_lower:
+        return f"SELECTOR FOUND NOTHING: A .faces() or .edges() call matched no geometry.\nRaw: {error[:200]}\nFix: After boolean operations, face/edge topology changes. Use different selectors."
+    if "wire is not closed" in error_lower:
+        return f"SKETCH NOT CLOSED: Polyline/arc segments don't form a closed loop.\nRaw: {error[:200]}\nFix: Ensure .close() is called, or verify endpoints connect."
+    if "validation_failed" in error_lower:
+        return f"VALIDATION FAILURE: {error[:300]}"
+    if "timeout" in error_lower:
+        return f"TIMEOUT: Script took too long.\nFix: Simplify geometry — fewer booleans, simpler shapes."
+    if "name 'result' is not defined" in error_lower:
+        return f"MISSING RESULT: The script must assign the final solid to a variable called `result`."
+
+    return f"ERROR: {error[:300]}"
+
+
 def _select_examples(prompt_text: str, max_examples: int = 2) -> list[dict]:
     """Select the most relevant few-shot examples using BM25 ranking.
 
@@ -914,7 +984,8 @@ For bosses, brackets, flanges — build a sub-body and merge:
 1. Shell BEFORE cuts and holes (operation ordering is automatic, but list shell early)
 2. Fillets LAST
 3. Do NOT write Python code — JSON only
-4. If you can't express something as 2D operations, return {"unsupported": true, "reason": "..."}
+4. If a SPECIFIC FEATURE is too complex but the base geometry is simple, use {"op": "placeholder", "tag": "...", "description": "what this feature should do"} — the system will fill it in with direct CadQuery code
+5. If the ENTIRE SHAPE is too complex for 2D operations (organic forms, complex curves), return {"unsupported": true, "reason": "..."} — the system will generate direct CadQuery code instead
 5. IMAGES (sketches/photos): These are ROUGH references only. Use them to understand the
    general shape and relative feature placement. Do NOT replicate sketch imperfections —
    overlapping lines, uneven edges, and wobbly shapes are drawing artifacts, not design
@@ -1219,6 +1290,56 @@ async def plan_cadquery_build(prompt: str, process: str = "fdm") -> str:
     return response_text
 
 
+SCAFFOLD_PROMPT = """\
+You are given a partially-generated CadQuery script. The simple geometry (boxes,
+cylinders, holes, etc.) is already written correctly. Your job is to fill in the
+PLACEHOLDER sections with working CadQuery code.
+
+Rules:
+- Only modify lines marked with "# PLACEHOLDER" or "# TODO"
+- Do NOT change existing working code
+- Keep all parameter variables and _features list intact
+- The variable `result` holds the current solid — modify it in place
+- Wrap complex operations (loft, sweep, fillet) in try/except
+- Return the COMPLETE script (all original code + your additions)"""
+
+
+async def fill_scaffold_placeholders(
+    scaffold_code: str,
+    prompt: str,
+    process: str = "fdm",
+) -> str:
+    """Take converter output with placeholder comments and fill them in with CadQuery code."""
+    if "# PLACEHOLDER" not in scaffold_code and "# TODO:" not in scaffold_code:
+        return scaffold_code
+
+    process_info = PROCESS_CONSTRAINTS.get(process.lower(), PROCESS_CONSTRAINTS["fdm"])
+
+    user_content = (
+        f"Original design request:\n{prompt}\n\n"
+        f"Manufacturing: {process_info}\n\n"
+        f"Here is the partially-generated CadQuery script. Fill in the PLACEHOLDER sections:\n\n"
+        f"```python\n{scaffold_code}\n```"
+    )
+
+    if CAD_PROVIDER == "anthropic":
+        response_text = await asyncio.to_thread(
+            _anthropic_generate,
+            [{"role": "user", "content": user_content}],
+            SCAFFOLD_PROMPT,
+        )
+    else:
+        response_text = await asyncio.to_thread(
+            _ollama_generate,
+            [
+                {"role": "system", "content": SCAFFOLD_PROMPT},
+                {"role": "user", "content": user_content},
+            ],
+        )
+
+    return extract_code(response_text)
+
+
 async def generate_cadquery_code(
     prompt: str | list[dict],
     target_units: str = "mm",
@@ -1270,15 +1391,17 @@ async def generate_cadquery_code(
     if target_units != "mm":
         extra_context.append(f"Use {target_units} as the unit system.")
 
+    # RAG: retrieve relevant CadQuery API snippets for the prompt
+    api_snippets = _select_api_snippets(prompt_text)
+    if api_snippets:
+        extra_context.append(api_snippets)
+
     extra_text = "\n\n".join(extra_context)
 
     # Build the user message content — multi-modal if images present
     if isinstance(prompt, list):
-        # Conversation flow: prompt is content blocks (text + images)
-        # Append the extra context as a final text block
         user_content = prompt + [{"type": "text", "text": extra_text}]
     else:
-        # One-shot flow: plain string
         user_content = f"Create a CadQuery model: {prompt}\n\n{extra_text}"
 
     if CAD_PROVIDER == "anthropic":
@@ -1321,7 +1444,8 @@ async def fix_cadquery_code(
         build_plan: The chain-of-thought build plan (if available)
         fix_history: List of (code, error) tuples from previous fix attempts
     """
-    classified = classify_error(error)
+    classified = _parse_error_structured(error)
+    api_context = _select_api_snippets(error + " " + code)
     process_info = PROCESS_CONSTRAINTS.get(process.lower(), PROCESS_CONSTRAINTS["fdm"])
 
     # Build the first message with full context (may include images)
@@ -1357,6 +1481,7 @@ async def fix_cadquery_code(
     fix_msg = (
         f"The code above failed (attempt {attempt}/{max_attempts}):\n\n{classified}\n\n"
         f"{escalation}"
+        f"{api_context}\n\n"
         "Fix the code following these rules:\n"
         "- If a fillet failed, wrap in try/except OR remove entirely\n"
         "- If a selector failed, check that the face/edge exists after prior operations\n"

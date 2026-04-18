@@ -10,8 +10,10 @@ from redis.asyncio import Redis as AsyncRedis
 from fitd_schemas.fitd_classes import CadTaskRequest
 from jwt_auth import generate_token
 
-from cad.llm import generate_cadquery_code, fix_cadquery_code, apply_parameter_changes, refine_cadquery_code
-from cad.llm import generate_operations, fix_operations, verify_generation
+from cad.llm import (
+    generate_cadquery_code, fix_cadquery_code, apply_parameter_changes, refine_cadquery_code,
+    generate_operations, fix_operations, verify_generation, fill_scaffold_placeholders,
+)
 from cad.converter import convert_json_to_cadquery
 from cad.executor import execute_cadquery
 from cad.prevalidator import validate_operations
@@ -22,6 +24,41 @@ from shared import publish, register_task, mark_task_complete, DB_SERVICE_URL
 logger = logging.getLogger(__name__)
 
 STEP_SERVICE_URL = os.getenv("STEP_SERVICE_URL", "http://localhost:1235")
+
+
+async def _classify_complexity(prompt: str | list[dict]) -> bool:
+    """Quick LLM call to decide if a shape needs freeform CadQuery code.
+
+    Returns True if the shape requires curves, lofts, sweeps, gears, threads,
+    or other geometry that can't be expressed as box/cylinder + cuts + holes.
+    """
+    prompt_text = prompt if isinstance(prompt, str) else " ".join(
+        b.get("text", "") for b in prompt if isinstance(b, dict) and b.get("type") == "text"
+    )
+
+    classify_prompt = (
+        "Can this part be built entirely from rectangular boxes, cylinders, "
+        "and simple cuts/holes? Or does it need curved surfaces, tapers, "
+        "gears, airfoils, organic shapes, or swept/lofted geometry?\n\n"
+        f"Part: {prompt_text[:500]}\n\n"
+        "Reply with exactly one word: SIMPLE or COMPLEX"
+    )
+
+    try:
+        import anthropic
+        client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY", ""))
+        response = client.messages.create(
+            model="claude-sonnet-4-5-20250929",
+            max_tokens=10,
+            temperature=0,
+            messages=[{"role": "user", "content": classify_prompt}],
+        )
+        result = response.content[0].text.strip().upper()
+        logger.info(f"Complexity classifier: {result}")
+        return "COMPLEX" in result
+    except Exception as e:
+        logger.warning(f"Complexity classifier failed: {e}")
+        return False
 
 
 async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
@@ -52,45 +89,80 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
     generation_prompt = prompt
 
     try:
-        # Step 1: Generate JSON operations (LLM outputs structured JSON, not code)
-        await publish(redis, port_id, f"10,planning design,{task_name}")
-        logger.info(f"[{port_id}] Generating JSON operations for: {prompt[:80]}")
+        # Step 0: Classify complexity — route to structured or direct code gen
+        await publish(redis, port_id, f"5,analysing design,{task_name}")
+        use_direct_codegen = await _classify_complexity(generation_prompt)
 
-        ops = await generate_operations(
-            generation_prompt, process, material_hint,
-            approximate_size=approximate_size, features=features, target_units=target_units,
-        )
+        ops = {}
+        if use_direct_codegen:
+            logger.info(f"[{port_id}] Classifier: COMPLEX — skipping structured ops, using direct code gen")
+            await publish(redis, port_id, f"10,generating code directly,{task_name}")
+        else:
+            # Step 1: Generate JSON operations (structured path)
+            logger.info(f"[{port_id}] Classifier: SIMPLE — using structured JSON ops")
+            await publish(redis, port_id, f"10,planning design,{task_name}")
+            logger.info(f"[{port_id}] Generating JSON operations for: {prompt[:80]}")
 
-        if ops.get("error") or ops.get("unsupported"):
-            reason = ops.get("error", ops.get("reason", "Unknown"))
-            await publish(redis, port_id, f"Task Failed,{reason}")
-            return
+            ops = await generate_operations(
+                generation_prompt, process, material_hint,
+                approximate_size=approximate_size, features=features, target_units=target_units,
+            )
 
-        await publish(redis, port_id, f"20,validating geometry,{task_name}")
-        logger.info(f"[{port_id}] Got {len(ops.get('steps', []))} operations")
+            if ops.get("unsupported"):
+                reason = ops.get("reason", "Shape too complex for structured operations")
+                logger.info(f"[{port_id}] Structured ops unsupported: {reason}. Escalating.")
+                await publish(redis, port_id, f"15,generating code directly,{task_name}")
+                use_direct_codegen = True
+            elif ops.get("error"):
+                reason = ops.get("error", "Unknown")
+                await publish(redis, port_id, f"Task Failed,{reason}")
+                return
 
-        # Step 1b: Pre-validate geometry feasibility (no Docker needed)
-        pre_issues = validate_operations(ops.get("steps", []), ops.get("parameters", {}))
-        if pre_issues:
-            logger.warning(f"[{port_id}] Pre-validation found {len(pre_issues)} issues, asking LLM to fix")
-            issues_text = "Geometry pre-validation issues:\n" + "\n".join(f"- {i}" for i in pre_issues)
-            ops = await fix_operations(generation_prompt, ops, issues_text, process=process)
-            pre_issues_2 = validate_operations(ops.get("steps", []), ops.get("parameters", {}))
-            if pre_issues_2:
-                logger.warning(f"[{port_id}] Pre-validation still has {len(pre_issues_2)} issues after fix")
+        if not use_direct_codegen:
+            await publish(redis, port_id, f"20,validating geometry,{task_name}")
+            logger.info(f"[{port_id}] Got {len(ops.get('steps', []))} operations")
 
-        # Step 2: Convert JSON → CadQuery code (deterministic, no LLM)
-        await publish(redis, port_id, f"25,converting to geometry,{task_name}")
-        try:
-            code = convert_json_to_cadquery(ops.get("steps", []), ops.get("parameters", {}))
-        except ValueError as e:
-            logger.warning(f"[{port_id}] Converter error: {e}, asking LLM to fix")
-            ops = await fix_operations(generation_prompt, ops, str(e), process=process)
+            # Step 1b: Pre-validate geometry feasibility (no Docker needed)
+            pre_issues = validate_operations(ops.get("steps", []), ops.get("parameters", {}))
+            if pre_issues:
+                logger.warning(f"[{port_id}] Pre-validation found {len(pre_issues)} issues, asking LLM to fix")
+                issues_text = "Geometry pre-validation issues:\n" + "\n".join(f"- {i}" for i in pre_issues)
+                ops = await fix_operations(generation_prompt, ops, issues_text, process=process)
+
+            # Step 2: Convert JSON → CadQuery code (deterministic, no LLM)
+            await publish(redis, port_id, f"25,converting to geometry,{task_name}")
             try:
                 code = convert_json_to_cadquery(ops.get("steps", []), ops.get("parameters", {}))
-            except ValueError as e2:
-                await publish(redis, port_id, f"Task Failed,JSON structure error after fix: {e2}")
+            except ValueError as e:
+                logger.warning(f"[{port_id}] Converter error: {e}, asking LLM to fix")
+                ops = await fix_operations(generation_prompt, ops, str(e), process=process)
+                try:
+                    code = convert_json_to_cadquery(ops.get("steps", []), ops.get("parameters", {}))
+                except ValueError as e2:
+                    logger.info(f"[{port_id}] Converter failed twice, escalating to direct code gen: {e2}")
+                    use_direct_codegen = True
+
+        # If converter produced code with placeholders, have LLM fill them in
+        if not use_direct_codegen and "# PLACEHOLDER" in code:
+            logger.info(f"[{port_id}] Scaffold detected — filling placeholders with LLM")
+            await publish(redis, port_id, f"27,filling in complex features,{task_name}")
+            code = await fill_scaffold_placeholders(code, generation_prompt, process=process)
+
+        # Fallback: direct CadQuery code generation (handles any shape)
+        if use_direct_codegen:
+            await publish(redis, port_id, f"20,generating CadQuery code,{task_name}")
+            code = await generate_cadquery_code(
+                generation_prompt,
+                target_units=target_units,
+                process=process,
+                approximate_size=approximate_size,
+                material_hint=material_hint,
+                features=features,
+            )
+            if code.startswith("CLARIFICATION:"):
+                await publish(redis, port_id, f"Clarification Needed,{code[14:]}")
                 return
+
         await publish(redis, port_id, f"30,executing,{task_name}")
 
         # Step 3: Execute with retry loop
@@ -124,22 +196,31 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
 
             # Don't retry on last iteration
             if attempt < max_iterations - 1:
-                fix_msg = f"Fixing operations (attempt {attempt + 2}/{max_iterations})"
+                fix_msg = f"Fixing code (attempt {attempt + 2}/{max_iterations})"
                 await publish(redis, port_id, f"{iter_progress + 5},{fix_msg},{task_name}")
 
-                # Ask LLM to fix the JSON operations (not the code)
-                ops = await fix_operations(
-                    generation_prompt, ops, error,
-                    attempt=attempt + 1, max_attempts=max_iterations,
-                    process=process,
-                )
-
-                if ops.get("error"):
-                    logger.warning(f"[{port_id}] Fix returned error: {ops['error']}")
-                    continue
-
-                # Re-convert fixed JSON to code
-                code = convert_json_to_cadquery(ops.get("steps", []), ops.get("parameters", {}))
+                if use_direct_codegen:
+                    code = await fix_cadquery_code(
+                        generation_prompt, code, error,
+                        attempt=attempt + 1, max_attempts=max_iterations,
+                        process=process, material_hint=material_hint,
+                    )
+                    if code.startswith("CLARIFICATION:"):
+                        continue
+                else:
+                    ops = await fix_operations(
+                        generation_prompt, ops, error,
+                        attempt=attempt + 1, max_attempts=max_iterations,
+                        process=process,
+                    )
+                    if ops.get("error"):
+                        logger.warning(f"[{port_id}] Fix returned error: {ops['error']}")
+                        continue
+                    try:
+                        code = convert_json_to_cadquery(ops.get("steps", []), ops.get("parameters", {}))
+                    except ValueError as conv_err:
+                        logger.warning(f"[{port_id}] Re-conversion failed: {conv_err}")
+                        continue
 
         if not success:
             error_summary = last_error[:200] if last_error else "Unknown error"

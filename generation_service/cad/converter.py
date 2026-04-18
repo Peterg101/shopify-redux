@@ -932,6 +932,28 @@ def _emit_split(step: dict, step_num: int, params: dict) -> tuple[list[str], str
     return lines, feature
 
 
+def _emit_placeholder(step: dict, step_num: int, params: dict) -> tuple[list[str], str]:
+    """Emit a placeholder comment block for features the converter can't express.
+
+    The LLM will later fill this in with direct CadQuery code.
+    """
+    tag = step.get("tag", f"placeholder_{step_num}")
+    desc = step.get("description", "Complex feature — needs manual CadQuery code")
+
+    lines = [
+        f"# Step {step_num}: PLACEHOLDER — {tag}",
+        f"# TODO: {desc}",
+        f"# The converter cannot express this feature. The LLM should add CadQuery code here.",
+        f"_step += 1",
+    ]
+
+    feature = (
+        f'_features.append({{"tag": "{tag}", "type": "placeholder", "step": _step, '
+        f'"description": "{desc}", "depends_on": {_depends_on(step)}}})'
+    )
+    return lines, feature
+
+
 def _emit_loft(step: dict, step_num: int, params: dict) -> tuple[list[str], str]:
     """Loft between cross-section profiles at increasing Z offsets.
 
@@ -1288,6 +1310,7 @@ EMITTERS = {
     "create_sphere": _emit_create_sphere,
     "intersect": _emit_intersect,
     "split": _emit_split,
+    "placeholder": _emit_placeholder,
 }
 
 

@@ -1,0 +1,80 @@
+[
+  {
+    "operation": "loft",
+    "keywords": ["loft", "taper", "funnel", "cone", "transition", "blend"],
+    "snippet": "# Loft between two circles (cone/funnel)\nresult = (\n    cq.Workplane('XY')\n    .circle(bottom_r)\n    .workplane(offset=height)\n    .circle(top_r)\n    .loft(ruled=False)\n)\n# For hollow: .shell(-wall_thickness) after loft",
+    "notes": "Sections must have same wire count. Use ruled=True for straight sides, False for smooth. Wrap in try/except."
+  },
+  {
+    "operation": "sweep",
+    "keywords": ["sweep", "pipe", "tube", "handle", "path", "curve", "rail"],
+    "snippet": "# Sweep circle along an arc path\npath = cq.Workplane('XZ').threePointArc((mid_x, mid_y), (end_x, end_y)).wire()\nresult = cq.Workplane('XY').circle(radius).sweep(path)",
+    "notes": "Path must be a Wire. Use .threePointArc() for arcs. Complex paths fail often — keep simple."
+  },
+  {
+    "operation": "revolve",
+    "keywords": ["revolve", "revolution", "axisymmetric", "lathe", "funnel", "nozzle", "vase"],
+    "snippet": "# Revolve an L-shaped profile to make a hollow cone/funnel\nresult = (\n    cq.Workplane('XZ')\n    .moveTo(bottom_r, 0)\n    .lineTo(top_r, height)\n    .lineTo(top_r - wall, height)\n    .lineTo(bottom_r - wall, 0)\n    .close()\n    .revolve(360, (0, 0, 0), (0, 0, 1))\n)",
+    "notes": "Best approach for axially symmetric parts (funnels, vases, nozzles). Profile must be a closed wire on one side of the axis."
+  },
+  {
+    "operation": "shell",
+    "keywords": ["shell", "hollow", "thin wall", "walls"],
+    "snippet": "# Shell a solid (make hollow)\nresult = result.faces('>Z').shell(-wall_thickness)\n# For multiple open faces:\nresult = result.shell(-wall_thickness, kind='intersection')",
+    "notes": "Use NEGATIVE thickness. Open faces: use .faces('>Z') to select which face is open."
+  },
+  {
+    "operation": "fillet",
+    "keywords": ["fillet", "round", "radius", "smooth edges"],
+    "snippet": "# Safe fillet with fallback\ntry:\n    result = result.edges('|Z').fillet(radius)\nexcept:\n    pass  # Skip if radius too large",
+    "notes": "Fails ~30% of the time. ALWAYS wrap in try/except. Apply LAST. Radius must be < 45% of smallest adjacent edge."
+  },
+  {
+    "operation": "boolean_cut",
+    "keywords": ["cut", "subtract", "boolean", "difference", "slot", "groove", "channel"],
+    "snippet": "# Cut a shape from a solid\ntool = cq.Workplane('XY').box(slot_w, slot_l, slot_d).translate((x, y, z))\nresult = result.cut(tool)",
+    "notes": "For coplanar faces, offset by 0.01mm. Call .clean() after booleans."
+  },
+  {
+    "operation": "polyline_extrude",
+    "keywords": ["polygon", "polyline", "irregular", "custom profile", "trapezoid", "triangle"],
+    "snippet": "# Extrude a custom polygon profile\nresult = (\n    cq.Workplane('XY')\n    .polyline([(0,0), (10,0), (8,5), (2,5)])\n    .close()\n    .extrude(height)\n)",
+    "notes": "Points must form a closed polygon. Use .close() to connect last point to first."
+  },
+  {
+    "operation": "hole_pattern",
+    "keywords": ["holes", "bolt circle", "pattern", "array", "mounting"],
+    "snippet": "# Bolt circle pattern\nresult = (\n    result.faces('>Z').workplane()\n    .pushPoints([\n        (r*math.cos(math.radians(a)), r*math.sin(math.radians(a)))\n        for a in range(0, 360, 360//count)\n    ])\n    .hole(diameter)\n)",
+    "notes": "Use .pushPoints() for arbitrary positions. .hole() for through-holes, .cboreHole() for counterbores."
+  },
+  {
+    "operation": "snap_slot",
+    "keywords": ["slot", "snap", "clip", "grommet", "radial cut", "snap fit"],
+    "snippet": "# Radial slot from center hole to outer edge (for grommets/clips)\ntool = cq.Workplane('XY').box(slot_width, outer_r * 2, height).translate((0, 0, height/2))\nresult = result.cut(tool)",
+    "notes": "Create a thin box that spans from center to edge, then boolean subtract. Offset by 0.01mm if coplanar."
+  },
+  {
+    "operation": "involute_gear",
+    "keywords": ["gear", "spur gear", "teeth", "involute", "module", "cog"],
+    "snippet": "# Involute spur gear\nimport math\n\nmodule = 2.0\nteeth = 20\nface_width = 10.0\nbore_d = 8.0\npressure_angle = 20.0\n\npitch_r = module * teeth / 2\naddendum = module\ndedendum = 1.25 * module\nouter_r = pitch_r + addendum\nroot_r = pitch_r - dedendum\nbase_r = pitch_r * math.cos(math.radians(pressure_angle))\n\n# Build one tooth profile using involute curve points\ndef involute_point(base_r, angle):\n    return (\n        base_r * (math.cos(angle) + angle * math.sin(angle)),\n        base_r * (math.sin(angle) - angle * math.cos(angle))\n    )\n\n# Generate tooth profile points\ntooth_pts = []\nfor i in range(15):\n    t = i * 0.04\n    x, y = involute_point(base_r, t)\n    if math.sqrt(x**2 + y**2) <= outer_r:\n        tooth_pts.append((x, y))\n\n# Mirror for other flank\ntooth_angle = 2 * math.pi / teeth\nhalf_tooth = math.atan2(tooth_pts[-1][1], tooth_pts[-1][0])\nmirror_pts = [(x, -y) for x, y in reversed(tooth_pts)]\n\n# Build gear as union of root circle + teeth\nresult = cq.Workplane('XY').circle(root_r).extrude(face_width)\n\n# Add teeth by creating tooth profiles and revolving/extruding\nfor i in range(teeth):\n    angle = i * 360.0 / teeth\n    tooth = (\n        cq.Workplane('XY')\n        .polyline(tooth_pts + mirror_pts)\n        .close()\n        .extrude(face_width)\n        .rotate((0,0,0), (0,0,1), angle)\n    )\n    result = result.union(tooth)\n\n# Center bore\nresult = result.faces('>Z').workplane().hole(bore_d)\nresult = result.clean()",
+    "notes": "Involute gear with parametric teeth. Module = pitch diameter / teeth. Pressure angle typically 20 degrees. The tooth profile uses involute curve math."
+  },
+  {
+    "operation": "thread_helix",
+    "keywords": ["thread", "screw", "helix", "threaded", "bolt", "nut"],
+    "snippet": "# External thread (cosmetic approximation)\nimport math\n\nmajor_d = 10.0\npitch = 1.5\nlength = 20.0\nturns = length / pitch\n\n# Create cylinder body\nresult = cq.Workplane('XY').cylinder(length, major_d/2)\n\n# Cut helical groove (V-thread approximation)\nthread_depth = pitch * 0.65\nhelix = cq.Wire.makeHelix(pitch, length, major_d/2)\nthread_profile = (\n    cq.Workplane('XZ')\n    .moveTo(major_d/2, 0)\n    .lineTo(major_d/2 - thread_depth, pitch/4)\n    .lineTo(major_d/2, pitch/2)\n    .close()\n    .wire()\n)\ntry:\n    thread_solid = cq.Workplane('XY').sweep(thread_profile, helix)\n    result = result.cut(thread_solid)\nexcept:\n    pass  # Thread sweep can fail — cosmetic only",
+    "notes": "Helical threads are fragile in CadQuery. Wrap in try/except. For functional threads, consider using cq_warehouse thread classes if available."
+  },
+  {
+    "operation": "spring_clip",
+    "keywords": ["spring", "clip", "C-clip", "retaining", "snap ring", "C-shape"],
+    "snippet": "# C-shaped spring clip\nimport math\n\ninner_r = 12.5\nwire_r = 1.5\ngap_angle = 30  # degrees of gap\n\n# Create torus (full ring) then cut the gap\n# Torus via revolve of circle\nresult = (\n    cq.Workplane('XZ')\n    .center(inner_r + wire_r, 0)\n    .circle(wire_r)\n    .revolve(360 - gap_angle, (0, 0, 0), (0, 0, 1))\n)\n\n# Add inward tabs at both ends\ntab_length = wire_r * 3\nfor angle in [0, 360 - gap_angle]:\n    tab = (\n        cq.Workplane('XY')\n        .box(tab_length, wire_r * 2, wire_r * 2)\n        .translate((inner_r, 0, 0))\n        .rotate((0,0,0), (0,0,1), angle)\n    )\n    result = result.union(tab)",
+    "notes": "C-clip made by revolving a circle profile partially (360 minus gap angle). Tabs added as box unions at the gap ends."
+  },
+  {
+    "operation": "airfoil",
+    "keywords": ["airfoil", "wing", "blade", "NACA", "aero", "turbine"],
+    "snippet": "# NACA 0012 airfoil profile (simplified)\nimport math\n\nchord = 30.0\nmax_thickness = 0.12  # as fraction of chord\nspan = 60.0\n\n# Generate NACA 00xx profile points\ndef naca_profile(chord, thickness_ratio, n_points=40):\n    pts_upper = []\n    pts_lower = []\n    for i in range(n_points + 1):\n        x = chord * (i / n_points)\n        t = thickness_ratio * chord\n        yt = (t/0.2) * (0.2969*math.sqrt(x/chord) - 0.1260*(x/chord) - 0.3516*(x/chord)**2 + 0.2843*(x/chord)**3 - 0.1015*(x/chord)**4)\n        pts_upper.append((x - chord/2, yt))\n        pts_lower.append((x - chord/2, -yt))\n    return pts_upper, pts_lower\n\nupper, lower = naca_profile(chord, max_thickness)\nprofile_pts = upper + list(reversed(lower[1:-1]))\n\nresult = (\n    cq.Workplane('XY')\n    .polyline(profile_pts)\n    .close()\n    .extrude(span)\n)",
+    "notes": "NACA 4-digit airfoil. For twisted blades, create profiles at multiple Z heights with different rotations and loft between them."
+  }
+]
