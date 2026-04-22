@@ -433,3 +433,30 @@ class ConversationReadPosition(Base):
     last_read_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     conversation = relationship("Conversation", back_populates="read_positions", lazy="noload")
+
+
+class VerifiedExample(Base):
+    __tablename__ = "verified_examples"
+    __table_args__ = (
+        Index("ix_verified_category_active", "category", "is_active"),
+    )
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
+    task_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    user_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    description: Mapped[str] = mapped_column(Text)
+    keywords: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    category: Mapped[str] = mapped_column(String, index=True, default="general")
+    complexity: Mapped[str] = mapped_column(String, default="simple")
+    source: Mapped[str] = mapped_column(String, default="user")
+    parameters: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    steps: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    cadquery_script: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    generation_path: Mapped[str] = mapped_column(String, default="structured")
+    upvotes: Mapped[int] = mapped_column(Integer, default=1)
+    downvotes: Mapped[int] = mapped_column(Integer, default=0)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_curated: Mapped[bool] = mapped_column(Boolean, default=False)
+    geometry_hash: Mapped[Optional[str]] = mapped_column(String, nullable=True, index=True)
+    op_count: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[str] = mapped_column(String, default=lambda: datetime.now().isoformat())

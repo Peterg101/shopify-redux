@@ -82,6 +82,24 @@ class TaskInformation(BaseModel):
     created_at: Optional[str] = Field(default_factory=lambda: datetime.now().isoformat())
 
 
+class VerifiedExampleResponse(BaseModel):
+    id: str
+    description: str
+    category: str
+    complexity: str
+    source: str
+    parameters: Optional[str] = None
+    steps: Optional[str] = None
+    cadquery_script: Optional[str] = None
+    generation_path: str = "structured"
+    upvotes: int = 1
+    op_count: int = 0
+    keywords: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
 class UserAndTasks(BaseModel):
     user: UserInformation
     tasks: List[TaskInformation]

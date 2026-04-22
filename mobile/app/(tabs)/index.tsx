@@ -20,6 +20,7 @@ import { colors, spacing, fontSizes, borderRadius } from '../../src/theme';
 import { API_URL, MEDIA_URL } from '../../src/services/config';
 import { GenerationHistory } from '../../src/components/GenerationHistory';
 import { getToken } from '../../src/services/auth';
+import { api } from '../../src/services/api';
 import { CadChat } from '../../src/components/cadChat/CadChat';
 import { ModelViewer } from '../../src/components/ModelViewer';
 import { resetCadState } from '../../src/store/cadSlice';
@@ -38,6 +39,8 @@ export default function GenerateScreen() {
   const [fileName, setFileName] = useState('');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [glbUrl, setGlbUrl] = useState<string | null>(null);
+  const [liked, setLiked] = useState(false);
+  const [submitFeedback] = api.useSubmitFeedbackMutation();
   const progressAnim = useRef(new Animated.Value(0)).current;
 
   const handlePickFile = async () => {
@@ -197,6 +200,25 @@ export default function GenerateScreen() {
             <View style={styles.modelSection}>
               <View style={styles.previewHeader}>
                 <Text style={styles.modelName}>{cadState.completedModel?.fileName || 'Generated Model'}</Text>
+                {cadState.completedModel?.taskId && (
+                  <TouchableOpacity
+                    onPress={async () => {
+                      if (liked || !cadState.completedModel?.taskId) return;
+                      try {
+                        await submitFeedback({ taskId: cadState.completedModel.taskId, rating: 'up' });
+                        setLiked(true);
+                        Alert.alert('Thanks!', 'This design will help improve future generations.');
+                      } catch { /* non-critical */ }
+                    }}
+                    style={{ padding: spacing.sm }}
+                  >
+                    <FontAwesome
+                      name={liked ? 'thumbs-up' : 'thumbs-o-up'}
+                      size={18}
+                      color={liked ? colors.cyan : colors.textSecondary}
+                    />
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity onPress={handleClear} style={styles.clearButton}>
                   <FontAwesome name="times" size={16} color={colors.error} />
                 </TouchableOpacity>

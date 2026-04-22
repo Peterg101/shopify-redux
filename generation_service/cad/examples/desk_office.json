@@ -1,0 +1,89 @@
+[
+  {
+    "description": "Pen holder / pencil cup for desk",
+    "keywords": ["pen", "pencil", "holder", "cup", "desk", "organiser", "office"],
+    "parameters": {
+      "outer_r": 25, "height": 80, "wall": 2.5,
+      "base_h": 4, "fillet_r": 1.5
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "body", "height": "$height", "radius": "$outer_r"},
+      {"op": "shell", "tag": "hollow", "thickness": "$wall", "open_face": ">Z", "depends_on": ["body"]},
+      {"op": "fillet", "tag": "top_fillet", "radius": "$fillet_r", "edges": ">Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "Desk organiser tray with dividers",
+    "keywords": ["desk", "organiser", "tray", "divider", "stationery", "office", "storage"],
+    "parameters": {
+      "length": 150, "width": 80, "height": 30, "wall": 2.5,
+      "divider_t": 2, "divider_pos": 50,
+      "fillet_r": 2
+    },
+    "steps": [
+      {"op": "create_box", "tag": "body", "length": "$length", "width": "$width", "height": "$height"},
+      {"op": "shell", "tag": "hollow", "thickness": "$wall", "open_face": ">Z", "depends_on": ["body"]},
+      {"op": "union", "tag": "divider_1", "body": {"type": "box", "length": "$divider_t", "width": "$width - $wall * 2", "height": "$height - $wall"},
+       "translate": ["-$length / 2 + $divider_pos", 0, "$wall"], "depends_on": ["hollow"]},
+      {"op": "union", "tag": "divider_2", "body": {"type": "box", "length": "$divider_t", "width": "$width - $wall * 2", "height": "$height - $wall"},
+       "translate": ["$length / 2 - $divider_pos", 0, "$wall"], "depends_on": ["hollow"]},
+      {"op": "fillet", "tag": "fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "Cable management clip for desk edge",
+    "keywords": ["cable", "management", "clip", "desk", "edge", "cord", "organiser"],
+    "parameters": {
+      "body_l": 20, "body_w": 15, "body_h": 10,
+      "slot_r": 4, "slot_count": 3, "slot_spacing": 6,
+      "clamp_gap": 5, "clamp_depth": 15, "clamp_t": 2
+    },
+    "steps": [
+      {"op": "create_box", "tag": "body", "length": "$body_l", "width": "$body_w", "height": "$body_h"},
+      {"op": "holes", "tag": "cable_slots", "face": ">Z", "diameter": "$slot_r * 2",
+       "placement": {"type": "explicit", "positions": [
+         ["-$slot_spacing", 0],
+         [0, 0],
+         ["$slot_spacing", 0]
+       ]}, "depends_on": ["body"]},
+      {"op": "union", "tag": "clamp_back", "body": {"type": "box", "length": "$body_l", "width": "$clamp_t", "height": "$clamp_depth"},
+       "translate": [0, "-$body_w / 2 - $clamp_t / 2", "-$clamp_depth + $body_h / 2"], "depends_on": ["body"]},
+      {"op": "union", "tag": "clamp_front", "body": {"type": "box", "length": "$body_l", "width": "$clamp_t", "height": "$clamp_depth - $clamp_gap"},
+       "translate": [0, "$body_w / 2 + $clamp_t / 2", "-$clamp_depth + $body_h / 2 + $clamp_gap"], "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "Monitor riser foot / display stand foot",
+    "keywords": ["monitor", "riser", "foot", "stand", "display", "screen", "desk"],
+    "parameters": {
+      "foot_l": 80, "foot_w": 40, "foot_h": 25,
+      "top_l": 60, "top_w": 30,
+      "rubber_d": 8, "rubber_depth": 2,
+      "fillet_r": 3
+    },
+    "steps": [
+      {"op": "create_box", "tag": "foot", "length": "$foot_l", "width": "$foot_w", "height": "$foot_h"},
+      {"op": "cut_blind", "tag": "rubber_pad_1", "face": "<Z",
+       "profile": {"type": "circle", "radius": "$rubber_d / 2"},
+       "depth": "$rubber_depth",
+       "position": ["-$foot_l / 2 + 10", "-$foot_w / 2 + 10"],
+       "depends_on": ["foot"]},
+      {"op": "cut_blind", "tag": "rubber_pad_2", "face": "<Z",
+       "profile": {"type": "circle", "radius": "$rubber_d / 2"},
+       "depth": "$rubber_depth",
+       "position": ["$foot_l / 2 - 10", "-$foot_w / 2 + 10"],
+       "depends_on": ["foot"]},
+      {"op": "cut_blind", "tag": "rubber_pad_3", "face": "<Z",
+       "profile": {"type": "circle", "radius": "$rubber_d / 2"},
+       "depth": "$rubber_depth",
+       "position": ["-$foot_l / 2 + 10", "$foot_w / 2 - 10"],
+       "depends_on": ["foot"]},
+      {"op": "cut_blind", "tag": "rubber_pad_4", "face": "<Z",
+       "profile": {"type": "circle", "radius": "$rubber_d / 2"},
+       "depth": "$rubber_depth",
+       "position": ["$foot_l / 2 - 10", "$foot_w / 2 - 10"],
+       "depends_on": ["foot"]},
+      {"op": "fillet", "tag": "fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["foot"]}
+    ]
+  }
+]

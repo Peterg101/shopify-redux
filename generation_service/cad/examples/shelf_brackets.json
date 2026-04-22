@@ -1,0 +1,73 @@
+[
+  {
+    "description": "L-bracket wall mount for shelving",
+    "keywords": ["L-bracket", "shelf", "bracket", "wall", "mount", "support", "angle"],
+    "parameters": {
+      "vertical_h": 80, "horizontal_d": 60, "width": 30,
+      "thickness": 4, "hole_d": 5, "gusset_t": 3,
+      "fillet_r": 3
+    },
+    "steps": [
+      {"op": "create_box", "tag": "vertical_plate", "length": "$width", "width": "$thickness", "height": "$vertical_h"},
+      {"op": "union", "tag": "horizontal_plate", "body": {"type": "box", "length": "$width", "width": "$horizontal_d", "height": "$thickness"},
+       "translate": [0, "$horizontal_d / 2 - $thickness / 2", 0], "depends_on": ["vertical_plate"]},
+      {"op": "union", "tag": "gusset", "body": {"type": "box", "length": "$width", "width": "$gusset_t", "height": "$vertical_h * 0.4"},
+       "translate": [0, "$gusset_t", "$thickness"], "depends_on": ["vertical_plate"]},
+      {"op": "holes", "tag": "wall_holes", "face": ">Y", "diameter": "$hole_d",
+       "placement": {"type": "explicit", "positions": [
+         [0, "$vertical_h / 2 - 15"],
+         [0, "-$vertical_h / 2 + 15"]
+       ]}, "depends_on": ["vertical_plate"]},
+      {"op": "holes", "tag": "shelf_holes", "face": ">Z", "diameter": "$hole_d",
+       "placement": {"type": "explicit", "positions": [
+         [0, "$horizontal_d / 4"],
+         [0, "$horizontal_d * 3 / 4 - $thickness / 2"]
+       ]}, "depends_on": ["horizontal_plate"]},
+      {"op": "fillet", "tag": "fillets", "radius": "$fillet_r", "edges": "|X", "depends_on": ["horizontal_plate"]}
+    ]
+  },
+  {
+    "description": "Triangular shelf bracket with diagonal brace",
+    "keywords": ["triangle", "bracket", "shelf", "brace", "diagonal", "support"],
+    "parameters": {
+      "arm_h": 70, "arm_d": 70, "width": 25,
+      "thickness": 4, "hole_d": 5, "diag_t": 4
+    },
+    "steps": [
+      {"op": "create_box", "tag": "vertical_arm", "length": "$width", "width": "$thickness", "height": "$arm_h"},
+      {"op": "union", "tag": "horizontal_arm", "body": {"type": "box", "length": "$width", "width": "$arm_d", "height": "$thickness"},
+       "translate": [0, "$arm_d / 2 - $thickness / 2", 0], "depends_on": ["vertical_arm"]},
+      {"op": "union", "tag": "diagonal_brace", "body": {"type": "box", "length": "$width", "width": "$diag_t", "height": "$arm_h * 0.7"},
+       "translate": [0, "$arm_d * 0.3", "$thickness"], "depends_on": ["vertical_arm"]},
+      {"op": "holes", "tag": "wall_holes", "face": "<Y", "diameter": "$hole_d",
+       "placement": {"type": "explicit", "positions": [
+         [0, "$arm_h / 2 - 12"],
+         [0, "-$arm_h / 2 + 12"]
+       ]}, "depends_on": ["vertical_arm"]},
+      {"op": "holes", "tag": "shelf_holes", "face": ">Z", "diameter": "$hole_d",
+       "placement": {"type": "explicit", "positions": [
+         [0, 10],
+         [0, "$arm_d / 2"]
+       ]}, "depends_on": ["horizontal_arm"]}
+    ]
+  },
+  {
+    "description": "Floating shelf bracket / concealed shelf support",
+    "keywords": ["floating", "shelf", "bracket", "concealed", "hidden", "invisible"],
+    "parameters": {
+      "plate_l": 60, "plate_w": 40, "plate_h": 4,
+      "rod_r": 5, "rod_l": 80, "rod_spacing": 40,
+      "hole_d": 5, "hole_inset": 10
+    },
+    "steps": [
+      {"op": "create_box", "tag": "wall_plate", "length": "$plate_l", "width": "$plate_w", "height": "$plate_h"},
+      {"op": "union", "tag": "left_rod", "body": {"type": "cylinder", "height": "$rod_l", "radius": "$rod_r"},
+       "translate": ["-$rod_spacing / 2", 0, "$plate_h"], "depends_on": ["wall_plate"]},
+      {"op": "union", "tag": "right_rod", "body": {"type": "cylinder", "height": "$rod_l", "radius": "$rod_r"},
+       "translate": ["$rod_spacing / 2", 0, "$plate_h"], "depends_on": ["wall_plate"]},
+      {"op": "holes", "tag": "mount_holes", "face": "<Y", "diameter": "$hole_d",
+       "placement": {"type": "corners", "inset": "$hole_inset"},
+       "depends_on": ["wall_plate"]}
+    ]
+  }
+]

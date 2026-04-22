@@ -1,0 +1,91 @@
+[
+  {
+    "description": "Round knob with grip ridges and threaded insert hole",
+    "keywords": ["knob", "round", "grip", "dial", "control", "handle", "turn"],
+    "parameters": {
+      "knob_r": 15, "knob_h": 12, "skirt_r": 17, "skirt_h": 3,
+      "bore_d": 6, "bore_depth": 8, "ridge_count": 12,
+      "indicator_w": 2, "indicator_d": 1, "fillet_r": 1
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "knob_body", "height": "$knob_h", "radius": "$knob_r"},
+      {"op": "union", "tag": "skirt", "body": {"type": "cylinder", "height": "$skirt_h", "radius": "$skirt_r"},
+       "translate": [0, 0, 0], "depends_on": ["knob_body"]},
+      {"op": "cut_blind", "tag": "shaft_bore", "face": "<Z",
+       "profile": {"type": "circle", "radius": "$bore_d / 2"},
+       "depth": "$bore_depth", "depends_on": ["knob_body"]},
+      {"op": "holes", "tag": "grip_notches", "face": ">Z", "diameter": 2,
+       "placement": {"type": "bolt_circle", "bolt_radius": "$knob_r - 1", "count": "$ridge_count"},
+       "depends_on": ["knob_body"]},
+      {"op": "cut_blind", "tag": "indicator", "face": ">Z",
+       "profile": {"type": "rect", "width": "$indicator_w", "height": "$knob_r / 2",
+         "position": [0, "$knob_r / 4"]},
+       "depth": "$indicator_d", "depends_on": ["knob_body"]},
+      {"op": "fillet", "tag": "top_fillet", "radius": "$fillet_r", "edges": ">Z", "depends_on": ["knob_body"]}
+    ]
+  },
+  {
+    "description": "T-handle for tools or valves",
+    "keywords": ["T-handle", "handle", "tool", "valve", "grip", "wrench"],
+    "parameters": {
+      "grip_l": 60, "grip_r": 8, "shaft_l": 50, "shaft_r": 5,
+      "bore_d": 6, "bore_depth": 15, "fillet_r": 1
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "shaft", "height": "$shaft_l", "radius": "$shaft_r"},
+      {"op": "union", "tag": "grip", "body": {"type": "cylinder", "height": "$grip_l", "radius": "$grip_r"},
+       "translate": [0, 0, "$shaft_l"], "depends_on": ["shaft"]},
+      {"op": "cut_blind", "tag": "socket", "face": "<Z",
+       "profile": {"type": "circle", "radius": "$bore_d / 2"},
+       "depth": "$bore_depth", "depends_on": ["shaft"]},
+      {"op": "fillet", "tag": "fillets", "radius": "$fillet_r", "edges": ">Z", "depends_on": ["grip"]}
+    ]
+  },
+  {
+    "description": "D-handle / pull handle with mounting holes",
+    "keywords": ["D-handle", "pull", "handle", "drawer", "cabinet", "door"],
+    "parameters": {
+      "width": 100, "height": 35, "bar_r": 6,
+      "foot_l": 15, "foot_w": 12, "foot_h": 8,
+      "hole_d": 4, "mount_spacing": 80
+    },
+    "steps": [
+      {"op": "create_box", "tag": "left_foot", "length": "$foot_l", "width": "$foot_w", "height": "$foot_h"},
+      {"op": "union", "tag": "right_foot", "body": {"type": "box", "length": "$foot_l", "width": "$foot_w", "height": "$foot_h"},
+       "translate": ["$mount_spacing", 0, 0], "depends_on": ["left_foot"]},
+      {"op": "union", "tag": "left_post", "body": {"type": "cylinder", "height": "$height", "radius": "$bar_r"},
+       "translate": [0, 0, "$foot_h"], "depends_on": ["left_foot"]},
+      {"op": "union", "tag": "right_post", "body": {"type": "cylinder", "height": "$height", "radius": "$bar_r"},
+       "translate": ["$mount_spacing", 0, "$foot_h"], "depends_on": ["right_foot"]},
+      {"op": "union", "tag": "crossbar", "body": {"type": "box", "length": "$mount_spacing", "width": "$bar_r * 2", "height": "$bar_r * 2"},
+       "translate": ["$mount_spacing / 2", 0, "$foot_h + $height"], "depends_on": ["left_post", "right_post"]},
+      {"op": "holes", "tag": "mount_holes", "face": "<Z", "diameter": "$hole_d",
+       "placement": {"type": "explicit", "positions": [
+         [0, 0],
+         ["$mount_spacing", 0]
+       ]}, "depends_on": ["left_foot", "right_foot"]}
+    ]
+  },
+  {
+    "description": "Drawer pull / cabinet handle with flat bar",
+    "keywords": ["drawer", "pull", "handle", "cabinet", "bar", "furniture"],
+    "parameters": {
+      "bar_l": 120, "bar_w": 10, "bar_h": 8,
+      "standoff_h": 15, "standoff_r": 6,
+      "mount_spacing": 96, "hole_d": 4, "fillet_r": 2
+    },
+    "steps": [
+      {"op": "create_box", "tag": "bar", "length": "$bar_l", "width": "$bar_w", "height": "$bar_h"},
+      {"op": "union", "tag": "left_standoff", "body": {"type": "cylinder", "height": "$standoff_h", "radius": "$standoff_r"},
+       "translate": ["-$mount_spacing / 2", 0, "-$standoff_h"], "depends_on": ["bar"]},
+      {"op": "union", "tag": "right_standoff", "body": {"type": "cylinder", "height": "$standoff_h", "radius": "$standoff_r"},
+       "translate": ["$mount_spacing / 2", 0, "-$standoff_h"], "depends_on": ["bar"]},
+      {"op": "holes", "tag": "mount_holes", "face": "<Z", "diameter": "$hole_d",
+       "placement": {"type": "explicit", "positions": [
+         ["-$mount_spacing / 2", 0],
+         ["$mount_spacing / 2", 0]
+       ]}, "depends_on": ["left_standoff", "right_standoff"]},
+      {"op": "fillet", "tag": "bar_fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["bar"]}
+    ]
+  }
+]

@@ -84,8 +84,15 @@ class TestParameterResolution:
     def test_string_number(self):
         assert _resolve_param("42.5", {}) == 42.5
 
-    def test_passthrough_non_string(self):
-        assert _resolve_param([1, 2], {}) == [1, 2]
+    def test_rejects_list(self):
+        import pytest
+        with pytest.raises(ValueError, match="got list"):
+            _resolve_param([1, 2], {})
+
+    def test_rejects_dict(self):
+        import pytest
+        with pytest.raises(ValueError, match="got dict"):
+            _resolve_param({"x": 1}, {})
 
 
 # ---------------------------------------------------------------------------

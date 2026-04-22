@@ -1,0 +1,80 @@
+[
+  {
+    "description": "Pipe elbow joint / 90-degree elbow fitting",
+    "keywords": ["pipe", "elbow", "joint", "90", "degree", "fitting", "plumbing", "bend"],
+    "parameters": {
+      "pipe_od": 25, "pipe_id": 20, "pipe_length": 30,
+      "flange_r": 18, "flange_h": 4, "bolt_d": 4, "bolt_count": 4, "bolt_r": 14
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "vertical_pipe", "height": "$pipe_length", "radius": "$pipe_od / 2"},
+      {"op": "cut_through", "tag": "vertical_bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$pipe_id / 2"}, "depends_on": ["vertical_pipe"]},
+      {"op": "union", "tag": "horizontal_pipe", "body": {"type": "cylinder", "height": "$pipe_length", "radius": "$pipe_od / 2"},
+       "translate": ["$pipe_length / 2 + $pipe_od / 4", 0, "$pipe_od / 4"], "depends_on": ["vertical_pipe"]},
+      {"op": "union", "tag": "elbow_block", "body": {"type": "box", "length": "$pipe_od", "width": "$pipe_od", "height": "$pipe_od"},
+       "translate": [0, 0, 0], "depends_on": ["vertical_pipe"]},
+      {"op": "union", "tag": "bottom_flange", "body": {"type": "cylinder", "height": "$flange_h", "radius": "$flange_r"},
+       "translate": [0, 0, 0], "depends_on": ["vertical_pipe"]},
+      {"op": "holes", "tag": "flange_bolts", "face": "<Z", "diameter": "$bolt_d",
+       "placement": {"type": "bolt_circle", "bolt_radius": "$bolt_r", "count": "$bolt_count"},
+       "depends_on": ["bottom_flange"]}
+    ]
+  },
+  {
+    "description": "Pipe tee connector / T-junction fitting",
+    "keywords": ["pipe", "tee", "T", "junction", "connector", "fitting", "branch"],
+    "parameters": {
+      "pipe_r": 12, "pipe_wall": 2, "main_l": 60, "branch_l": 30,
+      "flange_r": 16, "flange_h": 3
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "main_pipe", "height": "$main_l", "radius": "$pipe_r"},
+      {"op": "union", "tag": "branch", "body": {"type": "cylinder", "height": "$branch_l", "radius": "$pipe_r"},
+       "translate": [0, "$branch_l / 2", "$main_l / 2"], "depends_on": ["main_pipe"]},
+      {"op": "shell", "tag": "hollow", "thickness": "$pipe_wall", "open_faces": [">Z", "<Z"], "depends_on": ["branch"]},
+      {"op": "union", "tag": "top_flange", "body": {"type": "cylinder", "height": "$flange_h", "radius": "$flange_r"},
+       "translate": [0, 0, "$main_l"], "depends_on": ["main_pipe"]},
+      {"op": "union", "tag": "bottom_flange", "body": {"type": "cylinder", "height": "$flange_h", "radius": "$flange_r"},
+       "translate": [0, 0, 0], "depends_on": ["main_pipe"]}
+    ]
+  },
+  {
+    "description": "Pipe reducer / adapter from large to small diameter",
+    "keywords": ["pipe", "reducer", "adapter", "transition", "fitting", "coupling"],
+    "parameters": {
+      "large_r": 20, "small_r": 12, "transition_h": 25,
+      "large_ext": 15, "small_ext": 15, "wall": 2
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "large_end", "height": "$large_ext", "radius": "$large_r"},
+      {"op": "loft", "tag": "transition", "sections": [
+        {"profile": {"type": "circle", "radius": "$large_r"}},
+        {"offset": "$transition_h", "profile": {"type": "circle", "radius": "$small_r"}}
+      ], "ruled": true, "depends_on": []},
+      {"op": "union", "tag": "small_end", "body": {"type": "cylinder", "height": "$small_ext", "radius": "$small_r"},
+       "translate": [0, 0, "$large_ext + $transition_h"], "depends_on": ["transition"]},
+      {"op": "shell", "tag": "hollow", "thickness": "$wall", "open_faces": [">Z", "<Z"], "depends_on": ["small_end"]}
+    ]
+  },
+  {
+    "description": "Pipe flange / mounting flange plate with bolt holes",
+    "keywords": ["flange", "pipe", "mount", "plate", "bolt", "gasket"],
+    "parameters": {
+      "flange_r": 40, "flange_h": 8, "pipe_r": 15, "pipe_h": 25,
+      "bore_d": 24, "bolt_d": 6, "bolt_r": 30, "bolt_count": 6,
+      "fillet_r": 2
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "flange_disc", "height": "$flange_h", "radius": "$flange_r"},
+      {"op": "union", "tag": "pipe_stub", "body": {"type": "cylinder", "height": "$pipe_h", "radius": "$pipe_r"},
+       "translate": [0, 0, "$flange_h"], "depends_on": ["flange_disc"]},
+      {"op": "cut_through", "tag": "bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$bore_d / 2"}, "depends_on": ["flange_disc"]},
+      {"op": "holes", "tag": "bolt_holes", "face": ">Z", "diameter": "$bolt_d",
+       "placement": {"type": "bolt_circle", "bolt_radius": "$bolt_r", "count": "$bolt_count"},
+       "depends_on": ["flange_disc"]},
+      {"op": "fillet", "tag": "pipe_fillet", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["pipe_stub"]}
+    ]
+  }
+]

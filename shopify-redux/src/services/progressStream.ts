@@ -7,6 +7,9 @@ import { setFileProperties, setAutoScaleOnLoad, setStepMetadata, setModelVolume,
 const RECONNECT_DELAY = 3000;
 const STALE_THRESHOLD_MS = 30000;
 
+// Track previous blob URL to revoke on new model load (prevents memory leak)
+let _previousBlobUrl: string | null = null;
+
 export function connectProgressStream(
     portId: string,
     dispatch: AppDispatch,
@@ -185,7 +188,9 @@ async function handleCadMessage(
                 throw new Error('GLB blob is empty — STEP tessellation may have failed');
             }
             const glbFile = new File([glbBlob], `${fileName}.glb`, { type: "model/gltf-binary" });
+            if (_previousBlobUrl) URL.revokeObjectURL(_previousBlobUrl);
             const blobUrl = URL.createObjectURL(glbBlob);
+            _previousBlobUrl = blobUrl;
 
             setActualFile(glbFile);
             dispatch(setAutoScaleOnLoad({ autoScaleOnLoad: true }));

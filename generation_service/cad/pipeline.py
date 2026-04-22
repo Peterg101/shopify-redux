@@ -29,19 +29,24 @@ STEP_SERVICE_URL = os.getenv("STEP_SERVICE_URL", "http://localhost:1235")
 async def _classify_complexity(prompt: str | list[dict]) -> bool:
     """Quick LLM call to decide if a shape needs freeform CadQuery code.
 
-    Returns True if the shape requires curves, lofts, sweeps, gears, threads,
-    or other geometry that can't be expressed as box/cylinder + cuts + holes.
+    Returns True for anything beyond a plain box/cylinder with basic through-holes.
+    Biased toward COMPLEX — it's better to use direct code gen (more capable)
+    than to force a complex part through the limited structured converter.
     """
     prompt_text = prompt if isinstance(prompt, str) else " ".join(
         b.get("text", "") for b in prompt if isinstance(b, dict) and b.get("type") == "text"
     )
 
     classify_prompt = (
-        "Can this part be built entirely from rectangular boxes, cylinders, "
-        "and simple cuts/holes? Or does it need curved surfaces, tapers, "
-        "gears, airfoils, organic shapes, or swept/lofted geometry?\n\n"
+        "Is this part a BASIC shape (plain box or cylinder with only simple "
+        "through-holes and maybe fillets/chamfers)? Or does it need ANYTHING "
+        "more — counterbored holes, countersunk holes, multiple bodies joined "
+        "together, shelling/hollowing, cutouts on side walls, bosses, tapers, "
+        "curves, gears, organic shapes, or any detailed features?\n\n"
         f"Part: {prompt_text[:500]}\n\n"
-        "Reply with exactly one word: SIMPLE or COMPLEX"
+        "Reply BASIC if it's truly just a box/cylinder with simple holes.\n"
+        "Reply DETAILED for anything more.\n"
+        "One word only."
     )
 
     try:
@@ -55,7 +60,7 @@ async def _classify_complexity(prompt: str | list[dict]) -> bool:
         )
         result = response.content[0].text.strip().upper()
         logger.info(f"Complexity classifier: {result}")
-        return "COMPLEX" in result
+        return "DETAILED" in result or "COMPLEX" in result
     except Exception as e:
         logger.warning(f"Complexity classifier failed: {e}")
         return False

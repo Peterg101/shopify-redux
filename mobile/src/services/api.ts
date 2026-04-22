@@ -224,5 +224,14 @@ export const api = createApi({
       }),
       invalidatesTags: ['FulfillerAddress'],
     }),
+
+    // Feedback
+    submitFeedback: builder.mutation({
+      query: ({ taskId, rating }: { taskId: string; rating: 'up' | 'down' }) => ({
+        url: `/tasks/${taskId}/feedback`,
+        method: 'POST',
+        body: { rating },
+      }),
+    }),
   }),
 });

@@ -66,6 +66,13 @@ export const authApi = createApi({
       query: () => ({ url: '/auth/resend-verification', method: 'POST' }),
       invalidatesTags: ['sessionData'],
     }),
+    submitFeedback: builder.mutation<{ message: string; example_id?: string }, { taskId: string; rating: 'up' | 'down' }>({
+      query: ({ taskId, rating }) => ({
+        url: `/tasks/${taskId}/feedback`,
+        method: 'POST',
+        body: { rating },
+      }),
+    }),
   }),
 });
 
@@ -82,4 +89,5 @@ export const {
   useForgotPasswordMutation,
   useResetPasswordMutation,
   useResendVerificationMutation,
+  useSubmitFeedbackMutation,
 } = authApi;

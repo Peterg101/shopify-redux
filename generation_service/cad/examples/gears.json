@@ -1,0 +1,42 @@
+[
+  {
+    "description": "Spur gear with teeth cut from a cylinder",
+    "keywords": ["gear", "spur", "cog", "tooth", "teeth", "mechanical", "drive"],
+    "parameters": {
+      "outer_r": 30, "inner_r": 24, "height": 10,
+      "bore_d": 8, "hub_r": 12, "hub_h": 5,
+      "tooth_count": 16, "fillet_r": 0.5
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "gear_blank", "height": "$height", "radius": "$outer_r"},
+      {"op": "cut_through", "tag": "bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$bore_d / 2"}, "depends_on": ["gear_blank"]},
+      {"op": "holes", "tag": "tooth_slots", "face": ">Z", "diameter": "$outer_r - $inner_r",
+       "placement": {"type": "bolt_circle", "bolt_radius": "$outer_r - ($outer_r - $inner_r) / 4", "count": "$tooth_count"},
+       "depends_on": ["gear_blank"]},
+      {"op": "chamfer", "tag": "edge_chamfers", "size": "$fillet_r", "edges": ">Z", "depends_on": ["gear_blank"]}
+    ]
+  },
+  {
+    "description": "Simple gear wheel with center bore and keyway",
+    "keywords": ["gear", "wheel", "keyway", "bore", "drive", "shaft"],
+    "parameters": {
+      "outer_r": 25, "height": 8, "bore_d": 10,
+      "keyway_w": 3, "keyway_d": 1.5,
+      "lightening_d": 8, "lightening_r": 15, "lightening_count": 6
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "wheel", "height": "$height", "radius": "$outer_r"},
+      {"op": "cut_through", "tag": "bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$bore_d / 2"}, "depends_on": ["wheel"]},
+      {"op": "cut_through", "tag": "keyway", "face": ">Z",
+       "profile": {"type": "rect", "width": "$keyway_w", "height": "$bore_d / 2",
+         "position": [0, "$bore_d / 4 + $keyway_d / 2"]},
+       "depends_on": ["bore"]},
+      {"op": "holes", "tag": "lightening_holes", "face": ">Z", "diameter": "$lightening_d",
+       "placement": {"type": "bolt_circle", "bolt_radius": "$lightening_r", "count": "$lightening_count"},
+       "depends_on": ["wheel"]},
+      {"op": "chamfer", "tag": "chamfers", "size": 0.5, "edges": "|Z", "depends_on": ["wheel"]}
+    ]
+  }
+]

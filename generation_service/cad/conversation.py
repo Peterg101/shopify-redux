@@ -22,7 +22,7 @@ from cad.tools import CAD_TOOLS
 logger = logging.getLogger(__name__)
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-CHAT_MODEL = os.getenv("CAD_CHAT_MODEL", "claude-sonnet-4-5")
+CHAT_MODEL = os.getenv("CAD_CHAT_MODEL", "claude-sonnet-4-5-20250929")
 CHAT_HISTORY_TTL = 3600  # 1 hour
 ANTHROPIC_BETA_HEADER = "compact-2026-01-12"  # automatic conversation compaction
 MAX_RETRIES = 4

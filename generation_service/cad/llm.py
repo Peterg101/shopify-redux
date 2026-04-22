@@ -19,6 +19,9 @@ logger = logging.getLogger(__name__)
 
 _EXAMPLES_DIR = pathlib.Path(__file__).parent / "examples"
 _EXAMPLE_CACHE: list[dict] | None = None
+_VERIFIED_CACHE: list[dict] | None = None
+_VERIFIED_CACHE_TIME: float = 0
+_VERIFIED_CACHE_TTL: float = 300  # 5 minutes
 
 
 def _load_examples() -> list[dict]:
@@ -28,17 +31,81 @@ def _load_examples() -> list[dict]:
     examples = []
     if _EXAMPLES_DIR.is_dir():
         for path in sorted(_EXAMPLES_DIR.glob("*.json")):
+            if path.stem == "cadquery_api":
+                continue
             try:
                 data = _json_mod.loads(path.read_text())
                 if isinstance(data, list):
                     for ex in data:
                         ex["_category"] = path.stem
+                        ex["_source"] = "curated"
                     examples.extend(data)
             except Exception as e:
                 logger.warning(f"Failed to load examples from {path}: {e}")
     _EXAMPLE_CACHE = examples
-    logger.info(f"Loaded {len(examples)} few-shot examples from {_EXAMPLES_DIR}")
+    logger.info(f"Loaded {len(examples)} curated examples from {_EXAMPLES_DIR}")
     return examples
+
+
+def _load_verified_examples() -> list[dict]:
+    """Load user-verified examples from api_service (cached 5 minutes)."""
+    import time
+    global _VERIFIED_CACHE, _VERIFIED_CACHE_TIME
+    now = time.time()
+    if _VERIFIED_CACHE is not None and (now - _VERIFIED_CACHE_TIME) < _VERIFIED_CACHE_TTL:
+        return _VERIFIED_CACHE
+
+    try:
+        import httpx
+        from jwt_auth import generate_token
+        api_url = os.getenv("API_SERVICE_URL", "http://api_service:8000")
+        token = generate_token("generation_service", audience="api_service")
+        resp = httpx.get(
+            f"{api_url}/verified_examples",
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=5,
+        )
+        if resp.status_code == 200:
+            raw = resp.json().get("examples", [])
+            verified = []
+            for ex in raw:
+                entry = {
+                    "description": ex.get("description", ""),
+                    "_source": "verified",
+                    "_category": ex.get("category", "general"),
+                    "_upvotes": ex.get("upvotes", 1),
+                }
+                if ex.get("keywords"):
+                    try:
+                        entry["keywords"] = _json_mod.loads(ex["keywords"])
+                    except (ValueError, TypeError):
+                        entry["keywords"] = []
+                if ex.get("parameters"):
+                    try:
+                        entry["parameters"] = _json_mod.loads(ex["parameters"])
+                    except (ValueError, TypeError):
+                        pass
+                if ex.get("steps"):
+                    try:
+                        entry["steps"] = _json_mod.loads(ex["steps"])
+                    except (ValueError, TypeError):
+                        pass
+                if ex.get("cadquery_script"):
+                    entry["cadquery_script"] = ex["cadquery_script"]
+                verified.append(entry)
+            _VERIFIED_CACHE = verified
+            _VERIFIED_CACHE_TIME = now
+            logger.info(f"Loaded {len(verified)} verified examples from api_service")
+            return verified
+    except Exception as e:
+        logger.warning(f"Failed to load verified examples: {e}")
+
+    return _VERIFIED_CACHE or []
+
+
+def _load_all_examples() -> list[dict]:
+    """Merge curated + verified examples."""
+    return _load_examples() + _load_verified_examples()
 
 
 _API_SNIPPETS_CACHE: list[dict] | None = None
@@ -111,16 +178,21 @@ def _parse_error_structured(error: str) -> str:
     return f"ERROR: {error[:300]}"
 
 
-def _select_examples(prompt_text: str, max_examples: int = 2) -> list[dict]:
+def _select_examples(prompt_text: str, max_examples: int = 3, prefer_json_ops: bool = False) -> list[dict]:
     """Select the most relevant few-shot examples using BM25 ranking.
 
-    Falls back to keyword matching if rank-bm25 is not installed.
+    Merges curated + user-verified examples. Curated get a boost to ensure
+    quality floor. Verified examples are weighted by upvote count.
+
+    When prefer_json_ops=True (structured path), examples with parameters+steps
+    get a boost over code-only examples.
     """
-    examples = _load_examples()
+    import math
+
+    examples = _load_all_examples()
     if not examples:
         return []
 
-    # Build corpus from keywords + description
     corpus = []
     for ex in examples:
         tokens = list(ex.get("keywords", []))
@@ -133,11 +205,31 @@ def _select_examples(prompt_text: str, max_examples: int = 2) -> list[dict]:
     try:
         from rank_bm25 import BM25Okapi
         bm25 = BM25Okapi(corpus)
-        scores = bm25.get_scores(query)
-        ranked = sorted(enumerate(scores), key=lambda x: x[1], reverse=True)
-        return [examples[i] for i, score in ranked[:max_examples] if score > 0]
+        raw_scores = bm25.get_scores(query)
+
+        weighted = []
+        for i, score in enumerate(raw_scores):
+            if score <= 0:
+                continue
+            ex = examples[i]
+            # Base weight by source
+            if ex.get("_source") == "curated":
+                weight = score * 2.0
+            else:
+                upvotes = ex.get("_upvotes", 1)
+                weight = score * (1 + math.log(max(upvotes, 1)))
+            # Boost JSON ops examples when structured path is active
+            if prefer_json_ops:
+                has_ops = bool(ex.get("parameters") and ex.get("steps"))
+                if has_ops:
+                    weight *= 3.0  # strongly prefer JSON ops
+                elif ex.get("cadquery_script") and not has_ops:
+                    weight *= 0.3  # demote code-only for structured path
+            weighted.append((weight, ex))
+
+        weighted.sort(key=lambda x: x[0], reverse=True)
+        return [ex for _, ex in weighted[:max_examples]]
     except ImportError:
-        # Fallback: simple keyword overlap
         prompt_lower = prompt_text.lower()
         scored = []
         for ex in examples:
@@ -154,7 +246,15 @@ def _format_examples_for_prompt(examples: list[dict]) -> str:
     parts = ["REFERENCE EXAMPLES (verified working parts — use similar patterns):\n"]
     for i, ex in enumerate(examples, 1):
         parts.append(f"Example {i}: {ex.get('description', 'Part')}")
-        parts.append(f"```json\n{_json_mod.dumps({'parameters': ex['parameters'], 'steps': ex['steps']}, indent=2)}\n```\n")
+        if ex.get("parameters") and ex.get("steps"):
+            # JSON ops example (structured path)
+            parts.append(f"```json\n{_json_mod.dumps({'parameters': ex['parameters'], 'steps': ex['steps']}, indent=2)}\n```\n")
+        elif ex.get("cadquery_script"):
+            # Direct CadQuery code example
+            parts.append(f"```python\n{ex['cadquery_script']}\n```\n")
+        else:
+            # Description only
+            parts.append("")
     return "\n".join(parts)
 
 CAD_PROVIDER = os.getenv("CAD_PROVIDER", "ollama").lower()
@@ -835,7 +935,7 @@ async def verify_generation(
     try:
         client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
         response = client.messages.create(
-            model=os.getenv("CAD_VERIFY_MODEL", "claude-sonnet-4-5"),
+            model=os.getenv("CAD_VERIFY_MODEL", "claude-sonnet-4-5-20250929"),
             max_tokens=512,
             temperature=0,
             system=VERIFICATION_PROMPT,
@@ -1037,49 +1137,6 @@ User: "A 120x80x40mm enclosure, 2mm walls, open top. Four M3 mounting bosses ins
 Return ONLY the JSON object. No explanation."""
 
 
-BUILD_PLAN_PROMPT = """\
-You are a CAD build planner. Given a part description and manufacturing constraints,
-output a numbered build plan. For each step, state:
-- The operation type (create_box, create_cylinder, create_sphere, loft, sweep, extrude_profile, cut_blind, cut_through, holes, shell, fillet, chamfer, union, revolve, mirror, pattern, intersect, split)
-- Which face or plane to work on
-- Key dimensions
-
-Be concise. One line per step. Think about the correct build order:
-1. Base geometry first (box, cylinder, or loft)
-2. Additive features (extrusions, unions, bosses)
-3. Shell (if hollow)
-4. Subtractive features (cuts, holes) — AFTER shelling
-5. Cosmetic (fillets, chamfers) — LAST, wrapped in try/except
-
-Output ONLY the numbered plan, no other text."""
-
-
-async def _plan_build_sequence(
-    prompt: str | list[dict],
-    extra_text: str,
-) -> str:
-    """Generate a chain-of-thought build plan before JSON ops generation."""
-    if isinstance(prompt, list):
-        plan_content = list(prompt) + [{"type": "text", "text": f"\n\n{extra_text}\n\nPlan the build sequence:"}]
-    else:
-        plan_content = f"{prompt}\n\n{extra_text}\n\nPlan the build sequence:"
-
-    if CAD_PROVIDER == "anthropic":
-        plan_text = await asyncio.to_thread(
-            _anthropic_generate,
-            [{"role": "user", "content": plan_content}],
-            BUILD_PLAN_PROMPT,
-        )
-    else:
-        plan_text = await asyncio.to_thread(
-            _ollama_generate,
-            [
-                {"role": "system", "content": BUILD_PLAN_PROMPT},
-                {"role": "user", "content": plan_content if isinstance(plan_content, str) else "\n\n".join(b["text"] for b in plan_content if b.get("type") == "text")},
-            ],
-        )
-    logger.info(f"Build plan:\n{plan_text}")
-    return plan_text
 
 
 async def generate_operations(
@@ -1116,7 +1173,7 @@ async def generate_operations(
     prompt_text = prompt if isinstance(prompt, str) else " ".join(
         b.get("text", "") for b in prompt if isinstance(b, dict) and b.get("type") == "text"
     )
-    examples = _select_examples(prompt_text)
+    examples = _select_examples(prompt_text, prefer_json_ops=True)
     examples_text = _format_examples_for_prompt(examples)
     if examples:
         logger.info(f"Selected {len(examples)} few-shot examples: {[e.get('description', '?') for e in examples]}")

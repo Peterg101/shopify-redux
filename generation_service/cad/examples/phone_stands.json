@@ -1,0 +1,66 @@
+[
+  {
+    "description": "Angled phone stand with cable slot",
+    "keywords": ["phone", "stand", "holder", "dock", "charging", "desk", "angled"],
+    "parameters": {
+      "base_l": 80, "base_w": 70, "base_h": 5,
+      "back_l": 70, "back_h": 60, "back_t": 4,
+      "lip_h": 8, "lip_t": 3,
+      "cable_w": 15, "cable_h": 8,
+      "fillet_r": 2
+    },
+    "steps": [
+      {"op": "create_box", "tag": "base", "length": "$base_l", "width": "$base_w", "height": "$base_h"},
+      {"op": "union", "tag": "back_support", "body": {"type": "box", "length": "$back_l", "width": "$back_t", "height": "$back_h"},
+       "translate": [0, "-$base_w / 2 + $back_t / 2", "$base_h"], "depends_on": ["base"]},
+      {"op": "union", "tag": "front_lip", "body": {"type": "box", "length": "$back_l", "width": "$lip_t", "height": "$lip_h"},
+       "translate": [0, "$base_w / 2 - $lip_t / 2 - 10", "$base_h"], "depends_on": ["base"]},
+      {"op": "cut_through", "tag": "cable_slot", "face": ">Y",
+       "profile": {"type": "rect", "width": "$cable_w", "height": "$cable_h",
+         "position": {"h": "center", "v": {"from": "bottom", "offset": "$cable_h / 2"}}},
+       "depends_on": ["base"]},
+      {"op": "fillet", "tag": "fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["base"]}
+    ]
+  },
+  {
+    "description": "Tablet holder / tablet stand with adjustable angle slot",
+    "keywords": ["tablet", "holder", "stand", "iPad", "display", "easel"],
+    "parameters": {
+      "base_l": 120, "base_w": 80, "base_h": 6,
+      "rail_h": 15, "rail_t": 5, "rail_gap": 12,
+      "back_h": 80, "back_t": 5, "back_w": 110,
+      "fillet_r": 2
+    },
+    "steps": [
+      {"op": "create_box", "tag": "base", "length": "$base_l", "width": "$base_w", "height": "$base_h"},
+      {"op": "union", "tag": "front_rail", "body": {"type": "box", "length": "$base_l - 10", "width": "$rail_t", "height": "$rail_h"},
+       "translate": [0, "$base_w / 2 - $rail_t / 2 - 5", "$base_h"], "depends_on": ["base"]},
+      {"op": "union", "tag": "back_support", "body": {"type": "box", "length": "$back_w", "width": "$back_t", "height": "$back_h"},
+       "translate": [0, "-$base_w / 2 + $back_t / 2", "$base_h"], "depends_on": ["base"]},
+      {"op": "cut_through", "tag": "tablet_slot", "face": ">Z",
+       "profile": {"type": "rect", "width": "$base_l - 20", "height": "$rail_gap",
+         "position": {"h": "center", "v": {"from": "top", "offset": "$base_w / 2 - 15"}}},
+       "depends_on": ["base"]},
+      {"op": "fillet", "tag": "fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["base"]}
+    ]
+  },
+  {
+    "description": "Minimal desk phone stand with two-piece support",
+    "keywords": ["phone", "desk", "stand", "minimal", "simple", "cradle"],
+    "parameters": {
+      "width": 70, "depth": 50, "base_h": 4,
+      "ledge_h": 10, "ledge_d": 8, "wall_t": 3,
+      "back_h": 40, "cable_d": 10
+    },
+    "steps": [
+      {"op": "create_box", "tag": "base", "length": "$width", "width": "$depth", "height": "$base_h"},
+      {"op": "union", "tag": "back_wall", "body": {"type": "box", "length": "$width", "width": "$wall_t", "height": "$back_h"},
+       "translate": [0, "-$depth / 2 + $wall_t / 2", "$base_h"], "depends_on": ["base"]},
+      {"op": "union", "tag": "front_ledge", "body": {"type": "box", "length": "$width", "width": "$ledge_d", "height": "$ledge_h"},
+       "translate": [0, "$depth / 2 - $ledge_d / 2", "$base_h"], "depends_on": ["base"]},
+      {"op": "cut_through", "tag": "cable_hole", "face": "<Y",
+       "profile": {"type": "circle", "radius": "$cable_d / 2"}, "depends_on": ["back_wall"]},
+      {"op": "fillet", "tag": "fillets", "radius": 1.5, "edges": "|Z", "depends_on": ["base"]}
+    ]
+  }
+]

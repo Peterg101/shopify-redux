@@ -51,20 +51,22 @@ export function SpecCard({ spec, onApprove, onEdit }: SpecCardProps) {
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>Dimensions ({dims.units || 'mm'})</Text>
             <View style={styles.dimsRow}>
-              {(['length', 'width', 'height'] as const).map((key) =>
+              {(['length', 'width', 'height', 'radius', 'diameter', 'top_diameter', 'bottom_diameter'] as const)
+                .filter((key) => dims[key] != null)
+                .map((key) =>
                 isEditing ? (
                   <TextInput
                     key={key}
                     style={styles.dimInput}
                     keyboardType="numeric"
-                    placeholder={key}
+                    placeholder={key.replace('_', ' ')}
                     placeholderTextColor={colors.textDisabled}
                     value={dims[key]?.toString() ?? ''}
                     onChangeText={(val) => updateDimension(key, val)}
                   />
                 ) : (
                   <View key={key} style={styles.dimChip}>
-                    <Text style={styles.dimChipText}>{key}: {dims[key] ?? '?'}</Text>
+                    <Text style={styles.dimChipText}>{key.replace('_', ' ')}: {dims[key]}</Text>
                   </View>
                 ),
               )}

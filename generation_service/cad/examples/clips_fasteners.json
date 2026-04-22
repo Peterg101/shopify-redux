@@ -1,0 +1,92 @@
+[
+  {
+    "description": "Cable clip / cable management clip for desk mounting",
+    "keywords": ["cable", "clip", "wire", "cord", "management", "desk", "mount"],
+    "parameters": {
+      "base_l": 25, "base_w": 12, "base_h": 3,
+      "clip_r": 5, "clip_wall": 2, "clip_h": 10,
+      "gap_w": 3, "hole_d": 3, "fillet_r": 1
+    },
+    "steps": [
+      {"op": "create_box", "tag": "base", "length": "$base_l", "width": "$base_w", "height": "$base_h"},
+      {"op": "union", "tag": "clip_body", "body": {"type": "cylinder", "height": "$clip_h", "radius": "$clip_r + $clip_wall"},
+       "translate": [0, 0, "$base_h"], "depends_on": ["base"]},
+      {"op": "cut_through", "tag": "cable_hole", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$clip_r"}, "depends_on": ["clip_body"]},
+      {"op": "cut_through", "tag": "entry_gap", "face": ">Y",
+       "profile": {"type": "rect", "width": "$gap_w", "height": "$clip_h",
+         "position": {"h": "center", "v": {"from": "top", "offset": "$clip_h / 4"}}},
+       "depends_on": ["clip_body"]},
+      {"op": "holes", "tag": "mount_hole", "face": ">Z", "diameter": "$hole_d",
+       "placement": {"type": "single", "position": ["$base_l / 2 - 5", 0]},
+       "depends_on": ["base"]},
+      {"op": "fillet", "tag": "fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["base"]}
+    ]
+  },
+  {
+    "description": "Zip tie mount / cable tie anchor point",
+    "keywords": ["zip tie", "cable tie", "mount", "anchor", "fastener", "tie down"],
+    "parameters": {
+      "base_l": 20, "base_w": 12, "base_h": 3,
+      "slot_l": 10, "slot_w": 4, "slot_h": 6,
+      "hole_d": 3
+    },
+    "steps": [
+      {"op": "create_box", "tag": "base", "length": "$base_l", "width": "$base_w", "height": "$base_h"},
+      {"op": "union", "tag": "bridge_left", "body": {"type": "box", "length": 3, "width": "$slot_w + 4", "height": "$slot_h"},
+       "translate": ["-$slot_l / 2", 0, "$base_h"], "depends_on": ["base"]},
+      {"op": "union", "tag": "bridge_right", "body": {"type": "box", "length": 3, "width": "$slot_w + 4", "height": "$slot_h"},
+       "translate": ["$slot_l / 2", 0, "$base_h"], "depends_on": ["base"]},
+      {"op": "union", "tag": "bridge_top", "body": {"type": "box", "length": "$slot_l + 6", "width": "$slot_w + 4", "height": 2},
+       "translate": [0, 0, "$base_h + $slot_h"], "depends_on": ["bridge_left", "bridge_right"]},
+      {"op": "holes", "tag": "screw_holes", "face": ">Z", "diameter": "$hole_d",
+       "placement": {"type": "explicit", "positions": [
+         ["-$base_l / 2 + 4", 0],
+         ["$base_l / 2 - 4", 0]
+       ]}, "depends_on": ["base"]}
+    ]
+  },
+  {
+    "description": "Wire guide / cable routing channel",
+    "keywords": ["wire", "guide", "cable", "channel", "routing", "tidy"],
+    "parameters": {
+      "length": 40, "width": 12, "height": 8, "wall": 2,
+      "hole_d": 3, "fillet_r": 1
+    },
+    "steps": [
+      {"op": "create_box", "tag": "body", "length": "$length", "width": "$width", "height": "$height"},
+      {"op": "shell", "tag": "channel", "thickness": "$wall", "open_face": ">Z", "depends_on": ["body"]},
+      {"op": "holes", "tag": "mount_holes", "face": "<Z", "diameter": "$hole_d",
+       "placement": {"type": "explicit", "positions": [
+         ["-$length / 2 + 6", 0],
+         ["$length / 2 - 6", 0]
+       ]}, "depends_on": ["body"]},
+      {"op": "fillet", "tag": "fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "Retaining clip / spring clip bracket",
+    "keywords": ["retaining", "clip", "spring", "bracket", "snap", "holder"],
+    "parameters": {
+      "base_l": 30, "base_w": 15, "base_h": 3,
+      "arm_h": 20, "arm_t": 2, "arm_w": 10,
+      "gap": 8, "hook_l": 4
+    },
+    "steps": [
+      {"op": "create_box", "tag": "base", "length": "$base_l", "width": "$base_w", "height": "$base_h"},
+      {"op": "union", "tag": "left_arm", "body": {"type": "box", "length": "$arm_t", "width": "$arm_w", "height": "$arm_h"},
+       "translate": ["-$gap / 2 - $arm_t / 2", 0, "$base_h"], "depends_on": ["base"]},
+      {"op": "union", "tag": "right_arm", "body": {"type": "box", "length": "$arm_t", "width": "$arm_w", "height": "$arm_h"},
+       "translate": ["$gap / 2 + $arm_t / 2", 0, "$base_h"], "depends_on": ["base"]},
+      {"op": "union", "tag": "left_hook", "body": {"type": "box", "length": "$hook_l", "width": "$arm_w", "height": "$arm_t"},
+       "translate": ["-$gap / 2 + $hook_l / 2 - $arm_t / 2", 0, "$base_h + $arm_h"], "depends_on": ["left_arm"]},
+      {"op": "union", "tag": "right_hook", "body": {"type": "box", "length": "$hook_l", "width": "$arm_w", "height": "$arm_t"},
+       "translate": ["$gap / 2 - $hook_l / 2 + $arm_t / 2", 0, "$base_h + $arm_h"], "depends_on": ["right_arm"]},
+      {"op": "holes", "tag": "mount_holes", "face": ">Z", "diameter": 3,
+       "placement": {"type": "explicit", "positions": [
+         ["-$base_l / 2 + 5", 0],
+         ["$base_l / 2 - 5", 0]
+       ]}, "depends_on": ["base"]}
+    ]
+  }
+]

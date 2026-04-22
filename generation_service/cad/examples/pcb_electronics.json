@@ -1,0 +1,111 @@
+[
+  {
+    "description": "PCB standoff / hex spacer with threaded hole",
+    "keywords": ["PCB", "standoff", "spacer", "hex", "electronics", "motherboard", "mount"],
+    "parameters": {
+      "hex_r": 5, "height": 10, "hole_d": 3,
+      "chamfer": 0.5
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "hex_body", "height": "$height", "radius": "$hex_r"},
+      {"op": "cut_through", "tag": "thread_hole", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$hole_d / 2"}, "depends_on": ["hex_body"]},
+      {"op": "chamfer", "tag": "chamfers", "size": "$chamfer", "edges": "|Z", "depends_on": ["hex_body"]}
+    ]
+  },
+  {
+    "description": "DIN rail clip / DIN rail mounting bracket",
+    "keywords": ["DIN", "rail", "clip", "mount", "bracket", "industrial", "electronics"],
+    "parameters": {
+      "body_l": 45, "body_w": 20, "body_h": 10,
+      "rail_w": 35, "hook_h": 8, "hook_t": 3,
+      "lip_l": 4, "hole_d": 3
+    },
+    "steps": [
+      {"op": "create_box", "tag": "body", "length": "$body_l", "width": "$body_w", "height": "$body_h"},
+      {"op": "union", "tag": "left_hook", "body": {"type": "box", "length": "$hook_t", "width": "$body_w", "height": "$hook_h"},
+       "translate": ["-$rail_w / 2", 0, "-$hook_h"], "depends_on": ["body"]},
+      {"op": "union", "tag": "right_hook", "body": {"type": "box", "length": "$hook_t", "width": "$body_w", "height": "$hook_h"},
+       "translate": ["$rail_w / 2", 0, "-$hook_h"], "depends_on": ["body"]},
+      {"op": "union", "tag": "left_lip", "body": {"type": "box", "length": "$lip_l", "width": "$body_w", "height": "$hook_t"},
+       "translate": ["-$rail_w / 2 + $lip_l / 2", 0, "-$hook_h"], "depends_on": ["left_hook"]},
+      {"op": "union", "tag": "right_lip", "body": {"type": "box", "length": "$lip_l", "width": "$body_w", "height": "$hook_t"},
+       "translate": ["$rail_w / 2 - $lip_l / 2", 0, "-$hook_h"], "depends_on": ["right_hook"]},
+      {"op": "holes", "tag": "mount_holes", "face": ">Z", "diameter": "$hole_d",
+       "placement": {"type": "explicit", "positions": [
+         ["-$body_l / 2 + 8", 0],
+         ["$body_l / 2 - 8", 0]
+       ]}, "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "Arduino Uno mount / PCB holder plate",
+    "keywords": ["Arduino", "mount", "holder", "PCB", "board", "Uno", "platform"],
+    "parameters": {
+      "plate_l": 75, "plate_w": 55, "plate_h": 3,
+      "standoff_r": 3.5, "standoff_h": 6, "screw_d": 2.5,
+      "mount_hole_d": 4, "fillet_r": 2
+    },
+    "steps": [
+      {"op": "create_box", "tag": "plate", "length": "$plate_l", "width": "$plate_w", "height": "$plate_h"},
+      {"op": "union", "tag": "standoff_1", "body": {"type": "cylinder", "height": "$standoff_h", "radius": "$standoff_r"},
+       "translate": ["-$plate_l / 2 + 7", "-$plate_w / 2 + 7", "$plate_h"], "depends_on": ["plate"]},
+      {"op": "union", "tag": "standoff_2", "body": {"type": "cylinder", "height": "$standoff_h", "radius": "$standoff_r"},
+       "translate": ["$plate_l / 2 - 7", "-$plate_w / 2 + 7", "$plate_h"], "depends_on": ["plate"]},
+      {"op": "union", "tag": "standoff_3", "body": {"type": "cylinder", "height": "$standoff_h", "radius": "$standoff_r"},
+       "translate": ["-$plate_l / 2 + 7", "$plate_w / 2 - 7", "$plate_h"], "depends_on": ["plate"]},
+      {"op": "union", "tag": "standoff_4", "body": {"type": "cylinder", "height": "$standoff_h", "radius": "$standoff_r"},
+       "translate": ["$plate_l / 2 - 7", "$plate_w / 2 - 7", "$plate_h"], "depends_on": ["plate"]},
+      {"op": "holes", "tag": "screw_holes", "face": ">Z", "diameter": "$screw_d",
+       "placement": {"type": "explicit", "positions": [
+         ["-$plate_l / 2 + 7", "-$plate_w / 2 + 7"],
+         ["$plate_l / 2 - 7", "-$plate_w / 2 + 7"],
+         ["-$plate_l / 2 + 7", "$plate_w / 2 - 7"],
+         ["$plate_l / 2 - 7", "$plate_w / 2 - 7"]
+       ]}, "depends_on": ["standoff_1", "standoff_2", "standoff_3", "standoff_4"]},
+      {"op": "holes", "tag": "base_mount_holes", "face": "<Z", "diameter": "$mount_hole_d",
+       "placement": {"type": "corners", "inset": 5},
+       "depends_on": ["plate"]},
+      {"op": "fillet", "tag": "fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["plate"]}
+    ]
+  },
+  {
+    "description": "Toggle switch mount plate / panel mount cutout",
+    "keywords": ["switch", "mount", "panel", "toggle", "plate", "cutout", "electrical"],
+    "parameters": {
+      "plate_l": 40, "plate_w": 25, "plate_h": 3,
+      "switch_d": 6, "switch_spacing": 15,
+      "mount_hole_d": 3, "fillet_r": 1.5
+    },
+    "steps": [
+      {"op": "create_box", "tag": "plate", "length": "$plate_l", "width": "$plate_w", "height": "$plate_h"},
+      {"op": "holes", "tag": "switch_holes", "face": ">Z", "diameter": "$switch_d",
+       "placement": {"type": "explicit", "positions": [
+         ["-$switch_spacing / 2", 0],
+         ["$switch_spacing / 2", 0]
+       ]}, "depends_on": ["plate"]},
+      {"op": "holes", "tag": "mount_holes", "face": ">Z", "diameter": "$mount_hole_d",
+       "placement": {"type": "corners", "inset": 5},
+       "depends_on": ["plate"]},
+      {"op": "fillet", "tag": "fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["plate"]}
+    ]
+  },
+  {
+    "description": "Battery holder / AA battery cradle",
+    "keywords": ["battery", "holder", "cradle", "AA", "cell", "compartment"],
+    "parameters": {
+      "length": 55, "width": 18, "height": 16, "wall": 2,
+      "contact_w": 4, "contact_h": 8, "contact_t": 1,
+      "fillet_r": 1
+    },
+    "steps": [
+      {"op": "create_box", "tag": "body", "length": "$length", "width": "$width", "height": "$height"},
+      {"op": "shell", "tag": "hollow", "thickness": "$wall", "open_face": ">Z", "depends_on": ["body"]},
+      {"op": "union", "tag": "left_contact", "body": {"type": "box", "length": "$contact_t", "width": "$contact_w", "height": "$contact_h"},
+       "translate": ["-$length / 2 + $wall + $contact_t / 2", 0, "$wall"], "depends_on": ["hollow"]},
+      {"op": "union", "tag": "right_contact", "body": {"type": "box", "length": "$contact_t", "width": "$contact_w", "height": "$contact_h"},
+       "translate": ["$length / 2 - $wall - $contact_t / 2", 0, "$wall"], "depends_on": ["hollow"]},
+      {"op": "fillet", "tag": "fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["body"]}
+    ]
+  }
+]

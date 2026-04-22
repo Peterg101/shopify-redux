@@ -1,0 +1,77 @@
+[
+  {
+    "description": "Threaded insert / nut trap pocket for embedding in 3D prints",
+    "keywords": ["threaded", "insert", "nut", "trap", "embed", "M3", "M4", "fastener"],
+    "parameters": {
+      "body_r": 8, "body_h": 12,
+      "insert_r": 2.5, "insert_depth": 6,
+      "hex_r": 3.3, "hex_depth": 3,
+      "flange_r": 10, "flange_h": 2,
+      "chamfer_s": 0.5
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "body", "height": "$body_h", "radius": "$body_r"},
+      {"op": "union", "tag": "flange", "body": {"type": "cylinder", "height": "$flange_h", "radius": "$flange_r"},
+       "translate": [0, 0, 0], "depends_on": ["body"]},
+      {"op": "cut_blind", "tag": "thread_hole", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$insert_r"},
+       "depth": "$insert_depth", "depends_on": ["body"]},
+      {"op": "cut_blind", "tag": "hex_pocket", "face": "<Z",
+       "profile": {"type": "polygon", "sides": 6, "radius": "$hex_r"},
+       "depth": "$hex_depth", "depends_on": ["body"]},
+      {"op": "chamfer", "tag": "chamfers", "size": "$chamfer_s", "edges": ">Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "Hex bolt head / cap head shape with shaft",
+    "keywords": ["bolt", "hex", "head", "cap", "screw", "fastener"],
+    "parameters": {
+      "hex_r": 6, "head_h": 5,
+      "shaft_r": 3, "shaft_l": 20,
+      "chamfer_s": 0.8
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "shaft", "height": "$shaft_l", "radius": "$shaft_r"},
+      {"op": "union", "tag": "head", "body": {"type": "cylinder", "height": "$head_h", "radius": "$hex_r"},
+       "translate": [0, 0, "$shaft_l"], "depends_on": ["shaft"]},
+      {"op": "chamfer", "tag": "head_chamfer", "size": "$chamfer_s", "edges": ">Z", "depends_on": ["head"]}
+    ]
+  },
+  {
+    "description": "Wing nut shape / butterfly nut for hand tightening",
+    "keywords": ["wing", "nut", "butterfly", "hand", "tighten", "fastener", "knob"],
+    "parameters": {
+      "hub_r": 6, "hub_h": 8, "bore_d": 5,
+      "wing_l": 15, "wing_w": 3, "wing_h": 10,
+      "wing_taper": 8, "fillet_r": 1
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "hub", "height": "$hub_h", "radius": "$hub_r"},
+      {"op": "cut_through", "tag": "bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$bore_d / 2"}, "depends_on": ["hub"]},
+      {"op": "union", "tag": "left_wing", "body": {"type": "box", "length": "$wing_l", "width": "$wing_w", "height": "$wing_h"},
+       "translate": ["-$hub_r - $wing_l / 2", 0, "$hub_h / 2 - $wing_h / 2 + 2"], "depends_on": ["hub"]},
+      {"op": "union", "tag": "right_wing", "body": {"type": "box", "length": "$wing_l", "width": "$wing_w", "height": "$wing_h"},
+       "translate": ["$hub_r + $wing_l / 2", 0, "$hub_h / 2 - $wing_h / 2 + 2"], "depends_on": ["hub"]},
+      {"op": "fillet", "tag": "wing_fillets", "radius": "$fillet_r", "edges": "|Y", "depends_on": ["left_wing", "right_wing"]}
+    ]
+  },
+  {
+    "description": "Standoff with hex nut trap and through-hole",
+    "keywords": ["standoff", "hex", "nut", "trap", "spacer", "PCB", "mount"],
+    "parameters": {
+      "outer_r": 5, "height": 15,
+      "through_d": 3.2, "hex_r": 3.3, "hex_depth": 3,
+      "chamfer_s": 0.5
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "body", "height": "$height", "radius": "$outer_r"},
+      {"op": "cut_through", "tag": "through_hole", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$through_d / 2"}, "depends_on": ["body"]},
+      {"op": "cut_blind", "tag": "nut_pocket", "face": "<Z",
+       "profile": {"type": "polygon", "sides": 6, "radius": "$hex_r"},
+       "depth": "$hex_depth", "depends_on": ["body"]},
+      {"op": "chamfer", "tag": "chamfers", "size": "$chamfer_s", "edges": "|Z", "depends_on": ["body"]}
+    ]
+  }
+]

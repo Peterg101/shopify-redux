@@ -391,7 +391,14 @@ async def render_views(job_id: str):
     import tempfile
     import shutil
 
-    step_key = f"files/{job_id}/original.step"
+    # Look up the actual S3 key from the job record
+    job = jobs.get(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+    step_key = getattr(job, "s3_key_original", None)
+    if not step_key:
+        raise HTTPException(status_code=404, detail=f"No STEP file stored for job {job_id}")
+
     job_dir = tempfile.mkdtemp(prefix=f"views_{job_id}_")
 
     try:

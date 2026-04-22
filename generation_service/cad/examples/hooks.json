@@ -1,0 +1,94 @@
+[
+  {
+    "description": "Wall hook / coat hook with mounting plate",
+    "keywords": ["wall", "hook", "coat", "hanger", "mount", "peg"],
+    "parameters": {
+      "plate_l": 30, "plate_w": 20, "plate_h": 4,
+      "arm_l": 35, "arm_r": 5, "arm_h": 20,
+      "tip_r": 6, "hole_d": 4,
+      "fillet_r": 2
+    },
+    "steps": [
+      {"op": "create_box", "tag": "plate", "length": "$plate_l", "width": "$plate_w", "height": "$plate_h"},
+      {"op": "union", "tag": "vertical_arm", "body": {"type": "cylinder", "height": "$arm_h", "radius": "$arm_r"},
+       "translate": [0, 0, "$plate_h"], "depends_on": ["plate"]},
+      {"op": "union", "tag": "horizontal_arm", "body": {"type": "box", "length": "$arm_r * 2", "width": "$arm_l", "height": "$arm_r * 2"},
+       "translate": [0, "$arm_l / 2", "$plate_h + $arm_h"], "depends_on": ["vertical_arm"]},
+      {"op": "union", "tag": "hook_tip", "body": {"type": "cylinder", "height": "$arm_h / 2", "radius": "$tip_r"},
+       "translate": [0, "$arm_l", "$plate_h + $arm_h - $arm_h / 2"], "depends_on": ["horizontal_arm"]},
+      {"op": "holes", "tag": "mount_holes", "face": "<Z", "diameter": "$hole_d",
+       "placement": {"type": "explicit", "positions": [
+         [0, "-$plate_w / 2 + 5"],
+         [0, "$plate_w / 2 - 5"]
+       ]}, "depends_on": ["plate"]},
+      {"op": "fillet", "tag": "fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["plate"]}
+    ]
+  },
+  {
+    "description": "S-hook for hanging items",
+    "keywords": ["S-hook", "hook", "hanging", "chain", "S-shape", "utility"],
+    "parameters": {
+      "bar_r": 3, "curve_r": 12, "height": 50,
+      "bar_l": 20
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "vertical_bar", "height": "$height", "radius": "$bar_r"},
+      {"op": "union", "tag": "top_curve", "body": {"type": "cylinder", "height": "$bar_r * 2", "radius": "$curve_r"},
+       "translate": ["$curve_r", 0, "$height"], "depends_on": ["vertical_bar"]},
+      {"op": "union", "tag": "bottom_curve", "body": {"type": "cylinder", "height": "$bar_r * 2", "radius": "$curve_r"},
+       "translate": ["-$curve_r", 0, 0], "depends_on": ["vertical_bar"]},
+      {"op": "union", "tag": "top_arm", "body": {"type": "box", "length": "$bar_r * 2", "width": "$bar_r * 2", "height": "$bar_l"},
+       "translate": ["$curve_r * 2", 0, "$height - $bar_l / 2"], "depends_on": ["top_curve"]},
+      {"op": "union", "tag": "bottom_arm", "body": {"type": "box", "length": "$bar_r * 2", "width": "$bar_r * 2", "height": "$bar_l"},
+       "translate": ["-$curve_r * 2", 0, "$bar_l / 2"], "depends_on": ["bottom_curve"]}
+    ]
+  },
+  {
+    "description": "Carabiner shape / clip hook",
+    "keywords": ["carabiner", "clip", "hook", "snap", "keychain", "latch"],
+    "parameters": {
+      "outer_l": 50, "outer_w": 30, "bar_r": 3,
+      "gate_gap": 8, "thickness": 6
+    },
+    "steps": [
+      {"op": "create_box", "tag": "frame", "length": "$outer_w", "width": "$bar_r * 2", "height": "$outer_l"},
+      {"op": "cut_through", "tag": "inner_cutout", "face": ">Y",
+       "profile": {"type": "rect", "width": "$outer_w - $bar_r * 4", "height": "$outer_l - $bar_r * 4"},
+       "depends_on": ["frame"]},
+      {"op": "cut_through", "tag": "gate_opening", "face": ">Y",
+       "profile": {"type": "rect", "width": "$bar_r * 2 + 1", "height": "$gate_gap",
+         "position": ["$outer_w / 2 - $bar_r", "$outer_l / 4"]},
+       "depends_on": ["frame"]},
+      {"op": "fillet", "tag": "fillets", "radius": "$bar_r", "edges": "|Y", "depends_on": ["frame"]}
+    ]
+  },
+  {
+    "description": "Double coat hook / robe hook with two prongs",
+    "keywords": ["coat", "hook", "robe", "double", "prong", "bathroom", "wardrobe"],
+    "parameters": {
+      "base_l": 40, "base_w": 25, "base_h": 5,
+      "post_h": 30, "post_r": 6,
+      "hook_l": 20, "hook_r": 4, "hook_spacing": 20,
+      "hole_d": 4
+    },
+    "steps": [
+      {"op": "create_box", "tag": "base", "length": "$base_l", "width": "$base_w", "height": "$base_h"},
+      {"op": "union", "tag": "post", "body": {"type": "cylinder", "height": "$post_h", "radius": "$post_r"},
+       "translate": [0, 0, "$base_h"], "depends_on": ["base"]},
+      {"op": "union", "tag": "left_hook", "body": {"type": "box", "length": "$hook_r * 2", "width": "$hook_l", "height": "$hook_r * 2"},
+       "translate": ["-$hook_spacing / 2", "$hook_l / 2", "$base_h + $post_h"], "depends_on": ["post"]},
+      {"op": "union", "tag": "right_hook", "body": {"type": "box", "length": "$hook_r * 2", "width": "$hook_l", "height": "$hook_r * 2"},
+       "translate": ["$hook_spacing / 2", "$hook_l / 2", "$base_h + $post_h"], "depends_on": ["post"]},
+      {"op": "union", "tag": "left_tip", "body": {"type": "cylinder", "height": "$post_h / 3", "radius": "$hook_r"},
+       "translate": ["-$hook_spacing / 2", "$hook_l", "$base_h + $post_h - $post_h / 3"], "depends_on": ["left_hook"]},
+      {"op": "union", "tag": "right_tip", "body": {"type": "cylinder", "height": "$post_h / 3", "radius": "$hook_r"},
+       "translate": ["$hook_spacing / 2", "$hook_l", "$base_h + $post_h - $post_h / 3"], "depends_on": ["right_hook"]},
+      {"op": "holes", "tag": "mount_holes", "face": "<Z", "diameter": "$hole_d",
+       "placement": {"type": "explicit", "positions": [
+         [0, "-$base_w / 2 + 6"],
+         [0, "$base_w / 2 - 6"]
+       ]}, "depends_on": ["base"]},
+      {"op": "fillet", "tag": "fillets", "radius": 2, "edges": "|Z", "depends_on": ["base"]}
+    ]
+  }
+]

@@ -1,0 +1,108 @@
+[
+  {
+    "description": "Pulley wheel with V-groove and hub bore",
+    "keywords": ["pulley", "wheel", "V-groove", "belt", "drive", "mechanical"],
+    "parameters": {
+      "outer_r": 25, "hub_r": 10, "bore_d": 8,
+      "width": 12, "groove_depth": 4, "groove_angle_w": 6,
+      "spoke_count": 4, "spoke_d": 6, "spoke_r": 17,
+      "fillet_r": 1
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "rim", "height": "$width", "radius": "$outer_r"},
+      {"op": "cut_through", "tag": "bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$bore_d / 2"}, "depends_on": ["rim"]},
+      {"op": "cut_blind", "tag": "groove", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$outer_r - 2"},
+       "depth": "$groove_depth",
+       "depends_on": ["rim"]},
+      {"op": "holes", "tag": "weight_holes", "face": ">Z", "diameter": "$spoke_d",
+       "placement": {"type": "bolt_circle", "bolt_radius": "$spoke_r", "count": "$spoke_count"},
+       "depends_on": ["rim"]},
+      {"op": "chamfer", "tag": "edge_chamfer", "size": "$fillet_r", "edges": ">Z", "depends_on": ["rim"]}
+    ]
+  },
+  {
+    "description": "Roller / cylindrical roller with flanges",
+    "keywords": ["roller", "cylinder", "conveyor", "guide", "bearing", "wheel"],
+    "parameters": {
+      "body_r": 15, "body_l": 40, "flange_r": 20, "flange_h": 3,
+      "bore_d": 8, "chamfer_s": 1
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "body", "height": "$body_l", "radius": "$body_r"},
+      {"op": "union", "tag": "left_flange", "body": {"type": "cylinder", "height": "$flange_h", "radius": "$flange_r"},
+       "translate": [0, 0, 0], "depends_on": ["body"]},
+      {"op": "union", "tag": "right_flange", "body": {"type": "cylinder", "height": "$flange_h", "radius": "$flange_r"},
+       "translate": [0, 0, "$body_l - $flange_h"], "depends_on": ["body"]},
+      {"op": "cut_through", "tag": "bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$bore_d / 2"}, "depends_on": ["body"]},
+      {"op": "chamfer", "tag": "chamfers", "size": "$chamfer_s", "edges": "|Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "Cam disc / eccentric cam profile",
+    "keywords": ["cam", "eccentric", "disc", "mechanical", "actuator", "follower"],
+    "parameters": {
+      "base_r": 20, "lobe_r": 12, "height": 8,
+      "bore_d": 6, "keyway_w": 2, "keyway_d": 1,
+      "lobe_offset": 10
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "base_disc", "height": "$height", "radius": "$base_r"},
+      {"op": "union", "tag": "cam_lobe", "body": {"type": "cylinder", "height": "$height", "radius": "$lobe_r"},
+       "translate": ["$lobe_offset", 0, 0], "depends_on": ["base_disc"]},
+      {"op": "cut_through", "tag": "bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$bore_d / 2"}, "depends_on": ["base_disc"]},
+      {"op": "cut_through", "tag": "keyway", "face": ">Z",
+       "profile": {"type": "rect", "width": "$keyway_w", "height": "$bore_d / 2",
+         "position": [0, "$bore_d / 4"]},
+       "depends_on": ["bore"]},
+      {"op": "chamfer", "tag": "chamfers", "size": 0.5, "edges": ">Z", "depends_on": ["base_disc"]}
+    ]
+  },
+  {
+    "description": "Snap-fit tab / cantilever snap hook",
+    "keywords": ["snap", "fit", "tab", "hook", "cantilever", "clip", "latch"],
+    "parameters": {
+      "base_l": 20, "base_w": 10, "base_h": 3,
+      "arm_l": 15, "arm_t": 1.5, "arm_w": 6,
+      "hook_h": 2, "hook_l": 3
+    },
+    "steps": [
+      {"op": "create_box", "tag": "base", "length": "$base_l", "width": "$base_w", "height": "$base_h"},
+      {"op": "union", "tag": "arm", "body": {"type": "box", "length": "$arm_w", "width": "$arm_t", "height": "$arm_l"},
+       "translate": [0, 0, "$base_h"], "depends_on": ["base"]},
+      {"op": "union", "tag": "hook", "body": {"type": "box", "length": "$arm_w", "width": "$hook_l", "height": "$hook_h"},
+       "translate": [0, "$hook_l / 2", "$base_h + $arm_l"], "depends_on": ["arm"]},
+      {"op": "holes", "tag": "mount_holes", "face": ">Z", "diameter": 2.5,
+       "placement": {"type": "explicit", "positions": [
+         ["-$base_l / 2 + 4", 0],
+         ["$base_l / 2 - 4", 0]
+       ]}, "depends_on": ["base"]}
+    ]
+  },
+  {
+    "description": "Timing belt pulley / GT2 pulley with teeth",
+    "keywords": ["timing", "belt", "pulley", "GT2", "stepper", "motor", "3D printer"],
+    "parameters": {
+      "outer_r": 10, "inner_r": 7, "height": 8,
+      "flange_r": 12, "flange_h": 1.5,
+      "bore_d": 5, "tooth_count": 20,
+      "set_screw_d": 3
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "body", "height": "$height", "radius": "$outer_r"},
+      {"op": "union", "tag": "top_flange", "body": {"type": "cylinder", "height": "$flange_h", "radius": "$flange_r"},
+       "translate": [0, 0, "$height"], "depends_on": ["body"]},
+      {"op": "union", "tag": "bottom_flange", "body": {"type": "cylinder", "height": "$flange_h", "radius": "$flange_r"},
+       "translate": [0, 0, "-$flange_h"], "depends_on": ["body"]},
+      {"op": "cut_through", "tag": "bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$bore_d / 2"}, "depends_on": ["body"]},
+      {"op": "holes", "tag": "teeth", "face": ">Z", "diameter": 1.5,
+       "placement": {"type": "bolt_circle", "bolt_radius": "$outer_r - 0.5", "count": "$tooth_count"},
+       "depends_on": ["body"]},
+      {"op": "chamfer", "tag": "chamfers", "size": 0.3, "edges": ">Z", "depends_on": ["top_flange"]}
+    ]
+  }
+]

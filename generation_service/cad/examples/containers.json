@@ -1,0 +1,71 @@
+[
+  {
+    "description": "Round jar / vase with thick walls",
+    "keywords": ["jar", "vase", "pot", "vessel", "round", "container", "cup"],
+    "parameters": {
+      "outer_r": 30, "height": 60, "wall": 3,
+      "base_h": 4, "fillet_r": 2
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "body", "height": "$height", "radius": "$outer_r"},
+      {"op": "shell", "tag": "hollow", "thickness": "$wall", "open_face": ">Z", "depends_on": ["body"]},
+      {"op": "fillet", "tag": "top_fillet", "radius": "$fillet_r", "edges": ">Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "Hexagonal container / hex storage jar",
+    "keywords": ["hex", "hexagonal", "container", "jar", "storage", "geometric"],
+    "parameters": {
+      "hex_r": 25, "height": 50, "wall": 2.5, "fillet_r": 1
+    },
+    "steps": [
+      {"op": "create_box", "tag": "body", "length": "$hex_r * 2", "width": "$hex_r * 2", "height": "$height"},
+      {"op": "shell", "tag": "hollow", "thickness": "$wall", "open_face": ">Z", "depends_on": ["body"]},
+      {"op": "fillet", "tag": "fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "Stackable storage bin with lip and handles",
+    "keywords": ["stackable", "bin", "storage", "box", "container", "stacking", "organiser"],
+    "parameters": {
+      "length": 100, "width": 70, "height": 50, "wall": 2.5,
+      "lip_h": 3, "lip_overhang": 2,
+      "handle_w": 30, "handle_h": 15,
+      "fillet_r": 3
+    },
+    "steps": [
+      {"op": "create_box", "tag": "body", "length": "$length", "width": "$width", "height": "$height"},
+      {"op": "shell", "tag": "hollow", "thickness": "$wall", "open_face": ">Z", "depends_on": ["body"]},
+      {"op": "union", "tag": "stacking_lip", "body": {"type": "box", "length": "$length - $wall * 2 - 1", "width": "$width - $wall * 2 - 1", "height": "$lip_h"},
+       "translate": [0, 0, "$height"], "depends_on": ["hollow"]},
+      {"op": "cut_through", "tag": "front_handle", "face": ">Y",
+       "profile": {"type": "slot", "length": "$handle_w", "width": "$handle_h",
+         "position": {"h": "center", "v": {"from": "top", "offset": 10}}},
+       "depends_on": ["hollow"]},
+      {"op": "cut_through", "tag": "back_handle", "face": "<Y",
+       "profile": {"type": "slot", "length": "$handle_w", "width": "$handle_h",
+         "position": {"h": "center", "v": {"from": "top", "offset": 10}}},
+       "depends_on": ["hollow"]},
+      {"op": "fillet", "tag": "fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "Divided tray / compartment organiser",
+    "keywords": ["divided", "tray", "compartment", "organiser", "sorting", "parts"],
+    "parameters": {
+      "length": 120, "width": 80, "height": 25, "wall": 2,
+      "divider_t": 1.5, "fillet_r": 1.5
+    },
+    "steps": [
+      {"op": "create_box", "tag": "body", "length": "$length", "width": "$width", "height": "$height"},
+      {"op": "shell", "tag": "hollow", "thickness": "$wall", "open_face": ">Z", "depends_on": ["body"]},
+      {"op": "union", "tag": "long_divider", "body": {"type": "box", "length": "$length - $wall * 2", "width": "$divider_t", "height": "$height - $wall"},
+       "translate": [0, 0, "$wall"], "depends_on": ["hollow"]},
+      {"op": "union", "tag": "cross_divider_1", "body": {"type": "box", "length": "$divider_t", "width": "$width - $wall * 2", "height": "$height - $wall"},
+       "translate": ["-$length / 4", 0, "$wall"], "depends_on": ["hollow"]},
+      {"op": "union", "tag": "cross_divider_2", "body": {"type": "box", "length": "$divider_t", "width": "$width - $wall * 2", "height": "$height - $wall"},
+       "translate": ["$length / 4", 0, "$wall"], "depends_on": ["hollow"]},
+      {"op": "fillet", "tag": "fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["body"]}
+    ]
+  }
+]
