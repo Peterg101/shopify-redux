@@ -589,3 +589,21 @@ export interface ConversationListItem {
 export interface UnreadCountResponse {
   total_unread: number;
 }
+
+// ── Stepwise CAD Builder ────────────────────────────────────
+
+export interface BuildStep {
+  step: number;
+  feature: string;
+  description: string;
+  depends_on: number[];
+}
+
+export interface StepExecutionResult {
+  success: boolean;
+  job_id?: string;
+  new_code?: string;
+  full_script?: string;
+  metadata?: Record<string, any>;
+  error?: string;
+}

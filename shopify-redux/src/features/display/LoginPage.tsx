@@ -16,6 +16,7 @@ import { selectIsLoggedIn } from '../../services/selectors';
 import { useLoginMutation, useRegisterMutation } from '../../services/authApi';
 import { GitHub as GitHubIcon, Google as GoogleIcon } from '@mui/icons-material';
 import { monoFontFamily } from '../../theme';
+import { FEATURES } from '../../config/featureFlags';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -112,11 +113,14 @@ export function LoginPage() {
             FITD
           </Typography>
           <Typography variant="h5" color="text.secondary" sx={{ mb: 2 }}>
-            Distributed Manufacturing Marketplace
+            {FEATURES.MANUFACTURING
+              ? 'Distributed Manufacturing Marketplace'
+              : 'AI-Powered CAD Generation'}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Design 3D models, place orders, and connect with fulfillers worldwide.
-            A collaborative platform for distributed manufacturing.
+            {FEATURES.MANUFACTURING
+              ? 'Design 3D models, place orders, and connect with fulfillers worldwide. A collaborative platform for distributed manufacturing.'
+              : 'Describe your part in plain English. Chat with our AI engineer. Get a manufacturing-ready STEP file in seconds.'}
           </Typography>
         </Box>
 

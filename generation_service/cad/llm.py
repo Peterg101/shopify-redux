@@ -1677,3 +1677,172 @@ async def refine_cadquery_code(
         )
 
     return extract_code(response_text)
+
+
+# ---------------------------------------------------------------------------
+# Stepwise CAD generation — build plan + per-step code generation
+# ---------------------------------------------------------------------------
+
+BUILD_PLAN_SYSTEM = """\
+You are a CAD build planner. Given a part description, decompose it into
+a sequence of manufacturing steps. Each step should be ONE geometric operation.
+
+Return a JSON array of steps. Each step has:
+- step: number (1-based)
+- feature: short snake_case name
+- description: what this step does (one sentence)
+- depends_on: list of step numbers as integers (e.g. [1, 2], NOT strings)
+
+Rules:
+- Base geometry first (box, cylinder, sphere)
+- Shell/hollow BEFORE cuts and holes
+- Cuts and holes AFTER the main body
+- Fillets and chamfers LAST
+- Each step should be simple enough to express in 1-5 lines of CadQuery
+
+Return ONLY the JSON array, no explanation or commentary."""
+
+
+STEP_CODE_SYSTEM = """\
+You are a CadQuery code generator. You are given an existing CadQuery script
+and a description of the NEXT feature to add.
+
+Rules:
+- Generate ONLY the new code to APPEND to the existing script
+- Do NOT repeat or modify any existing code
+- The variable `result` holds the current solid — modify it
+- Use .tag() on the new feature
+- Wrap fillets/chamfers in try/except
+- All dimensions as named variables
+- Return ONLY Python code in a ```python block, no explanation"""
+
+
+def _extract_json_array(text: str) -> list[dict]:
+    """Extract a JSON array from LLM response text."""
+    import json as _json
+
+    # Try code fences first
+    json_match = re.search(r'```(?:json)?\s*\n(.*?)```', text, re.DOTALL)
+    if json_match:
+        try:
+            parsed = _json.loads(json_match.group(1))
+            if isinstance(parsed, list):
+                return parsed
+        except _json.JSONDecodeError:
+            pass
+
+    # Try parsing the whole response
+    try:
+        parsed = _json.loads(text.strip())
+        if isinstance(parsed, list):
+            return parsed
+    except _json.JSONDecodeError:
+        pass
+
+    # Try to find a JSON array using bracket scanning
+    bracket_start = text.find('[')
+    if bracket_start != -1:
+        decoder = _json.JSONDecoder()
+        try:
+            obj, _ = decoder.raw_decode(text, bracket_start)
+            if isinstance(obj, list):
+                return obj
+        except _json.JSONDecodeError:
+            pass
+
+    logger.error(f"Could not extract JSON array from response: {text[:200]}")
+    return []
+
+
+async def generate_build_plan(
+    spec_text: str,
+    process: str = "fdm",
+    material: str = "plastic",
+) -> list[dict]:
+    """Generate a stepwise build plan from a part description.
+
+    Uses Sonnet (fast, cheap) to decompose the part into sequential build steps.
+    Returns a list of step dicts: [{step, feature, description, depends_on}, ...]
+    """
+    process_info = PROCESS_CONSTRAINTS.get(process.lower(), PROCESS_CONSTRAINTS.get("fdm", ""))
+    user_content = (
+        f"Part description: {spec_text}\n\n"
+        f"Manufacturing process: {process} — {process_info}\n"
+        f"Material: {material}\n\n"
+        "Decompose this into sequential build steps."
+    )
+
+    try:
+        if CAD_PROVIDER == "anthropic":
+            import anthropic
+            sonnet_model = os.getenv("CAD_PLAN_MODEL", "claude-sonnet-4-5-20250929")
+            logger.info(f"Generating build plan with {sonnet_model}")
+
+            def _call():
+                client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+                resp = client.messages.create(
+                    model=sonnet_model,
+                    max_tokens=2048,
+                    temperature=0,
+                    system=BUILD_PLAN_SYSTEM,
+                    messages=[{"role": "user", "content": user_content}],
+                )
+                return resp.content[0].text
+
+            response_text = await asyncio.to_thread(_call)
+        else:
+            response_text = await asyncio.to_thread(
+                _ollama_generate,
+                [
+                    {"role": "system", "content": BUILD_PLAN_SYSTEM},
+                    {"role": "user", "content": user_content},
+                ],
+            )
+    except Exception as e:
+        logger.error(f"Build plan generation failed: {e}")
+        return []
+
+    return _extract_json_array(response_text)
+
+
+async def generate_step_code(
+    existing_script: str,
+    step_description: str,
+    process: str = "fdm",
+) -> str:
+    """Generate CadQuery code for a single build step.
+
+    Uses Opus (high quality) to produce the code fragment to append.
+    The existing_script provides context of what has been built so far.
+    Returns the new code string (not the full combined script).
+    """
+    process_info = PROCESS_CONSTRAINTS.get(process.lower(), PROCESS_CONSTRAINTS.get("fdm", ""))
+
+    user_content = (
+        f"Existing script:\n```python\n{existing_script}\n```\n\n"
+        f"Next step to add: {step_description}\n"
+        f"Manufacturing process: {process} — {process_info}\n\n"
+        "Generate ONLY the new code to append."
+    )
+
+    try:
+        if CAD_PROVIDER == "anthropic":
+            logger.info(f"Generating step code with {ANTHROPIC_MODEL}: {step_description[:80]}")
+            response_text = await asyncio.to_thread(
+                _anthropic_generate,
+                [{"role": "user", "content": user_content}],
+                STEP_CODE_SYSTEM,
+            )
+        else:
+            response_text = await asyncio.to_thread(
+                _ollama_generate,
+                [
+                    {"role": "system", "content": STEP_CODE_SYSTEM},
+                    {"role": "user", "content": user_content},
+                ],
+            )
+    except Exception as e:
+        logger.error(f"Step code generation failed: {e}")
+        return f"# Generation failed: {e}\n# Please try again or write the code manually"
+
+    return extract_code(response_text)

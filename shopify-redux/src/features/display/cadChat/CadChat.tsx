@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { Box, Typography, Chip, CircularProgress, LinearProgress, IconButton, Tooltip } from '@mui/material';
+import { Box, Typography, Chip, CircularProgress, LinearProgress, IconButton, Tooltip, Button } from '@mui/material';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import BoltIcon from '@mui/icons-material/Bolt';
+import ViewTimelineIcon from '@mui/icons-material/ViewTimeline';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../app/store';
 import { generateUuid } from '../../../app/utility/collectionUtils';
@@ -33,10 +35,12 @@ import {
   borderHover,
   bgHighlight,
   glowSubtle,
+  glowMedium,
 } from '../../../theme';
 
 const SketchPanel = lazy(() => import('./SketchPanel'));
 const UpgradeModal = lazy(() => import('../../billing/UpgradeModal'));
+const StepwiseBuilder = lazy(() => import('../StepwiseBuilder'));
 
 const PHASE_LABELS: Record<string, string> = {
   freeform: 'Understanding your design',
@@ -64,6 +68,10 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
   const [sketchOpen, setSketchOpen] = useState(false);
   const [sketchDataUrl, setSketchDataUrl] = useState<string | null>(null);
   const sketchElementsRef = useRef<any[]>([]);
+
+  // Stepwise builder state
+  const [stepwiseMode, setStepwiseMode] = useState(false);
+  const [pendingSpec, setPendingSpec] = useState<Record<string, any> | null>(null);
 
   // Upgrade modal state
   const [upgradeOpen, setUpgradeOpen] = useState(false);
@@ -225,8 +233,15 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
 
   const handleApprove = async (spec: Record<string, any>) => {
     if (!chatState.taskId || !userInformation?.user?.user_id) return;
+    // Store the spec and wait for user to choose Quick Generate or Stepwise
+    setPendingSpec(spec);
+  };
+
+  const handleQuickGenerate = async () => {
+    if (!chatState.taskId || !userInformation?.user?.user_id || !pendingSpec) return;
 
     const portId = generateUuid();
+    setPendingSpec(null);
     dispatch(setPhase({ phase: 'generating' }));
     dispatch(setCadPending({ cadPending: true }));
 
@@ -235,7 +250,7 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
         chatState.taskId,
         userInformation.user.user_id,
         portId,
-        spec,
+        pendingSpec,
         cadSettings,
       );
       dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
@@ -252,6 +267,18 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
     }
   };
 
+  const handleStepwiseBuild = () => {
+    if (!pendingSpec) return;
+    setStepwiseMode(true);
+    dispatch(setPhase({ phase: 'generating' }));
+  };
+
+  const handleStepwiseComplete = () => {
+    setStepwiseMode(false);
+    setPendingSpec(null);
+    dispatch(setPhase({ phase: 'confirmed' }));
+  };
+
   const handleEdit = () => {
     // User continues chatting — phase stays at confirmation
   };
@@ -261,6 +288,8 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
     dispatch(resetCadState());
     setStreamingText(null);
     streamingRef.current = '';
+    setStepwiseMode(false);
+    setPendingSpec(null);
   };
 
   const handleSketchAttach = (dataUrl: string) => {
@@ -305,8 +334,69 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
     });
   }
 
+  // Show StepwiseBuilder when in stepwise mode
+  if (stepwiseMode && chatState.taskId && userInformation?.user?.user_id && pendingSpec) {
+    return (
+      <div style={{ width: '100%' }}>
+        <Suspense fallback={
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+            <CircularProgress size={28} sx={{ color: 'primary.main' }} />
+          </Box>
+        }>
+          <StepwiseBuilder
+            taskId={chatState.taskId}
+            userId={userInformation.user.user_id}
+            specText={JSON.stringify(pendingSpec)}
+            settings={cadSettings}
+            onComplete={handleStepwiseComplete}
+          />
+        </Suspense>
+      </div>
+    );
+  }
+
   return (
     <div style={{ width: '100%' }}>
+      {/* Generation mode choice — shown after spec approval */}
+      {pendingSpec && !stepwiseMode && chatState.phase !== 'generating' && (
+        <Box
+          sx={{
+            mb: 2,
+            p: 2,
+            border: `1px solid ${borderSubtle}`,
+            borderRadius: 3,
+            backdropFilter: 'blur(8px)',
+            backgroundColor: bgHighlight,
+          }}
+        >
+          <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1.5 }}>
+            How would you like to generate?
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1.5 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<BoltIcon />}
+              onClick={handleQuickGenerate}
+              sx={{ flex: 1, boxShadow: `0 0 12px ${glowMedium}` }}
+            >
+              Quick Generate
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<ViewTimelineIcon />}
+              onClick={handleStepwiseBuild}
+              sx={{ flex: 1 }}
+            >
+              Step-by-Step Build
+            </Button>
+          </Box>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+            Quick Generate builds the entire model at once. Step-by-Step lets you review and adjust each feature.
+          </Typography>
+        </Box>
+      )}
+
       {/* Chat container — fixed 400px height, flex column, overflow hidden */}
       <div
         style={{

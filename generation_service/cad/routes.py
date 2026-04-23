@@ -1,4 +1,5 @@
 """CAD generation routes -- LLM-powered CadQuery code generation."""
+import asyncio
 import json
 import logging
 import os
@@ -17,7 +18,9 @@ from fitd_schemas.fitd_classes import (
 )
 from jwt_auth import generate_token
 from shared import get_redis, get_authenticated_user, register_task
-from cad.pipeline import generate_cad_task, regenerate_cad_task, refine_cad_task, suppress_cad_features, revert_cad_task
+from cad.pipeline import generate_cad_task, regenerate_cad_task, refine_cad_task, suppress_cad_features, revert_cad_task, upload_step_file, save_task_script
+from cad.executor import execute_cadquery, validate_code
+from cad.llm import generate_build_plan, generate_step_code
 from cad.conversation import chat_stream, spec_to_prompt, build_generation_context, get_history_for_persistence
 
 logger = logging.getLogger(__name__)
@@ -295,3 +298,177 @@ async def revert(
         request.version, redis,
     )
     return {"message": "Revert started!", "port_id": request.port_id}
+
+
+# ---------------------------------------------------------------------------
+# Direct code execution (for code editor)
+# ---------------------------------------------------------------------------
+
+class ExecuteRequest(BaseModel):
+    code: str
+    task_id: str
+    user_id: str
+    timeout_seconds: int = 30
+
+
+@router.post("/execute")
+async def execute_code(
+    request: ExecuteRequest,
+    redis: AsyncRedis = Depends(get_redis),
+    _: dict = Depends(get_authenticated_user),
+):
+    """Execute CadQuery code directly and return the result. For the code editor."""
+    # Credit check
+    credit_info = await _check_credits(request.user_id)
+    if not credit_info.get("allowed"):
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "detail": "Insufficient credits",
+                "tier": credit_info.get("tier", "free"),
+                "credits": 0,
+            },
+        )
+
+    # Execute in sandbox (synchronous Docker call, run in thread)
+    success, output_path, error, metadata = await asyncio.to_thread(
+        execute_cadquery, request.code, request.timeout_seconds
+    )
+
+    if not success:
+        return {"success": False, "error": error}
+
+    # Upload STEP file to media_service
+    job_id = await upload_step_file(output_path, request.user_id, request.task_id)
+    if not job_id:
+        return {"success": False, "error": "STEP file upload failed"}
+
+    # Save script to task record
+    await save_task_script(request.task_id, request.code, "", metadata)
+
+    return {"success": True, "job_id": job_id, "metadata": metadata}
+
+
+# ---------------------------------------------------------------------------
+# Stepwise CAD generation — build plan + per-step execution
+# ---------------------------------------------------------------------------
+
+class PlanRequest(BaseModel):
+    task_id: str
+    user_id: str
+    spec_text: str
+    process: str = "fdm"
+    material: str = "plastic"
+
+
+@router.post("/cad/chat/plan")
+async def create_build_plan(
+    request: PlanRequest,
+    _: dict = Depends(get_authenticated_user),
+):
+    """Generate a stepwise build plan from a part description."""
+    # Credit check
+    credit_info = await _check_credits(request.user_id)
+    if not credit_info.get("allowed"):
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "detail": "Insufficient credits",
+                "tier": credit_info.get("tier", "free"),
+                "credits": 0,
+            },
+        )
+
+    plan = await generate_build_plan(
+        request.spec_text, request.process, request.material
+    )
+    return {"steps": plan}
+
+
+class StepRequest(BaseModel):
+    task_id: str
+    user_id: str
+    existing_script: str
+    step_description: str
+    step_number: int
+    process: str = "fdm"
+    timeout_seconds: int = 30
+
+
+@router.post("/cad/chat/step")
+async def generate_and_execute_step(
+    request: StepRequest,
+    _: dict = Depends(get_authenticated_user),
+):
+    """Generate code for one build step, combine with existing script, and execute."""
+    # Credit check
+    credit_info = await _check_credits(request.user_id)
+    if not credit_info.get("allowed"):
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "detail": "Insufficient credits",
+                "tier": credit_info.get("tier", "free"),
+                "credits": 0,
+            },
+        )
+
+    # Validate existing script before combining
+    if request.existing_script:
+        is_valid, reason = validate_code(request.existing_script)
+        if not is_valid:
+            return {"success": False, "error": f"Script validation failed: {reason}"}
+
+    # Generate the new code fragment for this step
+    new_code = await generate_step_code(
+        request.existing_script, request.step_description, request.process
+    )
+
+    if new_code.startswith("CLARIFICATION:"):
+        return {
+            "success": False,
+            "error": new_code,
+            "new_code": "",
+            "full_script": request.existing_script,
+            "metadata": None,
+        }
+
+    # Combine existing script with new code
+    full_script = request.existing_script + "\n\n" + new_code
+
+    # Execute the combined script
+    success, output_path, error, metadata = await asyncio.to_thread(
+        execute_cadquery, full_script, request.timeout_seconds
+    )
+
+    if not success:
+        return {
+            "success": False,
+            "error": error,
+            "new_code": new_code,
+            "full_script": full_script,
+            "metadata": None,
+        }
+
+    # Upload STEP file
+    job_id = await upload_step_file(output_path, request.user_id, request.task_id)
+
+    if not job_id:
+        return {
+            "success": False,
+            "error": "STEP file upload failed",
+            "new_code": new_code,
+            "full_script": full_script,
+            "metadata": metadata,
+        }
+
+    # Save updated script
+    await save_task_script(request.task_id, full_script, "", metadata)
+
+    return {
+        "success": True,
+        "job_id": job_id,
+        "new_code": new_code,
+        "full_script": full_script,
+        "metadata": metadata,
+    }

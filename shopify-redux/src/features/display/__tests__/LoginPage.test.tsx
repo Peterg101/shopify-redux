@@ -15,7 +15,7 @@ describe('LoginPage', () => {
   it('renders FITD branding', () => {
     renderWithProviders(<LoginPageWithRoutes />, { route: '/login' })
     expect(screen.getByText('FITD')).toBeInTheDocument()
-    expect(screen.getByText('Distributed Manufacturing Marketplace')).toBeInTheDocument()
+    expect(screen.getByText('AI-Powered CAD Generation')).toBeInTheDocument()
   })
 
   it('shows sign-in tab by default with email and password fields', () => {

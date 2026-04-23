@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux';
 import { selectIsLoggedIn } from '../../services/selectors';
 import GoogleButton from 'react-google-button';
 import { monoFontFamily } from '../../theme';
+import { FEATURES } from '../../config/featureFlags';
 
 export default function LoginDialog() {
   const isLoggedIn = useSelector(selectIsLoggedIn);
@@ -37,7 +38,7 @@ export default function LoginDialog() {
           FITD
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          Distributed Manufacturing Marketplace
+          {FEATURES.MANUFACTURING ? 'Distributed Manufacturing Marketplace' : 'AI-Powered CAD Generation'}
         </Typography>
       </DialogTitle>
       <DialogContent id="login-dialog-description">
