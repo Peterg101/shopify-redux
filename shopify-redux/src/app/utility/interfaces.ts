@@ -488,6 +488,35 @@ export interface SlimSession {
   has_fulfiller_profile: boolean;
   email_verified: boolean;
   incomplete_task: TaskInformationAndPortId | null;
+  subscription_tier: string;
+  subscription_status: string;
+  available_credits: number;
+  credit_renewal_date: string | null;
+}
+
+// ── Billing ─────────────────────────────────────────────────
+
+export interface SubscriptionInfo {
+  tier: string;
+  status: string;
+  available_credits: number;
+  credits_used: number;
+  credit_renewal_date: string | null;
+  current_period_end: string | null;
+}
+
+export interface BillingTransaction {
+  id: string;
+  type: string;
+  description: string;
+  credits: number;
+  amount_cents: number;
+  created_at: string;
+}
+
+export interface TransactionsResponse {
+  transactions: BillingTransaction[];
+  total: number;
 }
 
 export interface FileResponse {

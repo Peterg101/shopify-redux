@@ -36,6 +36,7 @@ import {
 } from '../../../theme';
 
 const SketchPanel = lazy(() => import('./SketchPanel'));
+const UpgradeModal = lazy(() => import('../../billing/UpgradeModal'));
 
 const PHASE_LABELS: Record<string, string> = {
   freeform: 'Understanding your design',
@@ -63,6 +64,10 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
   const [sketchOpen, setSketchOpen] = useState(false);
   const [sketchDataUrl, setSketchDataUrl] = useState<string | null>(null);
   const sketchElementsRef = useRef<any[]>([]);
+
+  // Upgrade modal state
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [upgradeReason, setUpgradeReason] = useState<'no_credits' | 'pro_required'>('no_credits');
 
   // Streaming state — local, not Redux, to avoid dispatching on every token
   const [streamingText, setStreamingText] = useState<string | null>(null);
@@ -186,7 +191,11 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
         }),
       });
 
-      if (!resp.ok) throw new Error(`Refinement failed: ${resp.statusText}`);
+      if (!resp.ok) {
+        const refineErr = new Error(`Refinement failed: ${resp.statusText}`) as Error & { status?: number };
+        refineErr.status = resp.status;
+        throw refineErr;
+      }
 
       dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
       connectProgressStream(portId, dispatch, setActualFile);
@@ -202,7 +211,15 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
       logger.error('Refinement error:', err);
       dispatch(setCadLoading({ cadLoading: false }));
       dispatch(setCadPending({ cadPending: false }));
-      dispatch(setChatError({ error: err.message || 'Refinement failed' }));
+      if (err.status === 402) {
+        setUpgradeReason('no_credits');
+        setUpgradeOpen(true);
+      } else if (err.status === 403) {
+        setUpgradeReason('pro_required');
+        setUpgradeOpen(true);
+      } else {
+        dispatch(setChatError({ error: err.message || 'Refinement failed' }));
+      }
     }
   };
 
@@ -224,7 +241,12 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
       dispatch(authApi.util.invalidateTags([{ type: 'sessionData' }]));
       connectProgressStream(portId, dispatch, setActualFile);
     } catch (err: any) {
-      dispatch(setChatError({ error: err.message || 'Failed to start generation' }));
+      if (err.status === 402) {
+        setUpgradeReason('no_credits');
+        setUpgradeOpen(true);
+      } else {
+        dispatch(setChatError({ error: err.message || 'Failed to start generation' }));
+      }
       dispatch(setCadPending({ cadPending: false }));
       dispatch(setPhase({ phase: 'confirmation' }));
     }
@@ -432,6 +454,15 @@ const CadChat: React.FC<CadChatProps> = ({ refinementTaskId }) => {
           </div>
         )}
       </div>
+
+      {/* Upgrade modal for 402/403 errors */}
+      <Suspense fallback={null}>
+        <UpgradeModal
+          open={upgradeOpen}
+          onClose={() => setUpgradeOpen(false)}
+          reason={upgradeReason}
+        />
+      </Suspense>
     </div>
   );
 };

@@ -17,7 +17,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useSelector, useDispatch } from 'react-redux';
 import { colors, spacing, fontSizes, borderRadius } from '../../src/theme';
-import { API_URL, MEDIA_URL } from '../../src/services/config';
+import { API_URL, MEDIA_URL, FEATURE_MANUFACTURING } from '../../src/services/config';
 import { GenerationHistory } from '../../src/components/GenerationHistory';
 import { getToken } from '../../src/services/auth';
 import { api } from '../../src/services/api';
@@ -148,7 +148,7 @@ export default function GenerateScreen() {
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           {/* Header */}
           <Text style={styles.title}>FITD</Text>
-          <Text style={styles.subtitle}>Decentralised Manufacturing</Text>
+          <Text style={styles.subtitle}>{FEATURE_MANUFACTURING ? 'Decentralised Manufacturing' : 'AI-Powered CAD Generation'}</Text>
 
           {/* File preview (uploaded file or completed generation) */}
           {(selectedFile || glbUrl || previewUrl) && viewState !== 'create' && (

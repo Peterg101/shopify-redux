@@ -34,9 +34,35 @@ REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.redis = aioredis.from_url(
-        f"redis://{REDIS_HOST}:{REDIS_PORT}", decode_responses=True
-    )
+    # Validate Anthropic API key when using Claude as CAD provider
+    cad_provider = os.getenv("CAD_PROVIDER", "ollama").lower()
+    if cad_provider == "anthropic" and not os.getenv("ANTHROPIC_API_KEY"):
+        logger.warning("ANTHROPIC_API_KEY not set — CAD generation will fail")
+
+    # Redis connection with retry logic
+    import asyncio as _asyncio
+    redis_connected = False
+    for attempt in range(1, 4):
+        try:
+            app.state.redis = aioredis.from_url(
+                f"redis://{REDIS_HOST}:{REDIS_PORT}", decode_responses=True
+            )
+            await app.state.redis.ping()
+            redis_connected = True
+            logger.info("Redis connection established")
+            break
+        except Exception as e:
+            logger.warning(f"Redis connection attempt {attempt}/3 failed: {e}")
+            if attempt < 3:
+                await _asyncio.sleep(2)
+
+    if not redis_connected:
+        logger.error("All Redis connection attempts failed — SSE progress streaming will not work")
+        # Set a minimal redis reference so the app can still start
+        app.state.redis = aioredis.from_url(
+            f"redis://{REDIS_HOST}:{REDIS_PORT}", decode_responses=True
+        )
+
     yield
     await app.state.redis.aclose()
 

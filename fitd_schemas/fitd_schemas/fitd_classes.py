@@ -536,6 +536,10 @@ class SlimSessionResponse(BaseModel):
     has_fulfiller_profile: bool = False
     email_verified: bool = False
     incomplete_task: Optional[IncompleteTaskResponse] = None
+    subscription_tier: str = "free"
+    subscription_status: str = "active"
+    available_credits: int = 5
+    credit_renewal_date: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -779,6 +783,7 @@ class CadTaskRequest(BaseModel):
     settings: Optional[CadGenerationSettings] = None
     existing_task_id: Optional[str] = None  # set when task was pre-created by chat flow
     rich_context: Optional[list] = None  # content blocks with images from conversation flow
+    tier: Optional[str] = "free"  # billing tier: "free", "pro", "enterprise"
 
 
 # ---------------------------------------------------------------------------
@@ -897,3 +902,27 @@ class ConversationResponse(BaseModel):
 
 class UnreadCountResponse(BaseModel):
     total_unread: int
+
+
+# ── Billing / Credits ──────────────────────────────────────────
+
+class SubscriptionResponse(BaseModel):
+    tier: str = "free"
+    status: str = "active"
+    available_credits: int = 5
+    credit_renewal_date: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
+class CreditTransactionResponse(BaseModel):
+    transaction_type: str
+    amount: int
+    balance_after: int
+    reference_id: Optional[str] = None
+    description: Optional[str] = None
+    created_at: str
+
+    class Config:
+        orm_mode = True

@@ -182,6 +182,10 @@ export function createMockSlimSession(
     has_fulfiller_profile: false,
     email_verified: true,
     incomplete_task: null,
+    subscription_tier: 'free',
+    subscription_status: 'active',
+    available_credits: 5,
+    credit_renewal_date: null,
     ...overrides,
   }
 }

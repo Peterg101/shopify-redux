@@ -1,15 +1,24 @@
 import { authApi } from './authApi'
 import { dbApi } from './dbApi'
 import type { AppDispatch } from '../app/store'
+import { FEATURES } from '../config/featureFlags'
 
-const EVENT_TO_TAGS: Record<string, string[]> = {
+const MANUFACTURING_EVENTS: Record<string, string[]> = {
   'basket:updated': ['BasketItems'],
   'order:created': ['ClaimableOrders', 'UserOrders'],
   'order:claimed': ['UserOrders'],
   'claim:status_changed': ['UserClaims', 'UserOrders'],
   'stripe:onboarded': ['sessionData'],
+}
+
+const CORE_EVENTS: Record<string, string[]> = {
   'task:completed': ['UserTasks', 'sessionData'],
   'profile:updated': ['sessionData'],
+}
+
+const EVENT_TO_TAGS: Record<string, string[]> = {
+  ...CORE_EVENTS,
+  ...(FEATURES.MANUFACTURING ? MANUFACTURING_EVENTS : {}),
 }
 
 const MESSAGE_EVENTS = new Set(['message:received', 'message:read'])

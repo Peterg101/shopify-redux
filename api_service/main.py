@@ -16,7 +16,7 @@ from slowapi.errors import RateLimitExceeded
 from config import FRONTEND_URL, REDIS_HOST, REDIS_PORT, MEDIA_SERVICE_URL, IS_PRODUCTION
 from rate_limit import limiter
 from logging_config import setup_logging
-from routes import auth, users, files, orders, claims, disbursements, disputes, fulfiller, catalog, tasks, events, messages
+from routes import auth, users, files, orders, claims, disbursements, disputes, fulfiller, catalog, tasks, events, messages, billing
 from routes import stripe as stripe_routes
 
 setup_logging()
@@ -83,20 +83,25 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
+FEATURE_MANUFACTURING = os.getenv("FEATURE_MANUFACTURING", "false").lower() == "true"
+
 # Include routers
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(files.router)
-app.include_router(orders.router)
-app.include_router(claims.router)
-app.include_router(disbursements.router)
-app.include_router(disputes.router)
-app.include_router(fulfiller.router)
-app.include_router(catalog.router)
 app.include_router(tasks.router)
 app.include_router(events.router)
 app.include_router(messages.router)
+app.include_router(billing.router)
 app.include_router(stripe_routes.router)
+
+if FEATURE_MANUFACTURING:
+    app.include_router(orders.router)
+    app.include_router(claims.router)
+    app.include_router(disbursements.router)
+    app.include_router(disputes.router)
+    app.include_router(fulfiller.router)
+    app.include_router(catalog.router)
 
 
 @app.get("/health")

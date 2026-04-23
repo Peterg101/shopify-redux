@@ -77,9 +77,24 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
     port_id = request.port_id
     user_id = request.user_id
     prompt = request.prompt
+
+    # Early check: ensure API key is available when using Anthropic
+    cad_provider = os.getenv("CAD_PROVIDER", "ollama").lower()
+    if cad_provider == "anthropic" and not os.getenv("ANTHROPIC_API_KEY"):
+        await publish(redis, port_id, "Task Failed,AI service not configured — contact support")
+        return
+
+    tier = getattr(request, 'tier', 'free')
     rich_context = getattr(request, 'rich_context', None)  # content blocks with images
     settings = request.settings
-    max_iterations = settings.max_iterations if settings else 3
+
+    # Tier controls pipeline capabilities
+    if tier == "free":
+        max_iterations = 1
+    else:
+        max_iterations = settings.max_iterations if settings else 3
+
+    skip_visual_verify = tier == "free"
     timeout_seconds = settings.timeout_seconds if settings else 30
     target_units = settings.target_units if settings else "mm"
     process = getattr(settings, 'process', 'fdm') if settings else 'fdm'
@@ -96,7 +111,11 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
     try:
         # Step 0: Classify complexity — route to structured or direct code gen
         await publish(redis, port_id, f"5,analysing design,{task_name}")
-        use_direct_codegen = await _classify_complexity(generation_prompt)
+        if tier == "free":
+            # Free tier always uses structured path (cheaper, no classifier call)
+            use_direct_codegen = False
+        else:
+            use_direct_codegen = await _classify_complexity(generation_prompt)
 
         ops = {}
         if use_direct_codegen:
@@ -266,63 +285,88 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
             return
 
         # Step 4b: Visual verification — render views and ask Claude to check
-        await publish(redis, port_id, f"85,checking output quality,{task_name}")
+        if skip_visual_verify:
+            logger.info(f"[{port_id}] Skipping visual verification (tier={tier})")
+        else:
+            await publish(redis, port_id, f"85,checking output quality,{task_name}")
+            try:
+                async with httpx.AsyncClient(timeout=60) as client:
+                    verify_resp = await client.post(
+                        f"{STEP_SERVICE_URL}/step/{job_id}/render_views",
+                    )
+                if verify_resp.status_code == 200:
+                    views = verify_resp.json().get("views", {})
+                    if views:
+                        await publish(redis, port_id, f"88,verifying design accuracy,{task_name}")
+                        passed, feedback = await verify_generation(prompt, views)
+                        if not passed:
+                            logger.warning(f"[{port_id}] Visual verification failed: {feedback}")
+                            await publish(redis, port_id, f"90,refining — {feedback[:60]},{task_name}")
+
+                            try:
+                                if use_direct_codegen:
+                                    code = await fix_cadquery_code(
+                                        generation_prompt, code,
+                                        f"Visual inspection feedback: {feedback}",
+                                        process=process, material_hint=material_hint,
+                                    )
+                                else:
+                                    ops = await fix_operations(
+                                        generation_prompt, ops,
+                                        f"Visual inspection feedback: {feedback}",
+                                        attempt=max_iterations, max_attempts=max_iterations + 1,
+                                        process=process,
+                                    )
+                                    code = convert_json_to_cadquery(ops.get("steps", []), ops.get("parameters", {}))
+
+                                await publish(redis, port_id, f"92,re-executing fixed design,{task_name}")
+                                v_success, v_path, v_error, v_meta = await asyncio.to_thread(
+                                    execute_cadquery, code, timeout_seconds
+                                )
+                                if v_success:
+                                    output_path = v_path
+                                    metadata = v_meta
+                                    await save_task_script(task_id, code, prompt, metadata)
+                                    await publish(redis, port_id, f"95,uploading refined model,{task_name}")
+                                    job_id = await upload_step_file(output_path, user_id, task_id)
+                                    logger.info(f"[{port_id}] Visual fix succeeded, re-uploaded as {job_id}")
+                                else:
+                                    logger.warning(f"[{port_id}] Visual fix execution failed: {v_error[:200]}")
+                            except Exception as vf_err:
+                                logger.warning(f"[{port_id}] Visual fix attempt failed: {vf_err}")
+                        else:
+                            logger.info(f"[{port_id}] Visual verification passed")
+                else:
+                    logger.warning(f"[{port_id}] render_views returned {verify_resp.status_code}: {verify_resp.text[:200]}")
+            except Exception as ve:
+                logger.warning(f"[{port_id}] Visual verification skipped: {ve}")
+
+        # Step 5: Deduct 1 credit after successful generation
         try:
-            async with httpx.AsyncClient(timeout=60) as client:
-                verify_resp = await client.post(
-                    f"{STEP_SERVICE_URL}/step/{job_id}/render_views",
+            api_url = os.getenv("API_SERVICE_URL", "http://api_service:8000")
+            deduct_token = generate_token("generation_service", audience="api_service")
+            async with httpx.AsyncClient(timeout=10) as client:
+                deduct_resp = await client.post(
+                    f"{api_url}/billing/deduct-credits",
+                    json={
+                        "user_id": user_id,
+                        "amount": 1,
+                        "reference_id": task_id,
+                        "description": "CAD generation",
+                    },
+                    headers={"Authorization": f"Bearer {deduct_token}"},
                 )
-            if verify_resp.status_code == 200:
-                views = verify_resp.json().get("views", {})
-                if views:
-                    await publish(redis, port_id, f"88,verifying design accuracy,{task_name}")
-                    passed, feedback = await verify_generation(prompt, views)
-                    if not passed:
-                        logger.warning(f"[{port_id}] Visual verification failed: {feedback}")
-                        await publish(redis, port_id, f"90,refining — {feedback[:60]},{task_name}")
-
-                        try:
-                            if use_direct_codegen:
-                                code = await fix_cadquery_code(
-                                    generation_prompt, code,
-                                    f"Visual inspection feedback: {feedback}",
-                                    process=process, material_hint=material_hint,
-                                )
-                            else:
-                                ops = await fix_operations(
-                                    generation_prompt, ops,
-                                    f"Visual inspection feedback: {feedback}",
-                                    attempt=max_iterations, max_attempts=max_iterations + 1,
-                                    process=process,
-                                )
-                                code = convert_json_to_cadquery(ops.get("steps", []), ops.get("parameters", {}))
-
-                            await publish(redis, port_id, f"92,re-executing fixed design,{task_name}")
-                            v_success, v_path, v_error, v_meta = await asyncio.to_thread(
-                                execute_cadquery, code, timeout_seconds
-                            )
-                            if v_success:
-                                output_path = v_path
-                                metadata = v_meta
-                                await save_task_script(task_id, code, prompt, metadata)
-                                await publish(redis, port_id, f"95,uploading refined model,{task_name}")
-                                job_id = await upload_step_file(output_path, user_id, task_id)
-                                logger.info(f"[{port_id}] Visual fix succeeded, re-uploaded as {job_id}")
-                            else:
-                                logger.warning(f"[{port_id}] Visual fix execution failed: {v_error[:200]}")
-                        except Exception as vf_err:
-                            logger.warning(f"[{port_id}] Visual fix attempt failed: {vf_err}")
-                    else:
-                        logger.info(f"[{port_id}] Visual verification passed")
+            if deduct_resp.status_code == 200:
+                logger.info(f"[{port_id}] Deducted 1 credit for user {user_id}")
             else:
-                logger.warning(f"[{port_id}] render_views returned {verify_resp.status_code}: {verify_resp.text[:200]}")
-        except Exception as ve:
-            logger.warning(f"[{port_id}] Visual verification skipped: {ve}")
+                logger.warning(f"[{port_id}] Credit deduction failed: {deduct_resp.status_code} {deduct_resp.text}")
+        except Exception as ce:
+            logger.warning(f"[{port_id}] Credit deduction error (non-fatal): {ce}")
 
-        # Step 5: Mark task complete in db_service
+        # Step 6: Mark task complete in db_service
         await mark_task_complete(task_id)
 
-        # Step 6: Done -- include job_id so frontend can fetch the glB preview
+        # Step 7: Done -- include job_id so frontend can fetch the glB preview
         await publish(redis, port_id, f"100,complete,{task_name}")
         await publish(
             redis, port_id, f"Task Completed,{task_id},{task_name},{job_id}"
@@ -362,7 +406,17 @@ async def upload_step_file(
                     f"STEP file uploaded successfully for task {task_id}, job_id={job_id}"
                 )
                 return job_id
-            logger.error(f"STEP upload failed: {resp.status_code} {resp.text}")
+            # Granular error messages by status code
+            if resp.status_code in (401, 403):
+                logger.error(f"STEP upload auth failure ({resp.status_code}): {resp.text}")
+            elif resp.status_code >= 500:
+                logger.error(f"STEP upload server error ({resp.status_code}): {resp.text}")
+            else:
+                logger.error(f"STEP upload failed: {resp.status_code} {resp.text}")
+    except httpx.TimeoutException:
+        logger.error(f"STEP upload timed out for task {task_id} — media_service may be overloaded")
+    except httpx.ConnectError:
+        logger.error(f"STEP upload connection failed for task {task_id} — media_service may be down")
     except Exception as e:
         logger.error(f"STEP upload error: {e}")
     return None

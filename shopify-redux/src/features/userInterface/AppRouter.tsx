@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectIsLoggedIn } from "../../services/selectors";
+import { FEATURES } from "../../config/featureFlags";
 import { LandingPage } from "../display/landingPage";
 import { Fulfill } from "../fulfill/fulfill";
 import { LoginPage } from "../display/LoginPage";
@@ -19,6 +20,7 @@ import { OrdersPage } from "../orders/OrdersPage";
 import { authApi } from "../../services/authApi";
 import { CircularProgress, Box } from "@mui/material";
 import FloatingBasketBar from "../basket/FloatingBasketBar";
+import BillingPage from "../billing/BillingPage";
 
 
 const selectSessionQuery = authApi.endpoints.getSlimSession.select();
@@ -48,16 +50,17 @@ function AppRouter() {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/generate" element={<ProtectedRoute><LandingPage /></ProtectedRoute>} />
-          <Route path="/fulfill" element={<ProtectedRoute><Fulfill /></ProtectedRoute>} />
-          <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
-          <Route path="/orders/:orderId" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />
-          <Route path="/catalog" element={<ProtectedRoute><CatalogPage /></ProtectedRoute>} />
-          <Route path="/catalog/:partId" element={<ProtectedRoute><PartDetailPage /></ProtectedRoute>} />
-          <Route path="/fulfiller-settings" element={<ProtectedRoute><FulfillerSettingsPage /></ProtectedRoute>} />
+          {FEATURES.MANUFACTURING && <Route path="/fulfill" element={<ProtectedRoute><Fulfill /></ProtectedRoute>} />}
+          {FEATURES.MANUFACTURING && <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />}
+          {FEATURES.MANUFACTURING && <Route path="/orders/:orderId" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />}
+          {FEATURES.MANUFACTURING && <Route path="/catalog" element={<ProtectedRoute><CatalogPage /></ProtectedRoute>} />}
+          {FEATURES.MANUFACTURING && <Route path="/catalog/:partId" element={<ProtectedRoute><PartDetailPage /></ProtectedRoute>} />}
+          {FEATURES.MANUFACTURING && <Route path="/fulfiller-settings" element={<ProtectedRoute><FulfillerSettingsPage /></ProtectedRoute>} />}
+          <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
           <Route path="/messages" element={<ProtectedRoute><ConversationsPage /></ProtectedRoute>} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
-        <FloatingBasketBar />
+        {FEATURES.MANUFACTURING && <FloatingBasketBar />}
     </BrowserRouter>
   );
 };

@@ -1,6 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { createBaseQueryWithReauth } from './baseQueryWithReauth';
-import { SlimSession, BasketInformation, Order, Claim, TaskInformation } from '../app/utility/interfaces';
+import { SlimSession, BasketInformation, Order, Claim, TaskInformation, SubscriptionInfo, TransactionsResponse } from '../app/utility/interfaces';
 
 
 export const authApi = createApi({
@@ -73,6 +73,26 @@ export const authApi = createApi({
         body: { rating },
       }),
     }),
+    // ── Billing ──────────────────────────────────────────────
+    createCheckout: builder.mutation<{ checkout_url: string }, { tier: 'pro' | 'enterprise' }>({
+      query: (body) => ({ url: '/billing/create-checkout', method: 'POST', body }),
+    }),
+    createCreditCheckout: builder.mutation<{ checkout_url: string }, { pack: 'small' | 'large' }>({
+      query: (body) => ({ url: '/billing/create-credit-checkout', method: 'POST', body }),
+    }),
+    manageBilling: builder.mutation<{ portal_url: string }, void>({
+      query: () => ({ url: '/billing/manage', method: 'POST' }),
+    }),
+    getSubscription: builder.query<SubscriptionInfo, void>({
+      query: () => ({ url: '/billing/subscription', method: 'GET' }),
+      providesTags: ['sessionData'],
+    }),
+    getTransactions: builder.query<TransactionsResponse, { limit?: number; offset?: number }>({
+      query: ({ limit = 20, offset = 0 }) => ({
+        url: `/billing/transactions?limit=${limit}&offset=${offset}`,
+        method: 'GET',
+      }),
+    }),
   }),
 });
 
@@ -90,4 +110,9 @@ export const {
   useResetPasswordMutation,
   useResendVerificationMutation,
   useSubmitFeedbackMutation,
+  useCreateCheckoutMutation,
+  useCreateCreditCheckoutMutation,
+  useManageBillingMutation,
+  useGetSubscriptionQuery,
+  useGetTransactionsQuery,
 } = authApi;

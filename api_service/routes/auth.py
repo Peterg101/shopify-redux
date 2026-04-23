@@ -52,6 +52,7 @@ from email_service import (
 
 from fitd_schemas.fitd_db_schemas import (
     User, UserOAuthAccount, Task, BasketItem, Order, UserStripeAccount, Claim, FulfillerProfile,
+    UserSubscription, UserCredits,
 )
 from fitd_schemas.fitd_classes import (
     UserInformation,
@@ -177,6 +178,8 @@ def _find_or_create_oauth_user(oauth_info: OAuthUserInfo, db: Session) -> User:
         provider_user_id=oauth_info.provider_user_id,
         provider_email=oauth_info.email,
     ))
+    db.add(UserSubscription(user_id=user_id, tier="free", status="active"))
+    db.add(UserCredits(user_id=user_id, available_credits=5))
     db.commit()
     db.refresh(new_user)
     return new_user
@@ -285,6 +288,8 @@ async def email_register(
         email_verified=False,
     )
     db.add(user)
+    db.add(UserSubscription(user_id=user_id, tier="free", status="active"))
+    db.add(UserCredits(user_id=user_id, available_credits=5))
     db.commit()
     db.refresh(user)
 
@@ -633,6 +638,8 @@ async def mobile_register(
         email_verified=False,
     )
     db.add(user)
+    db.add(UserSubscription(user_id=user_id, tier="free", status="active"))
+    db.add(UserCredits(user_id=user_id, available_credits=5))
     db.commit()
     db.refresh(user)
 
@@ -769,12 +776,19 @@ def get_slim_session_cookie(
         FulfillerProfile.user_id == user_id
     ).first()
 
+    user_sub = db.query(UserSubscription).filter(UserSubscription.user_id == user_id).first()
+    user_credits = db.query(UserCredits).filter(UserCredits.user_id == user_id).first()
+
     result = SlimSessionResponse(
         user=UserResponse.from_orm(user),
         stripe_onboarded=bool(user_stripe and user_stripe.onboarding_complete),
         has_fulfiller_profile=bool(fulfiller_profile),
         email_verified=getattr(user, "email_verified", False),
         incomplete_task=IncompleteTaskResponse.from_orm(incomplete) if incomplete else None,
+        subscription_tier=user_sub.tier if user_sub else "free",
+        subscription_status=user_sub.status if user_sub else "active",
+        available_credits=user_credits.available_credits if user_credits else 5,
+        credit_renewal_date=user_credits.renewal_date if user_credits else None,
     )
 
     if redis_client is not None:

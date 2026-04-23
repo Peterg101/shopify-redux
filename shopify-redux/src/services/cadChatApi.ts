@@ -108,7 +108,11 @@ export async function confirmSpec(
       }),
     });
 
-    if (!response.ok) throw new Error(`Confirm failed: ${response.statusText}`);
+    if (!response.ok) {
+      const err = new Error(`Confirm failed: ${response.statusText}`) as Error & { status?: number };
+      err.status = response.status;
+      throw err;
+    }
     return response.json();
   } catch (error) {
     logger.error("Error confirming spec:", error);

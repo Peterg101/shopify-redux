@@ -460,3 +460,42 @@ class VerifiedExample(Base):
     geometry_hash: Mapped[Optional[str]] = mapped_column(String, nullable=True, index=True)
     op_count: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[str] = mapped_column(String, default=lambda: datetime.now().isoformat())
+
+
+class UserSubscription(Base):
+    __tablename__ = "user_subscriptions"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.user_id"), unique=True)
+    stripe_customer_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    stripe_subscription_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    tier: Mapped[str] = mapped_column(String, default="free")
+    status: Mapped[str] = mapped_column(String, default="active")
+    current_period_start: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    current_period_end: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    created_at: Mapped[str] = mapped_column(String, default=lambda: datetime.now().isoformat())
+    updated_at: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+
+
+class UserCredits(Base):
+    __tablename__ = "user_credits"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.user_id"), unique=True)
+    available_credits: Mapped[int] = mapped_column(Integer, default=5)
+    total_purchased: Mapped[int] = mapped_column(Integer, default=0)
+    total_used: Mapped[int] = mapped_column(Integer, default=0)
+    rollover_credits: Mapped[int] = mapped_column(Integer, default=0)
+    renewal_date: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    created_at: Mapped[str] = mapped_column(String, default=lambda: datetime.now().isoformat())
+    updated_at: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+
+
+class CreditTransaction(Base):
+    __tablename__ = "credit_transactions"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.user_id"))
+    transaction_type: Mapped[str] = mapped_column(String)
+    amount: Mapped[int] = mapped_column(Integer)
+    balance_after: Mapped[int] = mapped_column(Integer)
+    reference_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    created_at: Mapped[str] = mapped_column(String, default=lambda: datetime.now().isoformat())

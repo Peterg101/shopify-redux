@@ -2,7 +2,8 @@
 import json
 import logging
 import os
-from fastapi import APIRouter, BackgroundTasks, Depends, Request
+import httpx
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from pydantic import BaseModel
 from typing import Optional
 from redis.asyncio import Redis as AsyncRedis
@@ -14,6 +15,7 @@ from fitd_schemas.fitd_classes import (
     CadChatConfirmRequest,
     CadGenerationSettings,
 )
+from jwt_auth import generate_token
 from shared import get_redis, get_authenticated_user, register_task
 from cad.pipeline import generate_cad_task, regenerate_cad_task, refine_cad_task, suppress_cad_features, revert_cad_task
 from cad.conversation import chat_stream, spec_to_prompt, build_generation_context, get_history_for_persistence
@@ -21,6 +23,23 @@ from cad.conversation import chat_stream, spec_to_prompt, build_generation_conte
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+API_SERVICE_URL = os.getenv("API_SERVICE_URL", "http://api_service:8000")
+
+
+async def _check_credits(user_id: str) -> dict:
+    """Check user credits via api_service. Returns {allowed, tier, credits}."""
+    token = generate_token("generation_service", audience="api_service")
+    async with httpx.AsyncClient(timeout=10) as client:
+        resp = await client.post(
+            f"{API_SERVICE_URL}/billing/check-credits",
+            json={"user_id": user_id},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+    if resp.status_code != 200:
+        logger.error(f"Credit check failed: {resp.status_code} {resp.text}")
+        raise HTTPException(status_code=502, detail="Billing service unavailable")
+    return resp.json()
 
 
 @router.post("/start_cad_task/")
@@ -30,6 +49,18 @@ async def start_cad_task(
     redis: AsyncRedis = Depends(get_redis),
     _: None = Depends(get_authenticated_user),
 ):
+    # Credit check before starting generation
+    credit_info = await _check_credits(request.user_id)
+    if not credit_info.get("allowed"):
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "detail": "Insufficient credits",
+                "tier": credit_info.get("tier", "free"),
+                "credits": 0,
+            },
+        )
+    request.tier = credit_info.get("tier", "free")
     background_tasks.add_task(generate_cad_task, request, redis)
     return {"message": "CAD task started!", "task_id": request.port_id}
 
@@ -88,6 +119,19 @@ async def cad_chat_confirm(
     _: dict = Depends(get_authenticated_user),
 ):
     """Confirm the gathered spec and start CAD generation."""
+    # Credit check before starting generation
+    credit_info = await _check_credits(request.user_id)
+    if not credit_info.get("allowed"):
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "detail": "Insufficient credits",
+                "tier": credit_info.get("tier", "free"),
+                "credits": 0,
+            },
+        )
+    tier = credit_info.get("tier", "free")
+
     settings = request.settings or CadGenerationSettings()
     # Build rich context with full conversation history instead of flat text
     # Build rich context (content blocks with images) for code generation
@@ -109,13 +153,10 @@ async def cad_chat_confirm(
     task_name = str(spec_name).strip()[:60]
 
     try:
-        import httpx
-        api_url = os.getenv("API_SERVICE_URL", "http://api_service:8000")
-        from jwt_auth import generate_token
         token = generate_token("generation_service", audience="api_service")
         async with httpx.AsyncClient() as client:
             await client.patch(
-                f"{api_url}/tasks/{request.task_id}/script",
+                f"{API_SERVICE_URL}/tasks/{request.task_id}/script",
                 json={
                     "cadquery_script": "",
                     "generation_prompt": prompt_text,
@@ -135,6 +176,7 @@ async def cad_chat_confirm(
         settings=settings,
         existing_task_id=request.task_id,
         rich_context=rich_context,
+        tier=tier,
     )
     background_tasks.add_task(generate_cad_task, task_request, redis)
     return {"message": "CAD task started!", "task_id": request.port_id}
@@ -184,6 +226,22 @@ async def refine(
     _: dict = Depends(get_authenticated_user),
 ):
     """Refine a CAD model with a natural language instruction."""
+    # Credit check — refinement requires Pro or Enterprise
+    credit_info = await _check_credits(request.user_id)
+    if not credit_info.get("allowed"):
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "detail": "Insufficient credits",
+                "tier": credit_info.get("tier", "free"),
+                "credits": 0,
+            },
+        )
+    if credit_info.get("tier", "free") == "free":
+        raise HTTPException(
+            status_code=403,
+            detail="Refinement requires Pro or Enterprise subscription",
+        )
     background_tasks.add_task(
         refine_cad_task,
         request.task_id, request.port_id, request.user_id,

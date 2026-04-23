@@ -4,6 +4,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import LogoutIcon from '@mui/icons-material/Logout';
+import PaymentIcon from '@mui/icons-material/Payment';
 import { useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { monoFontFamily, textGlow } from "../../theme";
@@ -11,12 +12,18 @@ import { UnreadBadge } from '../messaging/UnreadBadge';
 import { MessagesDrawer } from '../messaging/MessagesDrawer';
 import { selectUserInformation } from '../../services/selectors';
 import { useLogOutMutation } from '../../services/authApi';
+import { FEATURES } from '../../config/featureFlags';
+import SubscriptionBanner from '../billing/SubscriptionBanner';
 
-const navItems = [
+const allNavItems = [
   { label: 'Generate', path: '/generate' },
-  { label: 'Fulfill', path: '/fulfill' },
-  { label: 'Catalog', path: '/catalog' },
+  { label: 'Fulfill', path: '/fulfill', manufacturing: true },
+  { label: 'Catalog', path: '/catalog', manufacturing: true },
 ];
+
+const navItems = allNavItems.filter(
+  (item) => !item.manufacturing || FEATURES.MANUFACTURING
+);
 
 const navButtonSx = (active: boolean) => ({
   textTransform: "none" as const,
@@ -75,6 +82,11 @@ export const HeaderBar = () => {
 
           <Box sx={{ flexGrow: 1 }} />
 
+          {/* Subscription banner */}
+          <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+            <SubscriptionBanner />
+          </Box>
+
           {/* Messages badge */}
           <UnreadBadge onClick={handleMessagesOpen} />
 
@@ -126,13 +138,21 @@ export const HeaderBar = () => {
           <Typography variant="body2" color="text.secondary">{userInfo?.user?.email}</Typography>
         </Box>
         <Divider />
-        <MenuItem onClick={() => { navigate('/orders'); setAnchorEl(null); }}>
-          <ListItemIcon><LocalShippingIcon fontSize="small" /></ListItemIcon>
-          <ListItemText>My Orders</ListItemText>
-        </MenuItem>
-        <MenuItem onClick={() => { navigate('/fulfiller-settings'); setAnchorEl(null); }}>
-          <ListItemIcon><SettingsIcon fontSize="small" /></ListItemIcon>
-          <ListItemText>Fulfiller Settings</ListItemText>
+        {FEATURES.MANUFACTURING && (
+          <MenuItem onClick={() => { navigate('/orders'); setAnchorEl(null); }}>
+            <ListItemIcon><LocalShippingIcon fontSize="small" /></ListItemIcon>
+            <ListItemText>My Orders</ListItemText>
+          </MenuItem>
+        )}
+        {FEATURES.MANUFACTURING && (
+          <MenuItem onClick={() => { navigate('/fulfiller-settings'); setAnchorEl(null); }}>
+            <ListItemIcon><SettingsIcon fontSize="small" /></ListItemIcon>
+            <ListItemText>Fulfiller Settings</ListItemText>
+          </MenuItem>
+        )}
+        <MenuItem onClick={() => { navigate('/billing'); setAnchorEl(null); }}>
+          <ListItemIcon><PaymentIcon fontSize="small" /></ListItemIcon>
+          <ListItemText>Billing</ListItemText>
         </MenuItem>
         <Divider />
         <MenuItem onClick={() => { logOut(); setAnchorEl(null); }}>

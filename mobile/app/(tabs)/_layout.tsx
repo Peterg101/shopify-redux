@@ -4,6 +4,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { RootState } from '../../src/store';
 import { colors } from '../../src/theme';
 import { ActivityIndicator, View } from 'react-native';
+import { FEATURE_MANUFACTURING } from '../../src/services/config';
 
 function TabIcon({ name, color }: { name: React.ComponentProps<typeof FontAwesome>['name']; color: string }) {
   return <FontAwesome size={22} name={name} color={color} />;
@@ -51,6 +52,7 @@ export default function TabLayout() {
         options={{
           title: 'Fulfill',
           tabBarIcon: ({ color }) => <TabIcon name="industry" color={color} />,
+          href: FEATURE_MANUFACTURING ? '/fulfill' : null,
         }}
       />
       <Tabs.Screen
@@ -58,6 +60,7 @@ export default function TabLayout() {
         options={{
           title: 'Catalog',
           tabBarIcon: ({ color }) => <TabIcon name="th-large" color={color} />,
+          href: FEATURE_MANUFACTURING ? '/catalog' : null,
         }}
       />
       <Tabs.Screen
