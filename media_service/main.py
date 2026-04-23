@@ -403,11 +403,16 @@ async def render_views(job_id: str):
 
     try:
         step_path = os.path.join(job_dir, "model.step")
-        from s3_utils import download_file
-        download_file(step_key, step_path)
+        from s3_utils import get_s3_client, BUCKET_NAME
+        try:
+            s3 = get_s3_client()
+            s3.download_file(BUCKET_NAME, step_key, step_path)
+        except Exception as dl_err:
+            logger.error(f"S3 download failed for {step_key}: {dl_err}")
+            raise HTTPException(status_code=404, detail=f"STEP file not found in S3: {step_key}")
 
         if not os.path.exists(step_path):
-            raise HTTPException(status_code=404, detail="STEP file not found")
+            raise HTTPException(status_code=404, detail="STEP file not found after download")
 
         views = generate_multiview(step_path, job_dir, file_type="step")
 

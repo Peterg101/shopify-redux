@@ -266,26 +266,38 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
             return
 
         # Step 4b: Visual verification — render views and ask Claude to check
-        await publish(redis, port_id, f"85,verifying output,{task_name}")
+        await publish(redis, port_id, f"85,checking output quality,{task_name}")
         try:
-            async with httpx.AsyncClient(timeout=30) as client:
+            async with httpx.AsyncClient(timeout=60) as client:
                 verify_resp = await client.post(
                     f"{STEP_SERVICE_URL}/step/{job_id}/render_views",
                 )
             if verify_resp.status_code == 200:
                 views = verify_resp.json().get("views", {})
                 if views:
+                    await publish(redis, port_id, f"88,verifying design accuracy,{task_name}")
                     passed, feedback = await verify_generation(prompt, views)
                     if not passed:
                         logger.warning(f"[{port_id}] Visual verification failed: {feedback}")
-                        await publish(redis, port_id, f"87,refining based on visual check,{task_name}")
-                        ops = await fix_operations(
-                            generation_prompt, ops, f"Visual inspection feedback: {feedback}",
-                            attempt=max_iterations, max_attempts=max_iterations + 1,
-                            process=process,
-                        )
+                        await publish(redis, port_id, f"90,refining — {feedback[:60]},{task_name}")
+
                         try:
-                            code = convert_json_to_cadquery(ops.get("steps", []), ops.get("parameters", {}))
+                            if use_direct_codegen:
+                                code = await fix_cadquery_code(
+                                    generation_prompt, code,
+                                    f"Visual inspection feedback: {feedback}",
+                                    process=process, material_hint=material_hint,
+                                )
+                            else:
+                                ops = await fix_operations(
+                                    generation_prompt, ops,
+                                    f"Visual inspection feedback: {feedback}",
+                                    attempt=max_iterations, max_attempts=max_iterations + 1,
+                                    process=process,
+                                )
+                                code = convert_json_to_cadquery(ops.get("steps", []), ops.get("parameters", {}))
+
+                            await publish(redis, port_id, f"92,re-executing fixed design,{task_name}")
                             v_success, v_path, v_error, v_meta = await asyncio.to_thread(
                                 execute_cadquery, code, timeout_seconds
                             )
@@ -293,12 +305,17 @@ async def generate_cad_task(request: CadTaskRequest, redis: AsyncRedis):
                                 output_path = v_path
                                 metadata = v_meta
                                 await save_task_script(task_id, code, prompt, metadata)
+                                await publish(redis, port_id, f"95,uploading refined model,{task_name}")
                                 job_id = await upload_step_file(output_path, user_id, task_id)
                                 logger.info(f"[{port_id}] Visual fix succeeded, re-uploaded as {job_id}")
+                            else:
+                                logger.warning(f"[{port_id}] Visual fix execution failed: {v_error[:200]}")
                         except Exception as vf_err:
                             logger.warning(f"[{port_id}] Visual fix attempt failed: {vf_err}")
                     else:
                         logger.info(f"[{port_id}] Visual verification passed")
+            else:
+                logger.warning(f"[{port_id}] render_views returned {verify_resp.status_code}: {verify_resp.text[:200]}")
         except Exception as ve:
             logger.warning(f"[{port_id}] Visual verification skipped: {ve}")
 
