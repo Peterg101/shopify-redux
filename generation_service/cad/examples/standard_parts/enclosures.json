@@ -1,0 +1,127 @@
+[
+  {
+    "description": "Small electronics enclosure 60x40x25mm with 2mm walls, open top, M3 mounting bosses",
+    "keywords": ["enclosure", "box", "case", "electronics", "housing", "small"],
+    "parameters": {
+      "length": 60, "width": 40, "height": 25, "wall": 2,
+      "boss_d": 6, "boss_h": 6, "screw_d": 3.2, "boss_inset": 5, "fillet_r": 1.5
+    },
+    "steps": [
+      {"op": "create_box", "tag": "body", "length": "$length", "width": "$width", "height": "$height"},
+      {"op": "shell", "tag": "shell", "thickness": "$wall", "open_face": ">Z", "depends_on": ["body"]},
+      {"op": "union", "tag": "boss_fl", "body": {"type": "cylinder", "height": "$boss_h", "radius": "$boss_d / 2"},
+       "translate": ["-$length / 2 + $boss_inset", "-$width / 2 + $boss_inset", "$wall"], "depends_on": ["shell"]},
+      {"op": "union", "tag": "boss_fr", "body": {"type": "cylinder", "height": "$boss_h", "radius": "$boss_d / 2"},
+       "translate": ["$length / 2 - $boss_inset", "-$width / 2 + $boss_inset", "$wall"], "depends_on": ["shell"]},
+      {"op": "union", "tag": "boss_rl", "body": {"type": "cylinder", "height": "$boss_h", "radius": "$boss_d / 2"},
+       "translate": ["-$length / 2 + $boss_inset", "$width / 2 - $boss_inset", "$wall"], "depends_on": ["shell"]},
+      {"op": "union", "tag": "boss_rr", "body": {"type": "cylinder", "height": "$boss_h", "radius": "$boss_d / 2"},
+       "translate": ["$length / 2 - $boss_inset", "$width / 2 - $boss_inset", "$wall"], "depends_on": ["shell"]},
+      {"op": "holes", "tag": "screw_holes", "face": ">Z", "diameter": "$screw_d",
+       "placement": {"type": "explicit", "positions": [
+         ["-$length / 2 + $boss_inset", "-$width / 2 + $boss_inset"],
+         ["$length / 2 - $boss_inset", "-$width / 2 + $boss_inset"],
+         ["-$length / 2 + $boss_inset", "$width / 2 - $boss_inset"],
+         ["$length / 2 - $boss_inset", "$width / 2 - $boss_inset"]
+       ]}, "depends_on": ["boss_fl", "boss_fr", "boss_rl", "boss_rr"]},
+      {"op": "fillet", "tag": "fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "Medium electronics enclosure 80x50x30mm with 2mm walls, open top, M3 mounting bosses",
+    "keywords": ["enclosure", "box", "case", "electronics", "housing", "medium", "raspberry pi"],
+    "parameters": {
+      "length": 80, "width": 50, "height": 30, "wall": 2,
+      "boss_d": 6, "boss_h": 8, "screw_d": 3.2, "boss_inset": 5, "fillet_r": 2
+    },
+    "steps": [
+      {"op": "create_box", "tag": "body", "length": "$length", "width": "$width", "height": "$height"},
+      {"op": "shell", "tag": "shell", "thickness": "$wall", "open_face": ">Z", "depends_on": ["body"]},
+      {"op": "union", "tag": "boss_fl", "body": {"type": "cylinder", "height": "$boss_h", "radius": "$boss_d / 2"},
+       "translate": ["-$length / 2 + $boss_inset", "-$width / 2 + $boss_inset", "$wall"], "depends_on": ["shell"]},
+      {"op": "union", "tag": "boss_fr", "body": {"type": "cylinder", "height": "$boss_h", "radius": "$boss_d / 2"},
+       "translate": ["$length / 2 - $boss_inset", "-$width / 2 + $boss_inset", "$wall"], "depends_on": ["shell"]},
+      {"op": "union", "tag": "boss_rl", "body": {"type": "cylinder", "height": "$boss_h", "radius": "$boss_d / 2"},
+       "translate": ["-$length / 2 + $boss_inset", "$width / 2 - $boss_inset", "$wall"], "depends_on": ["shell"]},
+      {"op": "union", "tag": "boss_rr", "body": {"type": "cylinder", "height": "$boss_h", "radius": "$boss_d / 2"},
+       "translate": ["$length / 2 - $boss_inset", "$width / 2 - $boss_inset", "$wall"], "depends_on": ["shell"]},
+      {"op": "holes", "tag": "screw_holes", "face": ">Z", "diameter": "$screw_d",
+       "placement": {"type": "explicit", "positions": [
+         ["-$length / 2 + $boss_inset", "-$width / 2 + $boss_inset"],
+         ["$length / 2 - $boss_inset", "-$width / 2 + $boss_inset"],
+         ["-$length / 2 + $boss_inset", "$width / 2 - $boss_inset"],
+         ["$length / 2 - $boss_inset", "$width / 2 - $boss_inset"]
+       ]}, "depends_on": ["boss_fl", "boss_fr", "boss_rl", "boss_rr"]},
+      {"op": "fillet", "tag": "fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "Large electronics enclosure 100x70x40mm with 2.5mm walls, open top, M4 mounting bosses",
+    "keywords": ["enclosure", "box", "case", "electronics", "housing", "large"],
+    "parameters": {
+      "length": 100, "width": 70, "height": 40, "wall": 2.5,
+      "boss_d": 8, "boss_h": 10, "screw_d": 4.2, "boss_inset": 6, "fillet_r": 2.5
+    },
+    "steps": [
+      {"op": "create_box", "tag": "body", "length": "$length", "width": "$width", "height": "$height"},
+      {"op": "shell", "tag": "shell", "thickness": "$wall", "open_face": ">Z", "depends_on": ["body"]},
+      {"op": "union", "tag": "boss_fl", "body": {"type": "cylinder", "height": "$boss_h", "radius": "$boss_d / 2"},
+       "translate": ["-$length / 2 + $boss_inset", "-$width / 2 + $boss_inset", "$wall"], "depends_on": ["shell"]},
+      {"op": "union", "tag": "boss_fr", "body": {"type": "cylinder", "height": "$boss_h", "radius": "$boss_d / 2"},
+       "translate": ["$length / 2 - $boss_inset", "-$width / 2 + $boss_inset", "$wall"], "depends_on": ["shell"]},
+      {"op": "union", "tag": "boss_rl", "body": {"type": "cylinder", "height": "$boss_h", "radius": "$boss_d / 2"},
+       "translate": ["-$length / 2 + $boss_inset", "$width / 2 - $boss_inset", "$wall"], "depends_on": ["shell"]},
+      {"op": "union", "tag": "boss_rr", "body": {"type": "cylinder", "height": "$boss_h", "radius": "$boss_d / 2"},
+       "translate": ["$length / 2 - $boss_inset", "$width / 2 - $boss_inset", "$wall"], "depends_on": ["shell"]},
+      {"op": "holes", "tag": "screw_holes", "face": ">Z", "diameter": "$screw_d",
+       "placement": {"type": "explicit", "positions": [
+         ["-$length / 2 + $boss_inset", "-$width / 2 + $boss_inset"],
+         ["$length / 2 - $boss_inset", "-$width / 2 + $boss_inset"],
+         ["-$length / 2 + $boss_inset", "$width / 2 - $boss_inset"],
+         ["$length / 2 - $boss_inset", "$width / 2 - $boss_inset"]
+       ]}, "depends_on": ["boss_fl", "boss_fr", "boss_rl", "boss_rr"]},
+      {"op": "fillet", "tag": "fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "Extra-large enclosure 120x80x45mm with 3mm walls, open top, M4 mounting bosses and ventilation slots",
+    "keywords": ["enclosure", "box", "case", "electronics", "housing", "ventilation", "large"],
+    "parameters": {
+      "length": 120, "width": 80, "height": 45, "wall": 3,
+      "boss_d": 8, "boss_h": 12, "screw_d": 4.2, "boss_inset": 7,
+      "vent_w": 2, "vent_h": 20, "fillet_r": 3
+    },
+    "steps": [
+      {"op": "create_box", "tag": "body", "length": "$length", "width": "$width", "height": "$height"},
+      {"op": "shell", "tag": "shell", "thickness": "$wall", "open_face": ">Z", "depends_on": ["body"]},
+      {"op": "union", "tag": "boss_fl", "body": {"type": "cylinder", "height": "$boss_h", "radius": "$boss_d / 2"},
+       "translate": ["-$length / 2 + $boss_inset", "-$width / 2 + $boss_inset", "$wall"], "depends_on": ["shell"]},
+      {"op": "union", "tag": "boss_fr", "body": {"type": "cylinder", "height": "$boss_h", "radius": "$boss_d / 2"},
+       "translate": ["$length / 2 - $boss_inset", "-$width / 2 + $boss_inset", "$wall"], "depends_on": ["shell"]},
+      {"op": "union", "tag": "boss_rl", "body": {"type": "cylinder", "height": "$boss_h", "radius": "$boss_d / 2"},
+       "translate": ["-$length / 2 + $boss_inset", "$width / 2 - $boss_inset", "$wall"], "depends_on": ["shell"]},
+      {"op": "union", "tag": "boss_rr", "body": {"type": "cylinder", "height": "$boss_h", "radius": "$boss_d / 2"},
+       "translate": ["$length / 2 - $boss_inset", "$width / 2 - $boss_inset", "$wall"], "depends_on": ["shell"]},
+      {"op": "holes", "tag": "screw_holes", "face": ">Z", "diameter": "$screw_d",
+       "placement": {"type": "explicit", "positions": [
+         ["-$length / 2 + $boss_inset", "-$width / 2 + $boss_inset"],
+         ["$length / 2 - $boss_inset", "-$width / 2 + $boss_inset"],
+         ["-$length / 2 + $boss_inset", "$width / 2 - $boss_inset"],
+         ["$length / 2 - $boss_inset", "$width / 2 - $boss_inset"]
+       ]}, "depends_on": ["boss_fl", "boss_fr", "boss_rl", "boss_rr"]},
+      {"op": "cut_through", "tag": "vent_1", "face": ">X",
+       "profile": {"type": "rect", "width": "$vent_w", "height": "$vent_h",
+         "position": {"h": {"from": "left", "offset": 15}, "v": "center"}},
+       "depends_on": ["shell"]},
+      {"op": "cut_through", "tag": "vent_2", "face": ">X",
+       "profile": {"type": "rect", "width": "$vent_w", "height": "$vent_h",
+         "position": {"h": {"from": "left", "offset": 22}, "v": "center"}},
+       "depends_on": ["shell"]},
+      {"op": "cut_through", "tag": "vent_3", "face": ">X",
+       "profile": {"type": "rect", "width": "$vent_w", "height": "$vent_h",
+         "position": {"h": {"from": "left", "offset": 29}, "v": "center"}},
+       "depends_on": ["shell"]},
+      {"op": "fillet", "tag": "fillets", "radius": "$fillet_r", "edges": "|Z", "depends_on": ["body"]}
+    ]
+  }
+]

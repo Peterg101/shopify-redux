@@ -388,6 +388,14 @@ def submit_feedback(
             db.commit()
             return {"message": "Example upvoted", "example_id": existing.id}
 
+    # Compute semantic embedding for retrieval
+    embedding = None
+    try:
+        from embedding_utils import compute_embedding
+        embedding = compute_embedding(description)
+    except Exception as emb_err:
+        logger.warning(f"Embedding computation skipped: {emb_err}")
+
     example = VerifiedExample(
         task_id=task_id,
         user_id=user.user_id,
@@ -402,6 +410,7 @@ def submit_feedback(
         generation_path=gen_path,
         geometry_hash=geometry_hash,
         op_count=op_count,
+        embedding_json=embedding,
     )
     db.add(example)
     db.commit()
@@ -437,6 +446,7 @@ def get_verified_examples(
                 "generation_path": e.generation_path,
                 "upvotes": e.upvotes,
                 "op_count": e.op_count,
+                "embedding_json": e.embedding_json,
             }
             for e in examples
         ]

@@ -95,6 +95,62 @@ def seed_curated_json(session):
     return count
 
 
+def seed_standard_parts(session):
+    """Seed from the generation_service/cad/examples/standard_parts/*.json files.
+
+    These are high-quality parametric ISO standard parts and templates,
+    seeded with higher upvote weight (10) to prioritise them in few-shot retrieval.
+    """
+    parts_dir = os.path.join(
+        os.path.dirname(__file__), "..", "generation_service", "cad", "examples", "standard_parts",
+    )
+    if not os.path.isdir(parts_dir):
+        print(f"  Standard parts dir not found: {parts_dir}")
+        return 0
+
+    count = 0
+    for fname in sorted(os.listdir(parts_dir)):
+        if not fname.endswith(".json"):
+            continue
+        path = os.path.join(parts_dir, fname)
+        with open(path) as f:
+            data = json.load(f)
+        category = f"standard_{fname.replace('.json', '')}"
+        for ex in data:
+            existing = session.query(VerifiedExample).filter(
+                VerifiedExample.description == ex.get("description", ""),
+                VerifiedExample.source == "curated_standard",
+            ).first()
+            if existing:
+                continue
+
+            keywords = ex.get("keywords", [])
+            steps = ex.get("steps", [])
+            params = ex.get("parameters", {})
+
+            ve = VerifiedExample(
+                id=str(uuid4()),
+                description=ex.get("description", ""),
+                keywords=json.dumps(keywords),
+                category=category,
+                complexity="simple" if len(steps) <= 3 else "medium",
+                source="curated_standard",
+                parameters=json.dumps(params),
+                steps=json.dumps(steps),
+                cadquery_script=None,
+                generation_path="structured",
+                is_curated=True,
+                is_active=True,
+                upvotes=10,
+                geometry_hash=geometry_hash(steps),
+                op_count=len(steps),
+                created_at=datetime.now().isoformat(),
+            )
+            session.add(ve)
+            count += 1
+    return count
+
+
 def seed_official_cadquery(session):
     """Seed official CadQuery examples as verified working code."""
     examples = [
@@ -798,17 +854,47 @@ result = model.faces('<Z[1]').edges(selectors.NearestToPointSelector((0.0, 0.0))
     return count
 
 
+def backfill_embeddings(session: Session) -> int:
+    """Compute and store embeddings for examples that don't have one yet."""
+    try:
+        from embedding_utils import compute_embedding
+    except ImportError:
+        print("  sentence-transformers not installed — skipping embedding backfill")
+        return 0
+
+    examples = session.query(VerifiedExample).filter(
+        VerifiedExample.embedding_json == None  # noqa: E711
+    ).all()
+    count = 0
+    for ex in examples:
+        emb = compute_embedding(ex.description)
+        if emb:
+            ex.embedding_json = emb
+            count += 1
+    session.commit()
+    return count
+
+
 def main():
     with Session(engine) as session:
         print("Seeding curated JSON examples...")
         n1 = seed_curated_json(session)
         print(f"  Added {n1} curated JSON examples")
 
+        print("Seeding standard parts library...")
+        n_std = seed_standard_parts(session)
+        print(f"  Added {n_std} standard parts examples")
+
         print("Seeding official CadQuery examples...")
         n2 = seed_official_cadquery(session)
         print(f"  Added {n2} official CadQuery examples")
 
         session.commit()
+
+        print("Backfilling embeddings...")
+        n3 = backfill_embeddings(session)
+        print(f"  Backfilled {n3} embeddings")
+
         total = session.query(VerifiedExample).count()
         print(f"\nTotal verified examples in DB: {total}")
 

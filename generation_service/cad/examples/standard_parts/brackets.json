@@ -1,0 +1,154 @@
+[
+  {
+    "description": "Small L-bracket 30x20mm with 3mm thickness and M3 mounting holes",
+    "keywords": ["bracket", "L-bracket", "angle", "corner", "small", "M3"],
+    "parameters": {
+      "leg_h": 30, "leg_d": 20, "width": 20, "thickness": 3,
+      "hole_d": 3.2, "hole_inset_h": 10, "hole_inset_d": 10, "fillet_r": 2
+    },
+    "steps": [
+      {"op": "create_box", "tag": "vertical_leg", "length": "$width", "width": "$thickness", "height": "$leg_h"},
+      {"op": "union", "tag": "horizontal_leg", "body": {"type": "box", "length": "$width", "width": "$leg_d", "height": "$thickness"},
+       "translate": [0, "$leg_d / 2 - $thickness / 2", 0], "depends_on": ["vertical_leg"]},
+      {"op": "holes", "tag": "vert_hole", "face": ">Y", "diameter": "$hole_d",
+       "placement": {"type": "single", "position": [0, "$leg_h / 2 - $hole_inset_h"]},
+       "depends_on": ["vertical_leg"]},
+      {"op": "holes", "tag": "horiz_hole", "face": ">Z", "diameter": "$hole_d",
+       "placement": {"type": "single", "position": [0, "$hole_inset_d - $leg_d / 2"]},
+       "depends_on": ["horizontal_leg"]},
+      {"op": "fillet", "tag": "inner_fillet", "radius": "$fillet_r", "edges": "|X", "depends_on": ["horizontal_leg"]}
+    ]
+  },
+  {
+    "description": "Medium L-bracket 50x35mm with 4mm thickness and M4 mounting holes",
+    "keywords": ["bracket", "L-bracket", "angle", "corner", "medium", "M4"],
+    "parameters": {
+      "leg_h": 50, "leg_d": 35, "width": 30, "thickness": 4,
+      "hole_d": 4.2, "hole_inset_h": 15, "hole_inset_d": 12, "fillet_r": 3
+    },
+    "steps": [
+      {"op": "create_box", "tag": "vertical_leg", "length": "$width", "width": "$thickness", "height": "$leg_h"},
+      {"op": "union", "tag": "horizontal_leg", "body": {"type": "box", "length": "$width", "width": "$leg_d", "height": "$thickness"},
+       "translate": [0, "$leg_d / 2 - $thickness / 2", 0], "depends_on": ["vertical_leg"]},
+      {"op": "holes", "tag": "vert_holes", "face": ">Y", "diameter": "$hole_d",
+       "placement": {"type": "explicit", "positions": [
+         ["-$width / 4", "$leg_h / 2 - $hole_inset_h"],
+         ["$width / 4", "$leg_h / 2 - $hole_inset_h"]
+       ]}, "depends_on": ["vertical_leg"]},
+      {"op": "holes", "tag": "horiz_holes", "face": ">Z", "diameter": "$hole_d",
+       "placement": {"type": "explicit", "positions": [
+         ["-$width / 4", "$hole_inset_d - $leg_d / 2"],
+         ["$width / 4", "$hole_inset_d - $leg_d / 2"]
+       ]}, "depends_on": ["horizontal_leg"]},
+      {"op": "fillet", "tag": "inner_fillet", "radius": "$fillet_r", "edges": "|X", "depends_on": ["horizontal_leg"]}
+    ]
+  },
+  {
+    "description": "Large L-bracket 100x60mm with 5mm thickness and M6 mounting holes",
+    "keywords": ["bracket", "L-bracket", "angle", "corner", "large", "M6", "heavy duty"],
+    "parameters": {
+      "leg_h": 100, "leg_d": 60, "width": 50, "thickness": 5,
+      "hole_d": 6.5, "hole_inset_h": 20, "hole_inset_d": 20, "fillet_r": 4
+    },
+    "steps": [
+      {"op": "create_box", "tag": "vertical_leg", "length": "$width", "width": "$thickness", "height": "$leg_h"},
+      {"op": "union", "tag": "horizontal_leg", "body": {"type": "box", "length": "$width", "width": "$leg_d", "height": "$thickness"},
+       "translate": [0, "$leg_d / 2 - $thickness / 2", 0], "depends_on": ["vertical_leg"]},
+      {"op": "holes", "tag": "vert_holes", "face": ">Y", "diameter": "$hole_d",
+       "placement": {"type": "explicit", "positions": [
+         ["-$width / 4", "$leg_h / 2 - $hole_inset_h"],
+         ["$width / 4", "$leg_h / 2 - $hole_inset_h"]
+       ]}, "depends_on": ["vertical_leg"]},
+      {"op": "holes", "tag": "horiz_holes", "face": ">Z", "diameter": "$hole_d",
+       "placement": {"type": "explicit", "positions": [
+         ["-$width / 4", "$hole_inset_d - $leg_d / 2"],
+         ["$width / 4", "$hole_inset_d - $leg_d / 2"]
+       ]}, "depends_on": ["horizontal_leg"]},
+      {"op": "fillet", "tag": "inner_fillet", "radius": "$fillet_r", "edges": "|X", "depends_on": ["horizontal_leg"]}
+    ]
+  },
+  {
+    "description": "U-bracket / channel bracket 40x25mm with 3mm thickness",
+    "keywords": ["bracket", "U-bracket", "channel", "C-bracket", "small"],
+    "parameters": {
+      "width": 40, "depth": 25, "height": 30, "thickness": 3,
+      "hole_d": 3.2, "hole_inset": 8
+    },
+    "steps": [
+      {"op": "create_box", "tag": "body", "length": "$width", "width": "$depth", "height": "$height"},
+      {"op": "cut_blind", "tag": "channel", "face": ">Z",
+       "profile": {"type": "rect", "width": "$width - 2 * $thickness", "height": "$depth - $thickness"},
+       "depth": "$height - $thickness",
+       "position": {"h": "center", "v": {"from": "top", "offset": "$thickness / 2"}},
+       "depends_on": ["body"]},
+      {"op": "holes", "tag": "side_holes", "face": ">X", "diameter": "$hole_d",
+       "placement": {"type": "single", "position": [0, "$height / 2 - $hole_inset"]},
+       "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "U-bracket / channel bracket 60x35mm with 4mm thickness",
+    "keywords": ["bracket", "U-bracket", "channel", "C-bracket", "medium"],
+    "parameters": {
+      "width": 60, "depth": 35, "height": 40, "thickness": 4,
+      "hole_d": 4.2, "hole_inset": 12
+    },
+    "steps": [
+      {"op": "create_box", "tag": "body", "length": "$width", "width": "$depth", "height": "$height"},
+      {"op": "cut_blind", "tag": "channel", "face": ">Z",
+       "profile": {"type": "rect", "width": "$width - 2 * $thickness", "height": "$depth - $thickness"},
+       "depth": "$height - $thickness",
+       "position": {"h": "center", "v": {"from": "top", "offset": "$thickness / 2"}},
+       "depends_on": ["body"]},
+      {"op": "holes", "tag": "side_holes", "face": ">X", "diameter": "$hole_d",
+       "placement": {"type": "single", "position": [0, "$height / 2 - $hole_inset"]},
+       "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "Z-bracket / offset bracket 50x30mm with 3mm thickness",
+    "keywords": ["bracket", "Z-bracket", "offset", "step", "jog"],
+    "parameters": {
+      "flange_l": 30, "offset_h": 20, "width": 50, "thickness": 3,
+      "hole_d": 4.2, "hole_inset": 10
+    },
+    "steps": [
+      {"op": "create_box", "tag": "bottom_flange", "length": "$width", "width": "$flange_l", "height": "$thickness"},
+      {"op": "union", "tag": "vertical", "body": {"type": "box", "length": "$width", "width": "$thickness", "height": "$offset_h"},
+       "translate": [0, "$flange_l / 2 - $thickness / 2", "$thickness"], "depends_on": ["bottom_flange"]},
+      {"op": "union", "tag": "top_flange", "body": {"type": "box", "length": "$width", "width": "$flange_l", "height": "$thickness"},
+       "translate": [0, "$flange_l - $thickness", "$thickness + $offset_h"], "depends_on": ["vertical"]},
+      {"op": "holes", "tag": "bottom_holes", "face": "<Z", "diameter": "$hole_d",
+       "placement": {"type": "single", "position": [0, 0]},
+       "depends_on": ["bottom_flange"]},
+      {"op": "holes", "tag": "top_holes", "face": ">Z", "diameter": "$hole_d",
+       "placement": {"type": "single", "position": [0, "$flange_l / 2 - $thickness / 2"]},
+       "depends_on": ["top_flange"]}
+    ]
+  },
+  {
+    "description": "Z-bracket / offset bracket 80x50mm with 4mm thickness",
+    "keywords": ["bracket", "Z-bracket", "offset", "step", "jog", "large"],
+    "parameters": {
+      "flange_l": 50, "offset_h": 30, "width": 80, "thickness": 4,
+      "hole_d": 5.2, "hole_inset": 15
+    },
+    "steps": [
+      {"op": "create_box", "tag": "bottom_flange", "length": "$width", "width": "$flange_l", "height": "$thickness"},
+      {"op": "union", "tag": "vertical", "body": {"type": "box", "length": "$width", "width": "$thickness", "height": "$offset_h"},
+       "translate": [0, "$flange_l / 2 - $thickness / 2", "$thickness"], "depends_on": ["bottom_flange"]},
+      {"op": "union", "tag": "top_flange", "body": {"type": "box", "length": "$width", "width": "$flange_l", "height": "$thickness"},
+       "translate": [0, "$flange_l - $thickness", "$thickness + $offset_h"], "depends_on": ["vertical"]},
+      {"op": "holes", "tag": "bottom_holes", "face": "<Z", "diameter": "$hole_d",
+       "placement": {"type": "explicit", "positions": [
+         ["-$width / 4", 0],
+         ["$width / 4", 0]
+       ]}, "depends_on": ["bottom_flange"]},
+      {"op": "holes", "tag": "top_holes", "face": ">Z", "diameter": "$hole_d",
+       "placement": {"type": "explicit", "positions": [
+         ["-$width / 4", "$flange_l / 2 - $thickness / 2"],
+         ["$width / 4", "$flange_l / 2 - $thickness / 2"]
+       ]}, "depends_on": ["top_flange"]}
+    ]
+  }
+]

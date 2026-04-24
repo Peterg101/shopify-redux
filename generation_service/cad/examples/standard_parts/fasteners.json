@@ -1,0 +1,106 @@
+[
+  {
+    "description": "M3 hex bolt, 5.5mm across flats, 2mm head height, 10mm shaft",
+    "keywords": ["bolt", "M3", "hex", "fastener", "screw", "ISO 4032"],
+    "parameters": {
+      "hex_af": 5.5, "head_h": 2.0, "shaft_d": 3.0, "shaft_l": 10.0
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "head", "radius": "$hex_af / 2 + 0.5", "height": "$head_h"},
+      {"op": "union", "tag": "shaft", "body": {"type": "cylinder", "radius": "$shaft_d / 2", "height": "$shaft_l"},
+       "translate": [0, 0, "-$shaft_l"], "depends_on": ["head"]},
+      {"op": "chamfer", "tag": "head_chamfer", "size": 0.3, "edges": ">Z", "depends_on": ["head"]}
+    ]
+  },
+  {
+    "description": "M4 hex bolt, 7.0mm across flats, 2.8mm head height, 12mm shaft",
+    "keywords": ["bolt", "M4", "hex", "fastener", "screw", "ISO 4032"],
+    "parameters": {
+      "hex_af": 7.0, "head_h": 2.8, "shaft_d": 4.0, "shaft_l": 12.0
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "head", "radius": "$hex_af / 2 + 0.5", "height": "$head_h"},
+      {"op": "union", "tag": "shaft", "body": {"type": "cylinder", "radius": "$shaft_d / 2", "height": "$shaft_l"},
+       "translate": [0, 0, "-$shaft_l"], "depends_on": ["head"]},
+      {"op": "chamfer", "tag": "head_chamfer", "size": 0.4, "edges": ">Z", "depends_on": ["head"]}
+    ]
+  },
+  {
+    "description": "M5 hex bolt, 8.0mm across flats, 3.5mm head height, 16mm shaft",
+    "keywords": ["bolt", "M5", "hex", "fastener", "screw", "ISO 4032"],
+    "parameters": {
+      "hex_af": 8.0, "head_h": 3.5, "shaft_d": 5.0, "shaft_l": 16.0
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "head", "radius": "$hex_af / 2 + 0.5", "height": "$head_h"},
+      {"op": "union", "tag": "shaft", "body": {"type": "cylinder", "radius": "$shaft_d / 2", "height": "$shaft_l"},
+       "translate": [0, 0, "-$shaft_l"], "depends_on": ["head"]},
+      {"op": "chamfer", "tag": "head_chamfer", "size": 0.5, "edges": ">Z", "depends_on": ["head"]}
+    ]
+  },
+  {
+    "description": "M6 hex bolt, 10.0mm across flats, 4.0mm head height, 20mm shaft",
+    "keywords": ["bolt", "M6", "hex", "fastener", "screw", "ISO 4032"],
+    "parameters": {
+      "hex_af": 10.0, "head_h": 4.0, "shaft_d": 6.0, "shaft_l": 20.0
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "head", "radius": "$hex_af / 2 + 0.5", "height": "$head_h"},
+      {"op": "union", "tag": "shaft", "body": {"type": "cylinder", "radius": "$shaft_d / 2", "height": "$shaft_l"},
+       "translate": [0, 0, "-$shaft_l"], "depends_on": ["head"]},
+      {"op": "chamfer", "tag": "head_chamfer", "size": 0.5, "edges": ">Z", "depends_on": ["head"]}
+    ]
+  },
+  {
+    "description": "M8 hex bolt, 13.0mm across flats, 5.3mm head height, 25mm shaft",
+    "keywords": ["bolt", "M8", "hex", "fastener", "screw", "ISO 4032"],
+    "parameters": {
+      "hex_af": 13.0, "head_h": 5.3, "shaft_d": 8.0, "shaft_l": 25.0
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "head", "radius": "$hex_af / 2 + 0.5", "height": "$head_h"},
+      {"op": "union", "tag": "shaft", "body": {"type": "cylinder", "radius": "$shaft_d / 2", "height": "$shaft_l"},
+       "translate": [0, 0, "-$shaft_l"], "depends_on": ["head"]},
+      {"op": "chamfer", "tag": "head_chamfer", "size": 0.6, "edges": ">Z", "depends_on": ["head"]}
+    ]
+  },
+  {
+    "description": "M10 hex bolt, 16.0mm across flats, 6.4mm head height, 30mm shaft",
+    "keywords": ["bolt", "M10", "hex", "fastener", "screw", "ISO 4032"],
+    "parameters": {
+      "hex_af": 16.0, "head_h": 6.4, "shaft_d": 10.0, "shaft_l": 30.0
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "head", "radius": "$hex_af / 2 + 0.5", "height": "$head_h"},
+      {"op": "union", "tag": "shaft", "body": {"type": "cylinder", "radius": "$shaft_d / 2", "height": "$shaft_l"},
+       "translate": [0, 0, "-$shaft_l"], "depends_on": ["head"]},
+      {"op": "chamfer", "tag": "head_chamfer", "size": 0.8, "edges": ">Z", "depends_on": ["head"]}
+    ]
+  },
+  {
+    "description": "M5 flat washer, 10mm OD, 5.3mm ID, 1mm thick (ISO 7089)",
+    "keywords": ["washer", "M5", "flat", "fastener", "ISO 7089"],
+    "parameters": {
+      "od": 10.0, "id": 5.3, "thickness": 1.0
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "disc", "radius": "$od / 2", "height": "$thickness"},
+      {"op": "cut_through", "tag": "bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$id / 2"}, "depends_on": ["disc"]},
+      {"op": "chamfer", "tag": "chamfer", "size": 0.2, "edges": ">Z", "depends_on": ["disc"]}
+    ]
+  },
+  {
+    "description": "M8 flat washer, 16mm OD, 8.4mm ID, 1.6mm thick (ISO 7089)",
+    "keywords": ["washer", "M8", "flat", "fastener", "ISO 7089"],
+    "parameters": {
+      "od": 16.0, "id": 8.4, "thickness": 1.6
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "disc", "radius": "$od / 2", "height": "$thickness"},
+      {"op": "cut_through", "tag": "bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$id / 2"}, "depends_on": ["disc"]},
+      {"op": "chamfer", "tag": "chamfer", "size": 0.3, "edges": ">Z", "depends_on": ["disc"]}
+    ]
+  }
+]

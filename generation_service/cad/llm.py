@@ -22,6 +22,7 @@ _EXAMPLE_CACHE: list[dict] | None = None
 _VERIFIED_CACHE: list[dict] | None = None
 _VERIFIED_CACHE_TIME: float = 0
 _VERIFIED_CACHE_TTL: float = 300  # 5 minutes
+_embedding_model_cache = None  # cached SentenceTransformer (loaded once, ~2-3s)
 
 
 def _load_examples() -> list[dict]:
@@ -92,6 +93,8 @@ def _load_verified_examples() -> list[dict]:
                         pass
                 if ex.get("cadquery_script"):
                     entry["cadquery_script"] = ex["cadquery_script"]
+                if ex.get("embedding_json"):
+                    entry["_embedding_json"] = ex["embedding_json"]
                 verified.append(entry)
             _VERIFIED_CACHE = verified
             _VERIFIED_CACHE_TIME = now
@@ -179,7 +182,10 @@ def _parse_error_structured(error: str) -> str:
 
 
 def _select_examples(prompt_text: str, max_examples: int = 3, prefer_json_ops: bool = False) -> list[dict]:
-    """Select the most relevant few-shot examples using BM25 ranking.
+    """Select the most relevant few-shot examples.
+
+    Tries embedding-based cosine similarity first (sentence-transformers).
+    Falls back to BM25 keyword ranking if embeddings are unavailable.
 
     Merges curated + user-verified examples. Curated get a boost to ensure
     quality floor. Verified examples are weighted by upvote count.
@@ -187,11 +193,92 @@ def _select_examples(prompt_text: str, max_examples: int = 3, prefer_json_ops: b
     When prefer_json_ops=True (structured path), examples with parameters+steps
     get a boost over code-only examples.
     """
-    import math
-
     examples = _load_all_examples()
     if not examples:
         return []
+
+    # --- Attempt 1: Embedding-based retrieval ---
+    scored_by_embedding = _select_examples_by_embedding(
+        prompt_text, examples, max_examples, prefer_json_ops
+    )
+    if scored_by_embedding is not None:
+        return scored_by_embedding
+
+    # --- Attempt 2: BM25 fallback ---
+    return _select_examples_by_bm25(prompt_text, examples, max_examples, prefer_json_ops)
+
+
+def _select_examples_by_embedding(
+    prompt_text: str,
+    examples: list[dict],
+    max_examples: int,
+    prefer_json_ops: bool,
+) -> list[dict] | None:
+    """Rank examples by cosine similarity to prompt embedding.
+
+    Returns None if sentence-transformers is not available or no examples
+    have embeddings, signalling the caller to fall back to BM25.
+    """
+    import math
+
+    try:
+        from sentence_transformers import SentenceTransformer
+        import numpy as np
+    except ImportError:
+        return None
+
+    # Check whether any example has an embedding — if not, skip
+    has_any_embedding = any(ex.get("_embedding_json") for ex in examples)
+    if not has_any_embedding:
+        return None
+
+    global _embedding_model_cache
+    if _embedding_model_cache is None:
+        _embedding_model_cache = SentenceTransformer("all-MiniLM-L6-v2")
+    prompt_vec = _embedding_model_cache.encode(prompt_text, normalize_embeddings=True)
+
+    scored = []
+    for ex in examples:
+        emb_json = ex.get("_embedding_json")
+        if emb_json:
+            ex_vec = np.array(_json_mod.loads(emb_json))
+            # Both vectors are L2-normalised so dot product == cosine similarity
+            sim = float(np.dot(prompt_vec, ex_vec))
+        else:
+            # No embedding — lightweight keyword overlap as a fallback score
+            desc = ex.get("description", "").lower()
+            overlap = sum(1 for w in prompt_text.lower().split() if w in desc)
+            sim = overlap * 0.1
+
+        # Source weighting
+        if ex.get("_source") == "curated":
+            sim *= 2.0
+        else:
+            upvotes = ex.get("_upvotes", 1)
+            sim *= (1 + math.log(max(upvotes, 1)))
+
+        # Structured-path boosting
+        if prefer_json_ops:
+            has_ops = bool(ex.get("parameters") and ex.get("steps"))
+            if has_ops:
+                sim *= 3.0
+            elif ex.get("cadquery_script") and not has_ops:
+                sim *= 0.3
+
+        scored.append((sim, ex))
+
+    scored.sort(key=lambda x: x[0], reverse=True)
+    return [ex for _, ex in scored[:max_examples]]
+
+
+def _select_examples_by_bm25(
+    prompt_text: str,
+    examples: list[dict],
+    max_examples: int,
+    prefer_json_ops: bool,
+) -> list[dict]:
+    """Rank examples using BM25 keyword matching (original approach)."""
+    import math
 
     corpus = []
     for ex in examples:
@@ -212,19 +299,17 @@ def _select_examples(prompt_text: str, max_examples: int = 3, prefer_json_ops: b
             if score <= 0:
                 continue
             ex = examples[i]
-            # Base weight by source
             if ex.get("_source") == "curated":
                 weight = score * 2.0
             else:
                 upvotes = ex.get("_upvotes", 1)
                 weight = score * (1 + math.log(max(upvotes, 1)))
-            # Boost JSON ops examples when structured path is active
             if prefer_json_ops:
                 has_ops = bool(ex.get("parameters") and ex.get("steps"))
                 if has_ops:
-                    weight *= 3.0  # strongly prefer JSON ops
+                    weight *= 3.0
                 elif ex.get("cadquery_script") and not has_ops:
-                    weight *= 0.3  # demote code-only for structured path
+                    weight *= 0.3
             weighted.append((weight, ex))
 
         weighted.sort(key=lambda x: x[0], reverse=True)
@@ -1079,6 +1164,22 @@ For bosses, brackets, flanges — build a sub-body and merge:
 - "op": operation type
 - "tag": unique snake_case name
 - "depends_on": list of parent tags
+
+## POSITIONING — CONSTRAINT TYPES
+
+Instead of calculating raw coordinates, you can use constraint-based positioning:
+
+### h/v constraints (position relative to face edges/center):
+  "position": {"h": "center", "v": {"from": "bottom", "offset": 6}}
+
+### Distribute features evenly along a dimension:
+  "position": {"distribute": "evenly", "count": 3, "along": "width", "margin": 10}
+  Spaces `count` features equally along the face's width (or height), with `margin` mm from edges.
+
+### Position relative to another feature:
+  "position": {"relative_to": "boss_center", "offset": [10, 0]}
+  Places this feature offset from a previously defined feature's position. The referenced feature
+  must appear earlier in the steps list. If the tag is not found, falls back to center + offset.
 
 ## RULES
 1. Shell BEFORE cuts and holes (operation ordering is automatic, but list shell early)

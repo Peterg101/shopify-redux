@@ -111,6 +111,21 @@ class _ConstraintFaceTracker:
     def after_shell(self, thickness: float):
         self.wall_thickness = thickness
 
+    def after_union_box(self, length, width, height, translate):
+        """Update face dimensions after a union — expand bounds to include new body."""
+        tx, ty, tz = translate if len(translate) >= 3 else (0, 0, 0)
+        for face, dims in self.face_dims.items():
+            # Expand each face's dimensions if the union extends beyond current bounds
+            if face in (">Z", "<Z"):
+                dims["w"] = max(dims["w"], abs(tx) * 2 + length)
+                dims["h"] = max(dims["h"], abs(ty) * 2 + width)
+            elif face in (">Y", "<Y"):
+                dims["w"] = max(dims["w"], abs(tx) * 2 + length)
+                dims["h"] = max(dims["h"], abs(tz) * 2 + height)
+            elif face in (">X", "<X"):
+                dims["w"] = max(dims["w"], abs(ty) * 2 + width)
+                dims["h"] = max(dims["h"], abs(tz) * 2 + height)
+
     def get_face_dims(self, face: str) -> tuple[float, float] | None:
         """Returns (width, height) of the given face, or None if unknown."""
         f = self.face_dims.get(face)
@@ -1436,15 +1451,26 @@ def _needs_clean_before(steps: list[dict], index: int) -> bool:
 # ---------------------------------------------------------------------------
 
 
-def _resolve_step_constraints(step: dict, parameters: dict, tracker: _ConstraintFaceTracker) -> dict:
+def _resolve_step_constraints(
+    step: dict,
+    parameters: dict,
+    tracker: _ConstraintFaceTracker,
+    feature_positions: dict[str, tuple[float, float]] | None = None,
+) -> dict:
     """Pre-process a step to resolve constraint-based positions to raw [u, v] coordinates.
 
     This allows the LLM to use intent-based positioning like:
         {"h": "center", "v": {"from": "bottom", "offset": 6}}
     instead of calculating raw coordinates.
+
+    Also supports:
+        {"distribute": "evenly", "count": 3, "along": "width", "margin": 10}
+        {"relative_to": "center_hole", "offset": [10, 0]}
     """
     import copy
     step = copy.deepcopy(step)  # don't mutate the original
+    if feature_positions is None:
+        feature_positions = {}
 
     face = step.get("face", ">Z")
     face_dims = tracker.get_face_dims(face)
@@ -1453,24 +1479,76 @@ def _resolve_step_constraints(step: dict, parameters: dict, tracker: _Constraint
 
     face_w, face_h = face_dims
 
+    # --- Helper: resolve distribute constraint ---
+    def _resolve_distribute(pos: dict) -> list[list[float]]:
+        """Resolve a distribute constraint to a list of [u, v] positions."""
+        count = int(pos.get("count", 1))
+        along = pos.get("along", "width")  # "width" or "height"
+        margin = float(pos.get("margin", 0))
+
+        if along == "width":
+            usable = face_w - 2 * margin
+            if count <= 1:
+                return [[0.0, 0.0]]
+            spacing = usable / (count - 1)
+            return [[-usable / 2 + i * spacing, 0.0] for i in range(count)]
+        else:  # "height"
+            usable = face_h - 2 * margin
+            if count <= 1:
+                return [[0.0, 0.0]]
+            spacing = usable / (count - 1)
+            return [[0.0, -usable / 2 + i * spacing] for i in range(count)]
+
+    # --- Helper: resolve relative_to constraint ---
+    def _resolve_relative_to(pos: dict) -> list[float]:
+        """Resolve a relative_to constraint to [u, v] coordinates."""
+        ref_tag = pos.get("relative_to", "")
+        offset = pos.get("offset", [0, 0])
+        ox = float(offset[0]) if len(offset) > 0 else 0.0
+        oy = float(offset[1]) if len(offset) > 1 else 0.0
+
+        ref_pos = feature_positions.get(ref_tag)
+        if ref_pos is not None:
+            return [ref_pos[0] + ox, ref_pos[1] + oy]
+        # Fallback: offset from center
+        return [ox, oy]
+
     # Resolve profile position constraints
     profile = step.get("profile")
     if profile and isinstance(profile, dict):
         pos = profile.get("position")
-        if pos and isinstance(pos, dict) and ("h" in pos or "v" in pos):
-            # Get feature dimensions for edge offset calculation
-            feat_w = _resolve_param(profile.get("width", 0), parameters) if profile.get("width") else 0
-            feat_h = _resolve_param(profile.get("height", 0), parameters) if profile.get("height") else 0
-            if profile.get("type") == "circle":
-                feat_w = feat_h = _resolve_param(profile.get("radius", 0), parameters) * 2
-            resolved = resolve_position(pos, face_w, face_h, feat_w, feat_h)
-            profile["position"] = resolved
+        if pos and isinstance(pos, dict):
+            if "distribute" in pos:
+                # Distribute produces multiple positions — store on step for multi-feature handling
+                resolved_pts = _resolve_distribute(pos)
+                profile["position"] = resolved_pts[0] if len(resolved_pts) == 1 else resolved_pts[0]
+                # Store all positions at step level for repeated features
+                if len(resolved_pts) > 1:
+                    step["_distributed_positions"] = resolved_pts
+            elif "relative_to" in pos:
+                profile["position"] = _resolve_relative_to(pos)
+            elif "h" in pos or "v" in pos:
+                # Get feature dimensions for edge offset calculation
+                feat_w = _resolve_param(profile.get("width", 0), parameters) if profile.get("width") else 0
+                feat_h = _resolve_param(profile.get("height", 0), parameters) if profile.get("height") else 0
+                if profile.get("type") == "circle":
+                    feat_w = feat_h = _resolve_param(profile.get("radius", 0), parameters) * 2
+                resolved = resolve_position(pos, face_w, face_h, feat_w, feat_h)
+                profile["position"] = resolved
 
     # Resolve step-level position constraints
     pos = step.get("position")
-    if pos and isinstance(pos, dict) and ("h" in pos or "v" in pos):
-        resolved = resolve_position(pos, face_w, face_h)
-        step["position"] = resolved
+    if pos and isinstance(pos, dict):
+        if "distribute" in pos:
+            resolved_pts = _resolve_distribute(pos)
+            step["position"] = resolved_pts[0] if len(resolved_pts) == 1 else resolved_pts[0]
+            if len(resolved_pts) > 1:
+                step["_distributed_positions"] = resolved_pts
+        elif "relative_to" in pos:
+            step["position"] = _resolve_relative_to(pos)
+        elif "h" in pos or "v" in pos:
+            resolved = resolve_position(pos, face_w, face_h)
+            step["position"] = resolved
 
     # Resolve hole placement constraints
     placement = step.get("placement")
@@ -1484,7 +1562,11 @@ def _resolve_step_constraints(step: dict, parameters: dict, tracker: _Constraint
     if positions and isinstance(positions, list):
         resolved = []
         for p in positions:
-            if isinstance(p, dict) and ("h" in p or "v" in p):
+            if isinstance(p, dict) and "distribute" in p:
+                resolved.extend(_resolve_distribute(p))
+            elif isinstance(p, dict) and "relative_to" in p:
+                resolved.append(_resolve_relative_to(p))
+            elif isinstance(p, dict) and ("h" in p or "v" in p):
                 resolved.append(resolve_position(p, face_w, face_h))
             elif isinstance(p, (list, tuple)):
                 resolved.append([float(p[0]), float(p[1])])
@@ -1590,6 +1672,7 @@ def convert_json_to_cadquery(steps: list[dict], parameters: dict) -> str:
 
     face_tracker = FaceTracker()
     constraint_tracker = _ConstraintFaceTracker()
+    feature_positions: dict[str, tuple[float, float]] = {}  # tag → (u, v) on its face
 
     for i, step in enumerate(ordered_steps):
         op = step["op"]
@@ -1602,7 +1685,17 @@ def convert_json_to_cadquery(steps: list[dict], parameters: dict) -> str:
             script_lines.append("result = result.clean()")
 
         # Resolve constraint-based positions to raw coordinates before emitting
-        step = _resolve_step_constraints(step, parameters, constraint_tracker)
+        step = _resolve_step_constraints(step, parameters, constraint_tracker, feature_positions)
+
+        # Track resolved position for relative_to lookups by later steps
+        tag = step.get("tag", "")
+        _resolved_pos = step.get("position")
+        if _resolved_pos and isinstance(_resolved_pos, list) and len(_resolved_pos) >= 2:
+            feature_positions[tag] = (float(_resolved_pos[0]), float(_resolved_pos[1]))
+        elif step.get("profile") and isinstance(step["profile"].get("position"), list):
+            _pp = step["profile"]["position"]
+            if len(_pp) >= 2:
+                feature_positions[tag] = (float(_pp[0]), float(_pp[1]))
 
         emitter = EMITTERS[op]
         code_lines, feature_code = emitter(step, step_num, parameters)
@@ -1627,6 +1720,17 @@ def convert_json_to_cadquery(steps: list[dict], parameters: dict) -> str:
         elif op == "shell":
             t = _resolve_param(step.get("thickness", 2), parameters)
             constraint_tracker.after_shell(t)
+        elif op == "union":
+            body = step.get("body", {})
+            body_type = body.get("type", "box")
+            translate = body.get("translate", [0, 0, 0])
+            # Expand face tracker to encompass the union body
+            # This is approximate but better than nothing
+            if body_type == "box":
+                bl = _resolve_param(body.get("length", 0), parameters)
+                bw = _resolve_param(body.get("width", 0), parameters)
+                bh = _resolve_param(body.get("height", 0), parameters)
+                constraint_tracker.after_union_box(bl, bw, bh, translate)
 
     # Final newline
     script_lines.append("")

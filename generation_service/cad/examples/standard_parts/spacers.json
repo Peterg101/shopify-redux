@@ -1,0 +1,90 @@
+[
+  {
+    "description": "M3 round standoff, 6mm OD, 5mm tall, 3.2mm through hole",
+    "keywords": ["standoff", "spacer", "M3", "round", "pillar"],
+    "parameters": {"od": 6, "height": 5, "hole_d": 3.2},
+    "steps": [
+      {"op": "create_cylinder", "tag": "body", "radius": "$od / 2", "height": "$height"},
+      {"op": "cut_through", "tag": "bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$hole_d / 2"}, "depends_on": ["body"]},
+      {"op": "chamfer", "tag": "chamfer", "size": 0.3, "edges": ">Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "M3 round standoff, 6mm OD, 10mm tall, 3.2mm through hole",
+    "keywords": ["standoff", "spacer", "M3", "round", "pillar"],
+    "parameters": {"od": 6, "height": 10, "hole_d": 3.2},
+    "steps": [
+      {"op": "create_cylinder", "tag": "body", "radius": "$od / 2", "height": "$height"},
+      {"op": "cut_through", "tag": "bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$hole_d / 2"}, "depends_on": ["body"]},
+      {"op": "chamfer", "tag": "chamfer", "size": 0.3, "edges": ">Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "M3 round standoff, 6mm OD, 15mm tall, 3.2mm through hole",
+    "keywords": ["standoff", "spacer", "M3", "round", "pillar"],
+    "parameters": {"od": 6, "height": 15, "hole_d": 3.2},
+    "steps": [
+      {"op": "create_cylinder", "tag": "body", "radius": "$od / 2", "height": "$height"},
+      {"op": "cut_through", "tag": "bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$hole_d / 2"}, "depends_on": ["body"]},
+      {"op": "chamfer", "tag": "chamfer", "size": 0.3, "edges": ">Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "M3 round standoff, 6mm OD, 20mm tall, 3.2mm through hole",
+    "keywords": ["standoff", "spacer", "M3", "round", "pillar", "long"],
+    "parameters": {"od": 6, "height": 20, "hole_d": 3.2},
+    "steps": [
+      {"op": "create_cylinder", "tag": "body", "radius": "$od / 2", "height": "$height"},
+      {"op": "cut_through", "tag": "bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$hole_d / 2"}, "depends_on": ["body"]},
+      {"op": "chamfer", "tag": "chamfer", "size": 0.3, "edges": ">Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "M4 round standoff, 8mm OD, 10mm tall, 4.2mm through hole",
+    "keywords": ["standoff", "spacer", "M4", "round", "pillar"],
+    "parameters": {"od": 8, "height": 10, "hole_d": 4.2},
+    "steps": [
+      {"op": "create_cylinder", "tag": "body", "radius": "$od / 2", "height": "$height"},
+      {"op": "cut_through", "tag": "bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$hole_d / 2"}, "depends_on": ["body"]},
+      {"op": "chamfer", "tag": "chamfer", "size": 0.4, "edges": ">Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "M4 round standoff, 8mm OD, 15mm tall, 4.2mm through hole",
+    "keywords": ["standoff", "spacer", "M4", "round", "pillar"],
+    "parameters": {"od": 8, "height": 15, "hole_d": 4.2},
+    "steps": [
+      {"op": "create_cylinder", "tag": "body", "radius": "$od / 2", "height": "$height"},
+      {"op": "cut_through", "tag": "bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$hole_d / 2"}, "depends_on": ["body"]},
+      {"op": "chamfer", "tag": "chamfer", "size": 0.4, "edges": ">Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "M5 round standoff, 10mm OD, 10mm tall, 5.2mm through hole",
+    "keywords": ["standoff", "spacer", "M5", "round", "pillar"],
+    "parameters": {"od": 10, "height": 10, "hole_d": 5.2},
+    "steps": [
+      {"op": "create_cylinder", "tag": "body", "radius": "$od / 2", "height": "$height"},
+      {"op": "cut_through", "tag": "bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$hole_d / 2"}, "depends_on": ["body"]},
+      {"op": "chamfer", "tag": "chamfer", "size": 0.5, "edges": ">Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "M5 round standoff, 10mm OD, 20mm tall, 5.2mm through hole",
+    "keywords": ["standoff", "spacer", "M5", "round", "pillar", "long"],
+    "parameters": {"od": 10, "height": 20, "hole_d": 5.2},
+    "steps": [
+      {"op": "create_cylinder", "tag": "body", "radius": "$od / 2", "height": "$height"},
+      {"op": "cut_through", "tag": "bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$hole_d / 2"}, "depends_on": ["body"]},
+      {"op": "chamfer", "tag": "chamfer", "size": 0.5, "edges": ">Z", "depends_on": ["body"]}
+    ]
+  }
+]

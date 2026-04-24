@@ -459,6 +459,7 @@ class VerifiedExample(Base):
     is_curated: Mapped[bool] = mapped_column(Boolean, default=False)
     geometry_hash: Mapped[Optional[str]] = mapped_column(String, nullable=True, index=True)
     op_count: Mapped[int] = mapped_column(Integer, default=0)
+    embedding_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[str] = mapped_column(String, default=lambda: datetime.now().isoformat())
 
 

@@ -1,0 +1,113 @@
+[
+  {
+    "description": "90-degree pipe elbow, 10mm OD, 2mm wall thickness",
+    "keywords": ["pipe", "elbow", "90", "degree", "fitting", "bend", "small"],
+    "parameters": {
+      "pipe_od": 10, "pipe_wall": 2, "pipe_l": 15, "block_size": 10
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "vertical_pipe", "height": "$pipe_l", "radius": "$pipe_od / 2"},
+      {"op": "union", "tag": "elbow_block", "body": {"type": "box", "length": "$block_size", "width": "$block_size", "height": "$block_size"},
+       "translate": [0, 0, 0], "depends_on": ["vertical_pipe"]},
+      {"op": "union", "tag": "horizontal_pipe", "body": {"type": "cylinder", "height": "$pipe_l", "radius": "$pipe_od / 2"},
+       "translate": ["$pipe_l / 2 + $pipe_od / 4", 0, "$pipe_od / 4"], "depends_on": ["elbow_block"]},
+      {"op": "cut_through", "tag": "vertical_bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$pipe_od / 2 - $pipe_wall"}, "depends_on": ["vertical_pipe"]}
+    ]
+  },
+  {
+    "description": "90-degree pipe elbow, 15mm OD, 2mm wall thickness",
+    "keywords": ["pipe", "elbow", "90", "degree", "fitting", "bend"],
+    "parameters": {
+      "pipe_od": 15, "pipe_wall": 2, "pipe_l": 20, "block_size": 15
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "vertical_pipe", "height": "$pipe_l", "radius": "$pipe_od / 2"},
+      {"op": "union", "tag": "elbow_block", "body": {"type": "box", "length": "$block_size", "width": "$block_size", "height": "$block_size"},
+       "translate": [0, 0, 0], "depends_on": ["vertical_pipe"]},
+      {"op": "union", "tag": "horizontal_pipe", "body": {"type": "cylinder", "height": "$pipe_l", "radius": "$pipe_od / 2"},
+       "translate": ["$pipe_l / 2 + $pipe_od / 4", 0, "$pipe_od / 4"], "depends_on": ["elbow_block"]},
+      {"op": "cut_through", "tag": "vertical_bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$pipe_od / 2 - $pipe_wall"}, "depends_on": ["vertical_pipe"]}
+    ]
+  },
+  {
+    "description": "90-degree pipe elbow, 25mm OD, 2mm wall thickness",
+    "keywords": ["pipe", "elbow", "90", "degree", "fitting", "bend", "large"],
+    "parameters": {
+      "pipe_od": 25, "pipe_wall": 2, "pipe_l": 30, "block_size": 25
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "vertical_pipe", "height": "$pipe_l", "radius": "$pipe_od / 2"},
+      {"op": "union", "tag": "elbow_block", "body": {"type": "box", "length": "$block_size", "width": "$block_size", "height": "$block_size"},
+       "translate": [0, 0, 0], "depends_on": ["vertical_pipe"]},
+      {"op": "union", "tag": "horizontal_pipe", "body": {"type": "cylinder", "height": "$pipe_l", "radius": "$pipe_od / 2"},
+       "translate": ["$pipe_l / 2 + $pipe_od / 4", 0, "$pipe_od / 4"], "depends_on": ["elbow_block"]},
+      {"op": "cut_through", "tag": "vertical_bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$pipe_od / 2 - $pipe_wall"}, "depends_on": ["vertical_pipe"]}
+    ]
+  },
+  {
+    "description": "Pipe tee connector, 15mm OD, 2mm wall, 60mm main run with 30mm branch",
+    "keywords": ["pipe", "tee", "T", "junction", "connector", "fitting", "branch"],
+    "parameters": {
+      "pipe_r": 7.5, "pipe_wall": 2, "main_l": 60, "branch_l": 30
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "main_pipe", "height": "$main_l", "radius": "$pipe_r"},
+      {"op": "union", "tag": "branch", "body": {"type": "cylinder", "height": "$branch_l", "radius": "$pipe_r"},
+       "translate": [0, "$branch_l / 2", "$main_l / 2"], "depends_on": ["main_pipe"]},
+      {"op": "shell", "tag": "hollow", "thickness": "$pipe_wall", "open_faces": [">Z", "<Z"], "depends_on": ["branch"]}
+    ]
+  },
+  {
+    "description": "Pipe reducer from 25mm OD to 15mm OD with transition section",
+    "keywords": ["pipe", "reducer", "adapter", "transition", "fitting", "coupling"],
+    "parameters": {
+      "large_r": 12.5, "small_r": 7.5, "transition_h": 20,
+      "large_ext": 15, "small_ext": 15, "wall": 2
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "large_end", "height": "$large_ext", "radius": "$large_r"},
+      {"op": "loft", "tag": "transition", "sections": [
+        {"profile": {"type": "circle", "radius": "$large_r"}},
+        {"offset": "$transition_h", "profile": {"type": "circle", "radius": "$small_r"}}
+      ], "ruled": true, "depends_on": []},
+      {"op": "union", "tag": "small_end", "body": {"type": "cylinder", "height": "$small_ext", "radius": "$small_r"},
+       "translate": [0, 0, "$large_ext + $transition_h"], "depends_on": ["transition"]},
+      {"op": "shell", "tag": "hollow", "thickness": "$wall", "open_faces": [">Z", "<Z"], "depends_on": ["small_end"]}
+    ]
+  },
+  {
+    "description": "Straight pipe coupling, 20mm OD, 2mm wall, 40mm long with central bore",
+    "keywords": ["pipe", "coupling", "straight", "connector", "fitting", "sleeve"],
+    "parameters": {
+      "od": 20, "wall": 2, "length": 40
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "body", "height": "$length", "radius": "$od / 2"},
+      {"op": "cut_through", "tag": "bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$od / 2 - $wall"}, "depends_on": ["body"]},
+      {"op": "chamfer", "tag": "chamfer_top", "size": 0.5, "edges": ">Z", "depends_on": ["body"]},
+      {"op": "chamfer", "tag": "chamfer_bottom", "size": 0.5, "edges": "<Z", "depends_on": ["body"]}
+    ]
+  },
+  {
+    "description": "Pipe flange plate, 40mm OD, 8mm thick, with 15mm pipe stub and 6-bolt circle",
+    "keywords": ["flange", "pipe", "mount", "plate", "bolt", "gasket"],
+    "parameters": {
+      "flange_r": 40, "flange_h": 8, "pipe_r": 15, "pipe_h": 25,
+      "bore_d": 24, "bolt_d": 6, "bolt_r": 30, "bolt_count": 6
+    },
+    "steps": [
+      {"op": "create_cylinder", "tag": "flange_disc", "height": "$flange_h", "radius": "$flange_r"},
+      {"op": "union", "tag": "pipe_stub", "body": {"type": "cylinder", "height": "$pipe_h", "radius": "$pipe_r"},
+       "translate": [0, 0, "$flange_h"], "depends_on": ["flange_disc"]},
+      {"op": "cut_through", "tag": "bore", "face": ">Z",
+       "profile": {"type": "circle", "radius": "$bore_d / 2"}, "depends_on": ["flange_disc"]},
+      {"op": "holes", "tag": "bolt_holes", "face": ">Z", "diameter": "$bolt_d",
+       "placement": {"type": "bolt_circle", "bolt_radius": "$bolt_r", "count": "$bolt_count"},
+       "depends_on": ["flange_disc"]}
+    ]
+  }
+]
