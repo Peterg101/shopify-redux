@@ -20,5 +20,5 @@ stripe
 resend
 PyJWT
 python-json-logger
-sentence-transformers
 numpy
+scikit-learn

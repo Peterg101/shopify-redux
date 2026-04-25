@@ -14,5 +14,5 @@ sse-starlette>=2.0.0,<3.0.0
 python-json-logger
 python-jose[cryptography]
 rank-bm25
-sentence-transformers
 numpy
+scikit-learn

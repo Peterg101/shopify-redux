@@ -222,8 +222,8 @@ def _select_examples_by_embedding(
     import math
 
     try:
-        from sentence_transformers import SentenceTransformer
         import numpy as np
+        from sklearn.feature_extraction.text import HashingVectorizer
     except ImportError:
         return None
 
@@ -234,8 +234,12 @@ def _select_examples_by_embedding(
 
     global _embedding_model_cache
     if _embedding_model_cache is None:
-        _embedding_model_cache = SentenceTransformer("all-MiniLM-L6-v2")
-    prompt_vec = _embedding_model_cache.encode(prompt_text, normalize_embeddings=True)
+        _embedding_model_cache = HashingVectorizer(
+            n_features=384, alternate_sign=False, norm='l2', ngram_range=(1, 2),
+        )
+    import re
+    tokenized = ' '.join(t for t in re.split(r'[^a-z0-9]+', prompt_text.lower()) if len(t) > 1)
+    prompt_vec = _embedding_model_cache.transform([tokenized]).toarray()[0]
 
     scored = []
     for ex in examples:
