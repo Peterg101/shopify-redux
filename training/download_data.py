@@ -1,371 +1,303 @@
 """Download and prepare CadQuery training datasets.
 
 Downloads from HuggingFace, filters for quality, formats as training JSONL.
-Supports 4 dataset combinations for A/B testing training runs.
+Uses pandas for efficient vectorised processing instead of row-by-row loops.
 
 Usage:
-    python download_data.py --preset A              # Text-to-CadQuery only (170K, ~8-12hrs)
-    python download_data.py --preset B              # + prompt2CAD (~300K, ~16hrs)
-    python download_data.py --preset C              # + CAD-Recode (~500K, ~20hrs)
-    python download_data.py --preset D              # All combined (~1M+, ~30hrs)
-    python download_data.py --datasets t2cq p2cad   # Custom combo
-    python download_data.py --preset A --max-samples 50000  # Quick test run
+    python download_data.py --preset A              # GenCAD-Code (~147K)
+    python download_data.py --preset B              # + CAD-Recode (~1.1M)
+    python download_data.py --preset C              # CAD-Recode only (~1M)
+    python download_data.py --preset A --max-samples 50000  # Quick test
 """
 import argparse
+import hashlib
 import json
 import os
 import random
 import logging
-import hashlib
+import re
+
+import pandas as pd
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 logger = logging.getLogger(__name__)
 
-# Dataset registry
+# ──────────────────────────────────────────────
+# Dataset registry — verified HuggingFace IDs
+# ──────────────────────────────────────────────
+
 DATASETS = {
     "t2cq": {
-        "name": "GenCAD-Code (147K image+CadQuery pairs)",
+        "name": "GenCAD-Code",
         "hf_ids": ["CADCODER/GenCAD-Code"],
-        "fields": {"prompt": ["prompt"],
-                   "code": ["cadquery"]},
+        "code_col": "cadquery",
+        "prompt_col": None,  # prompts are generic — we generate from code
     },
     "cadrecode": {
-        "name": "CAD-Recode (point cloud → CadQuery)",
+        "name": "CAD-Recode",
         "hf_ids": ["filapro/cad-recode-v1.5", "filapro/cad-recode"],
-        "fields": {"prompt": ["text", "description", "caption", "prompt"],
-                   "code": ["code", "cadquery_code", "cadquery", "python", "script"]},
+        "code_col": None,  # need to discover
+        "prompt_col": None,
     },
 }
 
 PRESETS = {
-    "V": ["vision"],              # Vision model — image → CadQuery (separate training script)
-    "A": ["t2cq"],                # GenCAD-Code only (~147K)
-    "B": ["t2cq", "cadrecode"],   # GenCAD-Code + CAD-Recode (~1.1M)
-    "C": ["cadrecode"],           # CAD-Recode only (~1M) — no text prompts, code-only
-    "D": ["t2cq", "cadrecode"],   # Same as B (all available data)
+    "A": ["t2cq"],
+    "B": ["t2cq", "cadrecode"],
+    "C": ["cadrecode"],
 }
 
+SYSTEM_PROMPT = (
+    "You are a CadQuery code generator. Given a description of a 3D part, "
+    "generate complete, executable CadQuery Python code that produces the part. "
+    "The code must assign the final shape to a variable called `result`. "
+    "Use named variables for all dimensions. Do not include export statements."
+)
+
+# ──────────────────────────────────────────────
+# Download
+# ──────────────────────────────────────────────
 
 def download_dataset(key):
-    """Download a single dataset from HuggingFace. Tries multiple IDs."""
+    """Download a dataset from HuggingFace, return as pandas DataFrame."""
     from datasets import load_dataset
 
     info = DATASETS[key]
     for hf_id in info["hf_ids"]:
         try:
-            logger.info(f"Trying {hf_id}...")
+            logger.info(f"  Trying {hf_id}...")
             ds = load_dataset(hf_id, split="train")
-            logger.info(f"  ✓ Loaded {len(ds)} examples from {hf_id}")
-            return ds, info
+            logger.info(f"  ✓ Loaded {len(ds)} rows from {hf_id}")
+            logger.info(f"  Columns: {ds.column_names}")
+
+            # Convert to pandas — drop image columns (huge, not needed for text training)
+            drop_cols = [c for c in ds.column_names if c in ("image", "img", "screenshot", "npy")]
+            df = ds.to_pandas()
+            if drop_cols:
+                df = df.drop(columns=[c for c in drop_cols if c in df.columns])
+                logger.info(f"  Dropped image columns: {drop_cols}")
+
+            return df, info
         except Exception as e:
             logger.warning(f"  ✗ {hf_id}: {e}")
 
-    logger.error(f"Could not load {info['name']} from any source")
+    logger.error(f"Could not load {info['name']}")
     return None, info
 
 
-def generate_prompt_from_code(code):
-    """Generate a synthetic text prompt from CadQuery code when no description exists.
+# ──────────────────────────────────────────────
+# Processing (vectorised with pandas)
+# ──────────────────────────────────────────────
 
-    Extracts key operations and dimensions to create a rough description.
-    """
+def find_code_column(df, info):
+    """Find which column contains CadQuery code."""
+    if info.get("code_col") and info["code_col"] in df.columns:
+        return info["code_col"]
+
+    # Search for a column containing CadQuery code
+    candidates = ["cadquery", "code", "cadquery_code", "script", "python", "output", "completion"]
+    for col in candidates:
+        if col in df.columns:
+            sample = df[col].dropna().head(10)
+            if sample.str.contains("cadquery|cq\\.Workplane", case=False, regex=True).any():
+                logger.info(f"  Found code column: {col}")
+                return col
+
+    logger.warning(f"  Could not find code column. Available: {list(df.columns)}")
+    return None
+
+
+def generate_prompt_from_code(code_series):
+    """Vectorised: generate synthetic prompts from CadQuery code."""
     parts = []
-    if ".box(" in code:
-        parts.append("box")
-    if ".cylinder(" in code:
-        parts.append("cylinder")
-    if ".sphere(" in code:
-        parts.append("sphere")
-    if ".hole(" in code or ".cboreHole(" in code or ".cskHole(" in code:
-        parts.append("with holes")
-    if ".shell(" in code:
-        parts.append("hollow/shelled")
-    if ".fillet(" in code:
-        parts.append("with fillets")
-    if ".chamfer(" in code:
-        parts.append("with chamfers")
-    if ".loft(" in code:
-        parts.append("lofted shape")
-    if ".sweep(" in code:
-        parts.append("swept shape")
-    if ".revolve(" in code:
-        parts.append("revolved shape")
-    if ".cut(" in code or ".cutBlind(" in code or ".cutThruAll(" in code:
-        parts.append("with cuts")
-    if ".union(" in code:
-        parts.append("with unioned bodies")
-    if ".mirror(" in code:
-        parts.append("mirrored")
+    checks = [
+        (".box(", "box"),
+        (".cylinder(", "cylinder"),
+        (".sphere(", "sphere"),
+        (".hole(", "with holes"),
+        (".shell(", "shelled"),
+        (".fillet(", "with fillets"),
+        (".loft(", "lofted"),
+        (".sweep(", "swept"),
+        (".revolve(", "revolved"),
+        (".cut(", "with cuts"),
+        (".union(", "with unions"),
+    ]
 
-    if parts:
-        return f"Generate a CadQuery model: {', '.join(parts)}"
-    return "Generate a CadQuery 3D model"
-
-
-def extract_fields(item, field_map):
-    """Extract prompt and code from a dataset item, trying multiple field names."""
-    prompt = None
-    code = None
-
-    for field in field_map["code"]:
-        val = item.get(field)
-        if val and isinstance(val, str) and len(val.strip()) > 10:
-            code = val.strip()
-            break
-
-    if not code:
-        return None, None
-
-    # Try to get a real prompt
-    for field in field_map["prompt"]:
-        val = item.get(field)
-        if val and isinstance(val, str) and len(val.strip()) > 20:
-            # Skip generic prompts like "Generate the CADQuery code..."
-            if "generate the cadquery" not in val.lower() and "generate cadquery" not in val.lower():
-                prompt = val.strip()
-                break
-
-    # If no real prompt, generate one from the code
-    if not prompt:
-        prompt = generate_prompt_from_code(code)
-
-    return prompt, code
-
-
-def is_valid_cadquery(code):
-    """Basic quality filter for CadQuery code."""
-    if not code or len(code) < 20:
-        return False
-    # Must reference CadQuery somehow
-    cq_markers = ["cadquery", "cq.Workplane", "cq.Assembly", "import cq"]
-    if not any(m in code for m in cq_markers):
-        return False
-    # Must assign to result or at least create geometry
-    if "result" not in code and "show_object" not in code and "Workplane" not in code:
-        return False
-    return True
-
-
-def clean_code(code):
-    """Clean up code: remove show_object, ensure result assignment."""
-    lines = code.split('\n')
-    cleaned = []
-    for line in lines:
-        # Remove display/export calls
-        stripped = line.strip()
-        if stripped.startswith("show_object("):
+    prompts = []
+    for code in code_series:
+        if not isinstance(code, str):
+            prompts.append("Generate a CadQuery 3D model")
             continue
-        if stripped.startswith("show("):
-            continue
-        if "exporters.export" in stripped:
-            continue
-        if "cq.exporters" in stripped:
-            continue
-        cleaned.append(line)
-
-    result = '\n'.join(cleaned).strip()
-
-    # If code uses show_object(xxx), the variable before it is the result
-    # Try to ensure `result` is assigned
-    if "result" not in result and "show_object" in code:
-        # Find the last variable assignment
-        for line in reversed(lines):
-            stripped = line.strip()
-            if stripped.startswith("show_object("):
-                var = stripped[len("show_object("):].rstrip(")")
-                if var and var.isidentifier():
-                    result += f"\nresult = {var}"
-                break
-
-    return result
+        found = [label for pattern, label in checks if pattern in code]
+        if found:
+            prompts.append(f"Generate a CadQuery model: {', '.join(found)}")
+        else:
+            prompts.append("Generate a CadQuery 3D model")
+    return prompts
 
 
-def deduplicate(examples):
-    """Remove duplicate examples by code hash."""
-    seen = set()
-    unique = []
-    for ex in examples:
-        code_hash = hashlib.md5(ex["output"].encode()).hexdigest()
-        if code_hash not in seen:
-            seen.add(code_hash)
-            unique.append(ex)
-    removed = len(examples) - len(unique)
-    if removed > 0:
-        logger.info(f"  Removed {removed} duplicates")
-    return unique
+def clean_code_series(code_series):
+    """Vectorised: clean CadQuery code — remove show_object, exports."""
+    remove_patterns = r"^\s*(show_object\(|show\(|cq\.exporters|exporters\.export).*$"
+    cleaned = code_series.str.replace(remove_patterns, "", regex=True, flags=re.MULTILINE)
+    cleaned = cleaned.str.strip()
+    return cleaned
 
 
-def process_dataset(ds, info):
-    """Extract, filter, and clean examples from a downloaded dataset."""
-    examples = []
-    skipped = 0
+def process_dataset(df, info):
+    """Process a DataFrame into training-ready examples using pandas."""
+    code_col = find_code_column(df, info)
+    if not code_col:
+        logger.error(f"  No code column found in {info['name']}")
+        return pd.DataFrame()
 
-    for item in ds:
-        prompt, code = extract_fields(item, info["fields"])
+    logger.info(f"  Processing {len(df)} rows from {info['name']}...")
 
-        if not prompt or not code:
-            skipped += 1
-            continue
+    # Work with just the code column
+    result = pd.DataFrame()
+    result["code"] = df[code_col].astype(str)
 
-        if not is_valid_cadquery(code):
-            skipped += 1
-            continue
+    # Filter: must have content
+    result = result[result["code"].str.len() > 20].copy()
+    logger.info(f"  After length filter: {len(result)}")
 
-        code = clean_code(code)
-        if len(code) < 20:
-            skipped += 1
-            continue
+    # Filter: must contain CadQuery markers
+    cq_mask = result["code"].str.contains(
+        r"cadquery|cq\.Workplane|cq\.Assembly|import cq", case=False, regex=True
+    )
+    result = result[cq_mask].copy()
+    logger.info(f"  After CadQuery filter: {len(result)}")
 
-        examples.append({
-            "instruction": prompt,
-            "output": code,
-            "source": info["name"],
-        })
+    # Clean code
+    result["code"] = clean_code_series(result["code"])
+    result = result[result["code"].str.len() > 20].copy()
+    logger.info(f"  After cleaning: {len(result)}")
 
-    logger.info(f"  {info['name']}: {len(examples)} valid, {skipped} skipped")
-    return examples
+    # Generate prompts
+    result["prompt"] = generate_prompt_from_code(result["code"])
 
+    # Deduplicate by code hash
+    result["hash"] = result["code"].apply(lambda x: hashlib.md5(x.encode()).hexdigest())
+    before_dedup = len(result)
+    result = result.drop_duplicates(subset="hash")
+    logger.info(f"  After dedup: {len(result)} (removed {before_dedup - len(result)})")
 
-def format_for_training(examples):
-    """Format as Qwen chat-style training data."""
-    formatted = []
-    for ex in examples:
-        formatted.append({
-            "messages": [
-                {
-                    "role": "system",
-                    "content": (
-                        "You are a CadQuery code generator. Given a description of a 3D part, "
-                        "generate complete, executable CadQuery Python code that produces the part. "
-                        "The code must assign the final shape to a variable called `result`. "
-                        "Use named variables for all dimensions. Do not include export statements."
-                    ),
-                },
-                {"role": "user", "content": ex["instruction"]},
-                {"role": "assistant", "content": ex["output"]},
-            ]
-        })
-    return formatted
+    result["source"] = info["name"]
+
+    return result[["prompt", "code", "source"]]
 
 
-def save_splits(formatted, output_dir, eval_ratio=0.05):
-    """Save train/eval splits as JSONL."""
+# ──────────────────────────────────────────────
+# Format + save
+# ──────────────────────────────────────────────
+
+def format_and_save(df, output_dir, eval_ratio=0.05):
+    """Format as Qwen chat JSONL and save train/eval splits."""
     os.makedirs(output_dir, exist_ok=True)
 
-    split_idx = int(len(formatted) * (1 - eval_ratio))
-    train_data = formatted[:split_idx]
-    eval_data = formatted[split_idx:]
+    # Shuffle
+    df = df.sample(frac=1, random_state=42).reset_index(drop=True)
 
-    train_path = os.path.join(output_dir, "train.jsonl")
-    eval_path = os.path.join(output_dir, "eval.jsonl")
+    # Split
+    split_idx = int(len(df) * (1 - eval_ratio))
+    train_df = df.iloc[:split_idx]
+    eval_df = df.iloc[split_idx:]
 
-    with open(train_path, "w") as f:
-        for item in train_data:
-            f.write(json.dumps(item) + "\n")
+    # Write JSONL
+    for split_name, split_df in [("train", train_df), ("eval", eval_df)]:
+        path = os.path.join(output_dir, f"{split_name}.jsonl")
+        with open(path, "w") as f:
+            for _, row in split_df.iterrows():
+                entry = {
+                    "messages": [
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": row["prompt"]},
+                        {"role": "assistant", "content": row["code"]},
+                    ]
+                }
+                f.write(json.dumps(entry) + "\n")
+        logger.info(f"  Saved {len(split_df)} examples to {path}")
 
-    with open(eval_path, "w") as f:
-        for item in eval_data:
-            f.write(json.dumps(item) + "\n")
-
-    logger.info(f"Saved {len(train_data)} training examples to {train_path}")
-    logger.info(f"Saved {len(eval_data)} evaluation examples to {eval_path}")
-
-    # Stats file for reference
-    stats = {
-        "total": len(formatted),
-        "train": len(train_data),
-        "eval": len(eval_data),
-        "sources": {},
-    }
-    for item in formatted:
-        src = item["messages"][1]["content"][:50]  # rough source tracking
-        # Actually track by looking at the data before formatting
+    # Stats
+    stats = {"total": len(df), "train": len(train_df), "eval": len(eval_df)}
+    sources = df["source"].value_counts().to_dict()
+    stats["sources"] = sources
     stats_path = os.path.join(output_dir, "stats.json")
     with open(stats_path, "w") as f:
-        json.dump({"total": len(formatted), "train": len(train_data), "eval": len(eval_data)}, f, indent=2)
+        json.dump(stats, f, indent=2)
+    logger.info(f"  Stats: {stats}")
 
-    return train_path, eval_path
+    return stats
 
+
+# ──────────────────────────────────────────────
+# Main
+# ──────────────────────────────────────────────
 
 def main():
     parser = argparse.ArgumentParser(description="Download and prepare CadQuery training data")
-    parser.add_argument("--preset", choices=["A", "B", "C", "D"],
-                        help="Dataset preset: A=t2cq(170K), B=+p2cad(300K), C=+cadrecode(500K), D=all(1M+)")
+    parser.add_argument("--preset", choices=list(PRESETS.keys()),
+                        help="Dataset preset: A=GenCAD(147K), B=+CAD-Recode(1.1M), C=CAD-Recode only")
     parser.add_argument("--datasets", nargs="+", choices=list(DATASETS.keys()),
-                        help="Custom dataset combo (e.g., --datasets t2cq p2cad)")
-    parser.add_argument("--max-samples", type=int, default=None,
-                        help="Max total training samples")
-    parser.add_argument("--output-dir", default="./data",
-                        help="Output directory")
+                        help="Custom dataset combo")
+    parser.add_argument("--max-samples", type=int, default=None, help="Max total examples")
+    parser.add_argument("--output-dir", default="./data", help="Output directory")
     args = parser.parse_args()
 
-    # Determine which datasets to use
-    if args.preset:
-        dataset_keys = PRESETS[args.preset]
-        logger.info(f"Preset {args.preset}: {', '.join(dataset_keys)}")
-    elif args.datasets:
-        dataset_keys = args.datasets
-    else:
-        dataset_keys = ["t2cq"]
-        logger.info("No preset specified, defaulting to t2cq only (preset A)")
+    dataset_keys = PRESETS.get(args.preset, ["t2cq"]) if args.preset else (args.datasets or ["t2cq"])
+    logger.info(f"Datasets: {dataset_keys}")
 
-    # Download and process each dataset
-    all_examples = []
+    # Download and process each
+    all_dfs = []
     for key in dataset_keys:
         logger.info(f"\n{'='*60}")
-        logger.info(f"Downloading {DATASETS[key]['name']}...")
+        logger.info(f"Dataset: {DATASETS[key]['name']}")
         logger.info(f"{'='*60}")
 
-        ds, info = download_dataset(key)
-        if ds is None:
-            logger.warning(f"Skipping {info['name']} — download failed")
+        df, info = download_dataset(key)
+        if df is None:
             continue
 
-        examples = process_dataset(ds, info)
-        all_examples.extend(examples)
+        processed = process_dataset(df, info)
+        if len(processed) > 0:
+            all_dfs.append(processed)
 
-    if not all_examples:
-        logger.error("No examples collected! Check dataset availability.")
+    if not all_dfs:
+        logger.error("No valid examples collected!")
         return
 
-    # Deduplicate across datasets
-    logger.info(f"\nTotal before dedup: {len(all_examples)}")
-    all_examples = deduplicate(all_examples)
-    logger.info(f"Total after dedup: {len(all_examples)}")
+    # Combine
+    combined = pd.concat(all_dfs, ignore_index=True)
+    logger.info(f"\nCombined: {len(combined)} examples")
 
-    # Shuffle
-    random.seed(42)
-    random.shuffle(all_examples)
+    # Cross-dataset dedup
+    combined["hash"] = combined["code"].apply(lambda x: hashlib.md5(x.encode()).hexdigest())
+    before = len(combined)
+    combined = combined.drop_duplicates(subset="hash").drop(columns="hash")
+    logger.info(f"After cross-dedup: {len(combined)} (removed {before - len(combined)})")
 
-    # Limit if requested
-    if args.max_samples and len(all_examples) > args.max_samples:
-        all_examples = all_examples[:args.max_samples]
-        logger.info(f"Truncated to {args.max_samples} examples")
+    # Limit
+    if args.max_samples and len(combined) > args.max_samples:
+        combined = combined.sample(n=args.max_samples, random_state=42)
+        logger.info(f"Truncated to {args.max_samples}")
 
     # Source breakdown
-    sources = {}
-    for ex in all_examples:
-        src = ex.get("source", "unknown")
-        sources[src] = sources.get(src, 0) + 1
-    logger.info(f"\nSource breakdown:")
-    for src, count in sorted(sources.items()):
+    logger.info(f"\nSources:")
+    for src, count in combined["source"].value_counts().items():
         logger.info(f"  {src}: {count}")
 
-    # Format and save
-    formatted = format_for_training(all_examples)
-
-    # Use preset name in output dir if specified
+    # Save
     output_dir = args.output_dir
     if args.preset:
         output_dir = os.path.join(args.output_dir, f"run_{args.preset}")
 
-    save_splits(formatted, output_dir=output_dir)
+    stats = format_and_save(combined, output_dir)
 
     logger.info(f"\n{'='*60}")
-    logger.info(f"Done! {len(formatted)} examples ready for training.")
+    logger.info(f"Done! {stats['total']} examples ready.")
     logger.info(f"Output: {output_dir}")
-    logger.info(f"\nNext step:")
-    logger.info(f"  python train.py --data-dir {output_dir}")
+    logger.info(f"Next: python train.py --data-dir {output_dir}")
     logger.info(f"{'='*60}")
 
 

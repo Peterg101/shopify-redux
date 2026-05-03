@@ -1,0 +1,8 @@
+{
+  "total": 100,
+  "train": 95,
+  "eval": 5,
+  "sources": {
+    "GenCAD-Code": 100
+  }
+}

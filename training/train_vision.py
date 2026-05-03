@@ -28,29 +28,18 @@ logger = logging.getLogger(__name__)
 
 
 def download_vision_dataset(max_samples=None):
-    """Download image-CadQuery pairs from HuggingFace."""
-    logger.info("Downloading ThomasTheMaker/cadquery dataset (image → code pairs)...")
+    """Load image-CadQuery pairs from GenCAD-Code (same dataset as text model, already cached)."""
+    logger.info("Loading CADCODER/GenCAD-Code (image + cadquery columns)...")
 
-    for hf_id in ["ThomasTheMaker/cadquery", "ThomasTheMaker/cadquery-image-pairs"]:
-        try:
-            ds = load_dataset(hf_id, split="train")
-            logger.info(f"Loaded {len(ds)} examples from {hf_id}")
-            if max_samples and len(ds) > max_samples:
-                ds = ds.shuffle(seed=42).select(range(max_samples))
-                logger.info(f"Truncated to {max_samples} examples")
-            return ds
-        except Exception as e:
-            logger.warning(f"Could not load {hf_id}: {e}")
+    ds = load_dataset("CADCODER/GenCAD-Code", split="train")
+    logger.info(f"Loaded {len(ds)} examples")
+    logger.info(f"Columns: {ds.column_names}")
 
-    # Fallback: try sylaera's smaller dataset
-    try:
-        ds = load_dataset("sylaera/cadquery-image-pairs", split="train")
-        logger.info(f"Loaded {len(ds)} examples from sylaera/cadquery-image-pairs")
-        return ds
-    except Exception as e:
-        logger.warning(f"Fallback also failed: {e}")
+    if max_samples and len(ds) > max_samples:
+        ds = ds.shuffle(seed=42).select(range(max_samples))
+        logger.info(f"Truncated to {max_samples} examples")
 
-    raise RuntimeError("Could not download any image-CadQuery dataset")
+    return ds
 
 
 def prepare_vision_data(ds):
@@ -59,10 +48,9 @@ def prepare_vision_data(ds):
     skipped = 0
 
     for item in ds:
-        # Extract image and code — field names may vary
-        image = item.get("image") or item.get("img") or item.get("screenshot")
-        code = (item.get("cadquery_code") or item.get("code") or
-                item.get("output") or item.get("completion") or "")
+        # GenCAD-Code columns: image, cadquery, deepcad_id, token_count, prompt
+        image = item.get("image")
+        code = item.get("cadquery") or ""
 
         if image is None or not code or len(code) < 20:
             skipped += 1
