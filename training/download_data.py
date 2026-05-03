@@ -24,19 +24,20 @@ logger = logging.getLogger(__name__)
 # Dataset registry
 DATASETS = {
     "t2cq": {
-        "name": "Text-to-CadQuery",
-        "hf_ids": ["ricemonster/text-to-cadquery", "ricemonster/cadquery-dataset"],
-        "fields": {"prompt": ["prompt", "text", "description", "input"],
-                   "code": ["cadquery_code", "code", "output", "completion"]},
+        "name": "GenCAD-Code (text+image → CadQuery)",
+        "hf_ids": ["CADCODER/GenCAD-Code", "CADCODER/DeepCAD-CQ-Vision-Paired",
+                    "Arwenxu/dataset_cadquery", "ThomasTheMaker/cadquery"],
+        "fields": {"prompt": ["prompt", "text", "description", "input", "caption"],
+                   "code": ["cadquery_code", "code", "output", "completion", "script"]},
     },
-    "p2cad": {
-        "name": "prompt2CAD",
-        "hf_ids": ["gilfoyle19/prompt2CAD"],
-        "fields": {"prompt": ["prompt", "text", "description", "instruction", "input"],
-                   "code": ["code", "cadquery_code", "output", "completion"]},
+    "cadevolve": {
+        "name": "CAD-Evolve (1.3M synthetic CadQuery scripts)",
+        "hf_ids": ["kulibinai/cadevolve"],
+        "fields": {"prompt": ["text", "description", "caption", "prompt"],
+                   "code": ["code", "cadquery_code", "script", "python", "output"]},
     },
     "cadrecode": {
-        "name": "CAD-Recode",
+        "name": "CAD-Recode (point cloud → CadQuery)",
         "hf_ids": ["filapro/cad-recode-v1.5", "filapro/cad-recode"],
         "fields": {"prompt": ["text", "description", "caption", "prompt"],
                    "code": ["code", "cadquery_code", "python", "script", "output"]},
@@ -45,10 +46,10 @@ DATASETS = {
 
 PRESETS = {
     "V": ["vision"],  # Vision model — image → CadQuery (separate training script)
-    "A": ["t2cq"],
-    "B": ["t2cq", "p2cad"],
-    "C": ["t2cq", "cadrecode"],
-    "D": ["t2cq", "p2cad", "cadrecode"],
+    "A": ["t2cq"],                          # GenCAD-Code (~163K)
+    "B": ["t2cq", "cadevolve"],              # + CAD-Evolve (~1.5M)
+    "C": ["t2cq", "cadrecode"],              # + CAD-Recode (~1M)
+    "D": ["t2cq", "cadevolve", "cadrecode"], # All combined (~2.5M)
 }
 
 
