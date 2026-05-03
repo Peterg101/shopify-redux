@@ -153,7 +153,7 @@ def main():
     try:
         from trl import SFTConfig
         training_args = SFTConfig(
-            max_seq_length=args.max_seq_length,
+            max_length=args.max_seq_length,
             packing=True,
             **training_kwargs,
         )
