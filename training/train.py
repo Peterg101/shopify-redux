@@ -123,8 +123,12 @@ def main():
     total = sum(p.numel() for p in model.parameters())
     logger.info(f"Trainable parameters: {trainable:,} / {total:,} ({100*trainable/total:.2f}%)")
 
-    # Training arguments
-    training_args = TrainingArguments(
+    # Format data for training
+    def formatting_func(example):
+        return format_chat(example)
+
+    # Training config — try SFTConfig first (trl >= 0.12), fall back to TrainingArguments
+    training_kwargs = dict(
         output_dir=args.output_dir,
         num_train_epochs=args.epochs,
         per_device_train_batch_size=args.batch_size,
@@ -144,36 +148,30 @@ def main():
         gradient_checkpointing=True,
         report_to="none",
         max_grad_norm=0.3,
-        max_seq_length=args.max_seq_length,
     )
 
-    # Format data for training
-    def formatting_func(example):
-        return format_chat(example)
-
-    # Trainer — SFTTrainer API varies by version, try both signatures
     try:
-        trainer = SFTTrainer(
-            model=model,
-            train_dataset=train_dataset,
-            eval_dataset=eval_dataset,
-            peft_config=lora_config,
-            args=training_args,
-            formatting_func=formatting_func,
-            tokenizer=tokenizer,
+        from trl import SFTConfig
+        training_args = SFTConfig(
+            max_seq_length=args.max_seq_length,
             packing=True,
+            **training_kwargs,
         )
-    except TypeError:
-        # Older trl versions use different parameter names
-        trainer = SFTTrainer(
-            model=model,
-            train_dataset=train_dataset,
-            eval_dataset=eval_dataset,
-            peft_config=lora_config,
-            args=training_args,
-            formatting_func=formatting_func,
-            processing_class=tokenizer,
-        )
+        logger.info("Using SFTConfig (trl >= 0.12)")
+    except ImportError:
+        training_args = TrainingArguments(**training_kwargs)
+        logger.info("Using TrainingArguments (older trl)")
+
+    # Trainer
+    trainer = SFTTrainer(
+        model=model,
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
+        peft_config=lora_config,
+        args=training_args,
+        formatting_func=formatting_func,
+        tokenizer=tokenizer,
+    )
 
     # Train
     logger.info("Starting training...")
