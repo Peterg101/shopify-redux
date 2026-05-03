@@ -118,10 +118,8 @@ def main():
         task_type="CAUSAL_LM",
     )
 
-    model = get_peft_model(model, lora_config)
-    trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    total = sum(p.numel() for p in model.parameters())
-    logger.info(f"Trainable parameters: {trainable:,} / {total:,} ({100*trainable/total:.2f}%)")
+    # Don't apply LoRA here — SFTTrainer handles it via peft_config
+    logger.info(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}")
 
     # Format data for training
     def formatting_func(example):
