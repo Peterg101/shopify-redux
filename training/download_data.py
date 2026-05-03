@@ -44,6 +44,7 @@ DATASETS = {
 }
 
 PRESETS = {
+    "V": ["vision"],  # Vision model — image → CadQuery (separate training script)
     "A": ["t2cq"],
     "B": ["t2cq", "p2cad"],
     "C": ["t2cq", "cadrecode"],
