@@ -144,24 +144,36 @@ def main():
         gradient_checkpointing=True,
         report_to="none",
         max_grad_norm=0.3,
+        max_seq_length=args.max_seq_length,
     )
 
     # Format data for training
     def formatting_func(example):
         return format_chat(example)
 
-    # Trainer
-    trainer = SFTTrainer(
-        model=model,
-        train_dataset=train_dataset,
-        eval_dataset=eval_dataset,
-        peft_config=lora_config,
-        args=training_args,
-        formatting_func=formatting_func,
-        max_seq_length=args.max_seq_length,
-        tokenizer=tokenizer,
-        packing=True,
-    )
+    # Trainer — SFTTrainer API varies by version, try both signatures
+    try:
+        trainer = SFTTrainer(
+            model=model,
+            train_dataset=train_dataset,
+            eval_dataset=eval_dataset,
+            peft_config=lora_config,
+            args=training_args,
+            formatting_func=formatting_func,
+            tokenizer=tokenizer,
+            packing=True,
+        )
+    except TypeError:
+        # Older trl versions use different parameter names
+        trainer = SFTTrainer(
+            model=model,
+            train_dataset=train_dataset,
+            eval_dataset=eval_dataset,
+            peft_config=lora_config,
+            args=training_args,
+            formatting_func=formatting_func,
+            processing_class=tokenizer,
+        )
 
     # Train
     logger.info("Starting training...")
