@@ -24,32 +24,25 @@ logger = logging.getLogger(__name__)
 # Dataset registry
 DATASETS = {
     "t2cq": {
-        "name": "GenCAD-Code (text+image → CadQuery)",
-        "hf_ids": ["CADCODER/GenCAD-Code", "CADCODER/DeepCAD-CQ-Vision-Paired",
-                    "Arwenxu/dataset_cadquery", "ThomasTheMaker/cadquery"],
-        "fields": {"prompt": ["prompt", "text", "description", "input", "caption"],
-                   "code": ["cadquery_code", "code", "output", "completion", "script"]},
-    },
-    "cadevolve": {
-        "name": "CAD-Evolve (1.3M synthetic CadQuery scripts)",
-        "hf_ids": ["kulibinai/cadevolve"],
-        "fields": {"prompt": ["text", "description", "caption", "prompt"],
-                   "code": ["code", "cadquery_code", "script", "python", "output"]},
+        "name": "GenCAD-Code (147K image+CadQuery pairs)",
+        "hf_ids": ["CADCODER/GenCAD-Code"],
+        "fields": {"prompt": ["prompt"],
+                   "code": ["cadquery"]},
     },
     "cadrecode": {
         "name": "CAD-Recode (point cloud → CadQuery)",
         "hf_ids": ["filapro/cad-recode-v1.5", "filapro/cad-recode"],
         "fields": {"prompt": ["text", "description", "caption", "prompt"],
-                   "code": ["code", "cadquery_code", "python", "script", "output"]},
+                   "code": ["code", "cadquery_code", "cadquery", "python", "script"]},
     },
 }
 
 PRESETS = {
-    "V": ["vision"],  # Vision model — image → CadQuery (separate training script)
-    "A": ["t2cq"],                          # GenCAD-Code (~163K)
-    "B": ["t2cq", "cadevolve"],              # + CAD-Evolve (~1.5M)
-    "C": ["t2cq", "cadrecode"],              # + CAD-Recode (~1M)
-    "D": ["t2cq", "cadevolve", "cadrecode"], # All combined (~2.5M)
+    "V": ["vision"],              # Vision model — image → CadQuery (separate training script)
+    "A": ["t2cq"],                # GenCAD-Code only (~147K)
+    "B": ["t2cq", "cadrecode"],   # GenCAD-Code + CAD-Recode (~1.1M)
+    "C": ["cadrecode"],           # CAD-Recode only (~1M) — no text prompts, code-only
+    "D": ["t2cq", "cadrecode"],   # Same as B (all available data)
 }
 
 
@@ -71,22 +64,70 @@ def download_dataset(key):
     return None, info
 
 
+def generate_prompt_from_code(code):
+    """Generate a synthetic text prompt from CadQuery code when no description exists.
+
+    Extracts key operations and dimensions to create a rough description.
+    """
+    parts = []
+    if ".box(" in code:
+        parts.append("box")
+    if ".cylinder(" in code:
+        parts.append("cylinder")
+    if ".sphere(" in code:
+        parts.append("sphere")
+    if ".hole(" in code or ".cboreHole(" in code or ".cskHole(" in code:
+        parts.append("with holes")
+    if ".shell(" in code:
+        parts.append("hollow/shelled")
+    if ".fillet(" in code:
+        parts.append("with fillets")
+    if ".chamfer(" in code:
+        parts.append("with chamfers")
+    if ".loft(" in code:
+        parts.append("lofted shape")
+    if ".sweep(" in code:
+        parts.append("swept shape")
+    if ".revolve(" in code:
+        parts.append("revolved shape")
+    if ".cut(" in code or ".cutBlind(" in code or ".cutThruAll(" in code:
+        parts.append("with cuts")
+    if ".union(" in code:
+        parts.append("with unioned bodies")
+    if ".mirror(" in code:
+        parts.append("mirrored")
+
+    if parts:
+        return f"Generate a CadQuery model: {', '.join(parts)}"
+    return "Generate a CadQuery 3D model"
+
+
 def extract_fields(item, field_map):
     """Extract prompt and code from a dataset item, trying multiple field names."""
     prompt = None
     code = None
-
-    for field in field_map["prompt"]:
-        val = item.get(field)
-        if val and isinstance(val, str) and len(val.strip()) > 3:
-            prompt = val.strip()
-            break
 
     for field in field_map["code"]:
         val = item.get(field)
         if val and isinstance(val, str) and len(val.strip()) > 10:
             code = val.strip()
             break
+
+    if not code:
+        return None, None
+
+    # Try to get a real prompt
+    for field in field_map["prompt"]:
+        val = item.get(field)
+        if val and isinstance(val, str) and len(val.strip()) > 20:
+            # Skip generic prompts like "Generate the CADQuery code..."
+            if "generate the cadquery" not in val.lower() and "generate cadquery" not in val.lower():
+                prompt = val.strip()
+                break
+
+    # If no real prompt, generate one from the code
+    if not prompt:
+        prompt = generate_prompt_from_code(code)
 
     return prompt, code
 

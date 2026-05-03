@@ -21,40 +21,32 @@ echo "=== TRAINING PIPELINE STARTED: $(date) ===" > "$LOG"
 # ──────────────────────────────────────────────
 echo "=== DOWNLOADING DATASETS: $(date) ===" | tee -a "$LOG"
 
-python download_data.py --preset A
-python download_data.py --preset B
-python download_data.py --preset C
-python download_data.py --preset D
+python download_data.py --preset A    # GenCAD-Code 147K
+python download_data.py --preset B    # GenCAD-Code + CAD-Recode ~1.1M
+python download_data.py --preset C    # CAD-Recode only ~1M
 
 echo "=== DATASETS READY: $(date) ===" | tee -a "$LOG"
 
 # ──────────────────────────────────────────────
-# Run 1: Text model — 170K examples (~12 hours)
+# Run 1: GenCAD-Code only — 147K examples (~12 hours)
 # ──────────────────────────────────────────────
-echo "=== RUN A (170K): Starting $(date) ===" | tee -a "$LOG"
+echo "=== RUN A (GenCAD 147K): Starting $(date) ===" | tee -a "$LOG"
 python train.py --data-dir ./data/run_A --output-dir ./output/run_A
-echo "=== RUN A (170K): Finished $(date) ===" | tee -a "$LOG"
+echo "=== RUN A (GenCAD 147K): Finished $(date) ===" | tee -a "$LOG"
 
 # ──────────────────────────────────────────────
-# Run 2: Text model — 300K examples (~16 hours)
+# Run 2: GenCAD + CAD-Recode — ~1.1M examples (~30 hours)
 # ──────────────────────────────────────────────
-echo "=== RUN B (300K): Starting $(date) ===" | tee -a "$LOG"
+echo "=== RUN B (GenCAD+Recode 1.1M): Starting $(date) ===" | tee -a "$LOG"
 python train.py --data-dir ./data/run_B --output-dir ./output/run_B
-echo "=== RUN B (300K): Finished $(date) ===" | tee -a "$LOG"
+echo "=== RUN B (GenCAD+Recode 1.1M): Finished $(date) ===" | tee -a "$LOG"
 
 # ──────────────────────────────────────────────
-# Run 3: Text model — 500K examples (~20 hours)
+# Run 3: CAD-Recode only — ~1M examples (~28 hours)
 # ──────────────────────────────────────────────
-echo "=== RUN C (500K): Starting $(date) ===" | tee -a "$LOG"
+echo "=== RUN C (Recode 1M): Starting $(date) ===" | tee -a "$LOG"
 python train.py --data-dir ./data/run_C --output-dir ./output/run_C
-echo "=== RUN C (500K): Finished $(date) ===" | tee -a "$LOG"
-
-# ──────────────────────────────────────────────
-# Run 4: Text model — 1M+ examples (~30 hours)
-# ──────────────────────────────────────────────
-echo "=== RUN D (1M+): Starting $(date) ===" | tee -a "$LOG"
-python train.py --data-dir ./data/run_D --output-dir ./output/run_D
-echo "=== RUN D (1M+): Finished $(date) ===" | tee -a "$LOG"
+echo "=== RUN C (Recode 1M): Finished $(date) ===" | tee -a "$LOG"
 
 # ──────────────────────────────────────────────
 # Run 5: Vision model — 147K image pairs (~12 hours)
@@ -71,7 +63,6 @@ echo "=== CONVERTING TO GGUF: $(date) ===" | tee -a "$LOG"
 python convert_to_ollama.py --adapter-dir ./output/run_A --output-dir ./output/run_A_gguf
 python convert_to_ollama.py --adapter-dir ./output/run_B --output-dir ./output/run_B_gguf
 python convert_to_ollama.py --adapter-dir ./output/run_C --output-dir ./output/run_C_gguf
-python convert_to_ollama.py --adapter-dir ./output/run_D --output-dir ./output/run_D_gguf
 python convert_to_ollama.py --base-model Qwen/Qwen2.5-VL-7B-Instruct --adapter-dir ./output/run_vision --output-dir ./output/run_vision_gguf
 
 echo "=== ALL CONVERSIONS DONE: $(date) ===" | tee -a "$LOG"
@@ -81,14 +72,13 @@ echo "=== ALL CONVERSIONS DONE: $(date) ===" | tee -a "$LOG"
 # ──────────────────────────────────────────────
 echo ""
 echo "================================================"
-echo "ALL 5 RUNS COMPLETE"
+echo "ALL 4 RUNS COMPLETE"
 echo "================================================"
 echo ""
 echo "Output directories:"
-echo "  ./output/run_A_gguf/    — Text model (170K)"
-echo "  ./output/run_B_gguf/    — Text model (300K)"
-echo "  ./output/run_C_gguf/    — Text model (500K)"
-echo "  ./output/run_D_gguf/    — Text model (1M+)"
+echo "  ./output/run_A_gguf/      — Text model (GenCAD-Code 147K)"
+echo "  ./output/run_B_gguf/      — Text model (GenCAD + CAD-Recode ~1.1M)"
+echo "  ./output/run_C_gguf/      — Text model (CAD-Recode only ~1M)"
 echo "  ./output/run_vision_gguf/ — Vision model (147K images)"
 echo ""
 echo "Download these to your Mac and test with:"
