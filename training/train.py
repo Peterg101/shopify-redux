@@ -170,7 +170,7 @@ def main():
         peft_config=lora_config,
         args=training_args,
         formatting_func=formatting_func,
-        tokenizer=tokenizer,
+        processing_class=tokenizer,
     )
 
     # Train
