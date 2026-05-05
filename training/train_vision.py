@@ -43,39 +43,48 @@ def download_vision_dataset(max_samples=None):
 
 
 def prepare_vision_data(ds):
-    """Filter and format image-code pairs for vision-language training."""
-    valid = []
+    """Filter image-code pairs. Returns list of valid indices + cleaned codes.
+
+    Stores indices into the dataset rather than copying PIL images into a list,
+    to avoid loading 147K images into memory at once.
+    """
+    from tqdm import tqdm
+    import re
+
+    valid_indices = []
+    valid_codes = []
     skipped = 0
+    total = len(ds)
 
-    for item in ds:
-        # GenCAD-Code columns: image, cadquery, deepcad_id, token_count, prompt
-        image = item.get("image")
-        code = item.get("cadquery") or ""
+    logger.info(f"Filtering {total} examples...")
 
-        if image is None or not code or len(code) < 20:
+    # Process in batches using the dataset's column access (much faster than row-by-row)
+    codes = ds["cadquery"]
+
+    remove_pattern = re.compile(r"^\s*(show_object\(|show\(|cq\.exporters|exporters\.export).*$", re.MULTILINE)
+
+    for i in tqdm(range(total), desc="Filtering"):
+        code = codes[i] if codes[i] else ""
+
+        if len(code) < 20:
             skipped += 1
             continue
 
-        # Basic CadQuery validation
         if "cadquery" not in code and "cq.Workplane" not in code and "cq." not in code:
             skipped += 1
             continue
 
         # Clean code
-        lines = []
-        for line in code.split('\n'):
-            stripped = line.strip()
-            if stripped.startswith("show_object(") or stripped.startswith("show("):
-                continue
-            if "exporters.export" in stripped:
-                continue
-            lines.append(line)
-        code = '\n'.join(lines).strip()
+        code = remove_pattern.sub("", code).strip()
+        if len(code) < 20:
+            skipped += 1
+            continue
 
-        valid.append({"image": image, "code": code})
+        valid_indices.append(i)
+        valid_codes.append(code)
 
-    logger.info(f"Valid: {len(valid)}, Skipped: {skipped}")
-    return valid
+    logger.info(f"Valid: {len(valid_indices)}, Skipped: {skipped}")
+    return valid_indices, valid_codes
 
 
 def main():
@@ -99,17 +108,19 @@ def main():
 
     # Download and prepare data
     ds = download_vision_dataset(max_samples=args.max_samples)
-    examples = prepare_vision_data(ds)
+    valid_indices, valid_codes = prepare_vision_data(ds)
 
-    if not examples:
+    if not valid_indices:
         logger.error("No valid examples found!")
         return
 
     # Split
-    split_idx = int(len(examples) * 0.95)
-    train_examples = examples[:split_idx]
-    eval_examples = examples[split_idx:]
-    logger.info(f"Train: {len(train_examples)}, Eval: {len(eval_examples)}")
+    split_idx = int(len(valid_indices) * 0.95)
+    train_indices = valid_indices[:split_idx]
+    train_codes = valid_codes[:split_idx]
+    eval_indices = valid_indices[split_idx:]
+    eval_codes = valid_codes[split_idx:]
+    logger.info(f"Train: {len(train_indices)}, Eval: {len(eval_indices)}")
 
     # Quantisation config
     bnb_config = BitsAndBytesConfig(
@@ -187,34 +198,7 @@ def main():
         )
         return inputs
 
-    # Save processed data for the trainer
     os.makedirs(args.output_dir, exist_ok=True)
-
-    # For VL models, we use a custom training loop since SFTTrainer
-    # doesn't natively handle image inputs well. Save the data and
-    # use a simple training script.
-    logger.info("Processing and saving training data...")
-    train_jsonl = os.path.join(args.output_dir, "train_vision.jsonl")
-    eval_jsonl = os.path.join(args.output_dir, "eval_vision.jsonl")
-
-    with open(train_jsonl, "w") as f:
-        for ex in train_examples:
-            # Save image as base64 for portability
-            import base64
-            from io import BytesIO
-            buf = BytesIO()
-            ex["image"].save(buf, format="PNG")
-            img_b64 = base64.b64encode(buf.getvalue()).decode()
-            f.write(json.dumps({"image_b64": img_b64, "code": ex["code"]}) + "\n")
-
-    with open(eval_jsonl, "w") as f:
-        for ex in eval_examples:
-            buf = BytesIO()
-            ex["image"].save(buf, format="PNG")
-            img_b64 = base64.b64encode(buf.getvalue()).decode()
-            f.write(json.dumps({"image_b64": img_b64, "code": ex["code"]}) + "\n")
-
-    logger.info(f"Saved {len(train_examples)} train, {len(eval_examples)} eval to {args.output_dir}")
 
     # Training arguments
     training_args = TrainingArguments(
@@ -240,38 +224,44 @@ def main():
         remove_unused_columns=False,
     )
 
-    # Custom data collator for vision inputs
+    # Custom dataset — loads images lazily from the HuggingFace dataset
     from torch.utils.data import Dataset as TorchDataset
 
     class VisionCadQueryDataset(TorchDataset):
-        def __init__(self, examples, processor, system_prompt, max_length=2048):
-            self.examples = examples
+        def __init__(self, hf_dataset, indices, codes, processor, system_prompt, max_length=2048):
+            self.hf_dataset = hf_dataset
+            self.indices = indices
+            self.codes = codes
             self.processor = processor
             self.system_prompt = system_prompt
             self.max_length = max_length
 
         def __len__(self):
-            return len(self.examples)
+            return len(self.indices)
 
         def __getitem__(self, idx):
-            ex = self.examples[idx]
+            # Load image lazily from the HuggingFace dataset
+            ds_idx = self.indices[idx]
+            image = self.hf_dataset[ds_idx]["image"]
+            code = self.codes[idx]
+
             messages = [
                 {"role": "system", "content": self.system_prompt},
                 {
                     "role": "user",
                     "content": [
-                        {"type": "image", "image": ex["image"]},
+                        {"type": "image", "image": image},
                         {"type": "text", "text": "Generate CadQuery code for this part."},
                     ],
                 },
-                {"role": "assistant", "content": ex["code"]},
+                {"role": "assistant", "content": code},
             ]
             text = self.processor.apply_chat_template(
                 messages, tokenize=False, add_generation_prompt=False
             )
             inputs = self.processor(
                 text=[text],
-                images=[ex["image"]],
+                images=[image],
                 return_tensors="pt",
                 padding="max_length",
                 truncation=True,
@@ -282,8 +272,8 @@ def main():
             inputs["labels"] = inputs["input_ids"].clone()
             return inputs
 
-    train_dataset = VisionCadQueryDataset(train_examples, processor, system_prompt)
-    eval_dataset = VisionCadQueryDataset(eval_examples, processor, system_prompt)
+    train_dataset = VisionCadQueryDataset(ds, train_indices, train_codes, processor, system_prompt)
+    eval_dataset = VisionCadQueryDataset(ds, eval_indices, eval_codes, processor, system_prompt)
 
     # Train using HuggingFace Trainer
     from transformers import Trainer
