@@ -16,10 +16,10 @@ import logging
 import torch
 from datasets import load_dataset, Dataset
 from transformers import (
-    AutoModelForVision2Seq,
     AutoProcessor,
     BitsAndBytesConfig,
     TrainingArguments,
+    Qwen2_5_VLForConditionalGeneration,
 )
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 
@@ -132,7 +132,7 @@ def main():
 
     # Load model
     logger.info(f"Loading {args.base_model} in 4-bit...")
-    model = AutoModelForVision2Seq.from_pretrained(
+    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
         args.base_model,
         quantization_config=bnb_config,
         device_map="auto",
